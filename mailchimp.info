@@ -1,0 +1,5 @@
+; $Id
+name = Mailchimp
+package = MomHub
+description = Mailchimp integration
+version = "5.x"
