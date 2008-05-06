@@ -1,4 +1,3 @@
-; $Id
+; $Id:
 name = Mailchimp
-description = Mailchimp integration
-version = "5.x"
+description = Mailchimp email service integration.
