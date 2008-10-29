@@ -1,0 +1,5 @@
+; $Id:
+name = Mailchimp Bio
+description = Allows the Mailchimp module to take advantage of bio module profile fields.
+dependencies = mailchimp
+package = MailChimp
