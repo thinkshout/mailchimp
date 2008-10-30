@@ -253,15 +253,23 @@ function mailchimp_menu($may_cache) {
 }
 
 function mailchimp_admin_settings() {
-    $form['mailchimp_username'] = array(
+    $form['mailchimp_account_info'] = array(
+      '#type'       => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#title'      => 'MailChimp Account Information',
+    );
+    $form['mailchimp_account_info']['mailchimp_username'] = array(
       '#type' => 'textfield',
-      '#title' => t('Mailchimp username.'),
+      '#title' => t('Mailchimp username'),
+      '#required' => TRUE,
       '#default_value' => variable_get('mailchimp_username', ''),
       '#description' => t('The username used to login to your MailChimp account.')
     );
-    $form['mailchimp_password'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Mailchimp password.'),
+    $form['mailchimp_account_info']['mailchimp_password'] = array(
+      '#type' => 'password',
+      '#title' => t('Mailchimp password'),
+      '#required' => TRUE,
       '#default_value' => variable_get('mailchimp_password', ''),
       '#description' => t('The password used to login to your MailChimp account.')
     );
@@ -273,17 +281,21 @@ function mailchimp_admin_settings() {
       if( !$q->errorCode ) {
         $lists = $q->lists();
         if(!empty($lists)){
-
+          $form['mailchimp_lists'] = array(
+            '#type'       => 'fieldset',
+            '#collapsible' => FALSE,
+            '#title'      => 'MailChimp Subscription Lists',
+          );
           foreach ($lists as $list) {
-            $form['mailchimp_list_'. $list['id']] = array(
+            $form['mailchimp_lists']['mailchimp_list_'. $list['id']] = array(
               '#type'       => 'fieldset',
-              '#colapsible' => true,
-              '#colapsed'   => false,
+              '#collapsible' => TRUE,
+              '#collapsed' => TRUE,
               '#title'      => $list ['name'],
             );
 
             // Add a row of checkboxes for role enabling.
-            $form['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_roles'] = array(
+            $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_roles'] = array(
               '#type'         => 'fieldset',
               '#title'        => t('Roles'),
               '#description'  => t('Choose which roles may subscribe to this list. Select the anonymous user role to have the list appear on the !subscribe page. Select the authenticated user role to have the list appear on the !signup page. For all other roles, the list will appear on the settings page for users with that role.', array( '!subscribe' => l( t( 'Newsletter Subscription' ), 'mailchimp/subscribe' ), '!signup' => l( t( 'User Registration' ), 'user/register' ) ) ),
@@ -291,21 +303,21 @@ function mailchimp_admin_settings() {
             );
 
             foreach (user_roles() as $rid => $name) {
-              $form['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_roles']['mailchimp_list_'. $list['id'] .'_role_'. $rid] = array(
+              $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_roles']['mailchimp_list_'. $list['id'] .'_role_'. $rid] = array(
                 '#type'           => 'checkbox',
                 '#title'          => $name,
                 '#default_value'  => variable_get( 'mailchimp_list_'. $list['id'] .'_role_'. $rid, 0 ),
               );
             }
 
-            $form['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_description'] = array(
+            $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_description'] = array(
               '#type'           => 'textarea',
               '#title'          => t( 'List Description' ),
               '#default_value'  => variable_get( 'mailchimp_list_'. $list['id'] .'_description', '' ),
               '#description'    => t('This description will be shown to the user on the list signup and user account settings pages')
             );
 
-            $form['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_listtype'] = array(
+            $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_listtype'] = array(
               '#type'           => 'select',
               '#title'          => t( 'Subscription Method' ),
               '#options'        => array( 'optin' => "Opt-in", 'optin' => "Opt-in", 'optout' => 'Opt-out', 'required' => 'Required' ),
@@ -313,7 +325,7 @@ function mailchimp_admin_settings() {
               '#description'    => t('<strong>Opt-in:</strong> Users must sign up to recieve messages.<br/><strong>Opt-out: </strong> Users are automatically signed up but may unsubscribe.<br/><strong>Required: </strong> Users will remain on the list as long as they have an account and cannot unsubscribe.')
             );
 
-            $form['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_doublein'] = array(
+            $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_doublein'] = array(
               '#type'           => 'checkbox',
               '#title'          => t( 'Require subscribers to Double Opt-in' ),
               '#default_value'  => variable_get( 'mailchimp_list_'. $list['id'] .'_doublein', 0 ),
@@ -322,7 +334,7 @@ function mailchimp_admin_settings() {
             $mergevars = $q->listMergeVars($list['id']);
             if ( $mergevars ) {
               // Merge var fieldset
-              $form['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_mergevars'] = array(
+              $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_mergevars'] = array(
                 '#type'         => 'fieldset',
                 '#title'        => t('Merge Variables'),
                 '#description'  => t( 'Select Drupal user variables to send to Mailchimp as Merge Variables. Available Drupal variables are any Profile, Bio module or Token variables for the given user. For more information on Merge Variables, see the !doc', array( '!doc' => l( t( 'Mailchimp Documentation' ), 'http://server.iad.liveperson.net/hc/s-31286565/cmd/kbresource/kb-8214439208090042855/view_question!PAGETYPE?sq=merge%2bvariables&sf=101113&sg=0&st=188569&documentid=143258&action=view' ) ) ),
@@ -332,7 +344,7 @@ function mailchimp_admin_settings() {
               $mergeoptions = mailchimp_get_merge_keys();
               foreach ( $mergevars as $mergevar ) {
                 if ( $mergevar['tag'] !== 'EMAIL' ) {
-                  $form['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_mergevars']['mailchimp_list_'. $list['id'] .'_merge_'. $mergevar['tag']] = array(
+                  $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_mergevars']['mailchimp_list_'. $list['id'] .'_merge_'. $mergevar['tag']] = array(
                     '#type'           => 'select',
                     '#title'          => $mergevar['name'],
                     '#options'        => $mergeoptions,
@@ -344,22 +356,28 @@ function mailchimp_admin_settings() {
           }
 
 
-          $form['mailchimp_subscription_success_message'] = array(
+          $form['mailchimp_messages'] = array(
+            '#type'       => 'fieldset',
+            '#collapsible' => TRUE,
+            '#collapsed' => TRUE,
+            '#title'      => 'Messaging',
+          );
+          $form['mailchimp_messages']['mailchimp_subscription_success_message'] = array(
             '#type'           => 'textarea',
             '#title'          => t( 'Subscription Success Message' ),
             '#default_value'  => variable_get( 'mailchimp_subscription_success_message', SUBSCRIPTION_SUCCESS )
           );
-          $form['mailchimp_subscription_failure_message'] = array(
+          $form['mailchimp_messages']['mailchimp_subscription_failure_message'] = array(
             '#type'           => 'textarea',
             '#title'          => t( 'Subscription Failure Message' ),
             '#default_value'  => variable_get( 'mailchimp_subscription_failure_message', SUBSCRIPTION_FAILURE )
           );
-          $form['mailchimp_unsubscription_success_message'] = array(
+          $form['mailchimp_messages']['mailchimp_unsubscription_success_message'] = array(
             '#type'           => 'textarea',
             '#title'          => t( 'Unsubscription Success Message' ),
             '#default_value'  => variable_get( 'mailchimp_unsubscription_success_message', UNSUBSCRIPTION_SUCCESS )
           );
-          $form['mailchimp_unsubscription_failure_message'] = array(
+          $form['mailchimp_messages']['mailchimp_unsubscription_failure_message'] = array(
             '#type'           => 'textarea',
             '#title'          => t( 'Unsubscription Failure Message' ),
             '#default_value'  => variable_get( 'mailchimp_unsubscription_failure_message', UNSUBSCRIPTION_FAILURE )
