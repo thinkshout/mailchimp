@@ -46,7 +46,7 @@ function mailchimp_bio_mailchimp_merge_keys() {
 function mailchimp_bio_mailchimp_merge_values( $user ) {
   $out = array();
   $out = (array)$user;
-  $out = array_merge( $out, _mailchimp_get_bio_fields( $user ) );
+  $out = array_merge( $out, _mailchimp_bio_get_bio_fields( $user ) );
   return $out;
 }
 
