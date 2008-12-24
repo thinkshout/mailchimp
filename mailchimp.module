@@ -705,6 +705,15 @@ function _mailchimp_subscribe_user( $list, $merge_vars, $message = true, $q = NU
       }
     }
   }
+
+  if($success){
+    watchdog('mailchimp',
+      t('@email has subscribed to @list.', array('@email'=>$merge_vars['EMAIL'], '@list'=>$list['name'])));
+  } else {
+    watchdog('mailchimp',
+      t('@email has failed to subscribed to @list.', array('@email'=>$merge_vars['EMAIL'], '@list'=>$list['name'])), WATCHDOG_WARNING);
+  }
+
   return $success;
 }
 
