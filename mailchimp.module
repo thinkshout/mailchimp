@@ -6,8 +6,6 @@
  * Mailchimp module.
  */
 
-require_once "MCAPI.class.php";
-
 define('SUBSCRIPTION_SUCCESS',   t('Thank you, you have been successfully subscribed.'));
 define('SUBSCRIPTION_FAILURE',   t('We were unable to subscribe you at this time. Please try again later.'));
 define('UNSUBSCRIPTION_SUCCESS', t('Thank you, you have been successfully unsubscribed.'));
@@ -120,7 +118,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
  * Implementation of hook_form_alter() .
  * Add subscription form to registration page
  */
-function mailchimp_form_alter($form_id, &$form) {
+function mailchimp_form_user_register_alter(&$form, &$form_state) {
   if ($form_id == 'user_register' && variable_get('mailchimp_user_register', TRUE)) {
     $account = new stdClass();
     $account->roles = array(2 => "authenticated user");
@@ -190,7 +188,7 @@ function mailchimp_cron() {
         $count += $ret['success_count'];
       }
 
-      watchdog('mailchimp', t('Updated !count records in MailChimp', array('!count' => $count)), WATCHDOG_NOTICE);
+      watchdog('mailchimp', 'Updated !count records in MailChimp', array('!count' => $count), WATCHDOG_NOTICE);
     }
   }
 }
@@ -198,61 +196,54 @@ function mailchimp_cron() {
 /**
  * Implementation of hook_menu.
  */
-function mailchimp_menu($may_cache) {
+function mailchimp_menu() {
   $items = array();
-  if ($may_cache) {
-    $items[] = array(
-      'path'     => 'mailchimp/subscribe',
-      'callback' => 'drupal_get_form',
-      'callback arguments' => array('mailchimp_subscribe_form'),
-      'title'    => t('Newsletter Subscription'),
-      'type'     => MENU_CALLBACK,
-      'access'   => TRUE,
-   );
-    $items[] = array(
-      'path'     => 'mailchimp/reset',
-      'callback' => 'mailchimp_reset',
-      'type'     => MENU_CALLBACK,
-      'access' => user_access('administer site configuration'),
-   );
-    $items[] = array(
-      'path'     => 'mailchimp/subscribe/message',
-      'callback' => 'mailchimp_subscribe_message',
-      'title'    => t('MailChump Subscription Message'),
-      'type'     => MENU_CALLBACK,
-      'access'   => TRUE,
-   );
-    $items[] = array(
-      'path'     => 'mailchimp/unsubscribe',
-      'callback' => 'drupal_get_form',
-      'callback arguments' => array('mailchimp_unsubscribe_form'),
-      'title'    => t('Newsletter Unsubscribe'),
-      'type'     => MENU_CALLBACK,
-      'access'   => TRUE,
-   );
-    $items[] = array(
-      'path'     => 'mailchimp/unsubscribe/success',
-      'callback' => 'mailchimp_unsubscribe_success',
-      'title'    => t('Unsubscription Confirmed'),
-      'type'     => MENU_CALLBACK,
-      'access'   => TRUE,
-   );
-    $items[] = array(
-      'path'     => 'mailchimp/unsubscribe/failure',
-      'callback' => 'mailchimp_unsubscribe_failure',
-      'title'    => t('Unsubscription Failed'),
-      'type'     => MENU_CALLBACK,
-      'access'   => TRUE,
-   );
-    $items[] = array(
-      'path' => 'admin/settings/mailchimp',
-      'title' => t('MailChimp'),
-      'description' => t('Manage MailChimp Settings.'),
-      'callback' => 'drupal_get_form',
-      'callback arguments' => array('mailchimp_admin_settings'),
-      'access' => user_access('administer site configuration'),
-      'type' => MENU_NORMAL_ITEM); // optional
-  }
+  $items['mailchimp/subscribe'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_subscribe_form'),
+    'title' => 'Newsletter Subscription' ,
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+  );
+  $items['mailchimp/subscribe/message'] = array(
+    'page callback' => 'mailchimp_subscribe_message',
+    'title' => 'MailChimp Subscription Message',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+  );
+  $items['mailchimp/reset'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_reset'),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('administer site configuration'),
+  );
+  $items['mailchimp/unsubscribe'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_unsubscribe_form'),
+    'title' => 'Newsletter Unsubscribe' ,
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+  );
+  $items['mailchimp/unsubscribe/success'] = array(
+    'page callback' => 'mailchimp_unsubscribe_success',
+    'title' => 'Unsubscription Confirmed' ,
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+  );
+  $items['mailchimp/unsubscribe/failure'] = array(
+    'page callback' => 'mailchimp_unsubscribe_failure',
+    'title' => 'Unsubscription Failed',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+  );
+  $items['admin/settings/mailchimp'] = array(
+    'title' => 'MailChimp',
+    'description' => 'Manage MailChimp Settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  ); // optional
   return $items;
 }
 
@@ -263,6 +254,8 @@ function mailchimp_reset() {
 }
 
 function mailchimp_admin_settings() {
+  module_load_include('php', 'mailchimp', 'MCAPI.class');
+  
     $form['mailchimp_account_info'] = array(
       '#type'       => 'fieldset',
       '#collapsible' => TRUE,
@@ -391,7 +384,7 @@ function mailchimp_admin_settings() {
           $form['mailchimp_user_register'] = array(
             '#type'           => 'checkbox',
             '#title'          => t('Show Subscription Options on User Registration Page'),
-            '#default_value'  => variable_get('mailchimp_registration', TRUE)
+            '#default_value'  => variable_get('mailchimp_user_register', TRUE)
          );
           $form['mailchimp_user_edit'] = array(
             '#type'           => 'checkbox',
@@ -497,23 +490,23 @@ function mailchimp_subscribe_form() {
 }
 
 
-function mailchimp_subscribe_form_submit($form_id, $form_values) {
+function mailchimp_subscribe_form_submit($form, &$form_state) {
   global $user;
+
   if ($q = _mailchimp_get_api_object()) {
     $lists =_mailchimp_get_available_lists($user, $q);
     $success = TRUE;
     foreach ($lists as $list) {
       $lid = $list['id'];
-      $sub_info = $q->listMemberInfo($lid, $form_values['list_'. $lid]['EMAIL']);
+      $sub_info = $q->listMemberInfo($lid, $form_state['values']['list_'. $lid]['EMAIL']);
       $is_subscribed = @$sub_info['status'] == 'subscribed';
       // add users who are not subscribed and checked the list
-      if ($form_values['list_'. $list['id']][$lid]  && !$is_subscribed) {
-        $success = $success && _mailchimp_subscribe_user($list, $form_values['list_'. $list['id']], TRUE, $q);
+      if ($form_state['values']['list_'. $list['id']][$lid]  && !$is_subscribed) {
+        $success = $success && _mailchimp_subscribe_user($list, $form_state['values']['list_'. $list['id']], TRUE, $q);
       }
     }
-
-    drupal_goto('mailchimp/subscribe/message', 'success='. $success);
   }
+  drupal_goto('mailchimp/subscribe/message', 'success='. $success);
 }
 
 function mailchimp_subscribe_message() {
@@ -521,7 +514,7 @@ function mailchimp_subscribe_message() {
     return variable_get('mailchimp_subscription_success_message', SUBSCRIPTION_SUCCESS);
   }
   else {
-    return variable_get('mailchimp_subscription_failure_message', SUBSCRIPTION_SUCCESS);
+    return variable_get('mailchimp_subscription_failure_message', SUBSCRIPTION_FAILURE);
   }
 }
 
@@ -544,31 +537,31 @@ function mailchimp_unsubscribe_form($form_values = array()) {
   return $form;
 }
 
-function mailchimp_unsubscribe_form_submit($form_values = array()) {
+function mailchimp_unsubscribe_form_submit($form, &$form_state) {
   if ($q || $q = _mailchimp_get_api_object()) {
     $success = TRUE;
     foreach ((array)$q->lists() as $list) {
-      $success = $success && _mailchimp_unsubscribe_user($list, $form['EMAIL'], TRUE, $q);
+      $success = $success && _mailchimp_unsubscribe_user($list, $form_state['values']['EMAIL'], TRUE, $q);
       if ($success) {
-        drupal_set_message(variable_get('mailchimp_unsubscription_success_message', SUBSCRIPTION_SUCCESS));
+        drupal_set_message(variable_get('mailchimp_unsubscription_success_message', UNSUBSCRIPTION_SUCCESS));
       }
       else {
-        drupal_set_message(variable_get('mailchimp_unsubscription_failure_message', SUBSCRIPTION_SUCCESS));
+        drupal_set_message(variable_get('mailchimp_unsubscription_failure_message', UNSUBSCRIPTION_FAILURE));
       }
     }
   }
 }
 
 
-function mailchimp_unsubscribe_form_validate($form_id, $form_values) {
-  if (!$form_values['EMAIL']) {
+function mailchimp_unsubscribe_form_validate($form, &$form_state) {
+  if (!$form_state['values']['EMAIL']) {
     form_set_error('EMAIL', t('Please enter your email address.'));
   }
   else  {
     if ($q || $q = _mailchimp_get_api_object()) {
       $subscribed = FALSE;
       foreach ((array)$q->lists() as $list) {
-        $subscribed = $subscribed || _mailchimp_is_subscribed($list['id'], $form_values['EMAIL'], $q);
+        $subscribed = $subscribed || _mailchimp_is_subscribed($list['id'], $form_state['values']['EMAIL'], $q);
       }
       if (!$subscribed) {
       form_set_error('', t('That email address could not be found.'));
@@ -787,6 +780,8 @@ function _mailchimp_get_required_lists($lists) {
  * Get a Mailchimp API object for communication with the mailchimp server
  */
 function _mailchimp_get_api_object() {
+  module_load_include('php', 'mailchimp', 'MCAPI.class');
+  
   $q = new MCAPI(variable_get('mailchimp_username', ''), variable_get('mailchimp_password', ''));
   if ($q->errorCode) {
     watchdog('mailchimp', $q->errorMessage, WATCHDOG_ERROR);
