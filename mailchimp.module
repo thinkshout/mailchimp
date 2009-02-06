@@ -119,7 +119,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
  * Add subscription form to registration page
  */
 function mailchimp_form_user_register_alter(&$form, &$form_state) {
-  if ($form_id == 'user_register' && variable_get('mailchimp_user_register', TRUE)) {
+  if (variable_get('mailchimp_user_register', TRUE)) {
     $account = new stdClass();
     $account->roles = array(2 => "authenticated user");
 
@@ -255,7 +255,7 @@ function mailchimp_reset() {
 
 function mailchimp_admin_settings() {
   module_load_include('php', 'mailchimp', 'MCAPI.class');
-  
+
     $form['mailchimp_account_info'] = array(
       '#type'       => 'fieldset',
       '#collapsible' => TRUE,
@@ -781,7 +781,7 @@ function _mailchimp_get_required_lists($lists) {
  */
 function _mailchimp_get_api_object() {
   module_load_include('php', 'mailchimp', 'MCAPI.class');
-  
+
   $q = new MCAPI(variable_get('mailchimp_username', ''), variable_get('mailchimp_password', ''));
   if ($q->errorCode) {
     watchdog('mailchimp', $q->errorMessage, WATCHDOG_ERROR);
