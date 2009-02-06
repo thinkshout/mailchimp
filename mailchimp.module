@@ -336,7 +336,7 @@ function mailchimp_admin_settings() {
               $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['mailchimp_list_'. $list['id'] .'_mergevars'] = array(
                 '#type'         => 'fieldset',
                 '#title'        => t('Merge Variables'),
-                '#description'  => t('Select Drupal user variables to send to Mailchimp as Merge Variables. Available Drupal variables are any Profile, Bio module or Token variables for the given user. For more information on Merge Variables, see the !doc', array('!doc' => l(t('Mailchimp Documentation'), 'http://server.iad. liveperson.net/hc/s-31286565/cmd/kbresource/kb-8214439208090042855/view_question!PAGETYPE?sq=merge%2bvariables&sf=101113&sg=0&st=188569&documentid=143258&action=view'))),
+                '#description'  => t('Select Drupal user variables to send to Mailchimp as Merge Variables. Available Drupal variables are any Profile or Token variables for the given user. For more information on Merge Variables, see the !doc', array('!doc' => l(t('Mailchimp Documentation'), 'http://server.iad. liveperson.net/hc/s-31286565/cmd/kbresource/kb-8214439208090042855/view_question!PAGETYPE?sq=merge%2bvariables&sf=101113&sg=0&st=188569&documentid=143258&action=view'))),
                 '#tree'         => FALSE,
              );
               //@TODO: handle interest categories coming from MC
