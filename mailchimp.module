@@ -181,7 +181,7 @@ function mailchimp_cron() {
 
           if ($ret['error_count'] > 0) {
             foreach ((array)$ret['errors'] as $error) {
-              watchdog('mailchimp', $error['email_address'] .': '. $error['message'], WATCHDOG_ERROR);
+              watchdog('mailchimp', $error['email_address'] .': '. $error['message'], array(), WATCHDOG_ERROR);
             }
           }
         }
