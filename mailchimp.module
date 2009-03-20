@@ -57,7 +57,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
       break;
       case "insert":
       case "update":
-        if ($q = _mailchimp_get_api_object()) {
+        if (!empty($edit) && $q = _mailchimp_get_api_object()) {
           $lists = _mailchimp_get_available_lists($account, $q);
           foreach ($lists as $list) {
             if (variable_get('mailchimp_list_'. $list['id'] .'_listtype', '') === 'required') {
