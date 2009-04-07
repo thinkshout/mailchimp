@@ -19,11 +19,11 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
           foreach ((array)$q->lists() as $list) {
             $ret = $ret || _mailchimp_unsubscribe_user($list, $account->mail, TRUE, $q);
             if (!$ret) {
-              watchdog('mailchimp', $q->errorMessage, 'error');
+              watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
             }
           }
           if (!$ret) {
-            watchdog('mailchimp', $q->errorMessage, 'error');
+            watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
           }
         }
       break;
@@ -104,7 +104,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
                 }
               }
               if (!$ret) {
-                watchdog('mailchimp', $q->errorMessage, 'error');
+                watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
               }
             }
           }
@@ -708,12 +708,10 @@ function _mailchimp_subscribe_user($list, $merge_vars, $message = TRUE, $q = NUL
   }
 
   if ($success) {
-    watchdog('mailchimp',
-      t('@email has subscribed to @list.', array('@email' => $merge_vars['EMAIL'], '@list' => $list['name'])));
+    watchdog('mailchimp', '@email has subscribed to @list.', array('@email' => $merge_vars['EMAIL'], '@list' => $list['name']), WATCHDOG_NOTICE);
   }
   else {
-    watchdog('mailchimp',
-      t('@email has failed to subscribed to @list.', array('@email' => $merge_vars['EMAIL'], '@list' => $list['name'])), WATCHDOG_WARNING);
+    watchdog('mailchimp', '@email has failed to subscribed to @list.', array('@email' => $merge_vars['EMAIL'], '@list' => $list['name']), WATCHDOG_WARNING);
   }
 
   return $success;
@@ -784,7 +782,7 @@ function _mailchimp_get_api_object() {
 
   $q = new MCAPI(variable_get('mailchimp_username', ''), variable_get('mailchimp_password', ''));
   if ($q->errorCode) {
-    watchdog('mailchimp', $q->errorMessage, WATCHDOG_ERROR);
+    watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
     return NULL;
   }
   return $q;
