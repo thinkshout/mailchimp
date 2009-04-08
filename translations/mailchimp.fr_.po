@@ -1,0 +1,277 @@
+# $Id$
+#
+# French translation of Drupal (general)
+# Copyright 2009 Jérémy Chatard <jchatard@breek.fr>
+# Generated from files:
+#  mailchimp.module,v 1.2.2.1.2.3.2.5 2009/02/26 20:23:44 loubabe
+#  mailchimp.info: n/a
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2009-04-07 17:58+0200\n"
+"PO-Revision-Date: 2009-04-08 10:24+0100\n"
+"Last-Translator: Jérémy Chatard <jchatard@breek.fr>\n"
+"Language-Team: French <jchatard@breek.fr>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+#: mailchimp.module:9
+msgid "Thank you, you have been successfully subscribed."
+msgstr "Merci, votre abonnement vient d'être pris en compte."
+
+#: mailchimp.module:10
+msgid "We were unable to subscribe you at this time. Please try again later."
+msgstr "Nous n'avons pas pu vous abonner pour le moment. Merci d'essayer ultérieurement."
+
+#: mailchimp.module:11
+msgid "Thank you, you have been successfully unsubscribed."
+msgstr "Merci, vous venez de vous désabonner."
+
+#: mailchimp.module:12
+msgid "We were unable to unsubscribe you at this time. Please try again later."
+msgstr "Nous n'avons pas pu vous désabonner pour le moment. Merci d'essayer ultérieurement."
+
+#: mailchimp.module:49;142
+msgid "Newsletter subscriptions"
+msgstr "Abonnements à la newsletter"
+
+#: mailchimp.module:273
+msgid "Current configured account is for: @username."
+msgstr "Le compte est actuellement configuré pour : @username"
+
+#: mailchimp.module:300
+msgid "Roles"
+msgstr "Rôles"
+
+#: mailchimp.module:301
+msgid "Choose which roles may subscribe to this list. Select the anonymous user role to have the list appear on the !subscribe page. Select the authenticated user role to have the list appear on the !signup page. For all other roles, the list will appear on the settings page for users with that role."
+msgstr "Choisissez les rôles pouvant s'abonner à cette newsletter. Sélectionnez le rôle anonyme pour la newsletter apparaîsse dans la page d'!subscribe. Sélectionnez le rôle authentifié pour que la newsletter apparaîsse sur la page d'!subscribe. Pour tous les autres rôles, la newsletter apparaîtra sur la page de paramètres des comptes utilisateurs du rôle."
+
+#: mailchimp.module:301;205
+msgid "Newsletter Subscription"
+msgstr "Abonnement à la newsletter"
+
+#: mailchimp.module:301
+msgid "User Registration"
+msgstr "Inscription utilisateur"
+
+#: mailchimp.module:315
+msgid "List Description"
+msgstr "Description de la newsletter"
+
+#: mailchimp.module:317
+msgid "This description will be shown to the user on the list signup and user account settings pages"
+msgstr "La description sera affichée à l'utilisateur sur la page des newsletters et sur les pages de compte utilisateurs"
+
+#: mailchimp.module:322
+msgid "Subscription Method"
+msgstr "Méthode d'abonnement"
+
+#: mailchimp.module:325
+msgid "<strong>Opt-in:</strong> Users must sign up to recieve messages.<br/><strong>Opt-out: </strong> Users are automatically signed up but may unsubscribe.<br/><strong>Required: </strong> Users will remain on the list as long as they have an account and cannot unsubscribe."
+msgstr "<strong>Opt-in :</strong> les utilisateurs doivent s'abonner pour recevoir les newsletters.<br /><strong>Opt-out :</strong> les utilisateurs sont automatiquement abonnés, mais peuvent se désabonner.<br /><strong>Obligatoire :</strong> les utilisateurs seront toujours abonnés à la newsletter tant qu'ils auront un compte et ne pourront pas se désabonner."
+
+#: mailchimp.module:330
+msgid "Require subscribers to Double Opt-in"
+msgstr "Obliger les utilisateurs à utiliser un double Opt-in"
+
+#: mailchimp.module:332
+msgid "New subscribers will be sent a link with an email they must follow to confirm their subscription."
+msgstr "Les nouveaux abonnés recevront un email contenant un lien  qu'il devront cliquer pour confirmer leur abonnement."
+
+#: mailchimp.module:339
+msgid "Merge Variables"
+msgstr "Merge Variables"
+
+#: mailchimp.module:340
+msgid "Select Drupal user variables to send to Mailchimp as Merge Variables. Available Drupal variables are any Profile or Token variables for the given user. For more information on Merge Variables, see the !doc"
+msgstr "Sélectionnez les variables utilisateurs Drupal qui doivent être envoyées à MailChimp en tant que Merge Variables. Les variables Drupal disponibles sont proviennent des modules Profile ou Token pour un utilisateur. Pour plus d'information sur les Merge Variables, consultez la !doc."
+
+#: mailchimp.module:340
+msgid "Mailchimp Documentation"
+msgstr "Documentation de MailChimp"
+
+#: mailchimp.module:366
+msgid "Subscription Success Message"
+msgstr "Message d'abonnement réussi"
+
+#: mailchimp.module:371
+msgid "Subscription Failure Message"
+msgstr "Message d'échec à l'abonnement"
+
+#: mailchimp.module:376
+msgid "Unsubscription Success Message"
+msgstr "Message de succès lors du désabonnement"
+
+#: mailchimp.module:381
+msgid "Unsubscription Failure Message"
+msgstr "Message d'échec lors du désabonnement"
+
+#: mailchimp.module:387
+msgid "Show Subscription Options on User Registration Page"
+msgstr "Afficher les options d'abonnement sur la page d'inscription"
+
+#: mailchimp.module:392
+msgid "Show Subscription Options on User Edit Screen"
+msgstr "Afficher les options sur la page d'édition du compte utilisateur"
+
+#: mailchimp.module:397
+msgid "Sync Required Lists During Cron"
+msgstr "Synchroniser les newsletters obligatoires lors de l'exécution du Cron."
+
+#: mailchimp.module:399
+msgid "If this is set, users will be subscribed to the required list during cron runs. Otherwise subscription will take place when a user is added/edited."
+msgstr "Si cette option est activée, les utilisateurs seront abonnés aux newsletters obligatoires à chaque exécution du cron. Sinon les abonnements seront créés lors l'ajout/modification des utilisateurs."
+
+#: mailchimp.module:403
+msgid "You do not have any valid MailChimp mailing lists."
+msgstr "Vous n'avez aucune newsletter MailChimp valide."
+
+#: mailchimp.module:407
+msgid "Could not login to mailchimp. Please check your username and password."
+msgstr "Impossible de se connecter à MailChimp. Veuillez vérifier votre nom d'utilisateur et votre mot de passe."
+
+#: mailchimp.module:410
+msgid "Could not retrieve info for mailchimp. The following error was returned: %error."
+msgstr "Impossible d'obtenir les informations de MailChimp. L'erreur suivante a été retournée : %error."
+
+#: mailchimp.module:413
+msgid "Could not retrieve info for mailchimp for an unknown reason. Please try again later"
+msgstr "Impossible d'obtenir les informations de MailChimp pour une raison inconnue. Merci d'essayer plus tard."
+
+#: mailchimp.module:419
+msgid "Mailchimp username"
+msgstr "Nom d'utilisateur MailChimp"
+
+#: mailchimp.module:422
+msgid "The username used to login to your MailChimp account."
+msgstr "Le nom d'utilisateur utilisé pour vous connecter à votre compte MailChimp."
+
+#: mailchimp.module:426
+msgid "Mailchimp password"
+msgstr "Mot de passe MailChimp"
+
+#: mailchimp.module:429
+msgid "The password used to login to your MailChimp account."
+msgstr "Le mot de passe utilisé pour vous identifier à votre compte MailChimp."
+
+#: mailchimp.module:458
+msgid "Subscribe to the @newsletter newsletter"
+msgstr "S'abonner à la newsletter @newsletter"
+
+#: mailchimp.module:485
+msgid "Sign Up!"
+msgstr "S'abonner !"
+
+#: mailchimp.module:526
+msgid "Use this form to unsubscribe from all of our newsletters."
+msgstr "Utiliser ce formulaire pour vous désabonner de toutes nos newsletters."
+
+#: mailchimp.module:531;585
+msgid "Email Address"
+msgstr "Adresse email"
+
+#: mailchimp.module:536
+msgid "Unsubscribe"
+msgstr "Désabonner"
+
+#: mailchimp.module:559
+msgid "Please enter your email address."
+msgstr "Veuillez entrer votre adresse email."
+
+#: mailchimp.module:568
+msgid "That email address could not be found."
+msgstr "Cette adresse email n'a pas été trouvée."
+
+#: mailchimp.module:572
+msgid "There was an error processing your request. Please try again later."
+msgstr "Une erreur est survenue lors de l'exécution de votre requête. Merci de ré-essayer ultérieurement."
+
+#: mailchimp.module:584
+msgid "Username"
+msgstr "Nom d'utilisateur"
+
+#: mailchimp.module:586
+msgid "User ID"
+msgstr "Identifiant utilisateur"
+
+#: mailchimp.module:587
+msgid "User's Signature"
+msgstr "Signature de l'utilisateur"
+
+#: mailchimp.module:591
+msgid "User: !field"
+msgstr "Utilisateur : !field"
+
+#: mailchimp.module:600
+msgid "Profile: !cat - !field"
+msgstr "Profil : !cat - !field"
+
+#: mailchimp.module:609
+msgid "Token: !field"
+msgstr "Token : !field"
+
+#: mailchimp.module:703
+msgid "You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription."
+msgstr "Vous avez choisi de vous abonner à %list. Un email va être envoyé à votre adresse. Cliquez sur le lien présent dans l'email pour confirmer votre abonnement."
+
+#: mailchimp.module:706
+msgid "You have subscribed to %list."
+msgstr "Vous vous êtes abonné à %list."
+
+#: mailchimp.module:739
+msgid "You have unsubscribed from %list."
+msgstr "Vous vous êtes désabonné de %list."
+
+#: mailchimp.module:192;712;715;0
+msgid "mailchimp"
+msgstr "mailchimp"
+
+#: mailchimp.module:192
+msgid "Updated !count records in MailChimp"
+msgstr "!count enregistrement ont été mis à jour dans MailChimp."
+
+#: mailchimp.module:712
+msgid "@email has subscribed to @list."
+msgstr "@email s'est abonné à %list."
+
+#: mailchimp.module:715
+msgid "@email has failed to subscribed to @list."
+msgstr "@email n'a pas pu s'abonner à @list."
+
+#: mailchimp.module:211
+msgid "MailChimp Subscription Message"
+msgstr "Message d'abonnement de MailChimp"
+
+#: mailchimp.module:224
+msgid "Newsletter Unsubscribe"
+msgstr "Désabonnement de la newsletter"
+
+#: mailchimp.module:230
+msgid "Unsubscription Confirmed"
+msgstr "Désabonnement confirmé"
+
+#: mailchimp.module:236
+msgid "Unsubscription Failed"
+msgstr "Echec du désabonnement"
+
+#: mailchimp.module:241
+#: mailchimp.info:0
+msgid "MailChimp"
+msgstr "MailChimp"
+
+#: mailchimp.module:242
+msgid "Manage MailChimp Settings."
+msgstr "Gérer les paramètres de MailChimp."
+
+#: mailchimp.info:0
+msgid "Mailchimp"
+msgstr "MailChimp"
+
+#: mailchimp.info:0
+msgid "Mailchimp email service integration."
+msgstr "Intégration du service de mailing MailChimp."
+
