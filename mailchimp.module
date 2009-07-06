@@ -603,7 +603,7 @@ function mailchimp_mailchimp_merge_keys() {
   }
 
   if (function_exists('token_get_list')) {
-    $tokens = token_get_list('user');
+    $tokens = token_get_list(array('user', 'order'));
     foreach ($tokens['user'] as $token => $name) {
       $out['token_'. $token] = t('Token: !field', array('!field' => $name));
     }
@@ -752,7 +752,7 @@ function _mailchimp_get_available_lists($user, $q = NULL) {
       if (!empty($list)) {
         foreach ((array)$user->roles as $rid => $info) {
           if (variable_get('mailchimp_list_'. $list['id'] .'_role_'. $rid, 0)) {
-            $lists[] = $list;
+            $lists[$list['id']] = $list;
           }
         }
       }
