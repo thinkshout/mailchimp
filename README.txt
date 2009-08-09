@@ -19,4 +19,5 @@ Installing Mailchimp:
   Download the Mailchimp release for your version.
   Untar it in the modules directory.
   Activate the module through drupals administrative interface.
+  IMPORTANT: Please ensure you have at least one active list created in MailChimp.
   
