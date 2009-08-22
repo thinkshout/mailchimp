@@ -57,6 +57,7 @@ function mailchimp_form_user_profile_form_alter(&$form, &$form_state){
           '#title'        => t('Newsletter subscriptions'),
           '#weight'       => 5,
           '#collapsible'  => TRUE,
+          '#attributes'   => array('class' => 'mailchimp-newsletters'),
       );
       $form['mailchimp_list'] = array_merge($form['mailchimp_list'], $list_form);
     }
@@ -140,6 +141,7 @@ function mailchimp_form_user_register_alter(&$form, &$form_state) {
             '#title'        => t('Newsletter subscriptions'),
             '#weight'       => 5,
             '#collapsible'  => TRUE,
+            '#attributes'   => array('class' => 'mailchimp-newsletters'),
          );
         $form['chimpmail_lists'] = array_merge($form['chimpmail_lists'], $list_form);
 
@@ -447,7 +449,8 @@ function mailchimp_subscribe_form() {
             '#type'   => 'fieldset',
             '#title'  => $list['name'],
             '#collapsible' => TRUE,
-            '#tree'   => TRUE
+            '#tree'   => TRUE,
+            '#attributes'   => array('class' => 'mailchimp-newsletter mailchimp-newsletter-' . $list['id'])
          );
 
           $checked = variable_get('mailchimp_list_'. $list['id'] .'_listtype', 'optin') == "optout" ? 1 : 0;
