@@ -616,10 +616,19 @@ function mailchimp_mailchimp_merge_keys() {
 /**
  * Implementation of hook_mailchimp_merge_values
  */
-
 function mailchimp_mailchimp_merge_values($user) {
   $out = array();
   $out = (array)$user;
+  foreach((array)$user as $key => $value){
+    if(is_array($value) && $key != 'role'){
+      $out[$key] = implode('/', $value);
+    } elseif(in_array($key, array('login', 'access', 'created'))){
+      $out[$key] = date('c', $value);
+    }
+    elseif($key != 'roles'){
+      $out[$key] = $value;
+    }
+  }
   $out = array_merge($out, _mailchimp_get_user_tokens($user));
   return $out;
 }
