@@ -436,9 +436,9 @@ function mailchimp_admin_settings() {
 
 function mailchimp_subscribe_form() {
   global $user;
-
+  
   if ($user->uid) {
-    drupal_set_message(t('You can manage your newsletter subscriptions from your '. l('user account page', 'user') .'.'));
+    drupal_set_message(t('You can manage your newsletter subscriptions from your <a href="!account_url">user account page</a>.', array('!account_url' => url('user'))));
   }
   else {
     if ($q = _mailchimp_get_api_object()) {
@@ -462,10 +462,7 @@ function mailchimp_subscribe_form() {
          );
 
           foreach ((array)$q->listMergeVars($list['id']) as $mergevar) {
-            $form['list_'. $list['id']][$mergevar['tag']] = array(
-              '#type'           => 'textfield',
-              '#title'          => $mergevar['name'],
-           );
+            $form['list_'. $list['id']][$mergevar['tag']] = _mailchimp_insert_drupal_form_tag($mergevar);
           }
 
           if ($intgroup = $q->listInterestGroups($list['id'])) {
@@ -491,6 +488,55 @@ function mailchimp_subscribe_form() {
   }
 }
 
+function _mailchimp_insert_drupal_form_tag($mergevar) {
+  
+  // Insert common FormAPI properties
+  $input = array(
+    '#title' => $mergevar['name'],
+    '#weight' => $mergevar['order'],
+    '#required' => $mergevar['req'],
+    '#default_value' => $mergevar['default'],
+  );
+  
+  switch ($mergevar['field_type']) {
+    case 'dropdown':
+      // dropdown is mapped to <select> element in Drupal Form API
+      $input['#type'] = 'select';
+      
+      // Creates options, we must delete array keys to have revealant information
+      // on MailChimp
+      foreach ($mergevar['choices'] as $choice) {
+        $choices[$choice] = $choice;
+      }
+      
+      $input['#options'] = $choices;
+      break;
+    case 'radio':
+      // radio is mapped to <input type='radio' /> i.e. 'radios' element in Drupal Form API 
+      $input['#type'] = 'radios';
+      
+      // Creates options, we must delete array keys to have revealant information
+      // on MailChimp
+      foreach ($mergevar['choices'] as $choice) {
+        $choices[$choice] = $choice;
+      }
+      
+      $input['#options'] = $choices;
+      break;
+    
+    default:
+      // This is a standard input[type=text] or something we can't handle with Drupal FormAPI
+      $input['#type'] = 'textfield';
+      break;
+  }
+  
+  // Special cases for MailChimp hidden defined fields
+  if ($mergevar['public'] == FALSE) {
+    $input['#type'] = 'hidden';
+  }
+  
+  return $input;
+}
 
 function mailchimp_subscribe_form_submit($form, &$form_state) {
   global $user;
@@ -503,7 +549,7 @@ function mailchimp_subscribe_form_submit($form, &$form_state) {
       $sub_info = $q->listMemberInfo($lid, $form_state['values']['list_'. $lid]['EMAIL']);
       $is_subscribed = @$sub_info['status'] == 'subscribed';
       // add users who are not subscribed and checked the list
-      if ($form_state['values']['list_'. $list['id']][$lid]  && !$is_subscribed) {
+      if ($form_state['values']['list_'. $list['id']][$lid] == 1  && !$is_subscribed) {
         $success = $success && _mailchimp_subscribe_user($list, $form_state['values']['list_'. $list['id']], TRUE, $q);
       }
     }
