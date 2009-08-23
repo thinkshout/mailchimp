@@ -78,34 +78,27 @@ function mailchimp_user_profile_submit($form, &$form_state){
     // required lists are hidden from user, update/add accordingly
       if (variable_get('mailchimp_list_'. $list['id'] .'_listtype', '') === 'required') {
         if (!variable_get('mailchimp_cron', FALSE) ) {
-          if ($user->mail !== $form_state['values']['mail']) {
-            $ret = $q->listUnsubscribe($list['id'], $user->mail, FALSE, FALSE, FALSE);
-          }
           $userinfo = _mailchimp_load_user_list_mergevars($user->uid, $list['id'], $q->listMergeVars($list['id']));
           $userinfo['EMAIL'] = $form_state['values']['mail'];
-          $ret = _mailchimp_subscribe_user($list, $userinfo, FALSE, $q);
+          $ret = _mailchimp_subscribe_user($list, $user->mail, $userinfo, FALSE, $q);
         }
       } else { // add user to selected lists
         $is_subscribed = _mailchimp_is_subscribed($list['id'], $user->mail, $q);
         $ret = TRUE;
 
         // subscribe the user if they are not previously subscribed and want to be
-        if (!$is_subscribed && @$form_state['values']['mailchimp_list_'. $list['id']]) {
+        // OR unsubscribe and resubscribe a user who has changed his or her email address
+         if ((!$is_subscribed && @$form_state['values']['mailchimp_list_'. $list['id']]) ||
+          $is_subscribed && $user->mail !== $form_state['values']['mail']) {
           $merge_vars = _mailchimp_load_user_list_mergevars($user->uid, $list['id'], $q->listMergeVars($list['id']));
           $merge_vars['EMAIL'] = $form_state['values']['mail'];
-          $ret = _mailchimp_subscribe_user($list, $merge_vars, TRUE, $q);
+          $ret = _mailchimp_subscribe_user($list, $user->mail, $merge_vars, TRUE, $q);
         }
         // unsubscribe a subscribed user who unchecked the box for this newsletter
         else if ($is_subscribed && !@$form_state['values']['mailchimp_list_'. $list['id']]) {
             $ret = _mailchimp_unsubscribe_user($list, $user->mail, TRUE, $q);
-          }
-          // unsubscribe and resubscribe a user who has changed his or her email address
-          else if ($is_subscribed && $user->mail !== $form_state['values']['mail']) {
-              $merge_vars = _mailchimp_load_user_list_mergevars($user->uid, $list['id'], $q->listMergeVars($list['id']));
-              $merge_vars['EMAIL'] = $form_state['values']['mail'];
-              $ret = _mailchimp_update_user($list, $user->mail, $merge_vars, $q);
-            }
-
+        }
+ 
         if (!$ret) {
           watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
         }
@@ -546,11 +539,12 @@ function mailchimp_subscribe_form_submit($form, &$form_state) {
     $success = TRUE;
     foreach ($lists as $list) {
       $lid = $list['id'];
-      $sub_info = $q->listMemberInfo($lid, $form_state['values']['list_'. $lid]['EMAIL']);
+      $email = $form_state['values']['list_'. $lid]['EMAIL'];
+      $sub_info = $q->listMemberInfo($lid, $email);
       $is_subscribed = @$sub_info['status'] == 'subscribed';
       // add users who are not subscribed and checked the list
       if ($form_state['values']['list_'. $list['id']][$lid] == 1  && !$is_subscribed) {
-        $success = $success && _mailchimp_subscribe_user($list, $form_state['values']['list_'. $list['id']], TRUE, $q);
+        $success = $success && _mailchimp_subscribe_user($list, $email, $form_state['values']['list_'. $list['id']], TRUE, $q);
       }
     }
   }
@@ -747,15 +741,15 @@ function _mailchimp_is_subscribed($listid, $mail, $q = NULL) {
 /**
  * Subscribe the given user to the given list if he/she is not already subscribed
  */
-function _mailchimp_subscribe_user($list, $merge_vars, $message = TRUE, $q = NULL) {
+function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $q = NULL) {
   if ($q || $q = _mailchimp_get_api_object()) {
     $double_optin   = variable_get('mailchimp_list_'. $list['id'] .'_doublein', 0);
 
-    if (_mailchimp_is_subscribed($list['id'], $merge_vars['EMAIL'], $q)) {
-      $success = $q->listUpdateMember($list['id'], $merge_vars['EMAIL'], $merge_vars);
+    if (_mailchimp_is_subscribed($list['id'], $email, $q)) {
+      $success = $q->listUpdateMember($list['id'], $email, $merge_vars);
     }
     else {
-      $success = $q->listSubscribe($list['id'], $merge_vars['EMAIL'], $merge_vars, 'html', $double_optin);
+      $success = $q->listSubscribe($list['id'], $email, $merge_vars, 'html', $double_optin);
 
       if ($message && $success && $double_optin) {
         drupal_set_message(t('You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription.', array('%list' => $list['name'])));
@@ -773,16 +767,6 @@ function _mailchimp_subscribe_user($list, $merge_vars, $message = TRUE, $q = NUL
     watchdog('mailchimp', '@email has failed to subscribed to @list.', array('@email' => $merge_vars['EMAIL'], '@list' => $list['name']), WATCHDOG_WARNING);
   }
 
-  return $success;
-}
-
-/**
- * Update the given user's subscrition to the given list
- */
-function _mailchimp_update_user($list, $mail, $merge_vars, $q = NULL) {
-  if ($q || $q = _mailchimp_get_api_object()) {
-    $q->listUpdateMember($list['id'], $mail, $merge_vars);
-  }
   return $success;
 }
 
