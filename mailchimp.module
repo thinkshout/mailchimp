@@ -15,22 +15,36 @@ define('UNSUBSCRIPTION_FAILURE', t('We were unable to unsubscribe you at this ti
  * Implementation of hook_user
  */
 function mailchimp_user($op, &$edit, &$account, $category = NULL) {
-  switch ($op) {
-  // delete a user from MC lists
-    case "delete":
-      if ($q = _mailchimp_get_api_object()) {
-        foreach ((array)$q->lists() as $list) {
-          $ret = $ret || _mailchimp_unsubscribe_user($list, $account->mail, TRUE, $q);
-          if (!$ret) {
-            watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
+  if(in_array($op, array('insert', 'delete', 'update'))){
+    $q = _mailchimp_get_api_object();
+    foreach(_mailchimp_get_required_lists($q->lists()) as $list){
+      switch ($op) {
+      // delete a user from MC list
+        case "delete":
+          $ret = _mailchimp_unsubscribe_user($list, $account->mail, TRUE, $q);
+          break;
+        // insert or update a user to/in a MC list
+        case 'insert':
+        case 'update':
+        // don't repeat if already managing via cron
+          if (!variable_get('mailchimp_cron', FALSE) ) {
+            $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list['id'], $q->listMergeVars($list['id']));
+            dpm($edit);
+            $userinfo['EMAIL'] = $edit['values']['mail'];
+            $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
           }
-        }
-        if (!$ret) {
-          watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
-        }
+          break;
       }
-      break;
+
+      if ($ret) {
+        watchdog('mailchimp', 'MailChimp: %email updated in list %list on action %action',
+            array('%email' => $account->mail, '%list' => $list['name'], '%action' => $op), WATCHDOG_NOTICE);
+      } else {
+        watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
+      }
+    }
   }
+
 }
 
 /**
@@ -75,14 +89,8 @@ function mailchimp_user_profile_submit($form, &$form_state){
     global $user;
     $lists = _mailchimp_get_available_lists($user, $q);
     foreach ($lists as $list) {
-    // required lists are hidden from user, update/add accordingly
-      if (variable_get('mailchimp_list_'. $list['id'] .'_listtype', '') === 'required') {
-        if (!variable_get('mailchimp_cron', FALSE) ) {
-          $userinfo = _mailchimp_load_user_list_mergevars($user->uid, $list['id'], $q->listMergeVars($list['id']));
-          $userinfo['EMAIL'] = $form_state['values']['mail'];
-          $ret = _mailchimp_subscribe_user($list, $user->mail, $userinfo, FALSE, $q);
-        }
-      } else { // add user to selected lists
+    // ignore required lists, they are handled via hook_user
+      if (variable_get('mailchimp_list_'. $list['id'] .'_listtype', '') !== 'required') {
         $is_subscribed = _mailchimp_is_subscribed($list['id'], $user->mail, $q);
         $ret = TRUE;
 
@@ -746,9 +754,11 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
     $double_optin   = variable_get('mailchimp_list_'. $list['id'] .'_doublein', 0);
 
     if (_mailchimp_is_subscribed($list['id'], $email, $q)) {
+      $action = 'updated in';
       $success = $q->listUpdateMember($list['id'], $email, $merge_vars);
     }
     else {
+      $action = 'subscribed to';
       $success = $q->listSubscribe($list['id'], $email, $merge_vars, 'html', $double_optin);
 
       if ($message && $success && $double_optin) {
@@ -761,7 +771,8 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
   }
 
   if ($success) {
-    watchdog('mailchimp', '@email has subscribed to @list.', array('@email' => $merge_vars['EMAIL'], '@list' => $list['name']), WATCHDOG_NOTICE);
+    watchdog('mailchimp', '@email was @action list @list.',
+      array('@action' => $action, '@email' => $merge_vars['EMAIL'], '@list' => $list['name']), WATCHDOG_NOTICE);
   }
   else {
     watchdog('mailchimp', '@email has failed to subscribed to @list.', array('@email' => $merge_vars['EMAIL'], '@list' => $list['name']), WATCHDOG_WARNING);
