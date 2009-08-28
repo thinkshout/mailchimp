@@ -29,8 +29,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
         // don't repeat if already managing via cron
           if (!variable_get('mailchimp_cron', FALSE) ) {
             $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list['id'], $q->listMergeVars($list['id']));
-            dpm($edit);
-            $userinfo['EMAIL'] = $edit['values']['mail'];
+            $userinfo['EMAIL'] = $edit['mail'];
             $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
           }
           break;
