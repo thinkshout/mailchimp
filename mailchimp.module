@@ -242,11 +242,19 @@ function mailchimp_menu() {
       'description' => 'Manage MailChimp Settings.',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('mailchimp_admin_settings'),
-      'access arguments' => array('administer site configuration'),
+      'access arguments' => array('administer mailchimp'),
       'type' => MENU_NORMAL_ITEM,
   ); // optional
   return $items;
 }
+
+/**
+ * Implementation of hook_perm()
+ */
+function mailchimp_perm() {
+  return array('administer mailchimp');
+}
+
 
 function mailchimp_reset() {
   variable_del('mailchimp_username');
