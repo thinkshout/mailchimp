@@ -665,8 +665,10 @@ function mailchimp_mailchimp_merge_keys() {
 
   if (function_exists('token_get_list')) {
     $tokens = token_get_list(array('user', 'order'));
-    foreach ($tokens['user'] as $token => $name) {
-      $out['token_'. $token] = t('Token: !field', array('!field' => $name));
+    if(is_array($tokens['user'])){
+      foreach ($tokens['user'] as $token => $name) {
+        $out['token_'. $token] = t('Token: !field', array('!field' => $name));
+      }
     }
   }
 
