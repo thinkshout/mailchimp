@@ -203,13 +203,7 @@ function mailchimp_menu() {
       'page callback' => 'drupal_get_form',
       'page arguments' => array('mailchimp_subscribe_form'),
       'title' => 'Newsletter Subscription' ,
-      'type' => MENU_CALLBACK,
-      'access callback' => TRUE,
-  );
-  $items['mailchimp/subscribe/message'] = array(
-      'page callback' => 'mailchimp_subscribe_message',
-      'title' => 'MailChimp Subscription Message',
-      'type' => MENU_CALLBACK,
+      'type' => MENU_NORMAL_ITEM,
       'access callback' => TRUE,
   );
   $items['mailchimp/reset'] = array(
@@ -445,55 +439,63 @@ function mailchimp_admin_settings() {
 function mailchimp_subscribe_form() {
   global $user;
 
-  if ($user->uid) {
-    drupal_set_message(t('You can manage your newsletter subscriptions from your <a href="!account_url">user account page</a>.', array('!account_url' => url('user'))));
-  }
-  else {
-    if ($q = _mailchimp_get_api_object()) {
-      $lists =_mailchimp_get_available_lists($user, $q);
-      if (count($lists) > 0) {
-        foreach ($lists as $list) {
-          $form['list_'. $list['id']] = array(
-              '#type'   => 'fieldset',
-              '#title'  => $list['name'],
-              '#collapsible' => TRUE,
-              '#tree'   => TRUE,
-              '#attributes'   => array('class' => 'mailchimp-newsletter mailchimp-newsletter-' . $list['id'])
-          );
+  if ($q = _mailchimp_get_api_object()) {
+    $lists =_mailchimp_get_available_lists($user, $q);
+    foreach ($lists as $list) {
+      $form['list_'. $list['id']] = array(
+          '#type'   => 'fieldset',
+          '#title'  => $list['name'],
+          '#collapsible' => TRUE,
+          '#tree'   => TRUE,
+          '#attributes'   => array('class' => 'mailchimp-newsletter mailchimp-newsletter-' . $list['id'])
+      );
 
-          $checked = variable_get('mailchimp_list_'. $list['id'] .'_listtype', 'optin') == "optout" ? 1 : 0;
-          $form['list_'. $list['id']][$list['id']] = array(
-              '#type'           => 'checkbox',
-              '#title'          => t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list['name'])),
-              '#default_value'  => $checked,
-              '#description'    => variable_get('mailchimp_list_'. $list['id'] .'_description', ''),
-          );
+      $form['list_'. $list['id']]['list'] = array(
+          '#type'   => 'value',
+          '#value'  => $list
+      );
 
-          foreach ((array)$q->listMergeVars($list['id']) as $mergevar) {
-            $form['list_'. $list['id']][$mergevar['tag']] = _mailchimp_insert_drupal_form_tag($mergevar);
-          }
+      $checked = variable_get('mailchimp_list_'. $list['id'] .'_listtype', 'optin') == "optout" ? 1 : 0;
+      $form['list_'. $list['id']][$list['id']] = array(
+          '#type'           => 'checkbox',
+          '#title'          => t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list['name'])),
+          '#default_value'  => $checked,
+          '#description'    => variable_get('mailchimp_list_'. $list['id'] .'_description', ''),
+      );
 
-          if ($intgroup = $q->listInterestGroups($list['id'])) {
-            $form['list_'. $list['id']][$intgroup['name']] = array(
-                '#type'   => 'fieldset',
-                '#title'  => $intgroup['name']
-            );
-            foreach ((array)$intgroup['groups'] as $group) {
-              $form['list_'. $list['id']][$intgroup['name']][$group] = array(
-                  '#type'           => $intgroup['form_field'],
-                  '#title'          => $group,
-              );
-            }
-          }
+      foreach ((array)$q->listMergeVars($list['id']) as $mergevar) {
+        $form['list_'. $list['id']][$mergevar['tag']] = _mailchimp_insert_drupal_form_tag($mergevar);
+      }
+
+      // present interest groups
+      if ($intgroup = $q->listInterestGroups($list['id'])) {
+        switch($intgroup['form_field']){
+          case 'radio':
+            $field_type = 'radios';
+            break;
+          case 'checkbox':
+            $field_type = 'checkboxes';
+            break;
+          default:
+            $field_type = $intgroup['form_field'];
         }
-        $form['submit'] = array(
-            '#type' => 'submit',
-            '#value' => t('Sign Up!'),
+        foreach ((array)$intgroup['groups'] as $group){
+          $options[$group] = $group;
+        }
+        $form['list_'. $list['id']]['INTERESTS'] = array(
+            '#type'           => $field_type,
+            '#title'          => $intgroup['name'],
+            '#options'        => $options
         );
       }
     }
-    return $form;
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Sign Up!'),
+    );
   }
+  return $form;
 }
 
 function _mailchimp_insert_drupal_form_tag($mergevar) {
@@ -549,30 +551,30 @@ function _mailchimp_insert_drupal_form_tag($mergevar) {
 function mailchimp_subscribe_form_submit($form, &$form_state) {
   global $user;
 
-  if ($q = _mailchimp_get_api_object()) {
-    $lists =_mailchimp_get_available_lists($user, $q);
-    $success = TRUE;
-    foreach ($lists as $list) {
-      $lid = $list['id'];
-      $email = $form_state['values']['list_'. $lid]['EMAIL'];
-      $sub_info = $q->listMemberInfo($lid, $email);
-      $is_subscribed = @$sub_info['status'] == 'subscribed';
-      // add users who are not subscribed and checked the list
-      if ($form_state['values']['list_'. $list['id']][$lid] == 1  && !$is_subscribed) {
-        $success = $success && _mailchimp_subscribe_user($list, $email, $form_state['values']['list_'. $list['id']], TRUE, $q);
+  $success = TRUE;
+  foreach ($form as $key => $form_item) {
+    if($form_item['#type'] && $form_item['#type'] == 'fieldset'){
+      $values = $form_state['values'][$key];
+      $email = $values['EMAIL'];
+
+      // filter our interest groups and return in an comma delimited string
+      if(!empty($values['INTERESTS'])){
+        $values['INTERESTS'] = implode(',', array_filter($values['INTERESTS']));
+      }
+      
+      if ($values[$values['list']['id']] == 1) {
+        $success = $success && _mailchimp_subscribe_user($values['list'], $email, $values, TRUE, $q);
       }
     }
   }
-  drupal_goto('mailchimp/subscribe/message', 'success='. $success);
-}
-
-function mailchimp_subscribe_message() {
-  if ($_GET['success']) {
-    return variable_get('mailchimp_subscription_success_message', SUBSCRIPTION_SUCCESS);
+  
+  if ($success) {
+    $msg = variable_get('mailchimp_subscription_success_message', SUBSCRIPTION_SUCCESS);
   }
   else {
-    return variable_get('mailchimp_subscription_failure_message', SUBSCRIPTION_FAILURE);
+    $msg = variable_get('mailchimp_subscription_failure_message', SUBSCRIPTION_FAILURE);
   }
+  drupal_set_message($msg);
 }
 
 function mailchimp_unsubscribe_form($form_values = array()) {
