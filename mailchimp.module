@@ -531,13 +531,12 @@ function mailchimp_subscribe_form() {
 }
 
 function _mailchimp_insert_drupal_form_tag($mergevar) {
-
-// Insert common FormAPI properties
+  // Insert common FormAPI properties
   $input = array(
       '#title' => $mergevar['name'],
       '#weight' => $mergevar['order'],
       '#required' => $mergevar['req'],
-      '#default_value' => $mergevar['default'],
+      '#default_value' => $mergevar['default']
   );
 
   switch ($mergevar['field_type']) {
@@ -569,6 +568,7 @@ function _mailchimp_insert_drupal_form_tag($mergevar) {
     default:
     // This is a standard input[type=text] or something we can't handle with Drupal FormAPI
       $input['#type'] = 'textfield';
+      $input['#size'] = $mergevar['size'];
       break;
   }
 
@@ -883,4 +883,17 @@ function _mailchimp_get_api_object() {
     return NULL;
   }
   return $q;
+}
+
+/**
+ * implementation of hook_block
+ * @todo: provide a block for each individual list
+ */
+function mailchimp_block($op='list', $delta=0) {
+  if ($op == "list") {
+    $block[0]["info"] = t("Mailchimp Subscription Form");
+  } else if ($op == 'view') {
+    $block['content'] = drupal_get_form('mailchimp_subscribe_form');
+  }
+  return $block;
 }
