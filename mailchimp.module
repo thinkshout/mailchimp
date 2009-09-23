@@ -10,6 +10,9 @@ define('MAILCHIMP_SUBSCRIPTION_SUCCESS',   t('Thank you, you have been successfu
 define('MAILCHIMP_SUBSCRIPTION_FAILURE',   t('We were unable to subscribe you at this time. Please try again later.'));
 define('MAILCHIMP_UNSUBSCRIPTION_SUCCESS', t('Thank you, you have been successfully unsubscribed.'));
 define('MAILCHIMP_UNSUBSCRIPTION_FAILURE', t('We were unable to unsubscribe you at this time. Please try again later.'));
+define('MAILCHIMP_LISTTYPE_REQUIRED', 'required');
+define('MAILCHIMP_LISTTYPE_OPTIN', 'optin');
+define('MAILCHIMP_LISTTYPE_OPTOUT', 'optout');
 
 /**
  * Implementation of hook_user
@@ -54,7 +57,7 @@ function mailchimp_form_user_profile_form_alter(&$form, &$form_state){
     $list_form = array();
     global $user;
     foreach (_mailchimp_get_available_lists($user) as $list) {
-      if ($list->listtype !== 'required') {
+      if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
         $list_form['mailchimp_list_'. $list->id] = array(
             '#type'           => 'checkbox',
             '#title'          => $list->name,
@@ -88,7 +91,7 @@ function mailchimp_user_profile_submit($form, &$form_state){
     $lists = _mailchimp_get_available_lists($user);
     foreach ($lists as $list) {
     // ignore required lists, they are handled via hook_user
-      if ($list->listtype !== 'required') {
+      if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
         $is_subscribed = _mailchimp_is_subscribed($list->id, $user->mail, $q);
         $ret = TRUE;
 
@@ -125,11 +128,11 @@ function mailchimp_form_user_register_alter(&$form, &$form_state) {
     $lists = _mailchimp_get_available_lists($account);
     if (!empty($lists)) {
       foreach ($lists as $list) {
-        if ($list->listtype !== 'required') {
+        if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
           $list_form['chimpmail_list_'. $list->id] = array(
               '#type'           => 'checkbox',
               '#title'          => $list->name,
-              '#default_value'  => $list->listtype == 'optout' ? TRUE : FALSE,
+              '#default_value'  => $list->listtype == MAILCHIMP_LISTTYPE_OPTOUT ? TRUE : FALSE,
               '#description'    => $list->description,
           );
         }
@@ -336,8 +339,8 @@ function mailchimp_admin_settings() {
           $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['listtype'] = array(
               '#type'           => 'select',
               '#title'          => t('Subscription Method'),
-              '#options'        => array('optin' => "Opt-in", 'optin' => "Opt-in", 'optout' => 'Opt-out', 'required' => 'Required'),
-              '#default_value'  => ($saved_list->listtype) ?  $saved_list->listtype : 'optin',
+              '#options'        => array(MAILCHIMP_LISTTYPE_OPTIN => "Opt-in", MAILCHIMP_LISTTYPE_OPTOUT => 'Opt-out', MAILCHIMP_LISTTYPE_REQUIRED => 'Required'),
+              '#default_value'  => ($saved_list->listtype) ?  $saved_list->listtype : MAILCHIMP_LISTTYPE_OPTOUT,
               '#description'    => t('<strong>Opt-in:</strong> Users must sign up to recieve messages.<br/><strong>Opt-out: </strong> Users are automatically signed up but may unsubscribe.<br/><strong>Required: </strong> Users will remain on the list as long as they have an account and cannot unsubscribe.')
           );
 
@@ -864,7 +867,7 @@ function _mailchimp_get_available_lists($user) {
 function _mailchimp_get_required_lists() {
   $lists = unserialize(variable_get('mailchimp_lists', array()));
   foreach ($lists as $list) {
-    if($list->listtype !== 'required'){
+    if($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED){
       unset($lists[$key]);
     }
   }
