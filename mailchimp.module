@@ -50,35 +50,53 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
 }
 
 /**
- * Implementation of hook_form_alter to add MC lists to profile form
+ * Implementation of hook_form_alter to add MC lists to account and registration forms
  */
-function mailchimp_form_user_profile_form_alter(&$form, &$form_state){
-  if (variable_get('mailchimp_user_edit', TRUE) && $q = _mailchimp_get_api_object()) {
-    $list_form = array();
-    global $user;
-    foreach (_mailchimp_get_available_lists($user) as $list) {
-      if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
-        $list_form['mailchimp_list_'. $list->id] = array(
-            '#type'           => 'checkbox',
-            '#title'          => $list->name,
-            '#default_value'  => _mailchimp_is_subscribed($list->id, $user->mail, $q),
-            '#description'    => $list->description,
-        );
+function mailchimp_form_alter(&$form, &$form_state, $form_id){
+  if($form_id == 'user_profile_form' || $form_id == 'user_register'){
+    if ((variable_get('mailchimp_user_edit', TRUE) && $form_id == 'user_profile_form')
+      || (variable_get('mailchimp_user_register', TRUE) && $form_id == 'user_register') && $q = _mailchimp_get_api_object()) {
+      $list_form = array();
+      
+      global $user;
+      if($user->uid){
+        $account = $user;
+      } else {
+        $account = new stdClass();
+        $account->roles = array(2 => 'authenticated');
       }
-    }
-    if ($list_form) {
-      $form['mailchimp_list'] = array(
-          '#type'         => 'fieldset',
-          '#title'        => t('Newsletter subscriptions'),
-          '#weight'       => 5,
-          '#collapsible'  => TRUE,
-          '#attributes'   => array('class' => 'mailchimp-newsletters'),
-      );
-      $form['mailchimp_list'] = array_merge($form['mailchimp_list'], $list_form);
-    }
+      
+      foreach (_mailchimp_get_available_lists($account) as $list) {
+        if($account->uid){
+          $default_value = _mailchimp_is_subscribed($list->id, $account->mail, $q);
+        } else {
+          $default_value = $list->listtype == MAILCHIMP_LISTTYPE_OPTOUT ? TRUE : FALSE;
+        }
 
-    $form['#submit'][] = 'mailchimp_user_profile_submit';
-    return $form;
+        if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
+          $list_form['mailchimp_list_'. $list->id] = array(
+              '#type'           => 'checkbox',
+              '#title'          => $list->name,
+              '#default_value'  => $default_value,
+              '#description'    => $list->description,
+          );
+        }
+      }
+
+      if ($list_form) {
+        $form['mailchimp_list'] = array(
+            '#type'         => 'fieldset',
+            '#title'        => t('Newsletter subscriptions'),
+            '#weight'       => 5,
+            '#collapsible'  => TRUE,
+            '#attributes'   => array('class' => 'mailchimp-newsletters'),
+        );
+        $form['mailchimp_list'] = array_merge($form['mailchimp_list'], $list_form);
+      }
+
+      $form['#submit'][] = 'mailchimp_user_profile_submit';
+      return $form;
+    }
   }
 }
 
@@ -88,65 +106,38 @@ function mailchimp_form_user_profile_form_alter(&$form, &$form_state){
 function mailchimp_user_profile_submit($form, &$form_state){
   if ($q = _mailchimp_get_api_object()) {
     global $user;
-    $lists = _mailchimp_get_available_lists($user);
+    $account = new stdClass();
+    if($user->uid){
+      $account = $user;
+    } else {
+      $account = $form_state['user'];
+//      $account->roles = array(2 => 'authenticated');
+//      $account->mail = $form_state['values']['mail'];
+    }
+
+    $lists = _mailchimp_get_available_lists($account);
     foreach ($lists as $list) {
     // ignore required lists, they are handled via hook_user
       if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
-        $is_subscribed = _mailchimp_is_subscribed($list->id, $user->mail, $q);
+        $is_subscribed = _mailchimp_is_subscribed($list->id, $account->mail, $q);
         $ret = TRUE;
 
         // subscribe the user if they are not previously subscribed and want to be
         // OR unsubscribe and resubscribe a user who has changed his or her email address
          if ((!$is_subscribed && @$form_state['values']['mailchimp_list_'. $list->id]) ||
-          $is_subscribed && $user->mail !== $form_state['values']['mail']) {
-          $merge_vars = _mailchimp_load_user_list_mergevars($user->uid, $list->id, $q->listMergeVars($list->id));
+          $is_subscribed && $account->mail !== $form_state['values']['mail']) {
+          $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
           $merge_vars['EMAIL'] = $form_state['values']['mail'];
-          $ret = _mailchimp_subscribe_user($list, $user->mail, $merge_vars, TRUE, $q);
+          $ret = _mailchimp_subscribe_user($list, $account->mail, $merge_vars, TRUE, $q);
         }
         // unsubscribe a subscribed user who unchecked the box for this newsletter
         else if ($is_subscribed && !@$form_state['values']['mailchimp_list_'. $list->id]) {
-            $ret = _mailchimp_unsubscribe_user($list, $user->mail, TRUE, $q);
+            $ret = _mailchimp_unsubscribe_user($list, $account->mail, TRUE, $q);
         }
  
         if (!$ret) {
           watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
         }
-      }
-    }
-  }
-}
-
-/**
- * Implementation of hook_form_alter() .
- * Add subscription form to registration page
- */
-function mailchimp_form_user_register_alter(&$form, &$form_state) {
-  if (variable_get('mailchimp_user_register', TRUE)) {
-    $account = new stdClass();
-    $account->roles = array(2 => "authenticated user");
-
-    $lists = _mailchimp_get_available_lists($account);
-    if (!empty($lists)) {
-      foreach ($lists as $list) {
-        if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
-          $list_form['chimpmail_list_'. $list->id] = array(
-              '#type'           => 'checkbox',
-              '#title'          => $list->name,
-              '#default_value'  => $list->listtype == MAILCHIMP_LISTTYPE_OPTOUT ? TRUE : FALSE,
-              '#description'    => $list->description,
-          );
-        }
-      }
-      if ($list_form) {
-        $form['chimpmail_lists'] = array(
-            '#type'         => 'fieldset',
-            '#title'        => t('Newsletter subscriptions'),
-            '#weight'       => 5,
-            '#collapsible'  => TRUE,
-            '#attributes'   => array('class' => 'mailchimp-newsletters'),
-        );
-        $form['chimpmail_lists'] = array_merge($form['chimpmail_lists'], $list_form);
-
       }
     }
   }
