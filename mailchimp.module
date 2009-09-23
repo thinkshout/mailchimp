@@ -46,7 +46,6 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
       }
     }
   }
-
 }
 
 /**
@@ -88,26 +87,28 @@ function mailchimp_form_alter(&$form, &$form_state, $form_id){
           );
 
           // present interest groups
-          if ($intgroup = $q->listInterestGroups($list->id)) {
-            switch($intgroup['form_field']){
-              case 'radio':
-                $field_type = 'radios';
-                break;
-              case 'checkbox':
-                $field_type = 'checkboxes';
-                break;
-              default:
-                $field_type = $intgroup['form_field'];
+          if(variable_get('mailchimp_interest_groups_user_forms', FALSE)){
+            if ($intgroup = $q->listInterestGroups($list->id)) {
+              switch($intgroup['form_field']){
+                case 'radio':
+                  $field_type = 'radios';
+                  break;
+                case 'checkbox':
+                  $field_type = 'checkboxes';
+                  break;
+                default:
+                  $field_type = $intgroup['form_field'];
+              }
+              foreach ((array)$intgroup['groups'] as $group){
+                $options[$group] = $group;
+              }
+              $list_form['mailchimp_list_fieldset_'. $list->id]['mailchimp_list_'. $list->id . '_INTERESTS'] = array(
+                '#type'           => $field_type,
+                '#title'          => $intgroup['name'],
+                '#options'        => $options,
+                '#default_value'  => explode(",", str_replace(', ', ',', $memberinfo['merges']['INTERESTS']))
+              );
             }
-            foreach ((array)$intgroup['groups'] as $group){
-              $options[$group] = $group;
-            }
-            $list_form['mailchimp_list_fieldset_'. $list->id]['mailchimp_list_'. $list->id . '_INTERESTS'] = array(
-              '#type'           => $field_type,
-              '#title'          => $intgroup['name'],
-              '#options'        => $options,
-              '#default_value'  => explode(",", str_replace(', ', ',', $memberinfo['merges']['INTERESTS']))
-            );
           }
         }
       }
@@ -432,6 +433,12 @@ function mailchimp_admin_settings() {
             '#title'          => t('Sync Required Lists During Cron'),
             '#default_value'  => variable_get('mailchimp_cron', FALSE),
             '#description'    => t('If this is set, users will be subscribed to the required list during cron runs. Otherwise subscription will take place when a user is added/edited.')
+        );
+        $form['mailchimp_interest_groups_user_forms'] = array(
+            '#type'           => 'checkbox',
+            '#title'          => t('Show Interest Groups on Registration and Account Forms'),
+            '#default_value'  => variable_get('mailchimp_interest_groups_user_forms', FALSE),
+            '#description'    => t('If set, users will be able to select applicable interest groups when registering or editing their accounts.')
         );
       }
       else {
