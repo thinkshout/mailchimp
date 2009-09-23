@@ -1,0 +1,11 @@
+<?php
+/**
+ * implementation of hook_update_N
+ */
+function mailchimp_update_6200(){
+  // clean up old variables
+  $ret = array();
+  $ret[] = update_sql("DELETE FROM {variable} WHERE name like 'mailchimp_list\_%'");
+  cache_clear_all();
+  return $ret;  
+}
