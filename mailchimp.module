@@ -268,13 +268,19 @@ function mailchimp_perm() {
   return array('administer mailchimp');
 }
 
-
+/**
+ * implementation of hook_reset
+ */
 function mailchimp_reset() {
   variable_del('mailchimp_username');
   variable_del('mailchimp_password');
   drupal_goto('admin/settings/mailchimp');
 }
 
+/**
+ * implementation of hook_admin_settings
+ * @return <type>
+ */
 function mailchimp_admin_settings() {
   module_load_include('php', 'mailchimp', 'MCAPI.class');
 
@@ -477,6 +483,12 @@ function mailchimp_admin_settings() {
   return system_settings_form($form);
 }
 
+/**
+ * validate the admin settings and serialize the saved lists into objects
+ *
+ * @param <type> $form
+ * @param <type> $form_state
+ */
 function mailchimp_admin_settings_validate($form, &$form_state){
   $lists = array();
   foreach($form_state['values']['mailchimp_lists'] as $form_list){
@@ -490,10 +502,18 @@ function mailchimp_admin_settings_validate($form, &$form_state){
     $list->mergevars  = $form_list['mergevars'];
     $lists[$form_list['list_id']] = $list;
   }
+  
+  // remove lists from the form_state
   unset($form_state['values']['mailchimp_lists']);
   variable_set('mailchimp_lists', serialize($lists));
 }
 
+/**
+ * Render form for stand alone lists
+ * 
+ * @global <type> $user
+ * @return <type>
+ */
 function mailchimp_subscribe_form() {
   global $user;
 
@@ -556,6 +576,12 @@ function mailchimp_subscribe_form() {
   return $form;
 }
 
+/**
+ * Convert mailchimp form elements to Drupal Form API
+ *
+ * @param <type> $mergevar
+ * @return <type> 
+ */
 function _mailchimp_insert_drupal_form_tag($mergevar) {
   // Insert common FormAPI properties
   $input = array(
@@ -606,6 +632,13 @@ function _mailchimp_insert_drupal_form_tag($mergevar) {
   return $input;
 }
 
+/**
+ * Submit handler for stand alone form
+ * 
+ * @global <type> $user
+ * @param <type> $form
+ * @param <type> $form_state
+ */
 function mailchimp_subscribe_form_submit($form, &$form_state) {
   global $user;
 
@@ -635,6 +668,12 @@ function mailchimp_subscribe_form_submit($form, &$form_state) {
   drupal_set_message($msg);
 }
 
+/**
+ * MailChimp unsubscribe form
+ *
+ * @param <type> $form_values
+ * @return <type> 
+ */
 function mailchimp_unsubscribe_form($form_values = array()) {
   $form = array();
   $form['intro'] = array(
@@ -654,6 +693,12 @@ function mailchimp_unsubscribe_form($form_values = array()) {
   return $form;
 }
 
+/**
+ * submit handler for unsubscribe form
+ *
+ * @param <type> $form
+ * @param <type> $form_state
+ */
 function mailchimp_unsubscribe_form_submit($form, &$form_state) {
   if ($q || $q = _mailchimp_get_api_object()) {
     $success = TRUE;
@@ -669,7 +714,12 @@ function mailchimp_unsubscribe_form_submit($form, &$form_state) {
   }
 }
 
-
+/**
+ * validate unsubscribe form
+ * 
+ * @param <type> $form
+ * @param <type> $form_state
+ */
 function mailchimp_unsubscribe_form_validate($form, &$form_state) {
   if (!$form_state['values']['EMAIL']) {
     form_set_error('EMAIL', t('Please enter your email address.'));
