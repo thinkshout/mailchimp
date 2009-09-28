@@ -20,7 +20,7 @@ define('MAILCHIMP_LISTTYPE_OPTOUT', 'optout');
 function mailchimp_user($op, &$edit, &$account, $category = NULL) {
   if (in_array($op, array('insert', 'delete', 'update'))) {
     $q = _mailchimp_get_api_object();
-    foreach((array)_mailchimp_get_required_lists() as $list) {
+    foreach ((array)_mailchimp_get_required_lists() as $list) {
       switch ($op) {
       // delete a user from MC list
         case "delete":
@@ -41,7 +41,8 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
       if ($ret) {
         watchdog('mailchimp', 'MailChimp: %email updated in list %list on action %action',
             array('%email' => $account->mail, '%list' => $list->name, '%action' => $op), WATCHDOG_NOTICE);
-      } else {
+      }
+      else {
         watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
       }
     }
@@ -60,7 +61,8 @@ function mailchimp_form_alter(&$form, &$form_state, $form_id) {
       global $user;
       if ($user->uid) {
         $account = $user;
-      } else {
+      }
+      else {
         $account = new stdClass();
         $account->roles = array(2 => 'authenticated');
       }
@@ -70,7 +72,8 @@ function mailchimp_form_alter(&$form, &$form_state, $form_id) {
           if ($account->uid) {
             $memberinfo = $q->listMemberInfo($list->id, $account->mail);
             $default_value = $memberinfo['status'] == 'subscribed';
-          } else {
+          }
+          else {
             $default_value = $list->listtype == MAILCHIMP_LISTTYPE_OPTOUT ? TRUE : FALSE;
           }
 
@@ -89,7 +92,7 @@ function mailchimp_form_alter(&$form, &$form_state, $form_id) {
           // present interest groups
           if (variable_get('mailchimp_interest_groups_user_forms', FALSE)) {
             if ($intgroup = $q->listInterestGroups($list->id)) {
-              switch($intgroup['form_field']) {
+              switch ($intgroup['form_field']) {
                 case 'radio':
                   $field_type = 'radios';
                   break;
@@ -102,7 +105,7 @@ function mailchimp_form_alter(&$form, &$form_state, $form_id) {
               foreach ((array)$intgroup['groups'] as $group) {
                 $options[$group] = $group;
               }
-              $list_form['mailchimp_list_fieldset_'. $list->id]['mailchimp_list_'. $list->id . '_INTERESTS'] = array(
+              $list_form['mailchimp_list_fieldset_'. $list->id]['mailchimp_list_'. $list->id .'_INTERESTS'] = array(
                 '#type'           => $field_type,
                 '#title'          => $intgroup['name'],
                 '#options'        => $options,
@@ -139,7 +142,8 @@ function mailchimp_user_profile_submit($form, &$form_state) {
     $account = new stdClass();
     if ($user->uid) {
       $account = $user;
-    } else {
+    }
+    else {
       $account = $form_state['user'];
     }
 
@@ -153,11 +157,12 @@ function mailchimp_user_profile_submit($form, &$form_state) {
         // unsubscribe a subscribed user who unchecked the box for this newsletter
         if ($is_subscribed && !@$form_state['values']['mailchimp_list_'. $list->id]) {
           $ret = _mailchimp_unsubscribe_user($list, $account->mail, TRUE, $q);
-        } else {
+        }
+        else {
         // subscribe the user if they are not previously subscribed or update existing subscriptions
           $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
           $merge_vars['EMAIL'] = $form_state['values']['mail'];
-          $merge_vars['INTERESTS'] = implode(',', array_filter($form_state['values']['mailchimp_list_'. $list->id . '_INTERESTS']));
+          $merge_vars['INTERESTS'] = implode(',', array_filter($form_state['values']['mailchimp_list_'. $list->id .'_INTERESTS']));
           $ret = _mailchimp_subscribe_user($list, $account->mail, $merge_vars, TRUE, $q);
         }
  
@@ -491,7 +496,7 @@ function mailchimp_admin_settings() {
  */
 function mailchimp_admin_settings_validate($form, &$form_state) {
   $lists = array();
-  foreach($form_state['values']['mailchimp_lists'] as $form_list) {
+  foreach ($form_state['values']['mailchimp_lists'] as $form_list) {
     $list = new stdClass();
     $list->id = $form_list['list_id'];
     $list->name = $form_list['name'];
@@ -525,7 +530,7 @@ function mailchimp_subscribe_form() {
           '#title'  => $list->name,
           '#collapsible' => TRUE,
           '#tree'   => TRUE,
-          '#attributes'   => array('class' => 'mailchimp-newsletter mailchimp-newsletter-' . $list->id)
+          '#attributes'   => array('class' => 'mailchimp-newsletter mailchimp-newsletter-'. $list->id)
       );
 
       $form['list_'. $list->id]['list'] = array(
@@ -547,7 +552,7 @@ function mailchimp_subscribe_form() {
 
       // present interest groups
       if ($intgroup = $q->listInterestGroups($list->id)) {
-        switch($intgroup['form_field']) {
+        switch ($intgroup['form_field']) {
           case 'radio':
             $field_type = 'radios';
             break;
@@ -789,10 +794,11 @@ function mailchimp_mailchimp_merge_keys() {
 function mailchimp_mailchimp_merge_values($user) {
   $out = array();
   $out = (array)$user;
-  foreach((array)$user as $key => $value) {
+  foreach ((array)$user as $key => $value) {
     if (is_array($value) && $key != 'role') {
       $out[$key] = implode('/', $value);
-    } elseif (in_array($key, array('login', 'access', 'created'))) {
+    }
+    elseif (in_array($key, array('login', 'access', 'created'))) {
       $out[$key] = date('c', $value);
     }
     elseif ($key != 'roles') {
@@ -974,7 +980,8 @@ function _mailchimp_get_api_object() {
 function mailchimp_block($op='list', $delta=0) {
   if ($op == "list") {
     $block[0]["info"] = t("Mailchimp Subscription Form");
-  } else if ($op == 'view') {
+  }
+  else if ($op == 'view') {
     $block['content'] = drupal_get_form('mailchimp_subscribe_form');
   }
   return $block;
