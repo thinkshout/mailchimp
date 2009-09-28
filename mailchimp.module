@@ -179,15 +179,15 @@ function mailchimp_cron() {
     if ($result) {
       $lists = _mailchimp_get_required_lists();
       foreach ($lists as $key => $list) {
-        $lists[$key]['batch']      = array();
-        $lists[$key]['mergevars']  = $q->listMergeVars($list->id);
+        $lists[$key]->batch      = array();
+        $lists[$key]->mergevars  = $q->listMergeVars($list->id);
       }
       while ($row = db_fetch_object($result)) {
         $account = user_load(array('uid' => $row->uid));
         foreach ((array)$lists as $key => $list) {
           foreach ((array)$account->roles as $rid => $info) {
-            if (variable_get('mailchimp_list_'. $list['id'] .'_role_'. $rid, 0)) {
-              $lists[$key]['batch'][] = _mailchimp_load_user_list_mergevars($row->uid, $list->id, $lists[$key]['mergevars']);
+            if($list->roles[$rid]) {
+              $lists[$key]->batch[] = _mailchimp_load_user_list_mergevars($row->uid, $list->id, $lists[$key]->mergevars);
               break;
             }
           }
@@ -196,8 +196,8 @@ function mailchimp_cron() {
 
       $count = 0;
       foreach ($lists as $key => $list) {
-        if (count($lists[$key]['batch'])) {
-          $ret = $q->listBatchSubscribe($list['id'], $lists[$key]['batch'], FALSE, TRUE);
+        if (count($lists[$key]->batch)) {
+          $ret = $q->listBatchSubscribe($list->id, $lists[$key]->batch, FALSE, TRUE);
 
           if ($ret['error_count'] > 0) {
             foreach ((array)$ret['errors'] as $error) {
@@ -894,7 +894,7 @@ function _mailchimp_get_required_lists() {
   $lists = array();
   if(!empty($data)){
     $lists = unserialize($data);
-    foreach ($lists as $list) {
+    foreach ($lists as $key => $list) {
       if($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED){
         unset($lists[$key]);
       }
