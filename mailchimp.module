@@ -87,6 +87,7 @@ function mailchimp_form_alter(&$form, &$form_state, $form_id) {
               '#title'          => t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
               '#default_value'  => $default_value,
               '#description'    => $list->description,
+              '#attributes'     => array('class' => 'mailchimp-newsletter-checkbox-' . $list->id)
           );
 
           // present interest groups
@@ -109,8 +110,18 @@ function mailchimp_form_alter(&$form, &$form_state, $form_id) {
                 '#type'           => $field_type,
                 '#title'          => $intgroup['name'],
                 '#options'        => $options,
-                '#default_value'  => explode(",", str_replace(', ', ',', $memberinfo['merges']['INTERESTS']))
+                '#default_value'  => explode(",", str_replace(', ', ',', $memberinfo['merges']['INTERESTS'])),
+                '#attributes'     => array('class' => 'mailchimp-newsletter-interests-' . $list->id)
               );
+              drupal_add_js('$(document).ready(function(){
+                if($(".mailchimp-newsletter-checkbox-'. $list->id .'").attr("checked")){
+                  $(".mailchimp-newsletter-interests-'. $list->id .'").parent(".form-item").show();
+                } else {
+                  $(".mailchimp-newsletter-interests-'. $list->id .'").parent(".form-item").hide();
+                }
+                $(".mailchimp-newsletter-checkbox-'. $list->id .'").click(function(){ $(".mailchimp-newsletter-interests-'. $list->id .'").parent(".form-item").toggle("slow");});
+              });', 'inline');
+              drupal_add_js('console.log($("#logo-floater"));', 'inline');
             }
           }
         }
@@ -153,12 +164,13 @@ function mailchimp_user_profile_submit($form, &$form_state) {
       if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
         $is_subscribed = _mailchimp_is_subscribed($list->id, $account->mail, $q);
         $ret = TRUE;
+        $selected = @$form_state['values']['mailchimp_list_'. $list->id];
 
         // unsubscribe a subscribed user who unchecked the box for this newsletter
-        if ($is_subscribed && !@$form_state['values']['mailchimp_list_'. $list->id]) {
+        if ($is_subscribed && !$selected) {
           $ret = _mailchimp_unsubscribe_user($list, $account->mail, TRUE, $q);
         }
-        else {
+        else if($selected) {
         // subscribe the user if they are not previously subscribed or update existing subscriptions
           $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
           $merge_vars['EMAIL'] = $form_state['values']['mail'];
