@@ -24,7 +24,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
       switch ($op) {
       // delete a user from MC list
         case "delete":
-          $ret = _mailchimp_unsubscribe_user($list, $account->mail, TRUE, $q);
+          $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
           break;
         // insert or update a user to/in a MC list
         case 'insert':
@@ -886,7 +886,7 @@ function _mailchimp_is_subscribed($listid, $mail, $q = NULL) {
 }
 
 /**
- * Subscribe the given user to the given list if he/she is not already subscribed
+ * Subscribe or update a user in a givne list
  */
 function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $q = NULL) {
   if ($q || $q = _mailchimp_get_api_object()) {
@@ -921,7 +921,7 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
 }
 
 /**
- * Unsubscribe the given user to the given list
+ * Unsubscribe the given user from the given list
  */
 function _mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
   if ($q || $q = _mailchimp_get_api_object()) {
