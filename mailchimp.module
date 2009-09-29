@@ -898,7 +898,7 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
     }
     else {
       $action = 'subscribed to';
-      $success = $q->listSubscribe($list->id, $email, $merge_vars, 'html', $double_optin);
+      $success = $q->listSubscribe($list->id, $email, $merge_vars, 'html', $double_optin, TRUE);
 
       if ($message && $success && $double_optin) {
         drupal_set_message(t('You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription.', array('%list' => $list->name)));
@@ -926,7 +926,7 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
 function _mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
   if ($q || $q = _mailchimp_get_api_object()) {
     if (_mailchimp_is_subscribed($list->id, $mail, $q)) {
-      $success = $q->listUnsubscribe($list->id, $mail, FALSE);
+      $success = $q->listUnsubscribe($list->id, $mail, FALSE, FALSE, FALSE);
       if ($message && $success) {
         drupal_set_message(t('You have unsubscribed from %list.', array('%list' => $list->name)));
       }
