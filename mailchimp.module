@@ -509,6 +509,11 @@ function mailchimp_admin_settings() {
  * @param <type> $form_state
  */
 function mailchimp_admin_settings_validate($form, &$form_state) {
+  // no lists selected or first time here
+  if(!is_array($form_state['values']['mailchimp_lists'])){
+    return;
+  }
+  
   $lists = array();
   foreach ($form_state['values']['mailchimp_lists'] as $form_list) {
     $list = new stdClass();
