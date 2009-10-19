@@ -16,14 +16,14 @@ define('MAILCHIMP_LISTTYPE_OPTOUT', 'optout');
 
 /**
  * Implementation of hook_user
+ *
+ * Required lists are updated on insert, update, and delete.
+ * The list form fields are added to the registration and profile forms
  */
 function mailchimp_user($op, &$edit, &$account, $category = NULL) {
   if (($op == 'form' && $category == 'account' && variable_get('mailchimp_user_edit', TRUE)) ||
     $op == 'register' && variable_get('mailchimp_user_register', TRUE)){
     $form = mailchimp_profile_form($account);
-    if($op == 'form' && $category == 'account'){
-      $form['#submit'][] = 'mailchimp_user_profile_submit';
-    }
     return $form;
   }
   
@@ -146,11 +146,17 @@ function mailchimp_profile_form($account) {
   }
 }
 
+/**
+ * Implementation of hook_form_alter
+ *
+ * Add a submit handler to registration and profile forms. Doing this in hook_user breaks user updates
+ */
 function mailchimp_form_alter(&$form, $form_state, $form_id){
-  if($form_id == 'user_register'){
+  if($form_id == 'user_register' || ($form_id == 'user_profile_form' && $form['_category']['#value'] == 'account')){
     $form['#submit'][] = 'mailchimp_user_profile_submit';
   }
 }
+
 /**
  * Submit handler to add users to lists when editing/creating a user
  */
@@ -196,7 +202,9 @@ function mailchimp_user_profile_submit($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_cron. Resubscribes all users to the required lists if the user has chosen to do so.
+ * Implementation of hook_cron.
+ *
+ * Resubscribes all users to the required lists if the user has chosen to do so.
  */
 function mailchimp_cron() {
   if (variable_get('mailchimp_cron', FALSE) && $q = _mailchimp_get_api_object()) {
