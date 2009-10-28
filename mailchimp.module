@@ -962,19 +962,21 @@ function _mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
  * Get all of the lists that the given user can subscribe to
  */
 function _mailchimp_get_available_lists($user) {
-  $lists = variable_get('mailchimp_lists', array());
-  if (!empty($lists)) {
-    $lists = unserialize($lists);
-    foreach ($lists as $key => $list) {
+  $all_lists = variable_get('mailchimp_lists', array());
+  $available_lists = array();
+  if (!empty($all_lists)) {
+    $all_lists = unserialize($all_lists);
+    foreach ($all_lists as $key => $list) {
       foreach ((array)$user->roles as $rid => $info) {
-        if (!$list->roles[$rid]) {
-          unset($lists[$key]);
+        if ($list->roles[$rid]) {
+          $available_lists[] = $list;
+          break;
         }
       }
     }
   }
 
-  return $lists;
+  return $available_lists;
 }
 
 /**
