@@ -6,10 +6,6 @@
  * Mailchimp module.
  */
 
-define('MAILCHIMP_SUBSCRIPTION_SUCCESS',   t('Thank you, you have been successfully subscribed.'));
-define('MAILCHIMP_SUBSCRIPTION_FAILURE',   t('We were unable to subscribe you at this time. Please try again later.'));
-define('MAILCHIMP_UNSUBSCRIPTION_SUCCESS', t('Thank you, you have been successfully unsubscribed.'));
-define('MAILCHIMP_UNSUBSCRIPTION_FAILURE', t('We were unable to unsubscribe you at this time. Please try again later.'));
 define('MAILCHIMP_LISTTYPE_REQUIRED', 'required');
 define('MAILCHIMP_LISTTYPE_OPTIN', 'optin');
 define('MAILCHIMP_LISTTYPE_OPTOUT', 'optout');
@@ -437,22 +433,22 @@ function mailchimp_admin_settings() {
         $form['mailchimp_messages']['mailchimp_subscription_success_message'] = array(
             '#type'           => 'textarea',
             '#title'          => t('Subscription Success Message'),
-            '#default_value'  => variable_get('mailchimp_subscription_success_message', MAILCHIMP_SUBSCRIPTION_SUCCESS)
+            '#default_value'  => variable_get('mailchimp_subscription_success_message', t('Thank you, you have been successfully subscribed.'))
         );
         $form['mailchimp_messages']['mailchimp_subscription_failure_message'] = array(
             '#type'           => 'textarea',
             '#title'          => t('Subscription Failure Message'),
-            '#default_value'  => variable_get('mailchimp_subscription_failure_message', MAILCHIMP_SUBSCRIPTION_FAILURE)
+            '#default_value'  => variable_get('mailchimp_subscription_failure_message', t('We were unable to subscribe you at this time. Please try again later.'))
         );
         $form['mailchimp_messages']['mailchimp_unsubscription_success_message'] = array(
             '#type'           => 'textarea',
             '#title'          => t('Unsubscription Success Message'),
-            '#default_value'  => variable_get('mailchimp_unsubscription_success_message', MAILCHIMP_UNSUBSCRIPTION_SUCCESS)
+            '#default_value'  => variable_get('mailchimp_unsubscription_success_message', t('Thank you, you have been successfully unsubscribed.'))
         );
         $form['mailchimp_messages']['mailchimp_unsubscription_failure_message'] = array(
             '#type'           => 'textarea',
             '#title'          => t('Unsubscription Failure Message'),
-            '#default_value'  => variable_get('mailchimp_unsubscription_failure_message', MAILCHIMP_UNSUBSCRIPTION_FAILURE)
+            '#default_value'  => variable_get('mailchimp_unsubscription_failure_message', t('We were unable to unsubscribe you at this time. Please try again later.'))
         );
 
         $form['mailchimp_user_register'] = array(
@@ -699,10 +695,10 @@ function mailchimp_subscribe_form_submit($form, &$form_state) {
   $success = _mailchimp_subscribe_user($values['list'], $values['EMAIL'], $values, TRUE);
   
   if ($success) {
-    $msg = variable_get('mailchimp_subscription_success_message', MAILCHIMP_SUBSCRIPTION_SUCCESS);
+    $msg = variable_get('mailchimp_subscription_success_message', t('Thank you, you have been successfully subscribed.'));
   }
   else {
-    $msg = variable_get('mailchimp_subscription_failure_message', MAILCHIMP_SUBSCRIPTION_FAILURE);
+    $msg = variable_get('mailchimp_subscription_failure_message', t('We were unable to subscribe you at this time. Please try again later.'));
   }
   
   drupal_set_message($msg);
@@ -745,10 +741,10 @@ function mailchimp_unsubscribe_form_submit($form, &$form_state) {
     foreach ((array)$q->lists() as $list) {
       $success = $success && _mailchimp_unsubscribe_user($list, $form_state['values']['EMAIL'], TRUE, $q);
       if ($success) {
-        drupal_set_message(variable_get('mailchimp_unsubscription_success_message', MAILCHIMP_UNSUBSCRIPTION_SUCCESS));
+        drupal_set_message(variable_get('mailchimp_unsubscription_success_message', t('Thank you, you have been successfully unsubscribed.')));
       }
       else {
-        drupal_set_message(variable_get('mailchimp_unsubscription_failure_message', MAILCHIMP_UNSUBSCRIPTION_FAILURE));
+        drupal_set_message(variable_get('mailchimp_unsubscription_failure_message', t('We were unable to unsubscribe you at this time. Please try again later.')));
       }
     }
   }
