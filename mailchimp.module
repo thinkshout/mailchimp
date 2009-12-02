@@ -30,9 +30,25 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
         case 'update':
         // don't repeat if already managing via cron
           if (!variable_get('mailchimp_cron', FALSE) ) {
-            $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
-            $userinfo['EMAIL'] = $edit['mail'];
-            $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
+            // determine if a user is allowed in a given list
+            $is_allowed = FALSE;
+            foreach($list->roles as $key=>$value){
+              if(array_key_exists($key, $edit['roles'])){
+                $is_allowed = TRUE;
+                break;
+              }
+            }
+
+            // they are allowed, update or subscribe
+            if($is_allowed){
+              $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
+              $userinfo['EMAIL'] = $edit['mail'];
+              $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
+            }
+            // remove from list
+            else{
+              $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
+            }
           }
           break;
       }
@@ -474,6 +490,7 @@ function mailchimp_admin_settings() {
         $form['mailchimp_user_register'] = array(
             '#type'           => 'checkbox',
             '#title'          => t('Show subscription options on the user registration form.'),
+            '#description'    => t('This will only apply for lists granted to the authenticated role.'),
             '#default_value'  => variable_get('mailchimp_user_register', TRUE)
         );
         $form['mailchimp_user_edit'] = array(
