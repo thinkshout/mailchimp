@@ -123,7 +123,6 @@ function mailchimp_subscribe_auth_form($form_state, $account) {
               }
               $(".mailchimp-newsletter-checkbox-'. $list->id .'").click(function(){ $(".mailchimp-newsletter-interests-'. $list->id .'").parent(".form-item").toggle("slow");});
             });', 'inline');
-            drupal_add_js('console.log($("#logo-floater"));', 'inline');
           }
         }
       }
@@ -1041,7 +1040,7 @@ function mailchimp_block($op='list', $delta=0) {
   }
   else if ($op == 'view') {
     // don't show on the subscription page to avoid conflicts
-    if($_GET['q'] != 'mailchimp/subscribe'){
+    if($_GET['q'] != 'mailchimp/subscribe' && stripos($_GET['q'], 'user/') === false){
       global $user;
       $ret = '';
       if($user->uid){
