@@ -53,6 +53,10 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
  */
 function mailchimp_subscribe_auth_form($form_state, $account) {
   $form = array();
+  $form['uid'] = array(
+    '#type' => 'hidden',
+    '#value' => $account->uid
+  );
 
   if ($q = _mailchimp_get_api_object()) {
     if (!$account->uid) {
@@ -156,8 +160,8 @@ function mailchimp_form_alter(&$form, $form_state, $form_id){
 function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
   if ($q = _mailchimp_get_api_object()) {
     $account = new stdClass();
-    if (arg(0) == 'user' && is_numeric(arg(1))) {
-      $account = user_load(array('uid' => arg(1)));
+    if ($form_state['values']['uid']) {
+      $account = user_load(array('uid' => $form_state['values']['uid']));
     }
     else {
       $account = $form_state['user'];
@@ -1036,21 +1040,24 @@ function mailchimp_block($op='list', $delta=0) {
     $block[0]["info"] = t("Mailchimp Subscription Form");
   }
   else if ($op == 'view') {
-    global $user;
-    $ret = '';
-    if($user->uid){
-      $ret = drupal_get_form('mailchimp_subscribe_auth_form', $user);
-    }
-    else{
-      if ($q = _mailchimp_get_api_object()) {
-        $lists =_mailchimp_get_available_lists($user);
-        foreach ($lists as $list) {
-          $ret .= drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
+    // don't show on the subscription page to avoid conflicts
+    if($_GET['q'] != 'mailchimp/subscribe'){
+      global $user;
+      $ret = '';
+      if($user->uid){
+        $ret = drupal_get_form('mailchimp_subscribe_auth_form', $user);
+      }
+      else{
+        if ($q = _mailchimp_get_api_object()) {
+          $lists =_mailchimp_get_available_lists($user);
+          foreach ($lists as $list) {
+            $ret .= drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
+          }
         }
       }
+      $block['subject'] = t('Newsletters');
+      $block['content'] = $ret;
     }
-    $block['subject'] = t('Newsletters');
-    $block['content'] = $ret;
   }
   return $block;
 }
