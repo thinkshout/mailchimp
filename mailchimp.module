@@ -388,7 +388,7 @@ function mailchimp_admin_settings() {
           $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['roles'] = array(
               '#type'         => 'fieldset',
               '#title'        => t('Roles'),
-              '#description'  => t('Choose which roles may subscribe to this list. Select the anonymous user role to have the list appear on the !subscribe page. Select the authenticated user role to have the list appear on the !signup page. For all other roles, the list will appear on the settings page for users with that role.', array('!subscribe' => l(t('Newsletter Subscription'), 'mailchimp/subscribe'), '!signup' => l(t('User Registration'), 'user/register'))),
+              '#description'  => t('Choose which roles may subscribe to this list. All users will see the lists they\'re eligble for at the !subscribe and in the subscription block. Lists assigned to the Authenticated role may also apear in the registration form if that option is selected below. Authenticated user may also manage their list settings from their profile.', array('!subscribe' => l(t('newsletter subscription page'), 'mailchimp/subscribe'))),
               '#tree'         => TRUE,
           );
 
