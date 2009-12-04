@@ -17,6 +17,12 @@ define('MAILCHIMP_LISTTYPE_OPTOUT', 'optout');
  * The list form fields are added to the registration and profile forms
  */
 function mailchimp_user($op, &$edit, &$account, $category = NULL) {
+  // include the form in the user registration
+  if ($op == 'register' && variable_get('mailchimp_user_register', TRUE)){
+    $form = mailchimp_subscribe_auth_form(NULL, $account);
+    return $form;
+  }
+
   if (in_array($op, array('insert', 'delete', 'update'))) {
     $q = _mailchimp_get_api_object();
     foreach ((array)_mailchimp_get_required_lists() as $list) {
@@ -69,13 +75,15 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
  */
 function mailchimp_subscribe_auth_form($form_state, $account) {
   $form = array();
-  $form['uid'] = array(
-    '#type' => 'hidden',
-    '#value' => $account->uid
-  );
 
   if ($q = _mailchimp_get_api_object()) {
-    if (!$account->uid) {
+    if ($account->uid) {
+      $form['uid'] = array(
+        '#type' => 'hidden',
+        '#value' => $account->uid
+      );
+    }
+    else {
       // user registration or admin creating new user
       $account->roles = array(2 => 'authenticated');
     }
@@ -162,8 +170,7 @@ function mailchimp_subscribe_auth_form($form_state, $account) {
 function mailchimp_form_alter(&$form, $form_state, $form_id){
   if($form_id == 'user_register'){
     if(variable_get('mailchimp_user_register', TRUE)){
-      $form['mailchimp'] = mailchimp_subscribe_auth_form(NULL, $account);
-      unset($form['mailchimp']['submit']);
+      // need to set this here as the submit handler doesn't get triggered in hook_user
       $form['#submit'][] = 'mailchimp_subscribe_auth_form_submit';
     }
   }
