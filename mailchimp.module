@@ -19,7 +19,12 @@ define('MAILCHIMP_LISTTYPE_OPTOUT', 'optout');
 function mailchimp_user($op, &$edit, &$account, $category = NULL) {
   // include the form in the user registration
   if ($op == 'register' && variable_get('mailchimp_user_register', TRUE)){
-    $form = mailchimp_subscribe_auth_form(NULL, $account);
+    // wrap in a fieldset
+    $form['mailchimp_lists'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Newsletters')
+    );
+    $form['mailchimp_lists'][] = mailchimp_subscribe_auth_form(NULL, $account);
     return $form;
   }
 
@@ -102,12 +107,13 @@ function mailchimp_subscribe_auth_form($form_state, $account) {
           $default_value = $list->listtype == MAILCHIMP_LISTTYPE_OPTOUT ? TRUE : FALSE;
         }
 
-        $form['mailchimp_list_fieldset_'. $list->id] = array(
-          '#type' => 'fieldset',
-          '#title' => $list->name
+        // wrap in a div
+        $form['wrapper'. $list->id] = array(
+          '#prefix' => '<div class="mailchimp-newsletter-wrapper">',
+          '#suffix' => '</div>'
         );
 
-        $form['mailchimp_list_fieldset_'. $list->id]['mailchimp_list_'. $list->id] = array(
+        $form['wrapper'. $list->id]['mailchimp_list_'. $list->id] = array(
             '#type'           => 'checkbox',
             '#title'          => t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
             '#default_value'  => $default_value,
@@ -132,7 +138,7 @@ function mailchimp_subscribe_auth_form($form_state, $account) {
             foreach ((array)$intgroup['groups'] as $group) {
               $options[$group] = $group;
             }
-            $form['mailchimp_list_fieldset_'. $list->id]['mailchimp_list_'. $list->id .'_INTERESTS'] = array(
+            $form['wrapper'. $list->id]['mailchimp_list_'. $list->id .'_INTERESTS'] = array(
               '#type'           => $field_type,
               '#title'          => $intgroup['name'],
               '#options'        => $options,
@@ -600,7 +606,7 @@ function mailchimp_subscribe_page(){
   elseif ($q = _mailchimp_get_api_object()) {
     $lists =_mailchimp_get_available_lists($user);
     foreach ($lists as $list) {
-      $ret .= drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
+      $ret .= '<h3 class="mailchimp-newseltter-title">'. $list->name .'</h3>'. drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
     }
   }
   return $ret;
@@ -616,25 +622,18 @@ function mailchimp_subscribe_page(){
  */
 function mailchimp_subscribe_anon_form($form_state, $list, $q) {
   $form = array();
-  $form['list_'. $list->id] = array(
-      '#type'   => 'fieldset',
-      '#title'  => t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
-      '#collapsible' => FALSE,
-      '#tree'   => FALSE,
-      '#attributes'   => array('class' => 'mailchimp-newsletter mailchimp-newsletter-'. $list->id)
-  );
 
-  $form['list_'. $list->id]['description'] = array(
+  $form['description'] = array(
     '#value' => $list->description
   );
 
-  $form['list_'. $list->id]['list'] = array(
+  $form['list'] = array(
       '#type'   => 'value',
       '#value'  => $list
   );
 
   foreach ((array)$q->listMergeVars($list->id) as $mergevar) {
-    $form['list_'. $list->id][$mergevar['tag']] = _mailchimp_insert_drupal_form_tag($mergevar);
+    $form[$mergevar['tag']] = _mailchimp_insert_drupal_form_tag($mergevar);
   }
 
   // present interest groups
@@ -652,14 +651,14 @@ function mailchimp_subscribe_anon_form($form_state, $list, $q) {
     foreach ((array)$intgroup['groups'] as $group) {
       $options[$group] = $group;
     }
-    $form['list_'. $list->id]['INTERESTS'] = array(
+    $form['INTERESTS'] = array(
       '#type'           => $field_type,
       '#title'          => $intgroup['name'],
       '#options'        => $options
     );
   }
 
-  $form['list_'. $list->id]['submit'] = array(
+  $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Sign Up!'),
     '#weight' => 100
@@ -1067,18 +1066,29 @@ function mailchimp_block($op='list', $delta=0) {
     if($_GET['q'] != 'mailchimp/subscribe' && stripos($_GET['q'], 'user/') === false){
       global $user;
       $ret = '';
+      $subject = t('Newsletter signup');
       if($user->uid){
         $ret = drupal_get_form('mailchimp_subscribe_auth_form', $user);
       }
       else{
         if ($q = _mailchimp_get_api_object()) {
           $lists =_mailchimp_get_available_lists($user);
+          $count = count($lists);
           foreach ($lists as $list) {
+            // if more than one newsletter, add a title to separate them
+            $title = '';
+            if($count > 1){
+              $title = '<h3 class="mailchimp-list-title">'. $list->name .'</h3>';
+            }
             $ret .= drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
+          }
+          // if only single newsletter, set block title to its name
+          if($count == 1){
+            $subject = t('Subscribe to the @title newsletter', array('@title' => $list->name));
           }
         }
       }
-      $block['subject'] = t('Newsletters');
+      $block['subject'] = $subject;
       $block['content'] = $ret;
     }
   }
