@@ -481,7 +481,7 @@ function mailchimp_admin_settings() {
             '#type'       => 'fieldset',
             '#collapsible' => TRUE,
             '#collapsed' => TRUE,
-            '#title'      => 'Messaging',
+            '#title'      => 'Anonymous Lists Messaging',
         );
         $form['mailchimp_messages']['mailchimp_subscription_success_message'] = array(
             '#type'           => 'textarea',
@@ -965,6 +965,9 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
     if (_mailchimp_is_subscribed($list->id, $email, $q)) {
       $action = 'updated in';
       $success = $q->listUpdateMember($list->id, $email, $merge_vars);
+      if($success && $message){
+        drupal_set_message(t('You have updated your settings in %list.', array('%list' => $list->name)));
+      }
     }
     else {
       $action = 'subscribed to';
