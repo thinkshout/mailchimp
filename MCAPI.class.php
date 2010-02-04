@@ -197,14 +197,14 @@ class MCAPI {
      * @param string $list_id the list to test segmentation on - get lists using lists()
      * @param array $options with 2 keys:
              string "match" controls whether to use AND or OR when applying your options - expects "<strong>any</strong>" (for OR) or "<strong>all</strong>" (for AND)
-             array "conditions" - up to 10 different criteria to apply while segmenting. Each criteria row should contain 3 keys - "<strong>field</strong>", "<strong>op</strong>", or "<strong>value</strong>" based on these definitions:
+             array "conditions" - up to 10 different criteria to apply while segmenting. Each criteria row must contain 3 keys - "<strong>field</strong>", "<strong>op</strong>", and "<strong>value</strong>" - and possibly a fourth, "<strong>extra</strong>", based on these definitions:
 
             Field = "<strong>date</strong>" : Select based on various dates we track
                 Valid Op(eration): <strong>eq</strong> (is) / <strong>gt</strong> (after) / <strong>lt</strong> (before)
                 Valid Values:
                 string last_campaign_sent  uses the date of the last campaign sent
                 string campaign_id - uses the send date of the campaign that carriers the Id submitted - see campaigns()
-                string YYYY-MM-DD - ny date in the form of YYYY-MM-DD - <em>note:</em> anything that appears to start with YYYY will be treated as a date
+                string YYYY-MM-DD - any date in the form of YYYY-MM-DD - <em>note:</em> anything that appears to start with YYYY will be treated as a date
 
             Field = "<strong>interests</strong>":
                 Valid Op(erations): <strong>one</strong> / <strong>none</strong> / <strong>all</strong>
@@ -214,9 +214,32 @@ class MCAPI {
                 Valid Op(erations): <strong>open</strong> / <strong>noopen</strong> / <strong>click</strong> / <strong>noclick</strong>
                 Valid Values: "<strong>any</strong>" or a valid AIM-enabled Campaign that has been sent
 
+            Field = "<strong>rating</strong>" : allows matching based on list member ratings
+                Valid Op(erations):  <strong>eq</strong> (=) / <strong>ne</strong> (!=) / <strong>gt</strong> (&gt;) / <strong>lt</strong> (&lt;)
+                Valid Values: a number between 0 and 5
+
+            Field = "<strong>ecomm_prod</strong>" or "<strong>ecomm_prod</strong>": allows matching product and category names from purchases
+                Valid Op(erations):
+                 <strong>eq</strong> (=) / <strong>ne</strong> (!=) / <strong>gt</strong> (&gt;) / <strong>lt</strong> (&lt;) / <strong>like</strong> (like '%blah%') / <strong>nlike</strong> (not like '%blah%') / <strong>starts</strong> (like 'blah%') / <strong>ends</strong> (like '%blah')
+                Valid Values: any string
+
+            Field = "<strong>ecomm_spent_one</strong>" or "<strong>ecomm_spent_all</strong>" : allows matching purchase amounts on a single order or all orders
+                Valid Op(erations): <strong>gt</strong> (&gt;) / <strong>lt</strong> (&lt;)
+                Valid Values: a number
+
+            Field = "<strong>ecomm_date</strong>" : allow matching based on order dates
+                Valid Op(eration): <strong>eq</strong> (is) / <strong>gt</strong> (after) / <strong>lt</strong> (before)
+                Valid Values:
+                string YYYY-MM-DD - any date in the form of YYYY-MM-DD
+
+            Field = An <strong>Address</strong> Merge Var. Use <strong>Merge0-Merge30</strong> or the <strong>Custom Tag</strong> you've setup for your merge field - see listMergeVars(). Note, Address fields can still be used with the default operations below - this section is broken out solely to highlight the differences in using the geolocation routines.
+                Valid Op(erations): <strong>geoin</strong>
+                Valid Values: The number of miles an address should be within
+                Extra Value: The Zip Code to be used as the center point
+
             Default Field = A Merge Var. Use <strong>Merge0-Merge30</strong> or the <strong>Custom Tag</strong> you've setup for your merge field - see listMergeVars()
                 Valid Op(erations):
-                 <strong>eq</strong> (=)/<strong>ne</strong>(!=)/<strong>gt</strong>(>)/<strong>lt</strong>(<)/<strong>like</strong>(like '%blah%')/<strong>nlike</strong>(not like '%blah%')/<strong>starts</strong>(like 'blah%')/<strong>ends</strong>(like '%blah')
+                 <strong>eq</strong> (=) / <strong>ne</strong> (!=) / <strong>gt</strong> (&gt;) / <strong>lt</strong> (&lt;) / <strong>like</strong> (like '%blah%') / <strong>nlike</strong> (not like '%blah%') / <strong>starts</strong> (like 'blah%') / <strong>ends</strong> (like '%blah')
                 Valid Values: any string
      * @return integer total The total number of subscribers matching your segmentation options
      */
@@ -266,6 +289,10 @@ class MCAPI {
     * @param array $type_opts optional -
             For RSS Campaigns this, array should contain:
                 string url the URL to pull RSS content from - it will be verified and must exist
+                string schedule optional one of "daily", "weekly", "monthly" - defaults to "daily"
+                string schedule_hour optional an hour between 0 and 24 - default to 4 (4am <em>local time</em>) - applies to all schedule types
+                string schedule_weekday optional for "weekly" only, a number specifying the day of the week to send: 0 (Sunday) - 6 (Saturday) - defaults to 1 (Monday)
+                string schedule_monthday optional for "monthly" only, a number specifying the day of the month to send (1 - 28) or "last" for the last day of a given month. Defaults to the 1st day of the month
 
             For A/B Split campaigns, this array should contain:
                 string split_test The values to segment based on. Currently, one of: "subject", "from_name", "schedule". NOTE, for "schedule", you will need to call campaignSchedule() separately!
@@ -367,6 +394,7 @@ class MCAPI {
             string  campaign_id optional - return a single campaign using a know campaign_id
             string  list_id optional - the list to send this campaign to- get lists using lists()
             integer folder_id optional - only show campaigns from this folder id - get folders using campaignFolders()
+            string  status optional - return campaigns of a specific status - one of "save", "paused", "schedule", "sending"
             string  type optional - return campaigns of a specific type - one of "regular", "plaintext", "absplit", "rss", "trans", "auto"
             string  from_name optional - only show campaigns that have this "From Name"
             string  from_email optional - only show campaigns that have this "Reply-to Email"
@@ -397,6 +425,7 @@ class MCAPI {
      * @returnf boolean track_clicks_text Whether or not links in the text version of the campaign were tracked
      * @returnf boolean track_clicks_html Whether or not links in the html version of the campaign were tracked
      * @returnf boolean track_opens Whether or not opens for the campaign were tracked
+     * @returnf array segment_opts the segment used for the campaign - can be passed to campaignSegmentTest() or campaignCreate()
      */
     function campaigns($filters=array (
 ), $start=0, $limit=25) {
@@ -641,7 +670,7 @@ class MCAPI {
      * @param string $cid the campaign id to pull bounces for (can be gathered using campaigns())
      * @param integer $start optional for large data sets, the page number to start at - defaults to 1st page of data  (page 0)
      * @param integer $limit optional for large data sets, the number of results to return - defaults to 25, upper limit set at 50
-     * @param string $since optional pull only messages since this time - use YYYY-MM-DD HH:II:SS format in <strong>GMT</strong>
+     * @param string $since optional pull only messages since this time - use YYYY-MM-DD format in <strong>GMT</strong> (we only store the date, not the time)
      * @return array bounces the full bounce messages for this campaign
      * @returnf string date date/time the bounce was received and processed
      * @returnf string email the email address that bounced
@@ -683,6 +712,34 @@ class MCAPI {
         $params["limit"] = $limit;
         $params["since"] = $since;
         return $this->callServer("campaignEcommOrders", $params);
+    }
+
+    /**
+     * Get the URL to a customized VIP Report for the specified campaign and optionally send an email to someone with links to it. Note subsequent calls will overwrite anything already set for the same campign (eg, the password)
+     *
+     * @section Campaign  Related
+     *
+     * @param string $cid the campaign id to share a report for (can be gathered using campaigns())
+     * @param array  $opts optional various parameters which can be used to configure the shared report
+            string  header_type optional - "text" or "image', defaults to "text'
+            string  header_data optional - if "header_type" is text, the text to display. if "header_type" is "image" a valid URL to an image file. Note that images will be resized to be no more than 500x150. Defaults to the Accounts Company Name.
+            bool    secure optional - whether to require a password for the shared report. defaults to "true"
+            string  password optional - if secure is true and a password is not included, we will generate one. It is always returned.
+            string  to_email optional - optional, email address to share the report with - no value means an email will not be sent
+            array   theme  optional - an array containing either 3 or 6 character color code values for: "bg_color", "header_color", "current_tab", "current_tab_text", "normal_tab", "normal_tab_text", "hover_tab", "hover_tab_text"
+            string  css_url    optional - a link to an external CSS file to be included after our default CSS (http://vip-reports.net/css/vip.css) <strong>only if</strong> loaded in an IFRAME - max 255 characters
+     * @return struct Struct containing details for the shared report
+     * @returnf string title The Title of the Campaign being shared
+     * @returnf string url The URL to the shared report
+     * @returnf string secure_url The URL to the shared report, including the password (good for loading in an IFRAME). For non-secure reports, this will not be returned
+     * @returnf string password If secured, the password for the report, otherwise this field will not be returned
+     */
+    function campaignShareReport($cid, $opts=array (
+)) {
+        $params = array();
+        $params["cid"] = $cid;
+        $params["opts"] = $opts;
+        return $this->callServer("campaignShareReport", $params);
     }
 
     /**
@@ -770,6 +827,7 @@ class MCAPI {
      * @section Campaign AIM
      *
      * @param string $cid the campaign id to get stats for (can be gathered using campaigns())
+     * @param string $email_address the email address to check
      * @return array Array of structs containing the actions (opens and clicks) that the email took, with timestamps
      * @returnf string action The action taken (open or click)
      * @returnf date timestamp Time the action occurred
@@ -1001,7 +1059,6 @@ class MCAPI {
     /** Change the name of an Interest Group
      *
      * @section List Related
-     * @example xml-rpc_listInterestGroupDel.php
      *
      * @param string $id the list id to connect to. Get by calling lists()
      * @param string $old_name the interest group name to be changed
@@ -1105,7 +1162,7 @@ class MCAPI {
 
 
 
-     * @param string $email_type optional - email type preference for the email (html or text, defaults to html)
+     * @param string $email_type optional - email type preference for the email (html, text, or mobile defaults to html)
      * @param boolean $double_optin optional - flag to control whether a double opt-in confirmation message is sent, defaults to true. <em>Abusing this may cause your account to be suspended.</em>
      * @param boolean $update_existing optional - flag to control whether a existing subscribers should be updated instead of throwing and error
      * @param boolean $replace_interests - flag to determine whether we replace the interest groups with the groups provided, or we add the provided groups to the member's interest groups (optional, defaults to true)
@@ -1159,7 +1216,7 @@ class MCAPI {
      * @param string $id the list id to connect to. Get by calling lists()
      * @param string $email_address the current email address of the member to update
      * @param array $merge_vars array of new field values to update the member with.  Use "EMAIL" to update the email address and "INTERESTS" to update the interest groups
-     * @param string $email_type change the email type preference for the member ("html" or "text").  Leave blank to keep the existing preference (optional)
+     * @param string $email_type change the email type preference for the member ("html", "text", or "mobile").  Leave blank to keep the existing preference (optional)
      * @param boolean $replace_interests flag to determine whether we replace the interest groups with the updated groups provided, or we add the provided groups to the member's interest groups (optional, defaults to true)
      * @return boolean true on success, false on failure. When using MCAPI.class.php, the value can be tested and error messages pulled from the MCAPI object
      */
@@ -1182,7 +1239,7 @@ class MCAPI {
      * @example xml-rpc_listBatchSubscribe.php
      *
      * @param string $id the list id to connect to. Get by calling lists()
-     * @param array $batch an array of structs for each address to import with two special keys: "EMAIL" for the email address, and "EMAIL_TYPE" for the email type option (html or text)
+     * @param array $batch an array of structs for each address to import with two special keys: "EMAIL" for the email address, and "EMAIL_TYPE" for the email type option (html, text, or mobile)
      * @param boolean $double_optin flag to control whether to send an opt-in confirmation email - defaults to true
      * @param boolean $update_existing flag to control whether to update members that are already subscribed to the list or to return an error, defaults to false (return error)
      * @param boolean $replace_interests flag to determine whether we replace the interest groups with the updated groups provided, or we add the provided groups to the member's interest groups (optional, defaults to true)
@@ -1262,8 +1319,9 @@ class MCAPI {
      * @param string $id the list id to connect to. Get by calling lists()
      * @param string $email_address the member email address to get information for
      * @return array array of list member info (see Returned Fields for details)
+     * @returnf string id The unique id for this email address on an account
      * @returnf string email The email address associated with this record
-     * @returnf string email_type The type of emails this customer asked to get: html or text
+     * @returnf string email_type The type of emails this customer asked to get: html, text, or mobile
      * @returnf array merges An associative array of all the merge tags and the data for those tags for this email address. <em>Note</em>: Interest Groups are returned as comma delimited strings - if a group name contains a comma, it will be escaped with a backslash. ie, "," =&gt; "\,"
      * @returnf string status The subscription status for this email address, either subscribed, unsubscribed or cleaned
      * @returnf string ip_opt IP Address this address opted in from.
@@ -1315,7 +1373,7 @@ class MCAPI {
      * @return array array of months and growth
      * @returnf string month The Year and Month in question using YYYY-MM format
      * @returnf integer existing number of existing subscribers to start the month
-     * @returnf integer import number of subscribers imported during the month
+     * @returnf integer imports number of subscribers imported during the month
      * @returnf integer optins number of subscribers who opted-in during the month
      */
     function listGrowthHistory($id) {
@@ -1519,8 +1577,11 @@ class MCAPI {
     function callServer($method, $params) {
     	//Always include the apikey if we are not logging in
     	if($method != "login") {
-        	list($key, $dc) = explode("-",$this->api_key,2);
-        	if (!$dc) $dc = "us1";
+    	    $dc = "us1";
+    	    if (strstr($this->api_key,"-")){
+            	list($key, $dc) = explode("-",$this->api_key,2);
+                if (!$dc) $dc = "us1";
+            }
             $host = $dc.".".$this->apiUrl["host"];
     		$params["apikey"] = $this->api_key;
     	} else {
@@ -1540,9 +1601,9 @@ class MCAPI {
 
         ob_start();
         if ($this->secure){
-            $sock = fsockopen("ssl://".$host, 443, $errno, $errstr, $this->timeout);
+            $sock = fsockopen("ssl://".$host, 443, $errno, $errstr, 30);
         } else {
-            $sock = fsockopen($host, 80, $errno, $errstr, $this->timeout);
+            $sock = fsockopen($host, 80, $errno, $errstr, 30);
         }
         if(!$sock) {
             $this->errorMessage = "Could not connect (ERR $errno: $errstr)";
@@ -1553,11 +1614,19 @@ class MCAPI {
 
         $response = "";
         fwrite($sock, $payload);
-        while(!feof($sock)) {
+        stream_set_timeout($sock, $this->timeout);
+        $info = stream_get_meta_data($sock);
+        while ((!feof($sock)) && (!$info["timed_out"])) {
             $response .= fread($sock, $this->chunkSize);
+            $info = stream_get_meta_data($sock);
+        }
+        if ($info["timed_out"]) {
+            $this->errorMessage = "Could not read response (timed out)";
+            $this->errorCode = -98;
         }
         fclose($sock);
         ob_end_clean();
+        if ($info["timed_out"]) return false;
 
         list($throw, $response) = explode("\r\n\r\n", $response, 2);
 
