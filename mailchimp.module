@@ -17,30 +17,36 @@ define('MAILCHIMP_LISTTYPE_OPTOUT', 'optout');
  * The list form fields are added to the registration and profile forms
  */
 function mailchimp_user($op, &$edit, &$account, $category = NULL) {
-  // include the form in the user registration
+  // include the form in the user registration if any applicable newsletters
   if ($op == 'register' && variable_get('mailchimp_user_register', TRUE)){
-    // wrap in a fieldset
-    $form['mailchimp_lists'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Newsletters')
-    );
-    $form['mailchimp_lists'][] = mailchimp_subscribe_auth_form(NULL, $account);
-    return $form;
+    if(count(_mailchimp_get_available_lists($account)) > 0 ){
+      // wrap in a fieldset
+      $form['mailchimp_lists'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Newsletters')
+      );
+      $form['mailchimp_lists'][] = mailchimp_subscribe_auth_form(NULL, $account);
+      return $form;
+    }
   }
 
   if (in_array($op, array('insert', 'delete', 'update'))) {
     $q = _mailchimp_get_api_object();
     foreach ((array)_mailchimp_get_required_lists() as $list) {
+      $action_taken = FALSE;
       switch ($op) {
       // delete a user from MC list
         case "delete":
           $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
+          $action_taken = TRUE;
           break;
         // insert or update a user to/in a MC list
         case 'insert':
         case 'update':
         // don't repeat if already managing via cron
           if (!variable_get('mailchimp_cron', FALSE) ) {
+            $action_taken = TRUE;
+            
             // determine if a user is allowed in a given list
             $is_allowed = FALSE;
             $roles = $edit['roles'];
@@ -68,12 +74,14 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
           break;
       }
 
-      if ($ret) {
-        watchdog('mailchimp', 'MailChimp: %email updated in list %list on action %action',
-            array('%email' => $account->mail, '%list' => $list->name, '%action' => $op), WATCHDOG_NOTICE);
-      }
-      else {
-        watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
+      if($action_taken){
+        if ($ret) {
+          watchdog('mailchimp', 'MailChimp: %email updated in list %list on action %action',
+              array('%email' => $account->mail, '%list' => $list->name, '%action' => $op), WATCHDOG_NOTICE);
+        }
+        else {
+          watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
+        }
       }
     }
   }
@@ -263,7 +271,7 @@ function mailchimp_cron() {
 
           if ($ret['error_count'] > 0) {
             foreach ((array)$ret['errors'] as $error) {
-              watchdog('mailchimp', $error['email_address'] .': '. $error['message'], array(), WATCHDOG_ERROR);
+              watchdog('mailchimp', $error['message'], array(), WATCHDOG_ERROR);
             }
           }
         }
@@ -1053,6 +1061,8 @@ function _mailchimp_get_api_object() {
   module_load_include('php', 'mailchimp', 'MCAPI.class');
 
   $q = new MCAPI(variable_get('mailchimp_username', ''), variable_get('mailchimp_password', ''));
+  // set the timeout to something reasonsable to avoid taking down the Drupal site
+    $q->setTimeout(60);
   if ($q->errorCode) {
     watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
     return NULL;
