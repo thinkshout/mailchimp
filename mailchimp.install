@@ -9,3 +9,20 @@ function mailchimp_update_6200(){
   cache_clear_all();
   return $ret;  
 }
+
+/**
+ * implementation of hook_uninstall()
+ */
+function mailchimp_uninstall() {
+  variable_del('mailchimp_cron');
+  variable_del('mailchimp_interest_groups_user_forms');
+  variable_del('mailchimp_lists');
+  variable_del('mailchimp_password');
+  variable_del('mailchimp_subscription_failure_message');
+  variable_del('mailchimp_subscription_success_message');
+  variable_del('mailchimp_unsubscription_failure_message');
+  variable_del('mailchimp_unsubscription_success_message');
+  variable_del('mailchimp_user_edit');
+  variable_del('mailchimp_username');
+  variable_del('mailchimp_user_register');
+}
