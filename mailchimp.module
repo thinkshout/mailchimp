@@ -31,8 +31,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
     }
   }
 
-  if (in_array($op, array('insert', 'delete', 'update'))) {
-    $q = _mailchimp_get_api_object();
+  if (in_array($op, array('insert', 'delete', 'update')) && $q = _mailchimp_get_api_object()) {
     foreach ((array)_mailchimp_get_required_lists() as $list) {
       $action_taken = FALSE;
       switch ($op) {
