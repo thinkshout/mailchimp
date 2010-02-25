@@ -19,13 +19,14 @@ define('MAILCHIMP_LISTTYPE_OPTOUT', 'optout');
 function mailchimp_user($op, &$edit, &$account, $category = NULL) {
   // include the form in the user registration if any applicable newsletters
   if ($op == 'register' && variable_get('mailchimp_user_register', TRUE)){
+    $account->roles = array(2 => 'authenticated');
     if(count(_mailchimp_get_available_lists($account)) > 0 ){
       // wrap in a fieldset
       $form['mailchimp_lists'] = array(
         '#type' => 'fieldset',
         '#title' => t('Newsletters')
       );
-      $form['mailchimp_lists'][] = mailchimp_subscribe_auth_form(NULL, $account);
+      $form['mailchimp_lists'][] = mailchimp_subscribe_auth_form(NULL, $account, FALSE);
       return $form;
     }
   }
@@ -90,7 +91,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
 /**
  * Add mailchimp form fields to account and registration forms
  */
-function mailchimp_subscribe_auth_form($form_state, $account) {
+function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE) {
   $form = array();
 
   if ($q = _mailchimp_get_api_object()) {
@@ -170,11 +171,13 @@ function mailchimp_subscribe_auth_form($form_state, $account) {
       }
     }
 
-    $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('save settings'),
-      '#weight' => 100
-    );
+    if ($standalone){
+      $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('save settings'),
+        '#weight' => 100
+      );
+    }
   }
 
   return $form;
@@ -1062,7 +1065,8 @@ function _mailchimp_get_api_object() {
 
   $q = new MCAPI(variable_get('mailchimp_username', ''), variable_get('mailchimp_password', ''));
   // set the timeout to something reasonsable to avoid taking down the Drupal site
-    $q->setTimeout(60);
+  $q->setTimeout(60);
+  
   if ($q->errorCode) {
     watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
     return NULL;
