@@ -37,13 +37,14 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
       switch ($op) {
       // delete a user from MC list
         case "delete":
+          db_query('DELETE FROM {mailchimp_pending_update} WHERE uid = %d', $account->uid);
           $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
           $action_taken = TRUE;
           break;
         // insert or update a user to/in a MC list
         case 'insert':
         case 'update':
-        // don't repeat if already managing via cron
+          // don't repeat if already managing via cron
           if (!variable_get('mailchimp_cron', FALSE) ) {
             $action_taken = TRUE;
             
@@ -70,6 +71,10 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
             else{
               $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
             }
+          }
+          else {
+            // They don't *really* need to go in the queue unless they just changed their prefs.
+            db_query('INSERT INTO {mailchimp_pending_update} (uid) VALUES (%d)', $account->uid);
           }
           break;
       }
@@ -246,7 +251,7 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
  */
 function mailchimp_cron() {
   if (variable_get('mailchimp_cron', FALSE) && $q = _mailchimp_get_api_object()) {
-    $result = db_query('SELECT uid FROM {users} where status = %d', 1);
+    $result = db_query_range('SELECT uid FROM {mailchimp_pending_update}', 0, variable_get('mailchimp_batch_limit', 100));
 
     if ($result) {
       $lists = _mailchimp_get_required_lists();
@@ -255,12 +260,17 @@ function mailchimp_cron() {
         $lists[$key]->mergevars  = $q->listMergeVars($list->id);
       }
       while ($row = db_fetch_object($result)) {
-        $account = user_load(array('uid' => $row->uid));
-        foreach ((array)$lists as $key => $list) {
-          foreach ((array)$account->roles as $rid => $info) {
-            if ($list->roles[$rid]) {
-              $lists[$key]->batch[] = _mailchimp_load_user_list_mergevars($row->uid, $list->id, $lists[$key]->mergevars);
-              break;
+        db_query('DELETE FROM {mailchimp_pending_update} WHERE uid = %d', $account->uid);
+        if ($account = user_load(array('uid' => $row->uid))) {
+          // We don't update people if their status = 0 (but perhaps we could unsubscribe them?)
+          if ($account->status) {
+            foreach ((array)$lists as $key => $list) {
+              foreach ((array)$account->roles as $rid => $info) {
+                if ($list->roles[$rid]) {
+                  $lists[$key]->batch[] = _mailchimp_load_user_list_mergevars($row->uid, $list->id, $lists[$key]->mergevars);
+                  break;
+                }
+              }
             }
           }
         }
@@ -270,7 +280,6 @@ function mailchimp_cron() {
       foreach ($lists as $key => $list) {
         if (count($lists[$key]->batch)) {
           $ret = $q->listBatchSubscribe($list->id, $lists[$key]->batch, FALSE, TRUE);
-
           if ($ret['error_count'] > 0) {
             foreach ((array)$ret['errors'] as $error) {
               watchdog('mailchimp', $error['message'], array(), WATCHDOG_ERROR);
@@ -526,17 +535,49 @@ function mailchimp_admin_settings() {
             '#description'    => t('If set, a tab will be presented for managing newsletter subscriptions when editing an account.'),
             '#default_value'  => variable_get('mailchimp_user_edit', TRUE)
         );
-        $form['mailchimp_cron'] = array(
-            '#type'           => 'checkbox',
-            '#title'          => t('Sync Required Lists During Cron'),
-            '#default_value'  => variable_get('mailchimp_cron', FALSE),
-            '#description'    => t('If this is set, users will be subscribed to the required list during cron runs. Otherwise subscription will take place when a user is added/edited.')
-        );
         $form['mailchimp_interest_groups_user_forms'] = array(
             '#type'           => 'checkbox',
             '#title'          => t('Show Interest Groups on Registration and Account Forms'),
             '#default_value'  => variable_get('mailchimp_interest_groups_user_forms', FALSE),
             '#description'    => t('If set, users will be able to select applicable interest groups when registering or editing their accounts.')
+        );
+
+        $form['cron'] = array(
+          '#type' => 'fieldset',
+          '#title' => t('Mailchimp Cron'),
+        );
+        $form['cron']['info'] = array(
+          '#value' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when editing users. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site.<br /><strong>There are currently !count users in the queue.</strong>', array('!count'=>db_result(db_query('SELECT COUNT(*) FROM {mailchimp_pending_update}')))),
+        );
+        $form['cron']['mailchimp_cron'] = array(
+            '#type'           => 'checkbox',
+            '#title'          => t('Sync Required Lists During Cron'),
+            '#default_value'  => variable_get('mailchimp_cron', FALSE),
+            '#description'    => t('If this is set, users will be subscribed to the required list during cron runs. Otherwise subscription will take place when a user is added/edited.'),
+        );
+        // NB: This is the maximum number of users to update, but unless you have required lists,
+        // the actual number of users subscribed and therefore updated will likely be signficantly less.
+        $form['cron']['mailchimp_batch_limit'] = array(
+          '#type' => 'select',
+          '#options' => array(
+            '1' => '1',
+            '10' => '10',
+            '25' => '25',
+            '50' => '50',
+            '75' => '75',
+            '100' => '100',
+            '250' => '250',
+            '500' => '500',
+            '750' => '750',
+            '1000' => '1000',
+            '2500' => '2500',
+            '5000' => '5000',
+            '7500' => '7500',
+            '10000' => '10000',
+          ),
+          '#title' => t('Batch limit'),
+          '#description' => t('Maximum number of users to process in a single cron run. Mailchimp suggest keeping this below 5000-10000. Ignored if updates take place on user add / edit.'),
+          '#default_value' => variable_get('mailchimp_batch_limit', 100),
         );
       }
       else {

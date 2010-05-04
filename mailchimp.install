@@ -1,4 +1,27 @@
 <?php
+
+/**
+ * Implementation of hook_schema().
+ */
+function mailchimp_schema() {
+  // A table of uids
+  // @todo If we decide to also do deletes in cron then we can add mail here?
+  $schema['mailchimp_pending_update'] = array(
+    'fields' => array(
+      'uid' => array('type' => 'int'),
+    ),
+    'primary key' => array('uid'),
+  );
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function mailchimp_install() {
+  drupal_install_schema('mailchimp');
+}
+
 /**
  * implementation of hook_update_N
  */
@@ -11,7 +34,30 @@ function mailchimp_update_6200(){
 }
 
 /**
- * implementation of hook_uninstall()
+ * Implementation of hook_update_N().
+ *
+ * Create a new table for the queue. 
+ *
+ * When going from no queue to queue, we have to import everyone to
+ * the queue for the first pass. After that we can start adding people
+ * as required.
+ */
+function mailchimp_update_6201() {
+  $ret = array();
+  $schema['mailchimp_pending_update'] = array(
+    'fields' => array(
+      'uid' => array('type' => 'int'),
+    ),
+    'primary key' => array('uid'),
+  );
+  db_create_table($ret, 'mailchimp_pending_update', $schema['mailchimp_pending_update']);
+  // Everybody goes in here (exclude status = 0 here?)
+  $ret[] = update_sql("INSERT INTO {mailchimp_pending_update} (uid) SELECT uid FROM {users} WHERE uid > 0");
+  return $ret;
+}
+
+/**
+ * Implementation of hook_uninstall().
  */
 function mailchimp_uninstall() {
   variable_del('mailchimp_cron');
@@ -25,4 +71,6 @@ function mailchimp_uninstall() {
   variable_del('mailchimp_user_edit');
   variable_del('mailchimp_username');
   variable_del('mailchimp_user_register');
+
+  drupal_uninstall_schema('mailchimp');
 }
