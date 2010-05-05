@@ -1141,8 +1141,10 @@ function mailchimp_block($op='list', $delta=0) {
             if($count > 1){
               $title = '<h3 class="mailchimp-list-title">'. $list->name .'</h3>';
             }
-            $ret .= drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
+            $ret .= '<div id="mailchimp-block-list-'. $list->id .'">'. $title .
+              drupal_get_form('mailchimp_subscribe_anon_form', $list, $q) .'</div>';
           }
+
           // if only single newsletter, set block title to its name
           if($count == 1){
             $subject = t('Subscribe to the @title newsletter', array('@title' => $list->name));
