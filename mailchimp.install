@@ -6,9 +6,10 @@
 function mailchimp_schema() {
   // A table of uids
   // @todo If we decide to also do deletes in cron then we can add mail here?
-  $schema['mailchimp_pending_update'] = array(
+  $schema['mailchimp_user'] = array(
     'fields' => array(
       'uid' => array('type' => 'int'),
+      'status' => array('type' => 'varchar', 'length' => 15)
     ),
     'primary key' => array('uid'),
   );
@@ -19,7 +20,7 @@ function mailchimp_schema() {
  * Implementation of hook_install().
  */
 function mailchimp_install() {
-  drupal_install_schema('mailchimp');
+  drupal_install_schema('mailchimp_user');
 }
 
 /**
@@ -44,15 +45,12 @@ function mailchimp_update_6200(){
  */
 function mailchimp_update_6201() {
   $ret = array();
-  $schema['mailchimp_pending_update'] = array(
-    'fields' => array(
-      'uid' => array('type' => 'int'),
-    ),
-    'primary key' => array('uid'),
-  );
-  db_create_table($ret, 'mailchimp_pending_update', $schema['mailchimp_pending_update']);
+  
+  $schema = drupal_get_schema_unprocessed('mailchimp', 'mailchimp_user');
+  db_create_table($ret, 'mailchimp_user', $schema);
+
   // Everybody goes in here (exclude status = 0 here?)
-  $ret[] = update_sql("INSERT INTO {mailchimp_pending_update} (uid) SELECT uid FROM {users} WHERE uid > 0");
+  $ret[] = update_sql("INSERT INTO {mailchimp_user} (uid, status) SELECT uid, '". MAILCHIMP_USERSTATUS_PENDING ."' FROM {users} WHERE uid > 0");
   return $ret;
 }
 

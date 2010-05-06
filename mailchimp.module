@@ -9,6 +9,8 @@
 define('MAILCHIMP_LISTTYPE_REQUIRED', 'required');
 define('MAILCHIMP_LISTTYPE_OPTIN', 'optin');
 define('MAILCHIMP_LISTTYPE_OPTOUT', 'optout');
+define('MAILCHIMP_USERSTATUS_PENDING', 'pending');
+define('MAILCHIMP_USERSTATUS_CURRENT', 'current');
 
 /**
  * Implementation of hook_user
@@ -37,7 +39,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
       switch ($op) {
       // delete a user from MC list
         case "delete":
-          db_query('DELETE FROM {mailchimp_pending_update} WHERE uid = %d', $account->uid);
+          db_query('DELETE FROM {mailchimp_user} WHERE uid = %d', $account->uid);
           $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
           $action_taken = TRUE;
           break;
@@ -74,7 +76,12 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
           }
           else {
             // They don't *really* need to go in the queue unless they just changed their prefs.
-            db_query('INSERT INTO {mailchimp_pending_update} (uid) VALUES (%d)', $account->uid);
+            if ($op == 'insert') {
+              db_query("INSERT INTO {mailchimp_user} (uid, status) VALUES (%d, '%s')", $account->uid, MAILCHIMP_USERSTATUS_PENDING);
+            }
+            else {
+              db_query("UPDATE {mailchimp_user} SET status = '%s' WHERE uid = %d", MAILCHIMP_USERSTATUS_PENDING, $account->uid);
+            }
           }
           break;
       }
@@ -251,7 +258,8 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
  */
 function mailchimp_cron() {
   if (variable_get('mailchimp_cron', FALSE) && $q = _mailchimp_get_api_object()) {
-    $result = db_query_range('SELECT uid FROM {mailchimp_pending_update}', 0, variable_get('mailchimp_batch_limit', 100));
+    $result = db_query_range('SELECT uid FROM {mailchimp_user} WHERE status = \'%s\'', array(MAILCHIMP_USERSTATUS_PENDING),
+            variable_get('mailchimp_batch_limit', 100));
 
     if ($result) {
       $lists = _mailchimp_get_required_lists();
@@ -260,7 +268,7 @@ function mailchimp_cron() {
         $lists[$key]->mergevars  = $q->listMergeVars($list->id);
       }
       while ($row = db_fetch_object($result)) {
-        db_query('DELETE FROM {mailchimp_pending_update} WHERE uid = %d', $account->uid);
+        db_query('UPDATE {mailchimp_user} SET status = \'%s\' WHERE uid = %d', MAILCHIMP_USERSTATUS_CURRENT, $account->uid);
         if ($account = user_load(array('uid' => $row->uid))) {
           // We don't update people if their status = 0 (but perhaps we could unsubscribe them?)
           if ($account->status) {
@@ -547,7 +555,7 @@ function mailchimp_admin_settings() {
           '#title' => t('Mailchimp Cron'),
         );
         $form['cron']['info'] = array(
-          '#value' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when editing users. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site.<br /><strong>There are currently !count users in the queue.</strong>', array('!count'=>db_result(db_query('SELECT COUNT(*) FROM {mailchimp_pending_update}')))),
+          '#value' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when editing users. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site.<br /><strong>There are currently !count users with pending updates in the queue.</strong>', array('!count'=>db_result(db_query('SELECT COUNT(*) FROM {mailchimp_user} WHERE status = \'%s\'', MAILCHIMP_USERSTATUS_PENDING)))),
         );
         $form['cron']['mailchimp_cron'] = array(
             '#type'           => 'checkbox',
