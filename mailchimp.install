@@ -20,7 +20,7 @@ function mailchimp_schema() {
  * Implementation of hook_install().
  */
 function mailchimp_install() {
-  drupal_install_schema('mailchimp_user');
+  drupal_install_schema('mailchimp');
 }
 
 /**
