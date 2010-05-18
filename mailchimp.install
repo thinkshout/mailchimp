@@ -55,19 +55,46 @@ function mailchimp_update_6201() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ *
+ * Takes the old username and password and changes it into an API key.
+ */
+function mailchimp_update_6202() {
+  $ret = array();
+  
+  module_load_include('php', 'mailchimp', 'MCAPI.class');
+
+  $q = new MCAPI(variable_get('mailchimp_username', ''), variable_get('mailchimp_password', ''));
+  // set the timeout to something reasonsable to avoid taking down the Drupal site
+  $q->setTimeout(60);
+  
+  if ($q->errorCode) {
+    watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
+    // TODO: Notify persons that finding an API Key for a seamless upgrade failed because we could not login.
+    return $ret;
+  }
+  
+  // Save an API key to the site's variables
+  variable_set('mailchimp_api_key', $q->api_key);
+  
+  // clean up old variables
+  $ret[] = update_sql("DELETE FROM {variable} WHERE name = 'mailchimp_username' OR name = 'mailchimp_password'");
+  return $ret;
+}
+
+/**
  * Implementation of hook_uninstall().
  */
 function mailchimp_uninstall() {
+  variable_del('mailchimp_api_key');
   variable_del('mailchimp_cron');
   variable_del('mailchimp_interest_groups_user_forms');
   variable_del('mailchimp_lists');
-  variable_del('mailchimp_password');
   variable_del('mailchimp_subscription_failure_message');
   variable_del('mailchimp_subscription_success_message');
   variable_del('mailchimp_unsubscription_failure_message');
   variable_del('mailchimp_unsubscription_success_message');
   variable_del('mailchimp_user_edit');
-  variable_del('mailchimp_username');
   variable_del('mailchimp_user_register');
 
   drupal_uninstall_schema('mailchimp');
