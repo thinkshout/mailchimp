@@ -236,10 +236,17 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
         else if ($selected) {
         // subscribe the user if they are not previously subscribed or update existing subscriptions
           $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
-          $merge_vars['EMAIL'] = $form_state['values']['mail'];
+
+          // include updated email address if already subscribed
+          if (!empty($form_state['values']['mail']) && $is_subscribed){
+            $merge_vars['EMAIL'] = $form_state['values']['mail'];
+          }
+
+          // include interest groups
           if (!empty($form_state['values']['mailchimp_list_'. $list->id .'_INTERESTS'])){
             $merge_vars['INTERESTS'] = implode(',', array_filter($form_state['values']['mailchimp_list_'. $list->id .'_INTERESTS']));
           }
+          
           $ret = _mailchimp_subscribe_user($list, $account->mail, $merge_vars, TRUE, $q);
         }
 
@@ -987,6 +994,11 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
   if ($q || $q = _mailchimp_get_api_object()) {
     $double_optin   = $list->doublein;
 
+    // required by MC API. An empty array will fail.
+    if (empty($merge_vars)) {
+      $merge_vars = '';
+    }
+
     if (_mailchimp_is_subscribed($list->id, $email, $q)) {
       $action = 'updated in';
       $success = $q->listUpdateMember($list->id, $email, $merge_vars);
@@ -1001,9 +1013,9 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
       if ($message && $success && $double_optin) {
         drupal_set_message(t('You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription.', array('%list' => $list->name)));
       }
-      else if ($message && $success) {
-          drupal_set_message(t('You have subscribed to %list.', array('%list' => $list->name)));
-        }
+      elseif ($message && $success) {
+        drupal_set_message(t('You have subscribed to %list.', array('%list' => $list->name)));
+      }
     }
   }
 
