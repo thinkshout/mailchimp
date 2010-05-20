@@ -265,6 +265,7 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
  */
 function mailchimp_cron() {
   if (variable_get('mailchimp_cron', FALSE) && $q = _mailchimp_get_api_object()) {
+    $sql = "SELECT uid FROM {mailchimp_user} WHERE status = '%s'";
     $result = db_query_range($sql, array(MAILCHIMP_USERSTATUS_PENDING), 0, variable_get('mailchimp_batch_limit', 100));
   
     if ($result) {
