@@ -65,20 +65,21 @@ function mailchimp_update_6202() {
   module_load_include('php', 'mailchimp', 'MCAPI.class');
 
   $q = new MCAPI(variable_get('mailchimp_username', ''), variable_get('mailchimp_password', ''));
-  // set the timeout to something reasonsable to avoid taking down the Drupal site
+  // Set the timeout to something reasonsable to avoid taking down the site.
   $q->setTimeout(60);
   
   if ($q->errorCode) {
-    watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
-    // TODO: Notify persons that finding an API Key for a seamless upgrade failed because we could not login.
+    watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
+    $ret[] = array('success' => FALSE, 'query' => 'MailChimp returned error: ' . check_plain($q->errorMessage));
     return $ret;
   }
   
-  // Save an API key to the site's variables
+  // Save the API key.
   variable_set('mailchimp_api_key', $q->api_key);
   
-  // clean up old variables
-  $ret[] = update_sql("DELETE FROM {variable} WHERE name = 'mailchimp_username' OR name = 'mailchimp_password'");
+  // Clean up old variables.
+  variable_del('mailchimp_username');
+  variable_del('mailchimp_password');
   return $ret;
 }
 

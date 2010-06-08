@@ -92,7 +92,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
               array('%email' => $account->mail, '%list' => $list->name, '%action' => $op), WATCHDOG_NOTICE);
         }
         else {
-          watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
+          watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
         }
       }
     }
@@ -251,7 +251,7 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
         }
 
         if (!$ret) {
-          watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
+          watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
         }
       }
     }
@@ -297,7 +297,7 @@ function mailchimp_cron() {
           $ret = $q->listBatchSubscribe($list->id, $lists[$key]->batch, FALSE, TRUE);
           if ($ret['error_count'] > 0) {
             foreach ((array)$ret['errors'] as $error) {
-              watchdog('mailchimp', $error['message'], array(), WATCHDOG_ERROR);
+              watchdog('mailchimp', $error['message'], NULL, WATCHDOG_ERROR);
             }
           }
         }
@@ -1095,7 +1095,7 @@ function _mailchimp_get_api_object() {
   $q->setTimeout(60);
   
   if ($q->errorCode) {
-    watchdog('mailchimp', $q->errorMessage, array(), WATCHDOG_ERROR);
+    watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
     return NULL;
   }
   return $q;
