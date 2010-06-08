@@ -669,7 +669,18 @@ function mailchimp_subscribe_anon_form($form_state, $list, $q) {
       '#value'  => $list
   );
 
+  // grab any default values for authenticated users
+  // @TODO: this form isn't really for anonymous users only, refactor
+  global $user;
+  if ($user->uid) {
+    $mergevalues = _mailchimp_load_user_list_mergevars($user->uid, $list->id, $q->listMergeVars($list->id));
+  }
+
   foreach ((array)$q->listMergeVars($list->id) as $mergevar) {
+    // set the default value for merge fields if we have it
+    if ($mergevalues && $mergevalues[$mergevar['tag']]) {
+      $mergevar['default'] = $mergevalues[$mergevar['tag']];
+    }
     $form[$mergevar['tag']] = _mailchimp_insert_drupal_form_tag($mergevar);
   }
 
@@ -1057,7 +1068,7 @@ function _mailchimp_get_available_lists($user) {
     foreach ($all_lists as $key => $list) {
       foreach ((array)$user->roles as $rid => $info) {
         if ($list->roles[$rid]) {
-          $available_lists[] = $list;
+          $available_lists[$list->id] = $list;
           break;
         }
       }
@@ -1103,43 +1114,28 @@ function _mailchimp_get_api_object() {
 
 /**
  * implementation of hook_block
- * @todo: provide a block for each individual list
+ * Provides a block for each available list for a given user
  */
 function mailchimp_block($op='list', $delta=0) {
   if ($op == "list") {
-    $block[0]["info"] = t("Mailchimp Subscription Form");
-  }
-  else if ($op == 'view') {
-    // don't show on the subscription page to avoid conflicts
-    if($_GET['q'] != 'mailchimp/subscribe' && stripos($_GET['q'], 'user/') === false){
-      global $user;
-      $ret = '';
-      $subject = t('Newsletter signup');
-      if($user->uid){
-        $ret = drupal_get_form('mailchimp_subscribe_auth_form', $user);
-      }
-      else{
-        if ($q = _mailchimp_get_api_object()) {
-          $lists =_mailchimp_get_available_lists($user);
-          $count = count($lists);
-          foreach ($lists as $list) {
-            // if more than one newsletter, add a title to separate them
-            $title = '';
-            if($count > 1){
-              $title = '<h3 class="mailchimp-list-title">'. $list->name .'</h3>';
-            }
-            $ret .= '<div id="mailchimp-block-list-'. $list->id .'">'. $title .
-              drupal_get_form('mailchimp_subscribe_anon_form', $list, $q) .'</div>';
-          }
-
-          // if only single newsletter, set block title to its name
-          if($count == 1){
-            $subject = t('Subscribe to the @title newsletter', array('@title' => $list->name));
-          }
+    $all_lists = variable_get('mailchimp_lists', array());
+    if (!empty($all_lists)) {
+      $all_lists = unserialize($all_lists);
+      foreach ($all_lists as $key => $list) {
+        // exclude required lists
+        if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
+          $block[$list->id]["info"] = t('Mailchimp Subscription Form: @name', array('@name' => $list->name));
         }
       }
-      $block['subject'] = $subject;
-      $block['content'] = $ret;
+    }
+  }
+  else if ($op == 'view') {
+    global $user;
+    $lists = _mailchimp_get_available_lists($user);
+    $list = $lists[$delta];
+    if (!empty($list) && $q = _mailchimp_get_api_object()) {
+      $block['subject'] = t('Subscribe to @title', array('@title' => $list->name));;
+      $block['content'] = drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
     }
   }
   return $block;
