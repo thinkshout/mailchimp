@@ -8,7 +8,7 @@ function mailchimp_schema() {
   // @todo If we decide to also do deletes in cron then we can add mail here?
   $schema['mailchimp_user'] = array(
     'fields' => array(
-      'uid' => array('type' => 'int'),
+      'uid' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
       'status' => array('type' => 'varchar', 'length' => 15)
     ),
     'primary key' => array('uid'),
