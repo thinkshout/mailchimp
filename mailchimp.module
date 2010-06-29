@@ -621,7 +621,7 @@ function mailchimp_admin_settings() {
  */
 function mailchimp_admin_settings_validate($form, &$form_state) {
   // no lists selected or first time here
-  if(!is_array($form_state['values']['mailchimp_lists'])){
+  if(empty($form_state['values']['mailchimp_lists'])){
     return;
   }
 
@@ -656,12 +656,77 @@ function mailchimp_subscribe_page(){
     $ret = drupal_get_form('mailchimp_subscribe_auth_form', $user);
   }
   elseif ($q = _mailchimp_get_api_object()) {
-    $lists =_mailchimp_get_available_lists($user);
-    foreach ($lists as $list) {
-      $ret .= '<h3 class="mailchimp-newseltter-title">'. $list->name .'</h3>'. drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
-    }
+    // $lists =_mailchimp_get_available_lists($user);
+    // foreach ($lists as $list) {
+    //   $ret .= '<h3 class="mailchimp-newseltter-title">'. $list->name .'</h3>'. drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
+    // }
+    $ret = drupal_get_form('mailchimp_subscribe_anon_form_all', $q);
   }
   return $ret;
+}
+
+/**
+ * Return a form for all available MC lists
+ *
+ * @param <type> $form_state
+ * @param <type> $list MC list object
+ * @param <type> $q MC object
+ * @return <type> form array
+ */
+function mailchimp_subscribe_anon_form_all($form_state, $q) {
+  $form = array('#tree' => TRUE);
+  global $user;
+  
+  $lists =_mailchimp_get_available_lists($user);
+  foreach ($lists as $list) {
+    $form['mailchimp_lists'][$list->id] = array(
+      '#type' => 'fieldset',
+      '#title' => t('@name', array('@name' => $list->name)),
+      '#description' => t('@desc', array('@desc' => $list->description)),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    );
+    
+    _mailchimp_subscribe_anon_form($list, $q, $form['mailchimp_lists'][$list->id]);
+  }
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Sign Up!'),
+    '#weight' => 100
+  );
+  
+  $form['#submit'][] = 'mailchimp_subscribe_anon_form_submit';
+  
+  return $form;
+}
+
+/**
+ * Submit handler for anonymous subscription form
+ *
+ * @param <type> $form_state
+ * @param <type> $q - MC API object
+ */
+function mailchimp_subscribe_anon_form_submit($form, &$form_state) {
+  $lists = $form_state['values']['mailchimp_lists'];
+  foreach ($lists as $list) {
+    $success = FALSE;
+    // filter our interest groups and return in an comma delimited string
+    if (!empty($values['INTERESTS'])) {
+      $list['INTERESTS'] = implode(',', array_filter($list['INTERESTS']));
+    }
+
+    $success = _mailchimp_subscribe_user($list['list'], $list['EMAIL'], $list, TRUE);
+
+    if ($success) {
+      $msg = variable_get('mailchimp_subscription_success_message', t('Thank you, you have been successfully subscribed.'));
+    }
+    else {
+      $msg = variable_get('mailchimp_subscription_failure_message', t('We were unable to subscribe you at this time. Please try again later.'));
+    }
+
+    drupal_set_message($msg);
+  }
 }
 
 /**
@@ -673,20 +738,40 @@ function mailchimp_subscribe_page(){
  * @return <type> form array
  */
 function mailchimp_subscribe_anon_form($form_state, $list, $q) {
-  $form = array();
-
+  $form = array('#tree' => TRUE);
+  
   $form['description'] = array(
     '#value' => $list->description
   );
+  
+  _mailchimp_subscribe_anon_form($list, $q, $form['mailchimp_lists'][$list->id]);
 
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Sign Up!'),
+    '#weight' => 100
+  );
+
+  return $form;
+}
+
+/**
+ * Helper function to return form elements for a single anon newsletter
+ *
+ * @param string $list 
+ * @param string $q 
+ * @param string $form 
+ * @return void
+ */
+function _mailchimp_subscribe_anon_form($list, $q, &$form){
   $form['list'] = array(
       '#type'   => 'value',
       '#value'  => $list
   );
 
   // grab any default values for authenticated users
-  // @TODO: this form isn't really for anonymous users only, refactor
   global $user;
+  $mergevalues = NULL;
   if ($user->uid) {
     $mergevalues = _mailchimp_load_user_list_mergevars($user->uid, $list->id, $q->listMergeVars($list->id));
   }
@@ -720,14 +805,6 @@ function mailchimp_subscribe_anon_form($form_state, $list, $q) {
       '#options'        => $options
     );
   }
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Sign Up!'),
-    '#weight' => 100
-  );
-
-  return $form;
 }
 
 /**
@@ -784,34 +861,6 @@ function _mailchimp_insert_drupal_form_tag($mergevar) {
   }
 
   return $input;
-}
-
-/**
- * Submit handler for stand alone form
- *
- * @param <type> $form
- * @param <type> $form_state
- */
-function mailchimp_subscribe_anon_form_submit($form, &$form_state) {
-  $success = FALSE;
-
-  $values = $form_state['values'];
-
-  // filter our interest groups and return in an comma delimited string
-  if (!empty($values['INTERESTS'])) {
-    $values['INTERESTS'] = implode(',', array_filter($values['INTERESTS']));
-  }
-
-  $success = _mailchimp_subscribe_user($values['list'], $values['EMAIL'], $values, TRUE);
-
-  if ($success) {
-    $msg = variable_get('mailchimp_subscription_success_message', t('Thank you, you have been successfully subscribed.'));
-  }
-  else {
-    $msg = variable_get('mailchimp_subscription_failure_message', t('We were unable to subscribe you at this time. Please try again later.'));
-  }
-
-  drupal_set_message($msg);
 }
 
 /**
@@ -963,7 +1012,6 @@ function _mailchimp_get_user_tokens($user) {
   }
   return $out;
 }
-
 
 /**
  * Get the available merge var keys
