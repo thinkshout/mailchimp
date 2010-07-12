@@ -406,10 +406,6 @@ function mailchimp_subscribe_page(){
     $ret = drupal_get_form('mailchimp_subscribe_auth_form', $user);
   }
   elseif ($q = _mailchimp_get_api_object()) {
-    // $lists =_mailchimp_get_available_lists($user);
-    // foreach ($lists as $list) {
-    //   $ret .= '<h3 class="mailchimp-newseltter-title">'. $list->name .'</h3>'. drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
-    // }
     $ret = drupal_get_form('mailchimp_subscribe_anon_form_all', $q);
   }
   return $ret;
@@ -438,6 +434,11 @@ function mailchimp_subscribe_anon_form_all($form_state, $q) {
     );
     
     _mailchimp_subscribe_anon_form($list, $q, $form['mailchimp_lists'][$list->id]);
+    
+    // for anonymous sign up forms, we want to force email to be optional
+    if ($form['mailchimp_lists'][$list->id]['EMAIL']) {
+      $form['mailchimp_lists'][$list->id]['EMAIL']['#required'] = FALSE;
+    }
   }
   
   $form['submit'] = array(
@@ -460,22 +461,24 @@ function mailchimp_subscribe_anon_form_all($form_state, $q) {
 function mailchimp_subscribe_anon_form_submit($form, &$form_state) {
   $lists = $form_state['values']['mailchimp_lists'];
   foreach ($lists as $list) {
-    $success = FALSE;
-    // filter our interest groups and return in an comma delimited string
-    if (!empty($values['INTERESTS'])) {
-      $list['INTERESTS'] = implode(',', array_filter($list['INTERESTS']));
-    }
+    if (!empty($list['EMAIL'])) {
+      $success = FALSE;
+      // filter our interest groups and return in an comma delimited string
+      if (!empty($values['INTERESTS'])) {
+        $list['INTERESTS'] = implode(',', array_filter($list['INTERESTS']));
+      }
 
-    $success = _mailchimp_subscribe_user($list['list'], $list['EMAIL'], $list, TRUE);
+      $success = _mailchimp_subscribe_user($list['list'], $list['EMAIL'], $list, TRUE);
 
-    if ($success) {
-      $msg = variable_get('mailchimp_subscription_success_message', t('Thank you, you have been successfully subscribed.'));
-    }
-    else {
-      $msg = variable_get('mailchimp_subscription_failure_message', t('We were unable to subscribe you at this time. Please try again later.'));
-    }
+      if ($success) {
+        $msg = variable_get('mailchimp_subscription_success_message', t('Thank you, you have been successfully subscribed.'));
+      }
+      else {
+        $msg = variable_get('mailchimp_subscription_failure_message', t('We were unable to subscribe you at this time. Please try again later.'));
+      }
 
-    drupal_set_message($msg);
+      drupal_set_message($msg);
+    }
   }
 }
 
@@ -488,7 +491,10 @@ function mailchimp_subscribe_anon_form_submit($form, &$form_state) {
  * @return <type> form array
  */
 function mailchimp_subscribe_anon_form($form_state, $list, $q) {
-  $form = array('#tree' => TRUE);
+  $form = array(
+    '#tree' => TRUE,
+    '#id' => 'mailchimp_subscribe_anon_form_' . $list->id
+  );
   
   $form['description'] = array(
     '#value' => $list->description
