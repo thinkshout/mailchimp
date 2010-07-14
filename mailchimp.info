@@ -2,4 +2,12 @@
 name = Mailchimp
 description = Mailchimp email service integration.
 package = MailChimp
-core = 6.x
+core = 7.x
+
+files[] = MCAPI.class.php
+files[] = mailchimp.drush.inc
+files[] = mailchimp.admin.inc
+files[] = mailchimp.install
+files[] = mailchimp.module
+
+configure = admin/config/mailchimp

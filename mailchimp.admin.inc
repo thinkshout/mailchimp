@@ -1,4 +1,11 @@
 <?php
+// $Id$
+
+/**
+ * @file
+ * Mailchimp module admin settings.
+ */
+
 /**
  * implementation of hook_admin_settings
  * @return <type>
@@ -38,7 +45,7 @@ function mailchimp_admin_settings() {
           $saved_list = unserialize(variable_get('mailchimp_lists', NULL));
           $saved_list = $saved_list[$list['id']];
 
-          $form['mailchimp_lists']['mailchimp_list_'. $list['id']] = array(
+          $form['mailchimp_lists']['mailchimp_list_' . $list['id']] = array(
               '#type'       => 'fieldset',
               '#collapsible' => TRUE,
               '#collapsed' => TRUE,
@@ -46,18 +53,18 @@ function mailchimp_admin_settings() {
               '#tree'         => TRUE,
           );
 
-          $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['list_id'] = array(
+          $form['mailchimp_lists']['mailchimp_list_' . $list['id']]['list_id'] = array(
               '#type'       => 'value',
               '#value'      => $list['id'],
           );
 
-          $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['name'] = array(
+          $form['mailchimp_lists']['mailchimp_list_' . $list['id']]['name'] = array(
               '#type'       => 'value',
               '#value'      => $list['name'],
           );
 
           // Add a row of checkboxes for role enabling.
-          $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['roles'] = array(
+          $form['mailchimp_lists']['mailchimp_list_' . $list['id']]['roles'] = array(
               '#type'         => 'fieldset',
               '#title'        => t('Roles'),
               '#description'  => t('Choose which roles may subscribe to this list. All users will see the lists they\'re eligble for at the !subscribe and in the subscription block. Lists assigned to the Authenticated role may also apear in the registration form if that option is selected below. Authenticated user may also manage their list settings from their profile.', array('!subscribe' => l(t('newsletter subscription page'), 'mailchimp/subscribe'))),
@@ -65,21 +72,21 @@ function mailchimp_admin_settings() {
           );
 
           foreach (user_roles() as $rid => $name) {
-            $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['roles'][$rid] = array(
+            $form['mailchimp_lists']['mailchimp_list_' . $list['id']]['roles'][$rid] = array(
                 '#type'           => 'checkbox',
                 '#title'          => $name,
                 '#default_value'  => ($saved_list &&  !empty($saved_list->roles[$rid])) ? $saved_list->roles[$rid] : FALSE,
             );
           }
 
-          $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['description'] = array(
+          $form['mailchimp_lists']['mailchimp_list_' . $list['id']]['description'] = array(
               '#type'           => 'textarea',
               '#title'          => t('List Description'),
               '#default_value'  => $saved_list ? $saved_list->description : '',
               '#description'    => t('This description will be shown to the user on the list signup and user account settings pages')
           );
 
-          $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['listtype'] = array(
+          $form['mailchimp_lists']['mailchimp_list_' . $list['id']]['listtype'] = array(
               '#type'           => 'select',
               '#title'          => t('Subscription Method'),
               '#options'        => array(MAILCHIMP_LISTTYPE_OPTIN => "Opt-in", MAILCHIMP_LISTTYPE_OPTOUT => 'Opt-out', MAILCHIMP_LISTTYPE_REQUIRED => 'Required'),
@@ -87,7 +94,7 @@ function mailchimp_admin_settings() {
               '#description'    => t('<strong>Opt-in:</strong> Users must sign up to recieve messages.<br/><strong>Opt-out: </strong> Users are automatically signed up but may unsubscribe.<br/><strong>Required: </strong> Users will remain on the list as long as they have an account and cannot unsubscribe.')
           );
 
-          $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['doublein'] = array(
+          $form['mailchimp_lists']['mailchimp_list_' . $list['id']]['doublein'] = array(
               '#type'           => 'checkbox',
               '#title'          => t('Require subscribers to Double Opt-in'),
               '#default_value'  => $saved_list ? $saved_list->doublein : FALSE,
@@ -96,7 +103,7 @@ function mailchimp_admin_settings() {
           $mergevars = $q->listMergeVars($list['id']);
           if ($mergevars) {
           // Merge var fieldset
-            $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['mergevars'] = array(
+            $form['mailchimp_lists']['mailchimp_list_' . $list['id']]['mergevars'] = array(
                 '#type'         => 'fieldset',
                 '#title'        => t('Merge Variables'),
                 '#description'  => t('Select Drupal user variables to send to Mailchimp as Merge Variables. Available Drupal variables are any Profile or Token variables for the given user. For more information on Merge Variables, see the !doc', array('!doc' => l(t('Mailchimp Documentation'), 'http://server.iad. liveperson.net/hc/s-31286565/cmd/kbresource/kb-8214439208090042855/view_question!PAGETYPE?sq=merge%2bvariables&sf=101113&sg=0&st=188569&documentid=143258&action=view'))),
@@ -105,7 +112,7 @@ function mailchimp_admin_settings() {
             $mergeoptions = mailchimp_get_merge_keys();
             foreach ($mergevars as $mergevar) {
               if ($mergevar['tag'] !== 'EMAIL') {
-                $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['mergevars'][$mergevar['tag']] = array(
+                $form['mailchimp_lists']['mailchimp_list_' . $list['id']]['mergevars'][$mergevar['tag']] = array(
                     '#type'           => 'select',
                     '#title'          => $mergevar['name'],
                     '#options'        => $mergeoptions,
@@ -167,7 +174,7 @@ function mailchimp_admin_settings() {
           '#title' => t('Mailchimp Cron'),
         );
         $form['cron']['info'] = array(
-          '#value' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when editing users. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site.<br /><strong>There are currently !count users with pending updates in the queue.</strong>', array('!count'=>db_result(db_query('SELECT COUNT(*) FROM {mailchimp_user} WHERE status = \'%s\'', MAILCHIMP_USERSTATUS_PENDING)))),
+          '#value' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when editing users. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site.<br /><strong>There are currently !count users with pending updates in the queue.</strong>', array('!count' => db_result(db_query('SELECT COUNT(*) FROM {mailchimp_user} WHERE status = \'%s\'', MAILCHIMP_USERSTATUS_PENDING)))),
         );
         $form['cron']['mailchimp_cron'] = array(
             '#type'           => 'checkbox',
@@ -204,10 +211,10 @@ function mailchimp_admin_settings() {
         drupal_set_message(t('You do not have any valid MailChimp mailing lists.'));
       }
     }
-    else if (FALSE && $q->errorCode === 'INVALID_LOGIN') {
+    elseif (FALSE && $q->errorCode === 'INVALID_LOGIN') {
         drupal_set_message(t('Could not login to mailchimp. Please check your username and password.'), "error");
       }
-      else if ($q->errorMessage) {
+      elseif ($q->errorMessage) {
           drupal_set_message(t('Could not retrieve info for mailchimp. The following error was returned: %error.', array('%error' => $q->errorMessage)), "error");
         }
         else {
@@ -228,7 +235,7 @@ function mailchimp_admin_settings() {
  */
 function mailchimp_admin_settings_validate($form, &$form_state) {
   // no lists selected or first time here
-  if(empty($form_state['values']['mailchimp_lists'])){
+  if (empty($form_state['values']['mailchimp_lists'])) {
     return;
   }
 

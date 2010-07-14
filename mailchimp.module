@@ -13,91 +13,117 @@ define('MAILCHIMP_USERSTATUS_PENDING', 'pending');
 define('MAILCHIMP_USERSTATUS_CURRENT', 'current');
 
 /**
- * Implementation of hook_user
- *
- * Required lists are updated on insert, update, and delete.
- * The list form fields are added to the registration and profile forms
+ * Implements hook_form_user_register_form_alter().
  */
-function mailchimp_user($op, &$edit, &$account, $category = NULL) {
-  // include the form in the user registration if any applicable newsletters
-  if ($op == 'register' && variable_get('mailchimp_user_register', FALSE)){
+function mailchimp_form_user_register_form_alter(&$form, &$form_state) {
+  $edit = $form;
+  $account = $form['#user'];
+  $category = $form['#user_category'];
+  if (TRUE && variable_get('mailchimp_user_register', TRUE)) {
     $account->roles = array(2 => 'authenticated');
-    $lists = _mailchimp_get_available_lists($account);
-    if (!empty($lists) && $q = _mailchimp_get_api_object()) {
-      
+    if (count(_mailchimp_get_available_lists($account)) > 0 ) {
       // wrap in a fieldset
       $form['mailchimp_lists'] = array(
         '#type' => 'fieldset',
         '#title' => t('Newsletters')
       );
-
-      // add all individual available newsletter checkboxes
-      foreach ($lists as $list) {
-        mailchimp_auth_newsletter_form($form['mailchimp_lists'], $list, NULL, $q);
-      }
-      
-      return $form;
+      $form['mailchimp_lists'][] = mailchimp_subscribe_auth_form(NULL, $account, FALSE);
+      $form['#submit'][] = 'mailchimp_subscribe_auth_form_submit';
     }
   }
+}
 
-  if (in_array($op, array('insert', 'delete', 'update')) && $q = _mailchimp_get_api_object()) {
-    foreach ((array)_mailchimp_get_required_lists() as $list) {
-      $action_taken = FALSE;
-      switch ($op) {
-      // delete a user from MC list
-        case "delete":
-          db_query('DELETE FROM {mailchimp_user} WHERE uid = %d', $account->uid);
-          $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
-          $action_taken = TRUE;
-          break;
-        // insert or update a user to/in a MC list
-        case 'insert':
-        case 'update':
-          // don't repeat if already managing via cron
-          if (!variable_get('mailchimp_cron', FALSE) ) {
-            $action_taken = TRUE;
-            
-            // determine if a user is allowed in a given list
-            $is_allowed = FALSE;
-            $roles = empty($edit['roles']) ? $account->roles : $edit['roles'];
-            foreach($list->roles as $key=>$value){
-              if(array_key_exists($key, $roles)){
-                $is_allowed = TRUE;
-                break;
-              }
-            }
+function mailchimp_user_insert(&$edit, $account, $category) {
+  if ($q = _mailchimp_get_api_object()) {
+    foreach ((array) _mailchimp_get_required_lists() as $list) {
+      if (!variable_get('mailchimp_cron', FALSE)) {
+        $action_taken = TRUE;
 
-            // they are allowed, update or subscribe
-            if($is_allowed){
-              $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
-              $userinfo['EMAIL'] = $edit['mail'];
-              $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
-            }
-            // remove from list
-            else{
-              $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
-            }
-          }
-          else {
-            // They don't *really* need to go in the queue unless they just changed their prefs.
-            if ($op == 'insert') {
-              db_query("INSERT INTO {mailchimp_user} (uid, status) VALUES (%d, '%s')", $account->uid, MAILCHIMP_USERSTATUS_PENDING);
-            }
-            else {
-              db_query("UPDATE {mailchimp_user} SET status = '%s' WHERE uid = %d", MAILCHIMP_USERSTATUS_PENDING, $account->uid);
-            }
-          }
-          break;
-      }
-
-      if($action_taken){
-        if ($ret) {
-          watchdog('mailchimp', 'MailChimp: %email updated in list %list on action %action',
-              array('%email' => $account->mail, '%list' => $list->name, '%action' => $op), WATCHDOG_NOTICE);
+        // determine if a user is allowed in a given list
+        $is_allowed = FALSE;
+        $roles = $edit['roles'];
+        if (!is_array($roles)) {
+          $roles = $account->roles;
         }
+        foreach ($list->roles as $key => $value) {
+          if (array_key_exists($key, $roles)) {
+            $is_allowed = TRUE;
+            break;
+          }
+        }
+
+        // they are allowed, update or subscribe
+        if ($is_allowed) {
+          $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
+          $userinfo['EMAIL'] = $edit['mail'];
+          $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
+        }
+        // remove from list
         else {
-          watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
+          $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
         }
+      }
+      else {
+        $id = db_insert('mailchimp_user')
+                ->fields(array(
+                  'uid' => $account->uid,
+                  'status' => MAILCHIMP_USERSTATUS_PENDING,
+                ))
+                ->execute();
+      }
+    }
+  }
+}
+
+function mailchimp_user_delete(&$edit, $account, $category) {
+  if ($q = _mailchimp_get_api_object()) {
+    foreach ((array) _mailchimp_get_required_lists() as $list) {
+      db_delete('mailchimp_user')
+          ->condition('uid', $account->uid)
+          ->execute();
+      $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
+      $action_taken = TRUE;
+    }
+  }
+}
+
+function mailchimp_user_update(&$edit, $account, $category) {
+  if ($q = _mailchimp_get_api_object()) {
+    foreach ((array) _mailchimp_get_required_lists() as $list) {
+      if (!variable_get('mailchimp_cron', FALSE)) {
+        $action_taken = TRUE;
+
+        // determine if a user is allowed in a given list
+        $is_allowed = FALSE;
+        $roles = $edit['roles'];
+        if (!is_array($roles)) {
+          $roles = $account->roles;
+        }
+        foreach ($list->roles as $key => $value) {
+          if (array_key_exists($key, $roles)) {
+            $is_allowed = TRUE;
+            break;
+          }
+        }
+
+        // they are allowed, update or subscribe
+        if ($is_allowed) {
+          $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
+          $userinfo['EMAIL'] = $edit['mail'];
+          $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
+        }
+        // remove from list
+        else {
+          $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
+        }
+      }
+      else {
+        db_update('mailchimp_user')
+            ->fields(array(
+              'status' => MAILCHIMP_USERSTATUS_PENDING,
+            ))
+            ->condition('uid', $account->uid)
+            ->execute();
       }
     }
   }
@@ -130,7 +156,7 @@ function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE
       }
     }
 
-    if ($standalone){
+    if ($standalone) {
       $form['submit'] = array(
         '#type' => 'submit',
         '#value' => t('save settings'),
@@ -157,12 +183,12 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
     }
 
     // wrap in a div
-    $form['wrapper'. $list->id] = array(
+    $form['wrapper' . $list->id] = array(
       '#prefix' => '<div class="mailchimp-newsletter-wrapper">',
       '#suffix' => '</div>'
     );
 
-    $form['wrapper'. $list->id]['mailchimp_list_'. $list->id] = array(
+    $form['wrapper' . $list->id]['mailchimp_list_' . $list->id] = array(
         '#type'           => 'checkbox',
         '#title'          => t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
         '#default_value'  => $default_value,
@@ -187,7 +213,7 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
         foreach ((array)$intgroup['groups'] as $group) {
           $options[$group] = $group;
         }
-        $form['wrapper'. $list->id]['mailchimp_list_'. $list->id .'_INTERESTS'] = array(
+        $form['wrapper'. $list->id]['mailchimp_list_' . $list->id .'_INTERESTS'] = array(
           '#type'           => $field_type,
           '#title'          => $intgroup['name'],
           '#options'        => $options,
@@ -195,32 +221,18 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
           '#attributes'     => array('class' => 'mailchimp-newsletter-interests-' . $list->id)
         );
         drupal_add_js('$(document).ready(function(){
-          if($(".mailchimp-newsletter-checkbox-'. $list->id .'").attr("checked")){
-            $(".mailchimp-newsletter-interests-'. $list->id .'").parent(".form-item").show();
+          if($(".mailchimp-newsletter-checkbox-' . $list->id . '").attr("checked")){
+            $(".mailchimp-newsletter-interests-' . $list->id . '").parent(".form-item").show();
           } else {
-            $(".mailchimp-newsletter-interests-'. $list->id .'").parent(".form-item").hide();
+            $(".mailchimp-newsletter-interests-' . $list->id . '").parent(".form-item").hide();
           }
-          $(".mailchimp-newsletter-checkbox-'. $list->id .'").click(function(){ $(".mailchimp-newsletter-interests-'. $list->id .'").parent(".form-item").toggle("slow");});
+          $(".mailchimp-newsletter-checkbox-' . $list->id . '").click(function(){ $(".mailchimp-newsletter-interests-'. $list->id .'").parent(".form-item").toggle("slow");});
         });', 'inline');
       }
     }
   }
 
   return $form;
-}
-
-/**
- * Implementation of hook_form_alter
- *
- * Add a submit handler to registration and profile forms. Doing this in hook_user breaks user updates
- */
-function mailchimp_form_alter(&$form, $form_state, $form_id){
-  if($form_id == 'user_register'){
-    if(variable_get('mailchimp_user_register', TRUE)){
-      // need to set this here as the submit handler doesn't get triggered in hook_user
-      $form['#submit'][] = 'mailchimp_subscribe_auth_form_submit';
-    }
-  }
 }
 
 /**
@@ -238,30 +250,30 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
 
     $lists = _mailchimp_get_available_lists($account);
     foreach ($lists as $list) {
-    // ignore required lists, they are handled via hook_user
+      // ignore required lists, they are handled via hook_user
       if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
         $is_subscribed = _mailchimp_is_subscribed($list->id, $account->mail, $q);
         $ret = TRUE;
-        $selected = @$form_state['values']['mailchimp_list_'. $list->id];
+        $selected = @$form_state['values']['mailchimp_list_' . $list->id];
 
         // unsubscribe a subscribed user who unchecked the box for this newsletter
         if ($is_subscribed && !$selected) {
           $ret = _mailchimp_unsubscribe_user($list, $account->mail, TRUE, $q);
         }
-        else if ($selected) {
-        // subscribe the user if they are not previously subscribed or update existing subscriptions
+        elseif ($selected) {
+          // subscribe the user if they are not previously subscribed or update existing subscriptions
           $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
 
           // include updated email address if already subscribed
-          if (!empty($form_state['values']['mail']) && $is_subscribed){
+          if (!empty($form_state['values']['mail']) && $is_subscribed) {
             $merge_vars['EMAIL'] = $form_state['values']['mail'];
           }
 
           // include interest groups
-          if (!empty($form_state['values']['mailchimp_list_'. $list->id .'_INTERESTS'])){
-            $merge_vars['INTERESTS'] = implode(',', array_filter($form_state['values']['mailchimp_list_'. $list->id .'_INTERESTS']));
+          if (!empty($form_state['values']['mailchimp_list_' . $list->id . '_INTERESTS'])) {
+            $merge_vars['INTERESTS'] = implode(',', array_filter($form_state['values']['mailchimp_list_' . $list->id . '_INTERESTS']));
           }
-          
+
           $ret = _mailchimp_subscribe_user($list, $account->mail, $merge_vars, TRUE, $q);
         }
 
@@ -274,7 +286,7 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_cron.
+ * Implements hook_cron().
  *
  * Resubscribes all users to the required lists if the user has chosen to do so.
  */
@@ -282,7 +294,7 @@ function mailchimp_cron() {
   if (variable_get('mailchimp_cron', FALSE) && $q = _mailchimp_get_api_object()) {
     $sql = "SELECT uid FROM {mailchimp_user} WHERE status = '%s'";
     $result = db_query_range($sql, array(MAILCHIMP_USERSTATUS_PENDING), 0, variable_get('mailchimp_batch_limit', 100));
-  
+
     if ($result) {
       $lists = _mailchimp_get_required_lists();
       foreach ($lists as $key => $list) {
@@ -291,11 +303,11 @@ function mailchimp_cron() {
       }
       while ($row = db_fetch_object($result)) {
         db_query('UPDATE {mailchimp_user} SET status = \'%s\' WHERE uid = %d', MAILCHIMP_USERSTATUS_CURRENT, $account->uid);
-        if ($account = user_load(array('uid' => $row->uid))) {
+        if ($account = user_load($row->uid)) {
           // We don't update people if their status = 0 (but perhaps we could unsubscribe them?)
           if ($account->status) {
-            foreach ((array)$lists as $key => $list) {
-              foreach ((array)$account->roles as $rid => $info) {
+            foreach ((array) $lists as $key => $list) {
+              foreach ((array) $account->roles as $rid => $info) {
                 if ($list->roles[$rid]) {
                   $lists[$key]->batch[] = _mailchimp_load_user_list_mergevars($row->uid, $list->id, $lists[$key]->mergevars);
                   break;
@@ -311,7 +323,7 @@ function mailchimp_cron() {
         if (count($lists[$key]->batch)) {
           $ret = $q->listBatchSubscribe($list->id, $lists[$key]->batch, FALSE, TRUE);
           if ($ret['error_count'] > 0) {
-            foreach ((array)$ret['errors'] as $error) {
+            foreach ((array) $ret['errors'] as $error) {
               watchdog('mailchimp', $error['message'], NULL, WATCHDOG_ERROR);
             }
           }
@@ -325,7 +337,7 @@ function mailchimp_cron() {
 }
 
 /**
- * Implementation of hook_menu.
+ * Implements hook_menu().
  */
 function mailchimp_menu() {
   $items = array();
@@ -342,20 +354,20 @@ function mailchimp_menu() {
 
   $items['mailchimp/subscribe'] = array(
       'page callback' => 'mailchimp_subscribe_page',
-      'title' => 'Newsletter Subscription' ,
+      'title' => 'Newsletter Subscription',
       'type' => MENU_NORMAL_ITEM,
       'access arguments' => array('access content'),
   );
   $items['mailchimp/unsubscribe'] = array(
       'page callback' => 'drupal_get_form',
       'page arguments' => array('mailchimp_unsubscribe_form'),
-      'title' => 'Newsletter Unsubscribe' ,
+      'title' => 'Newsletter Unsubscribe',
       'type' => MENU_CALLBACK,
       'access callback' => TRUE,
   );
   $items['mailchimp/unsubscribe/success'] = array(
       'page callback' => 'mailchimp_unsubscribe_success',
-      'title' => 'Unsubscription Confirmed' ,
+      'title' => 'Unsubscription Confirmed',
       'type' => MENU_CALLBACK,
       'access callback' => TRUE,
   );
@@ -365,7 +377,7 @@ function mailchimp_menu() {
       'type' => MENU_CALLBACK,
       'access callback' => TRUE,
   );
-  $items['admin/settings/mailchimp'] = array(
+  $items['admin/config/mailchimp'] = array(
       'title' => 'MailChimp',
       'description' => 'Manage MailChimp Settings.',
       'page callback' => 'drupal_get_form',
@@ -378,8 +390,8 @@ function mailchimp_menu() {
   return $items;
 }
 
-function mailchimp_user_edit_access($user){
-  if(variable_get('mailchimp_user_edit', TRUE) && user_edit_access($user)){
+function mailchimp_user_edit_access($user) {
+  if (variable_get('mailchimp_user_edit', TRUE) && user_edit_access($user)) {
     return TRUE;
   }
   else {
@@ -387,10 +399,15 @@ function mailchimp_user_edit_access($user){
   }
 }
 /**
- * Implementation of hook_perm()
+ * Implements hook_permission().
  */
-function mailchimp_perm() {
-  return array('administer mailchimp');
+function mailchimp_permission() {
+  return array(
+    'administer mailchimp' => array(
+      'title' => t('administer mailchimp'),
+      'description' => t('TODO Add a description for administer mailchimp'),
+    ),
+  );
 }
 
 /**
@@ -399,10 +416,10 @@ function mailchimp_perm() {
  * @global <type> $user
  * @return <type> page content of all available MC lists for a given user
  */
-function mailchimp_subscribe_page(){
+function mailchimp_subscribe_page() {
   global $user;
   $ret = '';
-  if($user->uid){
+  if ($user->uid) {
     $ret = drupal_get_form('mailchimp_subscribe_auth_form', $user);
   }
   elseif ($q = _mailchimp_get_api_object()) {
@@ -422,7 +439,7 @@ function mailchimp_subscribe_page(){
 function mailchimp_subscribe_anon_form_all($form_state, $q) {
   $form = array('#tree' => TRUE);
   global $user;
-  
+
   $lists =_mailchimp_get_available_lists($user);
   foreach ($lists as $list) {
     $form['mailchimp_lists'][$list->id] = array(
@@ -432,23 +449,23 @@ function mailchimp_subscribe_anon_form_all($form_state, $q) {
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     );
-    
+
     _mailchimp_subscribe_anon_form($list, $q, $form['mailchimp_lists'][$list->id]);
-    
+
     // for anonymous sign up forms, we want to force email to be optional
     if ($form['mailchimp_lists'][$list->id]['EMAIL']) {
       $form['mailchimp_lists'][$list->id]['EMAIL']['#required'] = FALSE;
     }
   }
-  
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Sign Up!'),
     '#weight' => 100
   );
-  
+
   $form['#submit'][] = 'mailchimp_subscribe_anon_form_submit';
-  
+
   return $form;
 }
 
@@ -495,11 +512,11 @@ function mailchimp_subscribe_anon_form($form_state, $list, $q) {
     '#tree' => TRUE,
     '#id' => 'mailchimp_subscribe_anon_form_' . $list->id
   );
-  
+
   $form['description'] = array(
     '#value' => $list->description
   );
-  
+
   _mailchimp_subscribe_anon_form($list, $q, $form['mailchimp_lists'][$list->id]);
 
   $form['submit'] = array(
@@ -514,12 +531,12 @@ function mailchimp_subscribe_anon_form($form_state, $list, $q) {
 /**
  * Helper function to return form elements for a single anon newsletter
  *
- * @param string $list 
- * @param string $q 
- * @param string $form 
+ * @param string $list
+ * @param string $q
+ * @param string $form
  * @return void
  */
-function _mailchimp_subscribe_anon_form($list, $q, &$form){
+function _mailchimp_subscribe_anon_form($list, $q, &$form) {
   $form['list'] = array(
       '#type'   => 'value',
       '#value'  => $list
@@ -532,7 +549,7 @@ function _mailchimp_subscribe_anon_form($list, $q, &$form){
     $mergevalues = _mailchimp_load_user_list_mergevars($user->uid, $list->id, $q->listMergeVars($list->id));
   }
 
-  foreach ((array)$q->listMergeVars($list->id) as $mergevar) {
+  foreach ((array) $q->listMergeVars($list->id) as $mergevar) {
     // set the default value for merge fields if we have it
     if ($mergevalues && $mergevalues[$mergevar['tag']]) {
       $mergevar['default'] = $mergevalues[$mergevar['tag']];
@@ -552,7 +569,7 @@ function _mailchimp_subscribe_anon_form($list, $q, &$form){
       default:
         $field_type = $intgroup['form_field'];
     }
-    foreach ((array)$intgroup['groups'] as $group) {
+    foreach ((array) $intgroup['groups'] as $group) {
       $options[$group] = $group;
     }
     $form['INTERESTS'] = array(
@@ -580,7 +597,7 @@ function _mailchimp_insert_drupal_form_tag($mergevar) {
 
   switch ($mergevar['field_type']) {
     case 'dropdown':
-    // dropdown is mapped to <select> element in Drupal Form API
+      // dropdown is mapped to <select> element in Drupal Form API
       $input['#type'] = 'select';
 
       // Creates options, we must delete array keys to have revealant information
@@ -592,7 +609,7 @@ function _mailchimp_insert_drupal_form_tag($mergevar) {
       $input['#options'] = $choices;
       break;
     case 'radio':
-    // radio is mapped to <input type='radio' /> i.e. 'radios' element in Drupal Form API
+      // radio is mapped to <input type='radio' /> i.e. 'radios' element in Drupal Form API
       $input['#type'] = 'radios';
 
       // Creates options, we must delete array keys to have revealant information
@@ -605,7 +622,7 @@ function _mailchimp_insert_drupal_form_tag($mergevar) {
       break;
 
     default:
-    // This is a standard input[type=text] or something we can't handle with Drupal FormAPI
+      // This is a standard input[type=text] or something we can't handle with Drupal FormAPI
       $input['#type'] = 'textfield';
       $input['#size'] = $mergevar['size'];
       break;
@@ -625,7 +642,7 @@ function _mailchimp_insert_drupal_form_tag($mergevar) {
  * @param <type> $form_values
  * @return <type>
  */
-function mailchimp_unsubscribe_form($form_values = array()) {
+function mailchimp_unsubscribe_form($form, $form_values = array()) {
   $form = array();
   $form['intro'] = array(
       '#type'           => 'markup',
@@ -653,7 +670,7 @@ function mailchimp_unsubscribe_form($form_values = array()) {
 function mailchimp_unsubscribe_form_submit($form, &$form_state) {
   if ($q || $q = _mailchimp_get_api_object()) {
     $success = TRUE;
-    foreach ((array)$q->lists() as $list) {
+    foreach ((array) $q->lists() as $list) {
       $success = $success && _mailchimp_unsubscribe_user($list, $form_state['values']['EMAIL'], TRUE, $q);
       if ($success) {
         drupal_set_message(variable_get('mailchimp_unsubscription_success_message', t('Thank you, you have been successfully unsubscribed.')));
@@ -675,10 +692,10 @@ function mailchimp_unsubscribe_form_validate($form, &$form_state) {
   if (!$form_state['values']['EMAIL']) {
     form_set_error('EMAIL', t('Please enter your email address.'));
   }
-  else  {
+  else {
     if ($q || $q = _mailchimp_get_api_object()) {
       $subscribed = FALSE;
-      foreach ((array)$q->lists() as $list) {
+      foreach ((array) $q->lists() as $list) {
         $subscribed = $subscribed || _mailchimp_is_subscribed($list['id'], $form_state['values']['EMAIL'], $q);
       }
       if (!$subscribed) {
@@ -692,7 +709,7 @@ function mailchimp_unsubscribe_form_validate($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_mailchimp_merge_keys
+ * Implements hook_mailchimp_merge_keys().
  */
 function mailchimp_mailchimp_merge_keys() {
   $out = array(0 => '<none>');
@@ -726,7 +743,7 @@ function mailchimp_mailchimp_merge_keys() {
     $tokens = token_get_list(array('user', 'order'));
     if (is_array($tokens['user'])) {
       foreach ($tokens['user'] as $token => $name) {
-        $out['token_'. $token] = t('Token: !field', array('!field' => $name));
+        $out['token_' . $token] = t('Token: !field', array('!field' => $name));
       }
     }
   }
@@ -735,12 +752,12 @@ function mailchimp_mailchimp_merge_keys() {
 }
 
 /**
- * Implementation of hook_mailchimp_merge_values
+ * Implements hook_mailchimp_merge_values().
  */
 function mailchimp_mailchimp_merge_values($user) {
   $out = array();
-  $out = (array)$user;
-  foreach ((array)$user as $key => $value) {
+  $out = (array) $user;
+  foreach ((array) $user as $key => $value) {
     if (is_array($value) && $key != 'role') {
       $out[$key] = implode('/', $value);
     }
@@ -763,11 +780,12 @@ function _mailchimp_get_user_tokens($user) {
   if (function_exists('token_get_values')) {
     $vars = token_get_values('user', $user);
     foreach ($vars->tokens as $key => $value) {
-      $out['token_'. $value] = $vars->values[$key];
+      $out['token_' . $value] = $vars->values[$key];
     }
   }
   return $out;
 }
+
 
 /**
  * Get the available merge var keys
@@ -780,7 +798,7 @@ function mailchimp_get_merge_keys() {
  * Get all the potential merge var values for a given user
  */
 function mailchimp_get_merge_values($uid) {
-  if ($user = user_load(array('uid' => $uid))) {
+  if ($user = user_load($uid)) {
     return module_invoke_all('mailchimp_merge_values', $user);
   }
   return array();
@@ -833,7 +851,7 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
     if (_mailchimp_is_subscribed($list->id, $email, $q)) {
       $action = 'updated in';
       $success = $q->listUpdateMember($list->id, $email, $merge_vars);
-      if($success && $message){
+      if ($success && $message) {
         drupal_set_message(t('You have updated your settings in %list.', array('%list' => $list->name)));
       }
     }
@@ -873,7 +891,7 @@ function _mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
       }
     }
   }
-  return TRUE;//$success; // the mailchim api seems to always return FALSE on unsubscribe operations
+  return TRUE; //$success; // the mailchim api seems to always return FALSE on unsubscribe operations
 }
 
 /**
@@ -923,7 +941,7 @@ function _mailchimp_get_api_object() {
   $q = new MCAPI(variable_get('mailchimp_api_key', ''));
   // set the timeout to something reasonsable to avoid taking down the Drupal site
   $q->setTimeout(60);
-  
+
   if ($q->errorCode) {
     watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
     return NULL;
@@ -932,43 +950,35 @@ function _mailchimp_get_api_object() {
 }
 
 /**
- * implementation of hook_block
+ * Implements hook_block_info.
+ */
+function mailchimp_block_info() {
+  $blocks = array();
+  $all_lists = variable_get('mailchimp_lists', array());
+  if (!empty($all_lists)) {
+    $all_lists = unserialize($all_lists);
+    foreach ($all_lists as $key => $list) {
+      // exclude required lists
+      if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
+        $blocks[$list->id]["info"] = t('Mailchimp Subscription Form: @name', array('@name' => $list->name));
+      }
+    }
+  }
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
  * Provides a block for each available list for a given user
  */
-function mailchimp_block($op='list', $delta=0) {
-  if ($op == "list") {
-    $blocks = array();
-    $all_lists = variable_get('mailchimp_lists', array());
-    if (!empty($all_lists)) {
-      $all_lists = unserialize($all_lists);
-      foreach ($all_lists as $key => $list) {
-        // exclude required lists
-        if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
-          $blocks[$list->id]["info"] = t('Mailchimp Subscription Form: @name', array('@name' => $list->name));
-        }
-      }
-    }
-
-    return $blocks;
+function mailchimp_block_view($delta = '') {
+  global $user;
+  $lists = _mailchimp_get_available_lists($user);
+  $list = $lists[$delta];
+  if (!empty($list) && $q = _mailchimp_get_api_object()) {
+    $block['subject'] = t('Subscribe to @title', array('@title' => $list->name));
+    $block['content'] = drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
   }
-  else if ($op == 'view' && arg(2) != 'mailchimp') {
-    $block = array();
-    global $user;
-    $lists = _mailchimp_get_available_lists($user);
-    if (!empty($lists)) {
-      if (!empty($lists[$delta]) && $q = _mailchimp_get_api_object()) {
-        $list = $lists[$delta];
-        $block['subject'] = t('Subscribe to @title', array('@title' => $list->name));;
-
-        if ($user->uid) {
-          $block['content'] = drupal_get_form('mailchimp_subscribe_auth_form', $user, 1, $list);
-        }
-        else {
-          $block['content'] = drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
-        }
-      }
-    }
-    
-    return $block;
-  }  
+  return $block;
 }

@@ -1,14 +1,21 @@
 <?php
+// $Id$
 
 /**
- * Implementation of hook_schema().
+ * @file
+ * Install, update and uninstall functions for the mailchimp module.
+ *
+ */
+
+/**
+ * Implements hook_schema().
  */
 function mailchimp_schema() {
   // A table of uids
   // @todo If we decide to also do deletes in cron then we can add mail here?
   $schema['mailchimp_user'] = array(
     'fields' => array(
-      'uid' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'uid' => array('type' => 'int'),
       'status' => array('type' => 'varchar', 'length' => 15)
     ),
     'primary key' => array('uid'),
@@ -17,27 +24,27 @@ function mailchimp_schema() {
 }
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function mailchimp_install() {
-  drupal_install_schema('mailchimp');
+
 }
 
 /**
- * implementation of hook_update_N
+ * Implements hook_update_N().
  */
-function mailchimp_update_6200(){
+function mailchimp_update_6200() {
   // clean up old variables
   $ret = array();
   $ret[] = update_sql("DELETE FROM {variable} WHERE name like 'mailchimp_list\_%'");
   cache_clear_all();
-  return $ret;  
+  return $ret;
 }
 
 /**
- * Implementation of hook_update_N().
+ * Implements hook_update_N().
  *
- * Create a new table for the queue. 
+ * Create a new table for the queue.
  *
  * When going from no queue to queue, we have to import everyone to
  * the queue for the first pass. After that we can start adding people
@@ -45,38 +52,38 @@ function mailchimp_update_6200(){
  */
 function mailchimp_update_6201() {
   $ret = array();
-  
+
   $schema = drupal_get_schema_unprocessed('mailchimp', 'mailchimp_user');
-  db_create_table($ret, 'mailchimp_user', $schema);
+  db_create_table('mailchimp_user', $schema);
 
   // Everybody goes in here (exclude status = 0 here?)
-  $ret[] = update_sql("INSERT INTO {mailchimp_user} (uid, status) SELECT uid, '". MAILCHIMP_USERSTATUS_PENDING ."' FROM {users} WHERE uid > 0");
+  $ret[] = update_sql("INSERT INTO {mailchimp_user} (uid, status) SELECT uid, '" . MAILCHIMP_USERSTATUS_PENDING . "' FROM {users} WHERE uid > 0");
   return $ret;
 }
 
 /**
- * Implementation of hook_update_N().
+ * Implements hook_update_N().
  *
  * Takes the old username and password and changes it into an API key.
  */
 function mailchimp_update_6202() {
   $ret = array();
-  
+
   module_load_include('php', 'mailchimp', 'MCAPI.class');
 
   $q = new MCAPI(variable_get('mailchimp_username', ''), variable_get('mailchimp_password', ''));
   // Set the timeout to something reasonsable to avoid taking down the site.
   $q->setTimeout(60);
-  
+
   if ($q->errorCode) {
     watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
     $ret[] = array('success' => FALSE, 'query' => 'MailChimp returned error: ' . check_plain($q->errorMessage));
     return $ret;
   }
-  
+
   // Save the API key.
   variable_set('mailchimp_api_key', $q->api_key);
-  
+
   // Clean up old variables.
   variable_del('mailchimp_username');
   variable_del('mailchimp_password');
@@ -84,7 +91,7 @@ function mailchimp_update_6202() {
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function mailchimp_uninstall() {
   variable_del('mailchimp_api_key');
@@ -97,6 +104,4 @@ function mailchimp_uninstall() {
   variable_del('mailchimp_unsubscription_success_message');
   variable_del('mailchimp_user_edit');
   variable_del('mailchimp_user_register');
-
-  drupal_uninstall_schema('mailchimp');
 }
