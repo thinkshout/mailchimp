@@ -244,8 +244,8 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
         $ret = TRUE;
         $selected = @$form_state['values']['mailchimp_list_'. $list->id];
 
-        // unsubscribe a subscribed user who unchecked the box for this newsletter
-        if ($is_subscribed && !$selected) {
+        // unsubscribe a subscribed user who unchecked the box when not registering
+        if ($is_subscribed && !$selected && $form['#id'] != 'user-register') {
           $ret = _mailchimp_unsubscribe_user($list, $account->mail, TRUE, $q);
         }
         else if ($selected) {
