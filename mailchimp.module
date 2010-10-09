@@ -468,7 +468,7 @@ function mailchimp_subscribe_anon_form_submit($form, &$form_state) {
     if (!empty($list['EMAIL'])) {
       $success = FALSE;
       // filter our interest groups and return in an comma delimited string
-      if (!empty($values['INTERESTS'])) {
+      if (!empty($list['INTERESTS'])) {
         $list['INTERESTS'] = implode(',', array_filter($list['INTERESTS']));
       }
 
