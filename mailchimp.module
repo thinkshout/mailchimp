@@ -173,27 +173,13 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
     // present interest groups
     if (variable_get('mailchimp_interest_groups_user_forms', FALSE)) {
       if ($intgroup = $q->listInterestGroups($list->id)) {
-        switch ($intgroup['form_field']) {
-          case 'radio':
-            $field_type = 'radios';
-            break;
-          case 'checkbox':
-            $field_type = 'checkboxes';
-            break;
-          default:
-            $field_type = $intgroup['form_field'];
-        }
-        $options = array();
-        foreach ((array)$intgroup['groups'] as $group) {
-          $options[$group] = $group;
-        }
-        $form['wrapper'. $list->id]['mailchimp_list_'. $list->id .'_INTERESTS'] = array(
-          '#type'           => $field_type,
-          '#title'          => $intgroup['name'],
-          '#options'        => $options,
-          '#default_value'  => $is_subscribed ? explode(",", str_replace(', ', ',', $memberinfo['merges']['INTERESTS'])) : array(),
-          '#attributes'     => array('class' => 'mailchimp-newsletter-interests-' . $list->id)
-        );
+
+        $form['wrapper'. $list->id]['mailchimp_list_'. $list->id .'_INTERESTS'] = _mailchimp_interest_groups_element($intgroup);
+        $form['wrapper'. $list->id]['mailchimp_list_'. $list->id .'_INTERESTS']['#default_value']  = 
+          $is_subscribed ? explode(",", str_replace(', ', ',', $memberinfo['merges']['INTERESTS'])) : array();
+        $form['wrapper'. $list->id]['mailchimp_list_'. $list->id .'_INTERESTS']['#attributes'] = 
+          array('class' => 'mailchimp-newsletter-interests-' . $list->id);
+
         drupal_add_js('$(document).ready(function(){
           if($(".mailchimp-newsletter-checkbox-'. $list->id .'").attr("checked")){
             $(".mailchimp-newsletter-interests-'. $list->id .'").parent(".form-item").show();
@@ -546,25 +532,41 @@ function _mailchimp_subscribe_anon_form($list, $q, &$form){
 
   // present interest groups
   if ($intgroup = $q->listInterestGroups($list->id)) {
-    switch ($intgroup['form_field']) {
-      case 'radio':
-        $field_type = 'radios';
-        break;
-      case 'checkbox':
-        $field_type = 'checkboxes';
-        break;
-      default:
-        $field_type = $intgroup['form_field'];
-    }
+    $form['INTERESTS'] = _mailchimp_interest_groups_element($intgroup);
+  }
+}
+
+/**
+ * Helper that returns interest groups form element
+ */
+function _mailchimp_interest_groups_element($intgroup) {
+  $element = array();
+  
+  switch ($intgroup['form_field']) {
+    case 'radio':
+      $field_type = 'radios';
+      break;
+    case 'checkbox':
+      $field_type = 'checkboxes';
+      break;
+    default:
+      $field_type = $intgroup['form_field'];
+  }
+
+  $element['#type'] = $field_type;
+  $element['#title'] = $intgroup['name'];
+  
+  // only add options attribute for certain field types
+  if (in_array($field_type, array('radios', 'checkboxes', 'select'))) {
+    $options = array();
     foreach ((array)$intgroup['groups'] as $group) {
       $options[$group] = $group;
     }
-    $form['INTERESTS'] = array(
-      '#type'           => $field_type,
-      '#title'          => $intgroup['name'],
-      '#options'        => $options
-    );
+    
+    $element['#options'] = $options;
   }
+  
+  return $element;
 }
 
 /**
