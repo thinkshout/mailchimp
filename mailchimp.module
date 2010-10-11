@@ -176,11 +176,11 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
       if (!empty($interests)) {
         $form = array_merge($form['wrapper'. $list->id], $interests);
 
-        drupal_add_js('$(document).ready(function(){
+        drupal_add_js('Drupal.behaviors.mailchimp = function(context) {
           $(".mailchimp-newsletter-checkbox-'. $list->id .'").click(function(){ 
-            Drupal.toggleFieldset(".mailchimp-newsletter-interests-b2b4e977eb"); 
+            Drupal.toggleFieldset(".mailchimp-newsletter-interests-'. $list->id .'"); 
           });
-        });', 'inline');        
+        }', 'inline');        
       }
     }
   }
