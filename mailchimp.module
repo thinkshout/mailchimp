@@ -176,10 +176,6 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
       if (!empty($interests)) {
         $form = array_merge($form['wrapper'. $list->id], $interests);
 
-          // $form['wrapper'. $list->id]['mailchimp_list_'. $list->id .'_'. $group['name']]['#attributes'] = 
-          //   array('class' => 'mailchimp-newsletter-interests-' . $list->id);
-// dpm($form);
-
         drupal_add_js('$(document).ready(function(){
           $(".mailchimp-newsletter-checkbox-'. $list->id .'").click(function(){ 
             Drupal.toggleFieldset(".mailchimp-newsletter-interests-b2b4e977eb"); 
@@ -455,10 +451,11 @@ function mailchimp_subscribe_anon_form_submit($form, &$form_state) {
   foreach ($lists as $list) {
     if (!empty($list['EMAIL'])) {
       $success = FALSE;
-      // filter our interest groups and return in an comma delimited string
-      if (!empty($list['INTERESTS'])) {
-        $list['INTERESTS'] = implode(',', array_filter($list['INTERESTS']));
-      }
+      
+      // include interest groups
+      foreach($list['interest_groups_' . $list['list']->id] as $key => $group) {
+        $list['GROUPINGS'][] = array('id' => $key, 'groups' => is_array($group) ? implode(', ', array_filter($group)) : $group);
+      }      
 
       $success = _mailchimp_subscribe_user($list['list'], $list['EMAIL'], $list, TRUE);
 
@@ -533,9 +530,9 @@ function _mailchimp_subscribe_anon_form($list, $q, &$form){
   }
 
   // present interest groups
-  if ($intgroups = $q->listInterestGroupings($list->id)) {
-    $form['INTERESTS'] = _mailchimp_interest_groups_element($intgroups);
-  }
+    // $form['GROUPINGS'] = _mailchimp_interest_groups_element($q, $list->id, array(), TRUE);
+    $form = array_merge($form, _mailchimp_interest_groups_element($q, $list->id, array(), TRUE));
+    // $form = array_merge($form['wrapper'. $list->id], $interests);
 }
 
 /**
@@ -559,43 +556,41 @@ function _mailchimp_interest_groups_element($q, $list_id, $groupings = array(), 
     
     foreach($groups as $group) {
       // ignore hidden groups
-      if ($group['form_field'] == 'hidden') {
-        break;
-      }
-      
-      $default = array();
-      if (!empty($groupings)) {
-        foreach($groupings as $grouping) {
-          if ($grouping['id'] == $group['id']) {            
-            $default = explode(",", str_replace(', ', ',', $grouping['groups']));
+      if ($group['form_field'] != 'hidden') {
+        $default = array();
+        if (!empty($groupings)) {
+          foreach($groupings as $grouping) {
+            if ($grouping['id'] == $group['id']) {            
+              $default = explode(",", str_replace(', ', ',', $grouping['groups']));
+            }
           }
         }
+
+        $field_type = '';
+        switch ($group['form_field']) {
+          case 'radio':
+            $field_type = 'radios';
+            break;
+          case 'dropdown':
+            $field_type = 'select';
+            break;
+          default:
+            $field_type = $group['form_field'];
+        }
+
+        $options = array();
+        foreach ((array)$group['groups'] as $item) {
+          $options[$item['name']] = $item['name'];
+        }
+
+        $element['interest_groups_' . $list_id][$group['id']] = array(
+          '#type' => $field_type,
+          '#title' => t('@name', array('@name' => $group['name'])),
+          '#multiple' => FALSE,
+          '#options' => $options,
+          '#default_value' => $default,
+        );
       }
-      
-      $field_type = '';
-      switch ($group['form_field']) {
-        case 'radio':
-          $field_type = 'radios';
-          break;
-        case 'dropdown':
-          $field_type = 'select';
-          break;
-        default:
-          $field_type = $group['form_field'];
-      }
-      
-      $options = array();
-      foreach ((array)$group['groups'] as $item) {
-        $options[$item['name']] = $item['name'];
-      }
-      
-      $element['interest_groups_' . $list_id][$group['id']] = array(
-        '#type' => $field_type,
-        '#title' => t('@name', array('@name' => $group['name'])),
-        '#multiple' => FALSE,
-        '#options' => $options,
-        '#default_value' => $default,
-      );
     }    
   }
   
