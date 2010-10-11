@@ -206,7 +206,6 @@ function mailchimp_form_alter(&$form, $form_state, $form_id){
  * Submit handler to add users to lists when editing/creating a user
  */
 function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
-  dpm($form_state);
   if ($q = _mailchimp_get_api_object()) {
     $account = new stdClass();
     if (!empty($form_state['values']['uid'])) {
