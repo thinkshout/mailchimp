@@ -241,8 +241,10 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
           }
 
           // include interest groups
-          foreach($form_state['values']['interest_groups_' . $list->id] as $key => $group) {
-            $merge_vars['GROUPINGS'][] = array('id' => $key, 'groups' => is_array($group) ? implode(', ', array_filter($group)) : $group);
+          if (is_array($form_state['values']['interest_groups_' . $list->id])) {
+            foreach($form_state['values']['interest_groups_' . $list->id] as $key => $group) {
+              $merge_vars['GROUPINGS'][] = array('id' => $key, 'groups' => is_array($group) ? implode(', ', array_filter($group)) : $group);
+            }            
           }
           
           $ret = _mailchimp_subscribe_user($list, $account->mail, $merge_vars, TRUE, $q);
@@ -452,9 +454,11 @@ function mailchimp_subscribe_anon_form_submit($form, &$form_state) {
       $success = FALSE;
       
       // include interest groups
-      foreach($list['interest_groups_' . $list['list']->id] as $key => $group) {
-        $list['GROUPINGS'][] = array('id' => $key, 'groups' => is_array($group) ? implode(', ', array_filter($group)) : $group);
-      }      
+      if (is_array($list['interest_groups_' . $list['list']->id])) {
+        foreach($list['interest_groups_' . $list['list']->id] as $key => $group) {
+          $list['GROUPINGS'][] = array('id' => $key, 'groups' => is_array($group) ? implode(', ', array_filter($group)) : $group);
+        }              
+      }
 
       $success = _mailchimp_subscribe_user($list['list'], $list['EMAIL'], $list, TRUE);
 
