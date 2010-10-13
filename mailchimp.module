@@ -24,7 +24,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
     $account->roles = array(2 => 'authenticated');
     $lists = _mailchimp_get_available_lists($account);
     if (!empty($lists) && $q = _mailchimp_get_api_object()) {
-      
+
       // wrap in a fieldset
       $form['mailchimp_lists'] = array(
         '#type' => 'fieldset',
@@ -35,7 +35,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
       foreach ($lists as $list) {
         mailchimp_auth_newsletter_form($form['mailchimp_lists'], $list, NULL, $q);
       }
-      
+
       return $form;
     }
   }
@@ -56,7 +56,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
           // don't repeat if already managing via cron
           if (!variable_get('mailchimp_cron', FALSE) ) {
             $action_taken = TRUE;
-            
+
             // determine if a user is allowed in a given list
             $is_allowed = FALSE;
             $roles = empty($edit['roles']) ? $account->roles : $edit['roles'];
@@ -169,7 +169,7 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
         '#description'    => $list->description,
         '#attributes'     => array('class' => 'mailchimp-newsletter-checkbox-' . $list->id)
     );
-    
+
     // present interest groups
     if (variable_get('mailchimp_interest_groups_user_forms', FALSE)) {
       $interests = _mailchimp_interest_groups_element($q, $list->id, $memberinfo['merges']['GROUPINGS'], $is_subscribed);
@@ -177,10 +177,10 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
         $form = array_merge($form['wrapper'. $list->id], $interests);
 
         drupal_add_js('Drupal.behaviors.mailchimp = function(context) {
-          $(".mailchimp-newsletter-checkbox-'. $list->id .'").click(function(){ 
-            Drupal.toggleFieldset(".mailchimp-newsletter-interests-'. $list->id .'"); 
+          $(".mailchimp-newsletter-checkbox-'. $list->id .'").click(function(){
+            Drupal.toggleFieldset(".mailchimp-newsletter-interests-'. $list->id .'");
           });
-        }', 'inline');        
+        }', 'inline');
       }
     }
   }
@@ -241,12 +241,12 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
           }
 
           // include interest groups
-          if (is_array($form_state['values']['interest_groups_' . $list->id])) {
+          if (isset($form_state['values']['interest_groups_' . $list->id]) && is_array($form_state['values']['interest_groups_' . $list->id])) {
             foreach($form_state['values']['interest_groups_' . $list->id] as $key => $group) {
               $merge_vars['GROUPINGS'][] = array('id' => $key, 'groups' => is_array($group) ? implode(', ', array_filter($group)) : $group);
-            }            
+            }
           }
-          
+
           $ret = _mailchimp_subscribe_user($list, $account->mail, $merge_vars, TRUE, $q);
         }
 
@@ -267,7 +267,7 @@ function mailchimp_cron() {
   if (variable_get('mailchimp_cron', FALSE) && $q = _mailchimp_get_api_object()) {
     $sql = "SELECT uid FROM {mailchimp_user} WHERE status = '%s'";
     $result = db_query_range($sql, array(MAILCHIMP_USERSTATUS_PENDING), 0, variable_get('mailchimp_batch_limit', 100));
-  
+
     if ($result) {
       $lists = _mailchimp_get_required_lists();
       foreach ($lists as $key => $list) {
@@ -411,7 +411,7 @@ function mailchimp_subscribe_page(){
 function mailchimp_subscribe_anon_form_all($form_state, $q) {
   $form = array('#tree' => TRUE);
   global $user;
-  
+
   $lists =_mailchimp_get_available_lists($user);
   foreach ($lists as $list) {
     $form['mailchimp_lists'][$list->id] = array(
@@ -421,23 +421,23 @@ function mailchimp_subscribe_anon_form_all($form_state, $q) {
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     );
-    
+
     _mailchimp_subscribe_anon_form($list, $q, $form['mailchimp_lists'][$list->id]);
-    
+
     // for anonymous sign up forms, we want to force email to be optional
     if ($form['mailchimp_lists'][$list->id]['EMAIL']) {
       $form['mailchimp_lists'][$list->id]['EMAIL']['#required'] = FALSE;
     }
   }
-  
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Sign Up!'),
     '#weight' => 100
   );
-  
+
   $form['#submit'][] = 'mailchimp_subscribe_anon_form_submit';
-  
+
   return $form;
 }
 
@@ -452,12 +452,12 @@ function mailchimp_subscribe_anon_form_submit($form, &$form_state) {
   foreach ($lists as $list) {
     if (!empty($list['EMAIL'])) {
       $success = FALSE;
-      
+
       // include interest groups
-      if (is_array($list['interest_groups_' . $list['list']->id])) {
+      if (isset($list['interest_groups_' . $list['list']->id]) && is_array($list['interest_groups_' . $list['list']->id])) {
         foreach($list['interest_groups_' . $list['list']->id] as $key => $group) {
           $list['GROUPINGS'][] = array('id' => $key, 'groups' => is_array($group) ? implode(', ', array_filter($group)) : $group);
-        }              
+        }
       }
 
       $success = _mailchimp_subscribe_user($list['list'], $list['EMAIL'], $list, TRUE);
@@ -487,11 +487,11 @@ function mailchimp_subscribe_anon_form($form_state, $list, $q) {
     '#tree' => TRUE,
     '#id' => 'mailchimp_subscribe_anon_form_' . $list->id
   );
-  
+
   $form['description'] = array(
     '#value' => $list->description
   );
-  
+
   _mailchimp_subscribe_anon_form($list, $q, $form['mailchimp_lists'][$list->id]);
 
   $form['submit'] = array(
@@ -506,9 +506,9 @@ function mailchimp_subscribe_anon_form($form_state, $list, $q) {
 /**
  * Helper function to return form elements for a single anon newsletter
  *
- * @param string $list 
- * @param string $q 
- * @param string $form 
+ * @param string $list
+ * @param string $q
+ * @param string $form
  * @return void
  */
 function _mailchimp_subscribe_anon_form($list, $q, &$form){
@@ -540,7 +540,7 @@ function _mailchimp_subscribe_anon_form($list, $q, &$form){
 
 /**
  * Helper that returns interest groups form element
- * 
+ *
  * @param array $groups - list of interest groups
  * @param array $groupings - list of groups a user is in
  */
@@ -556,14 +556,14 @@ function _mailchimp_interest_groups_element($q, $list_id, $groupings = array(), 
       '#tree' => TRUE,
       '#attributes' => array('class' => 'mailchimp-newsletter-interests-' . $list_id),
     );
-    
+
     foreach($groups as $group) {
       // ignore hidden groups
       if ($group['form_field'] != 'hidden') {
         $default = array();
         if (!empty($groupings)) {
           foreach($groupings as $grouping) {
-            if ($grouping['id'] == $group['id']) {            
+            if ($grouping['id'] == $group['id']) {
               $default = explode(",", str_replace(', ', ',', $grouping['groups']));
             }
           }
@@ -594,9 +594,9 @@ function _mailchimp_interest_groups_element($q, $list_id, $groupings = array(), 
           '#default_value' => $default,
         );
       }
-    }    
+    }
   }
-  
+
   return $element;
 }
 
@@ -778,14 +778,15 @@ function mailchimp_mailchimp_merge_values($user) {
   $out = array();
   $out = (array)$user;
   foreach ((array)$user as $key => $value) {
-    if (is_array($value) && $key != 'role') {
-      $out[$key] = implode('/', $value);
+    $key_string = implode($key);
+    if (is_array($value) && $key_string != 'role') {
+      $out[$key_string] = implode('/', $value);
     }
     elseif (in_array($key, array('login', 'access', 'created'))) {
-      $out[$key] = date('c', $value);
+      $out[$key_string] = date('c', $value);
     }
     elseif ($key != 'roles') {
-      $out[$key] = $value;
+      $out[$key_string] = $value;
     }
   }
   $out = array_merge($out, _mailchimp_get_user_tokens($user));
@@ -960,7 +961,7 @@ function _mailchimp_get_api_object() {
   $q = new MCAPI(variable_get('mailchimp_api_key', ''));
   // set the timeout to something reasonsable to avoid taking down the Drupal site
   $q->setTimeout(60);
-  
+
   if ($q->errorCode) {
     watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
     return NULL;
@@ -1005,7 +1006,7 @@ function mailchimp_block($op='list', $delta=0) {
         }
       }
     }
-    
+
     return $block;
-  }  
+  }
 }
