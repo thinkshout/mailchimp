@@ -292,8 +292,8 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
  */
 function mailchimp_cron() {
   if (variable_get('mailchimp_cron', FALSE) && $q = _mailchimp_get_api_object()) {
-    $sql = "SELECT uid FROM {mailchimp_user} WHERE status = '%s'";
-    $result = db_query_range($sql, array(MAILCHIMP_USERSTATUS_PENDING), 0, variable_get('mailchimp_batch_limit', 100));
+    $sql = "SELECT uid FROM {mailchimp_user} WHERE status = :status";
+    $result = db_query_range($sql, 0, variable_get('mailchimp_batch_limit', 100), array(':status' => MAILCHIMP_USERSTATUS_PENDING));
 
     if ($result) {
       $lists = _mailchimp_get_required_lists();
@@ -303,7 +303,7 @@ function mailchimp_cron() {
       }
       while ($row = db_fetch_object($result)) {
         if ($account = user_load(array('uid' => $row->uid))) {
-          db_query('UPDATE {mailchimp_user} SET status = \'%s\' WHERE uid = %d', MAILCHIMP_USERSTATUS_CURRENT, $account->uid);
+          db_query('UPDATE {mailchimp_user} SET status = :status WHERE uid = :uid', array(':status' => MAILCHIMP_USERSTATUS_CURRENT, ':uid' => $account->uid));
           // We don't update people if their status = 0 (but perhaps we could unsubscribe them?)
           if ($account->status) {
             foreach ((array) $lists as $key => $list) {
@@ -318,7 +318,7 @@ function mailchimp_cron() {
         }
         else {
           // user exists in mc_user table even though they don't have an account, remove
-          db_query('DELETE FROM {mailchimp_user} WHERE uid = %d', $account->uid);
+          db_query('DELETE FROM {mailchimp_user} WHERE uid = :uid', array(':uid' =>$account->uid));
         }
       }
 
