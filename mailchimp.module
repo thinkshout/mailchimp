@@ -735,7 +735,7 @@ function mailchimp_mailchimp_merge_keys() {
     $categories = profile_categories();
     if (!empty($categories)) {
       foreach ($categories as $category) {
-        $result = _profile_get_fields($category['name'], $register);
+        $result = _profile_get_fields($category['name']);
         while ($field = db_fetch_object($result)) {
           $out[$field->name] = t('Profile: !cat - !field', array('!cat' => $field->category, '!field' => $field->title));
         }
