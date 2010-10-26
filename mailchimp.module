@@ -132,9 +132,7 @@ function mailchimp_user_update(&$edit, $account, $category) {
 /**
  * Add mailchimp form fields to account and registration forms
  */
-function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE, $list = NULL) {
-  $form = array();
-
+function mailchimp_subscribe_auth_form($form, $form_state, $account, $standalone = TRUE, $list = NULL) {
   if ($q = _mailchimp_get_api_object()) {
     if ($account->uid) {
       $form['uid'] = array(
@@ -193,7 +191,7 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
         '#title'          => t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
         '#default_value'  => $default_value,
         '#description'    => $list->description,
-        '#attributes'     => array('class' => 'mailchimp-newsletter-checkbox-' . $list->id)
+        '#attributes'     => array('class' => array('mailchimp-newsletter-checkbox-' . $list->id))
     );
 
     // present interest groups
@@ -247,7 +245,7 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
     else {
       $account = $form_state['user'];
     }
-
+    
     $lists = _mailchimp_get_available_lists($account);
     foreach ($lists as $list) {
       // ignore required lists, they are handled via hook_user
@@ -255,7 +253,6 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
         $is_subscribed = _mailchimp_is_subscribed($list->id, $account->mail, $q);
         $ret = TRUE;
         $selected = @$form_state['values']['mailchimp_list_' . $list->id];
-
         // unsubscribe a subscribed user who unchecked the box when not registering
         if ($is_subscribed && !$selected && $form['#id'] != 'user-register') {
           $ret = _mailchimp_unsubscribe_user($list, $account->mail, TRUE, $q);
@@ -263,7 +260,7 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
         elseif ($selected) {
           // subscribe the user if they are not previously subscribed or update existing subscriptions
           $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
-
+          
           // include updated email address if already subscribed
           if (!empty($form_state['values']['mail']) && $is_subscribed) {
             $merge_vars['EMAIL'] = $form_state['values']['mail'];
@@ -278,7 +275,7 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
         }
 
         if (!$ret) {
-          watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
+          drupal_set_message(t('There was a problem with your newsletter signup: @msg', array('@msg' => $q->errorMessage)));
         }
       }
     }
@@ -440,7 +437,7 @@ function mailchimp_subscribe_page() {
  * @param <type> $q MC object
  * @return <type> form array
  */
-function mailchimp_subscribe_anon_form_all($form_state, $q) {
+function mailchimp_subscribe_anon_form_all($form, $form_state, $q) {
   $form = array('#tree' => TRUE);
   global $user;
 
@@ -511,8 +508,8 @@ function mailchimp_subscribe_anon_form_submit($form, &$form_state) {
  * @param <type> $q MC object
  * @return <type> form array
  */
-function mailchimp_subscribe_anon_form($form_state, $list, $q) {
-  $form = array(
+function mailchimp_subscribe_anon_form($form, $form_state, $list, $q) {
+  $form += array(
     '#tree' => TRUE,
     '#id' => 'mailchimp_subscribe_anon_form_' . $list->id
   );
@@ -555,7 +552,7 @@ function _mailchimp_subscribe_anon_form($list, $q, &$form) {
 
   foreach ((array) $q->listMergeVars($list->id) as $mergevar) {
     // set the default value for merge fields if we have it
-    if ($mergevalues && $mergevalues[$mergevar['tag']]) {
+    if ($mergevalues && isset($mergevalues[$mergevar['tag']]) && $mergevalues[$mergevar['tag']]) {
       $mergevar['default'] = $mergevalues[$mergevar['tag']];
     }
     $form[$mergevar['tag']] = _mailchimp_insert_drupal_form_tag($mergevar);
@@ -646,7 +643,7 @@ function _mailchimp_insert_drupal_form_tag($mergevar) {
  * @param <type> $form_values
  * @return <type>
  */
-function mailchimp_unsubscribe_form($form, $form_values = array()) {
+function mailchimp_unsubscribe_form($form, $form_state) {
   $form = array();
   $form['intro'] = array(
       '#type'           => 'markup',
@@ -756,6 +753,23 @@ function mailchimp_mailchimp_merge_keys() {
 }
 
 /**
+ * Recursive implode
+ * @param string $glue
+ * @param array $pieces
+ * @return string
+ */
+function implode_recursive($glue, $pieces) {
+  foreach ($pieces as $piece) {
+    if (is_array($piece)) {
+      $retVal[] = implode_recursive($glue, $piece);
+    } else {
+      $retVal[] = $piece;
+    }
+  }
+  return implode($glue, $retVal);
+}
+
+/**
  * Implements hook_mailchimp_merge_values().
  */
 function mailchimp_mailchimp_merge_values($user) {
@@ -763,7 +777,7 @@ function mailchimp_mailchimp_merge_values($user) {
   $out = (array) $user;
   foreach ((array) $user as $key => $value) {
     if (is_array($value) && $key != 'role') {
-      $out[$key] = implode('/', $value);
+        $out[$key] = implode_recursive('/', $value);
     }
     elseif (in_array($key, array('login', 'access', 'created'))) {
       $out[$key] = date('c', $value);
@@ -877,7 +891,10 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
       array('@action' => $action, '@email' => $merge_vars['EMAIL'], '@list' => $list->name), WATCHDOG_NOTICE);
   }
   else {
-    watchdog('mailchimp', '@email has failed to subscribed to @list.', array('@email' => $merge_vars['EMAIL'], '@list' => $list->name), WATCHDOG_WARNING);
+    watchdog('mailchimp', 'A problem occurred subscribing @email to list @list. Message: @msg', array(
+      '@email' => $merge_vars['EMAIL'], 
+      '@list' => $list->name,
+      '@msg' => $q->errorMessage), WATCHDOG_WARNING);
   }
 
   return $success;
