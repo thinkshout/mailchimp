@@ -10,4 +10,4 @@ files[] = mailchimp.admin.inc
 files[] = mailchimp.install
 files[] = mailchimp.module
 
-configure = admin/config/mailchimp
+configure = admin/config/services/mailchimp

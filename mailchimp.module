@@ -381,7 +381,7 @@ function mailchimp_menu() {
       'type' => MENU_CALLBACK,
       'access callback' => TRUE,
   );
-  $items['admin/config/mailchimp'] = array(
+  $items['admin/config/services/mailchimp'] = array(
       'title' => 'MailChimp',
       'description' => 'Manage MailChimp Settings.',
       'page callback' => 'drupal_get_form',
