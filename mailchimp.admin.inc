@@ -174,7 +174,8 @@ function mailchimp_admin_settings() {
           '#title' => t('Mailchimp Cron'),
         );
         $form['cron']['info'] = array(
-          '#value' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when editing users. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site.<br /><strong>There are currently !count users with pending updates in the queue.</strong>', array('!count' => db_result(db_query('SELECT COUNT(*) FROM {mailchimp_user} WHERE status = \'%s\'', MAILCHIMP_USERSTATUS_PENDING)))),
+          '#value' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when editing users. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site.<br /><strong>There are currently !count users with pending updates in the queue.</strong>', 
+            array('!count' => db_query('SELECT COUNT(*) FROM {mailchimp_user} WHERE status = \':status\'', array(':status' => MAILCHIMP_USERSTATUS_PENDING))->fetchField())),
         );
         $form['cron']['mailchimp_cron'] = array(
             '#type'           => 'checkbox',
