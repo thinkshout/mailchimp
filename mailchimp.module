@@ -298,7 +298,7 @@ function mailchimp_cron() {
         $lists[$key]->batch      = array();
         $lists[$key]->mergevars  = $q->listMergeVars($list->id);
       }
-      while ($row = db_fetch_object($result)) {
+      foreach ($result as $row) {
         if ($account = user_load(array('uid' => $row->uid))) {
           db_query('UPDATE {mailchimp_user} SET status = :status WHERE uid = :uid', array(':status' => MAILCHIMP_USERSTATUS_CURRENT, ':uid' => $account->uid));
           // We don't update people if their status = 0 (but perhaps we could unsubscribe them?)
@@ -729,11 +729,11 @@ function mailchimp_mailchimp_merge_keys() {
   }
 
   if (function_exists('_profile_get_fields')) {
-    $categories = profile_categories();
+    $categories = profile_user_categories();
     if (!empty($categories)) {
       foreach ($categories as $category) {
         $result = _profile_get_fields($category['name']);
-        while ($field = db_fetch_object($result)) {
+        foreach ($result as $field) {          
           $out[$field->name] = t('Profile: !cat - !field', array('!cat' => $field->category, '!field' => $field->title));
         }
       }
