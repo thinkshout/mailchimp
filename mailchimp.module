@@ -732,7 +732,7 @@ function mailchimp_unsubscribe_form_validate($form, &$form_state) {
  * Implementation of hook_mailchimp_merge_keys
  */
 function mailchimp_mailchimp_merge_keys() {
-  $out = array(0 => '<none>');
+  $out = array('' => '<none>');
 
   $user_fields = array(
       'name'      => t('Username'),

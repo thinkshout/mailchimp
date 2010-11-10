@@ -109,6 +109,7 @@ function mailchimp_admin_settings() {
                     '#type'           => 'select',
                     '#title'          => $mergevar['name'],
                     '#options'        => $mergeoptions,
+                    '#required'       => is_bool($mergevar['req']) ? $mergevar['req'] : FALSE,
                     '#default_value'  => $saved_list ? $saved_list->mergevars[$mergevar['tag']] : ''
                 );
               }
