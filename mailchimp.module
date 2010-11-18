@@ -35,6 +35,11 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
       foreach ($lists as $list) {
         mailchimp_auth_newsletter_form($form['mailchimp_lists'], $list, NULL, $q);
       }
+      
+      $form['lists'] = array(
+        '#type'   => 'value',
+        '#value'  => $lists
+      );
 
       return $form;
     }
@@ -164,7 +169,6 @@ function mailchimp_forms($form_id, $args) {
     return $forms;
    }
 }
-
 
 /**
  * Called from mailchimp_subscribe_auth_form() and embeds the form elements for 
