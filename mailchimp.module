@@ -104,7 +104,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
 }
 
 /**
- * Add mailchimp form fields to account and registration forms
+ * Maichimp authenticated user subscription form.
  */
 function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE, $list = NULL) {
   $form = array();
@@ -120,15 +120,22 @@ function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE
       // user registration or admin creating new user
       $account->roles = array(2 => 'authenticated');
     }
+    
+    $lists = array();
+    if (empty($list)) {
+      $lists = _mailchimp_get_available_lists($account);
+    } else {
+      $lists[$list->id] = $list;
+    }
 
-    if (!empty($list)) {
+    foreach ($lists as $list) {
       mailchimp_auth_newsletter_form($form, $list, $account, $q);
     }
-    else {
-      foreach (_mailchimp_get_available_lists($account) as $list) {
-        mailchimp_auth_newsletter_form($form, $list, $account, $q);
-      }
-    }
+
+    $form['lists'] = array(
+      '#type'   => 'value',
+      '#value'  => $lists
+    );
 
     if ($standalone){
       $form['submit'] = array(
@@ -136,12 +143,38 @@ function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE
         '#value' => t('save settings'),
         '#weight' => 100
       );
+      
+      $form['#submit'][] = 'mailchimp_subscribe_auth_form_submit';
     }
   }
 
   return $form;
 }
 
+/**
+ * Implementation of hook_forms().
+ */
+function mailchimp_forms($form_id, $args) {
+  // have all instances of  mailchimp_subscribe_auth_form map to a single form 
+  // factory. Needed in case more than one block on a single page.
+  if (strpos($form_id, 'mailchimp_subscribe_auth_form') !== FALSE) {
+    $forms[$form_id] = array(
+      'callback' => 'mailchimp_subscribe_auth_form',
+    );
+    return $forms;
+   }
+}
+
+
+/**
+ * Called from mailchimp_subscribe_auth_form() and embeds the form elements for 
+ * a single newseltter.
+ *
+ * @param string $form 
+ * @param string $list 
+ * @param string $account 
+ * @param string $q 
+ */
 function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
   $is_subscribed = FALSE;
 
@@ -175,7 +208,7 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
       $interests = _mailchimp_interest_groups_element($q, $list->id, $memberinfo['merges']['GROUPINGS'], $is_subscribed);
       if (!empty($interests)) {
         $form = array_merge($form['wrapper'. $list->id], $interests);
-
+    
         drupal_add_js('Drupal.behaviors.mailchimp = function(context) {
           $(".mailchimp-newsletter-checkbox-'. $list->id .'").click(function(){
             Drupal.toggleFieldset(".mailchimp-newsletter-interests-'. $list->id .'");
@@ -189,11 +222,10 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
 }
 
 /**
- * Implementation of hook_form_alter
- *
- * Add a submit handler to registration and profile forms. Doing this in hook_user breaks user updates
+ * Implementation of hook_form_alter().
  */
 function mailchimp_form_alter(&$form, $form_state, $form_id){
+  // Add a submit handler to registration and profile forms. Doing this in hook_user breaks user updates
   if($form_id == 'user_register'){
     if(variable_get('mailchimp_user_register', TRUE)){
       // need to set this here as the submit handler doesn't get triggered in hook_user
@@ -219,7 +251,7 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
       $account = $user;
     }
 
-    $lists = _mailchimp_get_available_lists($account);
+    $lists = $form_state['values']['lists'];
     foreach ($lists as $list) {
     // ignore required lists, they are handled via hook_user
       if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
@@ -375,6 +407,7 @@ function mailchimp_user_edit_access($user){
     return FALSE;
   }
 }
+
 /**
  * Implementation of hook_perm()
  */
@@ -989,7 +1022,7 @@ function mailchimp_block($op='list', $delta=0) {
 
     return $blocks;
   }
-  else if ($op == 'view' && arg(2) != 'mailchimp') {
+  else if ($op == 'view' && arg(2) != 'mailchimp' && arg(0) != 'mailchimp') {
     $block = array();
     global $user;
     $lists = _mailchimp_get_available_lists($user);
@@ -999,7 +1032,7 @@ function mailchimp_block($op='list', $delta=0) {
         $block['subject'] = t('Subscribe to @title', array('@title' => $list->name));;
 
         if ($user->uid) {
-          $block['content'] = drupal_get_form('mailchimp_subscribe_auth_form', $user, 1, $list);
+          $block['content'] = drupal_get_form('mailchimp_subscribe_auth_form_' . $list->id, $user, 1, $list);
         }
         else {
           $block['content'] = drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
