@@ -26,23 +26,43 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
     if (!empty($lists) && $q = _mailchimp_get_api_object()) {
 
       // wrap in a fieldset
-      $form['mailchimp_lists'] = array(
+      $form['mailchimp_list_forms'] = array(
         '#type' => 'fieldset',
         '#title' => t('Newsletters')
       );
 
       // add all individual available newsletter checkboxes
       foreach ($lists as $list) {
-        mailchimp_auth_newsletter_form($form['mailchimp_lists'], $list, NULL, $q);
+        mailchimp_auth_newsletter_form($form['mailchimp_list_forms'], $list, NULL, $q);
       }
       
-      $form['lists'] = array(
+      $form['mailchimp_lists'] = array(
         '#type'   => 'value',
         '#value'  => $lists
       );
 
       return $form;
     }
+  }
+  
+  if ($op == 'insert' && variable_get('mailchimp_user_register', FALSE) && $q = _mailchimp_get_api_object()) {
+    foreach ((array)$edit['mailchimp_lists'] as $list) {
+      // subscribe the user if they are not previously subscribed or update existing subscriptions
+      $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
+
+      // include interest groups
+      if (isset($edit['interest_groups_' . $list->id]) && is_array($edit['interest_groups_' . $list->id])) {
+        foreach($edit['interest_groups_' . $list->id] as $key => $group) {
+          $merge_vars['GROUPINGS'][] = array('id' => $key, 'groups' => is_array($group) ? implode(', ', array_filter($group)) : $group);
+        }
+      }
+
+      $ret = _mailchimp_subscribe_user($list, $account->mail, $merge_vars, TRUE, $q);
+
+      if (!$ret) {
+        watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
+      }
+    }    
   }
 
   if (in_array($op, array('insert', 'delete', 'update')) && $q = _mailchimp_get_api_object()) {
@@ -225,18 +245,6 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
   return $form;
 }
 
-/**
- * Implementation of hook_form_alter().
- */
-function mailchimp_form_alter(&$form, $form_state, $form_id){
-  // Add a submit handler to registration and profile forms. Doing this in hook_user breaks user updates
-  if($form_id == 'user_register'){
-    if(variable_get('mailchimp_user_register', TRUE)){
-      // need to set this here as the submit handler doesn't get triggered in hook_user
-      $form['#submit'][] = 'mailchimp_subscribe_auth_form_submit';
-    }
-  }
-}
 
 /**
  * Submit handler to add users to lists when editing/creating a user
@@ -246,9 +254,6 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
     $account = new stdClass();
     if (!empty($form_state['values']['uid'])) {
       $account = user_load(array('uid' => $form_state['values']['uid']));
-    }
-    else if(isset($form_state['user'])) {
-      $account = $form_state['user'];
     }
     else {
       global $user;
@@ -815,18 +820,18 @@ function mailchimp_mailchimp_merge_values($user) {
   $out = array();
   $out = (array)$user;
   foreach ((array)$user as $key => $value) {
-    $key_string = implode($key);
-    if (is_array($value) && $key_string != 'role') {
-      $out[$key_string] = implode('/', $value);
+    if (is_array($value) && $key != 'role') {
+      $out[$key] = implode('/', $value);
     }
-    elseif (in_array($key, array('login', 'access', 'created'))) {
-      $out[$key_string] = date('c', $value);
+    else if (in_array($key, array('login', 'access', 'created'))) {
+      $out[$key] = date('c', $value);
     }
-    elseif ($key != 'roles') {
-      $out[$key_string] = $value;
+    else if ($key != 'roles') {
+      $out[$key] = $value;
     }
   }
   $out = array_merge($out, _mailchimp_get_user_tokens($user));
+
   return $out;
 }
 
