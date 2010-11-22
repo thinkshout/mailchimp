@@ -210,7 +210,7 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
       $default_value = $is_subscribed;
     }
     else {
-      $default_value = $list->listtype == MAILCHIMP_LISTTYPE_OPTOUT ? TRUE : FALSE;
+      $default_value = $is_subscribed = $list->listtype == MAILCHIMP_LISTTYPE_OPTOUT ? TRUE : FALSE;
     }
 
     // wrap in a div
