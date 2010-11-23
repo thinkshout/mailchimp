@@ -312,23 +312,33 @@ function mailchimp_cron() {
     if ($result) {
       $lists = _mailchimp_get_required_lists();
       foreach ($lists as $key => $list) {
-        $lists[$key]->batch      = array();
-        $lists[$key]->mergevars  = $q->listMergeVars($list->id);
+        $lists[$key]->batch       = array();
+        $lists[$key]->mergevars   = $q->listMergeVars($list->id);
+        $lists[$key]->unsubscribe = array();
       }
       while ($row = db_fetch_object($result)) {
         if ($account = user_load(array('uid' => $row->uid))) {
           db_query('UPDATE {mailchimp_user} SET status = \'%s\' WHERE uid = %d', MAILCHIMP_USERSTATUS_CURRENT, $account->uid);
+
           // We don't update people if their status = 0 (but perhaps we could unsubscribe them?)
           if ($account->status) {
             foreach ((array)$lists as $key => $list) {
+              $is_allowed = FALSE;
               foreach ((array)$account->roles as $rid => $info) {
                 if ($list->roles[$rid]) {
                   $lists[$key]->batch[] = _mailchimp_load_user_list_mergevars($row->uid, $list->id, $lists[$key]->mergevars);
+                  $is_allowed = TRUE; // user is allowed in this list
                   break;
                 }
               }
+              
+              // if a user is no longer allowed in this list, add to unsubscribe batch
+              if (!$is_allowed) {
+                $lists[$key]->unsubscribe[] = $account->mail;
+              }              
             }
           }
+          
         }
         else {
           // user exists in mc_user table even though they don't have an account, remove
@@ -337,7 +347,9 @@ function mailchimp_cron() {
       }
 
       $count = 0;
+      $unsub_count = 0;
       foreach ($lists as $key => $list) {
+        // subscribe batch
         if (count($lists[$key]->batch)) {
           $ret = $q->listBatchSubscribe($list->id, $lists[$key]->batch, FALSE, TRUE);
           if ($ret['error_count'] > 0) {
@@ -345,11 +357,22 @@ function mailchimp_cron() {
               watchdog('mailchimp', $error['message'], NULL, WATCHDOG_ERROR);
             }
           }
+          $count += $ret['success_count'];
         }
-        $count += $ret['success_count'];
+        
+        // unsubscribe batch
+        if (count($lists[$key]->unsubscribe)) {
+          $ret = $q->listBatchUnsubscribe($list->id, $lists[$key]->unsubscribe, FALSE, FALSE);
+          if ($ret['error_count'] > 0) {
+            foreach ((array)$ret['errors'] as $error) {
+              watchdog('mailchimp', $error['message'], NULL, WATCHDOG_ERROR);
+            }
+          }
+          $unsub_count += $ret['success_count'];
+        }        
       }
 
-      watchdog('mailchimp', 'Updated !count records in MailChimp', array('!count' => $count), WATCHDOG_NOTICE);
+      watchdog('mailchimp', 'Updated !count records in MailChimp and unsuscribed !unsub emails.', array('!count' => $count, '!unsub' => $unsub_count), WATCHDOG_NOTICE);
     }
   }
 }
@@ -818,9 +841,11 @@ function mailchimp_mailchimp_merge_values($user) {
   $out = array();
   $out = (array)$user;
   foreach ((array)$user as $key => $value) {
-    if (is_array($value) && $key != 'role') {
+    // handle profile dates
+    if (is_array($value) && isset($value['month'])) {
       $out[$key] = implode('/', $value);
     }
+    // handle time stamps
     else if (in_array($key, array('login', 'access', 'created'))) {
       $out[$key] = date('c', $value);
     }
