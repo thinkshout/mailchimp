@@ -367,12 +367,10 @@ function mailchimp_menu() {
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'mailchimp_user_edit_access',
     'access arguments' => array(1),
-    'tab_parent' => 'user/%/edit'
   );
-
   $items['mailchimp/subscribe'] = array(
       'page callback' => 'mailchimp_subscribe_page',
-      'title' => 'Newsletter Subscription' ,
+      'title' => 'Newsletter Subscriptions' ,
       'type' => MENU_NORMAL_ITEM,
       'access arguments' => array('access content'),
   );
