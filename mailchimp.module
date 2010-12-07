@@ -404,18 +404,6 @@ function mailchimp_menu() {
       'type' => MENU_CALLBACK,
       'access callback' => TRUE,
   );
-  $items['mailchimp/unsubscribe/success'] = array(
-      'page callback' => 'mailchimp_unsubscribe_success',
-      'title' => 'Unsubscription Confirmed' ,
-      'type' => MENU_CALLBACK,
-      'access callback' => TRUE,
-  );
-  $items['mailchimp/unsubscribe/failure'] = array(
-      'page callback' => 'mailchimp_unsubscribe_failure',
-      'title' => 'Unsubscription Failed',
-      'type' => MENU_CALLBACK,
-      'access callback' => TRUE,
-  );
   $items['admin/settings/mailchimp'] = array(
     'title' => 'MailChimp Configuration',
     'description' => 'Manage MailChimp Settings.',
