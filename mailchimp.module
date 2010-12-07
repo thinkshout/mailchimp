@@ -901,7 +901,7 @@ function mailchimp_get_merge_values($uid) {
  */
 function _mailchimp_load_user_list_mergevars($uid, $list_id, $mergevars) {
   $account = mailchimp_get_merge_values($uid);
-  $lists = unserialize(variable_get('mailchimp_lists', array()));
+  $lists = variable_get('mailchimp_lists', array());
   $list = $lists[$list_id];
 
   $uservars = array(
@@ -992,7 +992,6 @@ function _mailchimp_get_available_lists($user) {
   $all_lists = variable_get('mailchimp_lists', array());
   $available_lists = array();
   if (!empty($all_lists)) {
-    $all_lists = unserialize($all_lists);
     foreach ($all_lists as $key => $list) {
       foreach ($user->roles as $rid => $info) {
         if (!empty($list->roles[$rid])) {
@@ -1010,10 +1009,11 @@ function _mailchimp_get_available_lists($user) {
  * Get all of the lists that the given user must be subscribed to
  */
 function _mailchimp_get_required_lists() {
-  $data = variable_get('mailchimp_lists', NULL);
-  $lists = array();
-  if (!empty($data)) {
-    $lists = unserialize($data);
+  $lists = variable_get('mailchimp_lists', array());
+  if (!is_array($lists)) {
+    $lists = array();
+  }
+  else if (!empty($lists)) {
     foreach ($lists as $key => $list) {
       if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
         unset($lists[$key]);
@@ -1049,7 +1049,6 @@ function mailchimp_block($op='list', $delta=0) {
     $blocks = array();
     $all_lists = variable_get('mailchimp_lists', array());
     if (!empty($all_lists)) {
-      $all_lists = unserialize($all_lists);
       foreach ($all_lists as $key => $list) {
         // exclude required lists
         if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {

@@ -36,7 +36,7 @@ function mailchimp_admin_settings() {
             '#title'      => 'MailChimp Subscription Lists',
             '#tree'         => TRUE
         );
-        $saved_lists = unserialize(variable_get('mailchimp_lists', NULL));
+        $saved_lists = variable_get('mailchimp_lists', NULL);
         foreach ($lists as $list) {
           $saved_list = $saved_lists[$list['id']];
 
@@ -253,7 +253,7 @@ function mailchimp_admin_settings_submit($form, &$form_state) {
   
   // remove lists from the form_state so they are not saved twice
   unset($form_state['values']['mailchimp_lists']);
-  variable_set('mailchimp_lists', serialize($lists));
+  variable_set('mailchimp_lists', $lists);
   
   // let users know they may need to rebuild the user's table
   if ($required) {
