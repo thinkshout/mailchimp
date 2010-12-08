@@ -105,6 +105,21 @@ function mailchimp_update_6203() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ *
+ * Remove unused unsubscribe message variable.
+ */
+function mailchimp_update_6204() {
+  $ret = array();
+  variable_del('mailchimp_unsubscription_success_message');
+  variable_del('mailchimp_unsubscription_failure_message');
+
+  $ret[] = array('success' => TRUE, 'query' => "The 'mailchimp_unsubscription' message variables have been removed.");
+  
+  return $ret;
+}
+
+/**
  * Implementation of hook_uninstall().
  */
 function mailchimp_uninstall() {

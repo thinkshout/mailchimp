@@ -722,18 +722,17 @@ function _mailchimp_insert_drupal_form_tag($mergevar) {
 function mailchimp_unsubscribe_form($form_values = array()) {
   $form = array();
   $form['intro'] = array(
-      '#type'           => 'markup',
-      '#value'          => t('Use this form to unsubscribe from all of our newsletters.'),
+    '#type'           => 'markup',
+    '#value'          => t('Use this form to unsubscribe from all of our newsletters.'),
   );
-
   $form['EMAIL'] = array(
-      '#type'           => 'textfield',
-      '#title'          => t('Email Address'),
+    '#type'           => 'textfield',
+    '#title'          => t('Email Address'),
+    '#required'       => TRUE
   );
-
   $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Unsubscribe'),
+    '#type' => 'submit',
+    '#value' => t('Unsubscribe'),
   );
   return $form;
 }
@@ -745,42 +744,20 @@ function mailchimp_unsubscribe_form($form_values = array()) {
  * @param <type> $form_state
  */
 function mailchimp_unsubscribe_form_submit($form, &$form_state) {
-  if ($q || $q = _mailchimp_get_api_object()) {
-    $success = TRUE;
-    foreach ((array)$q->lists() as $list) {
-      $success = $success && _mailchimp_unsubscribe_user($list, $form_state['values']['EMAIL'], TRUE, $q);
+  if ($q = _mailchimp_get_api_object()) {
+    $success = FALSE;
+    $count = 0;    
+    global $user;
+    foreach ((array)_mailchimp_get_available_lists($user) as $list) {
+      $success = _mailchimp_unsubscribe_user($list, $form_state['values']['EMAIL'], FALSE, $q);
       if ($success) {
-        drupal_set_message(variable_get('mailchimp_unsubscription_success_message', t('Thank you, you have been successfully unsubscribed.')));
-      }
-      else {
-        drupal_set_message(variable_get('mailchimp_unsubscription_failure_message', t('We were unable to unsubscribe you at this time. Please try again later.')));
+        $count ++;
+        drupal_set_message(t('Thank you, you have been successfully unsubscribed from !list.', array('!list' => '<em>' . $list->name . '</em>')));
       }
     }
-  }
-}
-
-/**
- * validate unsubscribe form
- *
- * @param <type> $form
- * @param <type> $form_state
- */
-function mailchimp_unsubscribe_form_validate($form, &$form_state) {
-  if (!$form_state['values']['EMAIL']) {
-    form_set_error('EMAIL', t('Please enter your email address.'));
-  }
-  else  {
-    if ($q || $q = _mailchimp_get_api_object()) {
-      $subscribed = FALSE;
-      foreach ((array)$q->lists() as $list) {
-        $subscribed = $subscribed || _mailchimp_is_subscribed($list['id'], $form_state['values']['EMAIL'], $q);
-      }
-      if (!$subscribed) {
-        form_set_error('', t('That email address could not be found.'));
-      }
-    }
-    else {
-      form_set_error('', t('There was an error processing your request. Please try again later.'));
+    
+    if ($count == 0) {
+      drupal_set_message(t('There were no lists to unsubscribe from at this time.'));
     }
   }
 }
@@ -963,6 +940,7 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
  */
 function _mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
   if ($q || $q = _mailchimp_get_api_object()) {
+    $success = FALSE;
     if (_mailchimp_is_subscribed($list->id, $mail, $q)) {
       $success = $q->listUnsubscribe($list->id, $mail, FALSE, FALSE, FALSE);
       if ($message && $success) {
@@ -970,7 +948,8 @@ function _mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
       }
     }
   }
-  return TRUE;//$success; // the mailchim api seems to always return FALSE on unsubscribe operations
+  
+  return $success;
 }
 
 /**

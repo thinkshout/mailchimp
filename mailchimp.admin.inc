@@ -135,17 +135,6 @@ function mailchimp_admin_settings() {
             '#title'          => t('Subscription Failure Message'),
             '#default_value'  => variable_get('mailchimp_subscription_failure_message', t('We were unable to subscribe you at this time. Please try again later.'))
         );
-        $form['mailchimp_messages']['mailchimp_unsubscription_success_message'] = array(
-            '#type'           => 'textarea',
-            '#title'          => t('Unsubscription Success Message'),
-            '#default_value'  => variable_get('mailchimp_unsubscription_success_message', t('Thank you, you have been successfully unsubscribed.'))
-        );
-        $form['mailchimp_messages']['mailchimp_unsubscription_failure_message'] = array(
-            '#type'           => 'textarea',
-            '#title'          => t('Unsubscription Failure Message'),
-            '#default_value'  => variable_get('mailchimp_unsubscription_failure_message', t('We were unable to unsubscribe you at this time. Please try again later.'))
-        );
-
         $form['mailchimp_user_register'] = array(
             '#type'           => 'checkbox',
             '#title'          => t('Show subscription options on the user registration form.'),
