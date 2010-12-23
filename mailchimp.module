@@ -28,7 +28,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
       // wrap in a fieldset
       $form['mailchimp_list_forms'] = array(
         '#type' => 'fieldset',
-        '#title' => t('Newsletters')
+        '#title' => t(variable_get('mailchimp_user_settings_title', 'Newsletter Subscriptions')),
       );
 
       // add all individual available newsletter checkboxes
@@ -131,7 +131,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
 /**
  * Maichimp authenticated user subscription form.
  */
-function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE, $list = NULL) {
+function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE, $list = NULL, $page = TRUE) {
   $form = array();
 
   if ($q = _mailchimp_get_api_object()) {
@@ -168,7 +168,13 @@ function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE
         '#value' => t('save settings'),
         '#weight' => 100
       );
-      
+      // if page display
+      if ($page) {
+        // for some reason drupal core hammers the page title callback by the time
+        // the H1 is rendered?
+        drupal_set_title(t(variable_get('mailchimp_user_settings_title', 'Newsletter Subscriptions')));
+      }
+
       $form['#submit'][] = 'mailchimp_subscribe_auth_form_submit';
     }
   }
@@ -221,7 +227,7 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
 
     $form['wrapper'. $list->id]['mailchimp_list_'. $list->id] = array(
         '#type'           => 'checkbox',
-        '#title'          => t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
+        '#title'          => ($list->label) ? t($list->label) : t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
         '#default_value'  => $default_value,
         '#description'    => $list->description,
         '#attributes'     => array('class' => 'mailchimp-newsletter-checkbox-' . $list->id)
@@ -386,21 +392,23 @@ function mailchimp_menu() {
   $items['user/%user/mailchimp'] = array(
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_subscribe_auth_form', 1),
-    'title' => 'Newsletter Subscriptions',
+    'title callback' => 'mailchimp_user_settings_page_title',
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'mailchimp_user_edit_access',
     'access arguments' => array(1),
+    'tab parent' => 'user/%/edit',
+    'weight' => 10,
   );
   $items['mailchimp/subscribe'] = array(
       'page callback' => 'mailchimp_subscribe_page',
-      'title' => 'Newsletter Subscriptions' ,
+      'title callback' => 'mailchimp_subscribe_page_title',
       'type' => MENU_NORMAL_ITEM,
       'access arguments' => array('access content'),
   );
   $items['mailchimp/unsubscribe'] = array(
       'page callback' => 'drupal_get_form',
       'page arguments' => array('mailchimp_unsubscribe_form'),
-      'title' => 'Newsletter Unsubscribe' ,
+      'title callback' => 'mailchimp_unsubscribe_page_title',
       'type' => MENU_CALLBACK,
       'access callback' => TRUE,
   );
@@ -449,7 +457,8 @@ function mailchimp_subscribe_page(){
   global $user;
   $ret = '';
   if($user->uid){
-    $ret = drupal_get_form('mailchimp_subscribe_auth_form', $user);
+    $ret = drupal_get_form('mailchimp_subscribe_auth_form', $user, TRUE, NULL, FALSE);
+
   }
   elseif ($q = _mailchimp_get_api_object()) {
     $ret = drupal_get_form('mailchimp_subscribe_anon_form_all', $q);
@@ -529,6 +538,33 @@ function mailchimp_subscribe_anon_form_submit($form, &$form_state) {
       drupal_set_message($msg);
     }
   }
+}
+
+/**
+ * Title callback for subscribe page
+ *
+ * @return <type> page title
+ */
+function mailchimp_subscribe_page_title() {
+  return t(variable_get('mailchimp_subscribe_page_title', 'Newsletter Subscription'));
+}
+
+/**
+ * Title callback for unsubscribe page
+ *
+ * @return <type> page title
+ */
+function mailchimp_unsubscribe_page_title() {
+  return t(variable_get('mailchimp_unsubscribe_page_title', 'Newsletter Unsubscribe'));
+}  
+
+/**
+ * Title callback for user settings page
+ *
+ * @return <type> page title
+ */
+function mailchimp_user_settings_page_title() {
+  return t(variable_get('mailchimp_user_settings_title', 'Newsletter Subscriptions'));
 }
 
 /**
@@ -723,7 +759,7 @@ function mailchimp_unsubscribe_form($form_values = array()) {
   $form = array();
   $form['intro'] = array(
     '#type'           => 'markup',
-    '#value'          => t('Use this form to unsubscribe from all of our newsletters.'),
+    '#value'          => t(variable_get('mailchimp_unsubscribe_page_description', 'Use this form to unsubscribe from all of our newsletters.')),
   );
   $form['EMAIL'] = array(
     '#type'           => 'textfield',

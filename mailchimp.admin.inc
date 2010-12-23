@@ -33,7 +33,7 @@ function mailchimp_admin_settings() {
         $form['mailchimp_lists'] = array(
             '#type'       => 'fieldset',
             '#collapsible' => FALSE,
-            '#title'      => 'MailChimp Subscription Lists',
+            '#title'      => t('MailChimp Subscription Lists'),
             '#tree'         => TRUE
         );
         $saved_lists = variable_get('mailchimp_lists', NULL);
@@ -73,6 +73,13 @@ function mailchimp_admin_settings() {
                 '#default_value'  => ($saved_list &&  !empty($saved_list->roles[$rid])) ? $saved_list->roles[$rid] : FALSE,
             );
           }
+
+          $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['label'] = array(
+              '#type'           => 'textfield',
+              '#title'          => t('List Label'),
+              '#default_value'  => isset($saved_list->label) ? t($saved_list->label) : t('Subscribe to the @newsletter newsletter',  array('@newsletter' => $list['name'])),
+              '#description'    => t('Enter the text to display next to the checkbox for this list on the registration and user account settings pages.  If you have only one list enabled, this text will also act as the default title for the Mailchimp block (which can be further overridden in the block settings).')
+          );
 
           $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['description'] = array(
               '#type'           => 'textarea',
@@ -123,7 +130,7 @@ function mailchimp_admin_settings() {
             '#type'       => 'fieldset',
             '#collapsible' => TRUE,
             '#collapsed' => TRUE,
-            '#title'      => 'Anonymous Lists Messaging',
+            '#title'      => t('Anonymous Lists Messaging'),
         );
         $form['mailchimp_messages']['mailchimp_subscription_success_message'] = array(
             '#type'           => 'textarea',
@@ -135,19 +142,57 @@ function mailchimp_admin_settings() {
             '#title'          => t('Subscription Failure Message'),
             '#default_value'  => variable_get('mailchimp_subscription_failure_message', t('We were unable to subscribe you at this time. Please try again later.'))
         );
-        $form['mailchimp_user_register'] = array(
+        $form['mailchimp_page_settings'] = array(
+            '#type'       => 'fieldset',
+            '#collapsible' => TRUE,
+            '#collapsed' => TRUE,
+            '#title'      => t('Page titles and descriptions'),
+        );        
+        $form['mailchimp_page_settings']['mailchimp_subscribe_page_title'] = array(
+            '#type'           => 'textfield',
+            '#title'          => t('Subscribe page title'),
+            '#description'    => t('The page title to display on the !subscribe_page.', array('!subscribe_page' => l(t('Subscribe page'), 'mailchimp/subscribe'))),
+            '#default_value'  => t(variable_get('mailchimp_subscribe_page_title', 'Newsletter Subscription'))
+        );
+        
+        $form['mailchimp_page_settings']['mailchimp_unsubscribe_page_title'] = array(
+            '#type'           => 'textfield',
+            '#title'          => t('Unsubscribe page title'),
+            '#description'    => t('The page title to display on the !unsubscribe_page.', array('!unsubscribe_page' => l(t('Unsubscribe page'), 'mailchimp/unsubscribe'))),
+            '#default_value'  => t(variable_get('mailchimp_unsubscribe_page_title', 'Newsletter Unsubscribe'))
+        );
+        
+        $form['mailchimp_page_settings']['mailchimp_unsubscribe_page_description'] = array(
+            '#type'           => 'textarea',
+            '#title'          => t('Unsubscribe page description'),
+            '#description'    => t('The text to display above the form on the !unsubscribe_page.', array('!unsubscribe_page' => l(t('Unsubscribe page'), 'mailchimp/unsubscribe'))),
+            '#default_value'  => variable_get('mailchimp_unsubscribe_page_description', t('Use this form to unsubscribe from all of our newsletters.'))
+        );
+        $form['mailchimp_user_settings'] = array(
+            '#type'       => 'fieldset',
+            '#collapsible' => TRUE,
+            '#collapsed' => TRUE,
+            '#title'      => t('User settings'),
+        );        
+        $form['mailchimp_user_settings']['mailchimp_user_register'] = array(
             '#type'           => 'checkbox',
             '#title'          => t('Show subscription options on the user registration form.'),
             '#description'    => t('This will only apply for lists granted to the authenticated role.'),
             '#default_value'  => variable_get('mailchimp_user_register', TRUE)
         );
-        $form['mailchimp_user_edit'] = array(
+        $form['mailchimp_user_settings']['mailchimp_user_edit'] = array(
             '#type'           => 'checkbox',
             '#title'          => t('Show Subscription Options on User Edit Screen'),
             '#description'    => t('If set, a tab will be presented for managing newsletter subscriptions when editing an account.'),
             '#default_value'  => variable_get('mailchimp_user_edit', TRUE)
         );
-        $form['mailchimp_interest_groups_user_forms'] = array(
+        $form['mailchimp_user_settings']['mailchimp_user_settings_title'] = array(
+            '#type'           => 'textfield',
+            '#title'          => t('User settings title'),
+            '#description'    => t('If you\'ve enabled subscription options on the user registration form or the user edit screen, this text will be used as the fieldset and page title respectively.'),
+            '#default_value'  => t(variable_get('mailchimp_user_settings_title', 'Newsletter Subscriptions'))
+        );
+        $form['mailchimp_user_settings']['mailchimp_interest_groups_user_forms'] = array(
             '#type'           => 'checkbox',
             '#title'          => t('Show Interest Groups on Registration and Account Forms'),
             '#default_value'  => variable_get('mailchimp_interest_groups_user_forms', FALSE),
@@ -232,6 +277,7 @@ function mailchimp_admin_settings_submit($form, &$form_state) {
     $list->name = $form_list['name'];
     $list->roles = array_filter($form_list['roles']);
     $list->description = $form_list['description'];
+    $list->label = $form_list['label'];
     $list->listtype = $form_list['listtype'];
     $list->doublein = $form_list['doublein'];
     $list->mergevars  = $form_list['mergevars'];
