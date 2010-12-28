@@ -207,12 +207,14 @@ function mailchimp_forms($form_id, $args) {
  */
 function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
   $is_subscribed = FALSE;
+  $member_interests = array();
 
   // ignore required lists, handled by hook_user
   if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
     if ($account && $account->uid) {
       $memberinfo = $q->listMemberInfo($list->id, $account->mail);
       $is_subscribed = $memberinfo['status'] == 'subscribed';
+      $member_interests = $memberinfo['merges']['GROUPINGS'];
       $default_value = $is_subscribed;
     }
     else {
@@ -234,8 +236,8 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
     );
 
     // present interest groups
-    if (variable_get('mailchimp_interest_groups_user_forms', FALSE) && isset($memberinfo['merges']['GROUPINGS'])) {
-      $interests = _mailchimp_interest_groups_element($q, $list->id, $memberinfo['merges']['GROUPINGS'], $is_subscribed);
+    if (variable_get('mailchimp_interest_groups_user_forms', FALSE)) {
+      $interests = _mailchimp_interest_groups_element($q, $list->id, $member_interests, $is_subscribed);
       if (!empty($interests)) {
         $form['wrapper'. $list->id] = array_merge($form['wrapper'. $list->id], $interests);
     
