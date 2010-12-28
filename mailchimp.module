@@ -237,7 +237,7 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
     if (variable_get('mailchimp_interest_groups_user_forms', FALSE) && isset($memberinfo['merges']['GROUPINGS'])) {
       $interests = _mailchimp_interest_groups_element($q, $list->id, $memberinfo['merges']['GROUPINGS'], $is_subscribed);
       if (!empty($interests)) {
-        $form = array_merge($form['wrapper'. $list->id], $interests);
+        $form['wrapper'. $list->id] = array_merge($form['wrapper'. $list->id], $interests);
     
         drupal_add_js('Drupal.behaviors.mailchimp = function(context) {
           $(".mailchimp-newsletter-checkbox-'. $list->id .'").click(function(){
@@ -944,7 +944,7 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
       $action = 'updated in';
       $success = $q->listUpdateMember($list->id, $email, $merge_vars);
       if($success && $message){
-        drupal_set_message(t('You have updated your settings in %list.', array('%list' => $list->name)));
+        drupal_set_message(t('You have updated %email\'s settings in the %list list.', array('%email' => $email, '%list' => $list->name)));
       }
     }
     else {
@@ -955,7 +955,7 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
         drupal_set_message(t('You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription.', array('%list' => $list->name)));
       }
       elseif ($message && $success) {
-        drupal_set_message(t('You have subscribed to %list.', array('%list' => $list->name)));
+        drupal_set_message(t('You have subscribed %email to the %list list.', array('%email' => $email, '%list' => $list->name)));
       }
     }
   }
@@ -980,7 +980,7 @@ function _mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
     if (_mailchimp_is_subscribed($list->id, $mail, $q)) {
       $success = $q->listUnsubscribe($list->id, $mail, FALSE, FALSE, FALSE);
       if ($message && $success) {
-        drupal_set_message(t('You have unsubscribed from %list.', array('%list' => $list->name)));
+        drupal_set_message(t('You have unsubscribed %email from the %list list.', array('%email' => $mail, '%list' => $list->name)));
       }
     }
   }
