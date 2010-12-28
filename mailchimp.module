@@ -31,15 +31,17 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
         '#title' => t(variable_get('mailchimp_user_settings_title', 'Newsletter Subscriptions')),
       );
 
-      // add all individual available newsletter checkboxes
-      foreach ($lists as $list) {
-        mailchimp_auth_newsletter_form($form['mailchimp_list_forms'], $list, NULL, $q);
-      }
-      
+      // container for the list objects we'll need on form submission
       $form['mailchimp_lists'] = array(
-        '#type'   => 'value',
-        '#value'  => $lists
+        '#type'   => 'value'
       );
+      
+      foreach ($lists as $list) {
+        if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
+          mailchimp_auth_newsletter_form($form['mailchimp_list_forms'], $list, NULL, $q);
+          $form['mailchimp_lists']['#value'][] = $list;
+        }
+      }
 
       return $form;
     }
@@ -47,20 +49,22 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
   
   if ($op == 'insert' && variable_get('mailchimp_user_register', FALSE) && $q = _mailchimp_get_api_object()) {
     foreach ((array)$edit['mailchimp_lists'] as $list) {
-      // subscribe the user if they are not previously subscribed or update existing subscriptions
-      $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
-
-      // include interest groups
-      if (isset($edit['interest_groups_' . $list->id]) && is_array($edit['interest_groups_' . $list->id])) {
-        foreach($edit['interest_groups_' . $list->id] as $key => $group) {
-          $merge_vars['GROUPINGS'][] = array('id' => $key, 'groups' => is_array($group) ? implode(', ', array_filter($group)) : $group);
+      // is the checkbox for the newsletter selected?
+      if (isset($edit['mailchimp_list_' . $list->id] ) && $edit['mailchimp_list_' . $list->id] ) {
+        $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
+  
+        // include interest groups
+        if (isset($edit['interest_groups_' . $list->id]) && is_array($edit['interest_groups_' . $list->id])) {
+          foreach($edit['interest_groups_' . $list->id] as $key => $group) {
+            $merge_vars['GROUPINGS'][] = array('id' => $key, 'groups' => is_array($group) ? implode(', ', array_filter($group)) : $group);
+          }
         }
-      }
-
-      $ret = _mailchimp_subscribe_user($list, $account->mail, $merge_vars, TRUE, $q);
-
-      if (!$ret) {
-        watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
+  
+        $ret = _mailchimp_subscribe_user($list, $account->mail, $merge_vars, TRUE, $q);
+  
+        if (!$ret) {
+          watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
+        }        
       }
     }    
   }
