@@ -108,18 +108,19 @@ function mailchimp_admin_settings() {
             $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['mergevars'] = array(
                 '#type'         => 'fieldset',
                 '#title'        => t('Merge Variables'),
-                '#description'  => t('Select Drupal user variables to send to Mailchimp as Merge Variables. Available Drupal variables are any Profile or Token variables for the given user. For more information on Merge Variables, see the !doc', array('!doc' => l(t('Mailchimp Documentation'), 'http://server.iad. liveperson.net/hc/s-31286565/cmd/kbresource/kb-8214439208090042855/view_question!PAGETYPE?sq=merge%2bvariables&sf=101113&sg=0&st=188569&documentid=143258&action=view'))),
+                '#description'  => t('Select Drupal user variables to send to Mailchimp as Merge Variables. Available Drupal variables are any Profile or Token variables for the given user. For more information on Merge Variables, see the !doc. Not that some fields, such as ADDRESS fields which are multi-part, cannot be merged with a single token value.', array('!doc' => l(t('Mailchimp Documentation'), 'http://server.iad. liveperson.net/hc/s-31286565/cmd/kbresource/kb-8214439208090042855/view_question!PAGETYPE?sq=merge%2bvariables&sf=101113&sg=0&st=188569&documentid=143258&action=view'))),
                 '#tree'         => TRUE,
             );
             $mergeoptions = mailchimp_get_merge_keys();
             foreach ($mergevars as $mergevar) {
-              if ($mergevar['tag'] !== 'EMAIL') {
+              // filter out emails and addresses
+              if (!in_array($mergevar['tag'], array('EMAIL', 'ADDRESS'))) {
                 $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['mergevars'][$mergevar['tag']] = array(
                     '#type'           => 'select',
                     '#title'          => $mergevar['name'],
                     '#options'        => $mergeoptions,
                     '#required'       => is_bool($mergevar['req']) ? $mergevar['req'] : FALSE,
-                    '#default_value'  => $saved_list ? $saved_list->mergevars[$mergevar['tag']] : ''
+                    '#default_value'  => ($saved_list && isset($saved_list->mergevars[$mergevar['tag']])) ? $saved_list->mergevars[$mergevar['tag']] : ''
                 );
               }
             }
