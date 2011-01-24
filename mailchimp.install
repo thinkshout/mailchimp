@@ -120,6 +120,16 @@ function mailchimp_update_6204() {
 }
 
 /**
+ * Implementation of hook_update_N().
+ *
+ * Bump up the module weight to ensure all merge fields are accounted for.
+ */
+function mailchimp_update_6205() {
+  $ret = array();  
+  $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE name = 'mailchimp' and type = 'module'");
+  return $ret;}
+
+/**
  * Implementation of hook_uninstall().
  */
 function mailchimp_uninstall() {
