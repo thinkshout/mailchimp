@@ -21,6 +21,9 @@ function mailchimp_schema() {
  */
 function mailchimp_install() {
   drupal_install_schema('mailchimp');
+ 
+  // adjust system weight
+  mailchimp_update_6205();
 }
 
 /**
