@@ -212,7 +212,7 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
     if ($account && $account->uid) {
       $memberinfo = $q->listMemberInfo($list->id, $account->mail);
       $is_subscribed = $memberinfo['status'] == 'subscribed';
-      $member_interests = $memberinfo['merges']['GROUPINGS'];
+      $member_interests = isset($memberinfo['merges']['GROUPINGS']) ? $memberinfo['merges']['GROUPINGS'] : array();
       $default_value = $is_subscribed;
     }
     else {
