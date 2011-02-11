@@ -135,7 +135,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
 /**
  * Maichimp authenticated user subscription form.
  */
-function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE, $list = NULL, $page = TRUE) {
+function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE, $list = NULL) {
   $form = array();
 
   if ($q = _mailchimp_get_api_object()) {
@@ -172,12 +172,6 @@ function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE
         '#value' => t('save settings'),
         '#weight' => 100
       );
-      // if page display
-      if ($page) {
-        // for some reason drupal core hammers the page title callback by the time
-        // the H1 is rendered?
-        drupal_set_title(t(variable_get('mailchimp_user_settings_title', 'Newsletter Subscriptions')));
-      }
 
       $form['#submit'][] = 'mailchimp_subscribe_auth_form_submit';
     }
@@ -403,17 +397,17 @@ function mailchimp_menu() {
     'weight' => 10,
   );
   $items['mailchimp/subscribe'] = array(
-      'page callback' => 'mailchimp_subscribe_page',
-      'title callback' => 'mailchimp_subscribe_page_title',
-      'type' => MENU_NORMAL_ITEM,
-      'access arguments' => array('access content'),
+    'page callback' => 'mailchimp_subscribe_page',
+    'title callback' => 'mailchimp_subscribe_page_title',
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('access content'),
   );
   $items['mailchimp/unsubscribe'] = array(
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('mailchimp_unsubscribe_form'),
-      'title callback' => 'mailchimp_unsubscribe_page_title',
-      'type' => MENU_CALLBACK,
-      'access callback' => TRUE,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_unsubscribe_form'),
+    'title callback' => 'mailchimp_unsubscribe_page_title',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
   );
   $items['admin/settings/mailchimp'] = array(
     'title' => 'MailChimp Configuration',
@@ -460,7 +454,7 @@ function mailchimp_subscribe_page(){
   global $user;
   $ret = '';
   if($user->uid){
-    $ret = drupal_get_form('mailchimp_subscribe_auth_form', $user, TRUE, NULL, FALSE);
+    $ret = drupal_get_form('mailchimp_subscribe_auth_form', $user, TRUE, NULL);
 
   }
   elseif ($q = _mailchimp_get_api_object()) {
@@ -567,7 +561,8 @@ function mailchimp_unsubscribe_page_title() {
  * @return <type> page title
  */
 function mailchimp_user_settings_page_title() {
-  return t(variable_get('mailchimp_user_settings_title', 'Newsletter Subscriptions'));
+  $title = t(variable_get('mailchimp_user_settings_title', 'Newsletter Subscriptions'));
+  return $title;
 }
 
 /**
