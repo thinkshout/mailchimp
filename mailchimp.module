@@ -50,7 +50,7 @@ function mailchimp_menu() {
       'page arguments' => array('mailchimp_admin_settings'),
       'access arguments' => array('administer mailchimp'),
       'type' => MENU_NORMAL_ITEM,
-      'file' => 'mailchimp.admin.inc',
+      'file' => 'includes/mailchimp.admin.inc',
   );
 
   return $items;
