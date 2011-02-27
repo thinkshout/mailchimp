@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the mailchimp module.
+ *
+ */
+
+/**
+ * Implements hook_install().
+ */
+function mailchimp_install() {
+
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function mailchimp_uninstall() {
+  variable_del('mailchimp_api_key');
+  variable_del('mailchimp_cron');
+  variable_del('mailchimp_interest_groups_user_forms');
+  variable_del('mailchimp_lists');
+  variable_del('mailchimp_subscription_failure_message');
+  variable_del('mailchimp_subscription_success_message');
+  variable_del('mailchimp_unsubscription_failure_message');
+  variable_del('mailchimp_unsubscription_success_message');
+}

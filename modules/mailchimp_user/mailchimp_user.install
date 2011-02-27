@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the mailchimp_user module.
+ *
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function mailchimp_user_schema() {
+  $schema['mailchimp_user'] = array(
+  'fields' => array(
+    'uid' => array(
+      'type' => 'int'
+      'not null' => TRUE,
+      'description' => 'The {mailchimp_user}.uid of this mailchimp_user.',
+    ),
+    'list_id' => array(
+      'type' => 'varchar',
+      'length' => 32,
+      'description' => 'The {mailchimp_user}.list_id of this mailchimp_user.',
+      'not null' => TRUE,
+      'default' => '',
+    ),
+    'status' => array(
+      'type' => 'varchar', 
+      'length' => 15
+      'description' => 'The {mailchimp_user}.status of this mailchimp_user.',
+    ),
+    'created' => array(
+      'description' => 'The Unix timestamp when the mailchimp_user was created.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'updated' => array(
+      'description' => 'The Unix timestamp when the mailchimp_user was most recently saved.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+  ),
+  'primary key' => array('uid', 'list_id'),
+  'indexes' => array(
+    'mailchimp_user_list'       => array('list_id'),
+    'mailchimp_user_user'       => array('uid'),
+    'mailchimp_user_status'     => array('status'),
+    'redhen_contact_updated'    => array('updated'),
+    'redhen_contact_created'    => array('created'),
+  ),
+  'foreign keys' => array(
+    'mailchimp_user_user' => array(
+      'table' => 'user',
+      'columns' => array('uid' => 'uid'),
+    ),
+  ),
+    
+  );
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function mailchimp_user_uninstall() {
+  variable_del('mailchimp_user_edit');
+  variable_del('mailchimp_user_register');
+}
