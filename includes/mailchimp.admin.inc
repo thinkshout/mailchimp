@@ -33,14 +33,14 @@ function mailchimp_admin_settings() {
 
     if (!$q->errorCode) {
       $lists = $q->lists();
-      if (!empty($lists)) {
+      if ($lists['total'] > 0) {
         $form['mailchimp_lists'] = array(
             '#type'       => 'fieldset',
             '#collapsible' => FALSE,
             '#title'      => 'MailChimp Subscription Lists',
             '#tree'         => TRUE
         );
-        foreach ($lists as $list) {
+        foreach ($lists['data'] as $list) {
           $saved_list = unserialize(variable_get('mailchimp_lists', NULL));
           $saved_list = $saved_list[$list['id']];
 
@@ -172,10 +172,10 @@ function mailchimp_admin_settings() {
           '#type' => 'fieldset',
           '#title' => t('Mailchimp Cron'),
         );
-        $form['cron']['info'] = array(
-          '#value' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when editing users. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site.<br /><strong>There are currently !count users with pending updates in the queue.</strong>', 
-            array('!count' => db_query('SELECT COUNT(*) FROM {mailchimp_user} WHERE status = \':status\'', array(':status' => MAILCHIMP_USERSTATUS_PENDING))->fetchField())),
-        );
+        // $form['cron']['info'] = array(
+        //   '#value' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when editing users. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site.<br /><strong>There are currently !count users with pending updates in the queue.</strong>', 
+        //     array('!count' => db_query('SELECT COUNT(*) FROM {mailchimp_user} WHERE status = \':status\'', array(':status' => MAILCHIMP_USERSTATUS_PENDING))->fetchField())),
+        // );
         $form['cron']['mailchimp_cron'] = array(
             '#type'           => 'checkbox',
             '#title'          => t('Sync Required Lists During Cron'),
