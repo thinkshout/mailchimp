@@ -13,7 +13,7 @@ function mailchimp_user_schema() {
   $schema['mailchimp_user'] = array(
   'fields' => array(
     'uid' => array(
-      'type' => 'int'
+      'type' => 'int',
       'not null' => TRUE,
       'description' => 'The {mailchimp_user}.uid of this mailchimp_user.',
     ),
@@ -26,7 +26,7 @@ function mailchimp_user_schema() {
     ),
     'status' => array(
       'type' => 'varchar', 
-      'length' => 15
+      'length' => 15,
       'description' => 'The {mailchimp_user}.status of this mailchimp_user.',
     ),
     'created' => array(

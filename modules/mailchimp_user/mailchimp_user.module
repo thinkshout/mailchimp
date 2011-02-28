@@ -5,7 +5,17 @@
  */
 function mailchimp_user_menu() {
   $items = array();
-
+  
+  $items['admin/config/services/mailchimp/mailchimp_user'] = array(
+    'title' => 'User Settings',
+    'description' => 'Manage MailChimp User Settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_user_admin_settings'),
+    'access arguments' => array('administer mailchimp'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'mailchimp_user.admin.inc',
+    'weight' => 10
+  );
   $items['user/%user/mailchimp'] = array(
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_user_subscribe_auth_form', 1),

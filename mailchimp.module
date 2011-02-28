@@ -19,39 +19,44 @@ function mailchimp_menu() {
   $items = array();
 
   $items['mailchimp/subscribe'] = array(
-      'page callback' => 'mailchimp_subscribe_page',
-      'title' => 'Newsletter Subscription',
-      'type' => MENU_NORMAL_ITEM,
-      'access arguments' => array('access content'),
+    'page callback' => 'mailchimp_subscribe_page',
+    'title' => 'Newsletter Subscription',
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('access content'),
   );
   $items['mailchimp/unsubscribe'] = array(
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('mailchimp_unsubscribe_form'),
-      'title' => 'Newsletter Unsubscribe',
-      'type' => MENU_CALLBACK,
-      'access callback' => TRUE,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_unsubscribe_form'),
+    'title' => 'Newsletter Unsubscribe',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
   );
   $items['mailchimp/unsubscribe/success'] = array(
-      'page callback' => 'mailchimp_unsubscribe_success',
-      'title' => 'Unsubscription Confirmed',
-      'type' => MENU_CALLBACK,
-      'access callback' => TRUE,
+    'page callback' => 'mailchimp_unsubscribe_success',
+    'title' => 'Unsubscription Confirmed',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
   );
   $items['mailchimp/unsubscribe/failure'] = array(
-      'page callback' => 'mailchimp_unsubscribe_failure',
-      'title' => 'Unsubscription Failed',
-      'type' => MENU_CALLBACK,
-      'access callback' => TRUE,
+    'page callback' => 'mailchimp_unsubscribe_failure',
+    'title' => 'Unsubscription Failed',
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
   );
   $items['admin/config/services/mailchimp'] = array(
-      'title' => 'MailChimp',
-      'description' => 'Manage MailChimp Settings.',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('mailchimp_admin_settings'),
-      'access arguments' => array('administer mailchimp'),
-      'type' => MENU_NORMAL_ITEM,
-      'file' => 'includes/mailchimp.admin.inc',
+    'title' => 'MailChimp',
+    'description' => 'Manage MailChimp Settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_admin_settings'),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'includes/mailchimp.admin.inc',      
+    'type' => MENU_NORMAL_ITEM,
   );
+  $items['admin/config/services/mailchimp/global'] = array(
+    'title' => 'Global Settings',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );  
 
   return $items;
 }
