@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Mailchimp_user module admin settings.
+ * mailchimp_lists module admin settings.
  */
 
 /**
  * Implementation of hook_admin_settings().
  */
-function mailchimp_user_admin_settings() {
+function mailchimp_lists_admin_settings() {
   // only show the list selection forms if account info provided
   $api_key = variable_get('mailchimp_api_key', FALSE);
   if ($api_key) {
@@ -132,17 +132,17 @@ function mailchimp_user_admin_settings() {
             '#default_value'  => variable_get('mailchimp_unsubscription_failure_message', t('We were unable to unsubscribe you at this time. Please try again later.'))
         );
 
-        $form['mailchimp_user_register'] = array(
+        $form['mailchimp_lists_register'] = array(
             '#type'           => 'checkbox',
             '#title'          => t('Show subscription options on the user registration form.'),
             '#description'    => t('This will only apply for lists granted to the authenticated role.'),
-            '#default_value'  => variable_get('mailchimp_user_register', TRUE)
+            '#default_value'  => variable_get('mailchimp_lists_register', TRUE)
         );
-        $form['mailchimp_user_edit'] = array(
+        $form['mailchimp_lists_edit'] = array(
             '#type'           => 'checkbox',
             '#title'          => t('Show Subscription Options on User Edit Screen'),
             '#description'    => t('If set, a tab will be presented for managing newsletter subscriptions when editing an account.'),
-            '#default_value'  => variable_get('mailchimp_user_edit', TRUE)
+            '#default_value'  => variable_get('mailchimp_lists_edit', TRUE)
         );
         $form['mailchimp_interest_groups_user_forms'] = array(
             '#type'           => 'checkbox',
@@ -157,7 +157,7 @@ function mailchimp_user_admin_settings() {
         );
         // $form['cron']['info'] = array(
         //   '#value' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when editing users. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site.<br /><strong>There are currently !count users with pending updates in the queue.</strong>', 
-        //     array('!count' => db_query('SELECT COUNT(*) FROM {mailchimp_user} WHERE status = \':status\'', array(':status' => MAILCHIMP_USERSTATUS_PENDING))->fetchField())),
+        //     array('!count' => db_query('SELECT COUNT(*) FROM {mailchimp_lists} WHERE status = \':status\'', array(':status' => MAILCHIMP_USERSTATUS_PENDING))->fetchField())),
         // );
         $form['cron']['mailchimp_cron'] = array(
             '#type'           => 'checkbox',
@@ -205,7 +205,7 @@ function mailchimp_user_admin_settings() {
         }
   }
 
-  $form['#validate'][] = 'mailchimp_user_admin_settings_validate';
+  $form['#validate'][] = 'mailchimp_lists_admin_settings_validate';
 
   return system_settings_form($form);
 }
@@ -216,7 +216,7 @@ function mailchimp_user_admin_settings() {
  * @param <type> $form
  * @param <type> $form_state
  */
-function mailchimp_user_admin_settings_validate($form, &$form_state) {
+function mailchimp_lists_admin_settings_validate($form, &$form_state) {
   // no lists selected or first time here
   if (empty($form_state['values']['mailchimp_lists'])) {
     return;

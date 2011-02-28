@@ -1,0 +1,8 @@
+name = Mailchimp List
+description = Manage and integrate MailChimp lists.
+package = MailChimp
+core = 7.x
+dependencies[] = mailchimp
+
+files[] = mailchimp_lists.install
+files[] = mailchimp_lists.module

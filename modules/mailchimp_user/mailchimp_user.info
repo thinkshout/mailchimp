@@ -1,8 +1,0 @@
-name = Mailchimp User
-description = Mailchimp integration with Drupal users.
-package = MailChimp
-core = 7.x
-dependencies[] = mailchimp
-
-files[] = mailchimp_user.install
-files[] = mailchimp_user.module

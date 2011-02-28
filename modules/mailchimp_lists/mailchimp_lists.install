@@ -2,14 +2,14 @@
 
 /**
  * @file
- * Install, update and uninstall functions for the mailchimp_user module.
+ * Install, update and uninstall functions for the mailchimp_lists module.
  *
  */
 
 /**
  * Implements hook_schema().
  */
-function mailchimp_user_schema() {
+function mailchimp_lists_schema() {
   $schema['mailchimp_user'] = array(
   'fields' => array(
     'uid' => array(
@@ -47,8 +47,8 @@ function mailchimp_user_schema() {
     'mailchimp_user_list'       => array('list_id'),
     'mailchimp_user_user'       => array('uid'),
     'mailchimp_user_status'     => array('status'),
-    'redhen_contact_updated'    => array('updated'),
-    'redhen_contact_created'    => array('created'),
+    'mailchimp_user_updated'    => array('updated'),
+    'mailchimp_user_created'    => array('created'),
   ),
   'foreign keys' => array(
     'mailchimp_user_user' => array(
@@ -64,7 +64,7 @@ function mailchimp_user_schema() {
 /**
  * Implements hook_uninstall().
  */
-function mailchimp_user_uninstall() {
-  variable_del('mailchimp_user_edit');
-  variable_del('mailchimp_user_register');
+function mailchimp_lists_uninstall() {
+  variable_del('mailchimp_lists_edit');
+  variable_del('mailchimp_lists_register');
 }
