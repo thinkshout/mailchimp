@@ -11,53 +11,98 @@
  */
 function mailchimp_lists_schema() {
   $schema['mailchimp_user'] = array(
-  'fields' => array(
-    'uid' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'description' => 'The {mailchimp_user}.uid of this mailchimp_user.',
+    'fields' => array(
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'The {mailchimp_user}.uid of this mailchimp_user.',
+      ),
+      'list_id' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'description' => 'The {mailchimp_user}.list_id of this mailchimp_user.',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'status' => array(
+        'type' => 'varchar', 
+        'length' => 15,
+        'description' => 'The {mailchimp_user}.status of this mailchimp_user.',
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the mailchimp_user was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'updated' => array(
+        'description' => 'The Unix timestamp when the mailchimp_user was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
-    'list_id' => array(
-      'type' => 'varchar',
-      'length' => 32,
-      'description' => 'The {mailchimp_user}.list_id of this mailchimp_user.',
-      'not null' => TRUE,
-      'default' => '',
+    'primary key' => array('uid', 'list_id'),
+    'indexes' => array(
+      'mailchimp_user_user'       => array('uid'),
+      'mailchimp_user_status'     => array('status'),
+      'mailchimp_user_updated'    => array('updated'),
+      'mailchimp_user_created'    => array('created'),
     ),
-    'status' => array(
-      'type' => 'varchar', 
-      'length' => 15,
-      'description' => 'The {mailchimp_user}.status of this mailchimp_user.',
-    ),
-    'created' => array(
-      'description' => 'The Unix timestamp when the mailchimp_user was created.',
-      'type' => 'int',
-      'not null' => TRUE,
-      'default' => 0,
-    ),
-    'updated' => array(
-      'description' => 'The Unix timestamp when the mailchimp_user was most recently saved.',
-      'type' => 'int',
-      'not null' => TRUE,
-      'default' => 0,
-    ),
-  ),
-  'primary key' => array('uid', 'list_id'),
-  'indexes' => array(
-    'mailchimp_user_list'       => array('list_id'),
-    'mailchimp_user_user'       => array('uid'),
-    'mailchimp_user_status'     => array('status'),
-    'mailchimp_user_updated'    => array('updated'),
-    'mailchimp_user_created'    => array('created'),
-  ),
-  'foreign keys' => array(
-    'mailchimp_user_user' => array(
-      'table' => 'user',
-      'columns' => array('uid' => 'uid'),
-    ),
-  ),
-    
+    'foreign keys' => array(
+      'mailchimp_user_user' => array(
+        'table' => 'user',
+        'columns' => array('uid' => 'uid'),
+      ),
+      'mailchimp_user_list' => array(
+        'table' => 'mailchimp_lists',
+        'columns' => array('list_id' => 'list_id'),
+      ),      
+    ),    
   );
+
+  $schema['mailchimp_lists'] = array(
+    'fields' => array(
+      'list_id' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'description' => 'The {mailchimp_lists}.list_id of this mailchimp_list.',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'description' => 'The {mailchimp_lists}.type of this mailchimp_list.',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'settings' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized object that stores the settings for the specific list.',
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the mailchimp_list was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'updated' => array(
+        'description' => 'The Unix timestamp when the mailchimp_list was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('list_id'),
+    'indexes' => array(
+      'mailchimp_lists_type'      => array('type'),
+    ),
+  );
+
   return $schema;
 }
 
