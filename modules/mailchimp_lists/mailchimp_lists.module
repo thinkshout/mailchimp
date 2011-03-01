@@ -16,6 +16,16 @@ function mailchimp_lists_menu() {
     'file' => 'mailchimp_lists.admin.inc',
     'weight' => 10
   );
+  $items['admin/config/services/mailchimp/lists/add'] = array(
+    'title' => 'Add a list',
+    'description' => 'Add a new MailChimp list.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_list_add_form'),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'mailchimp_lists.admin.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
+  
   $items['user/%user/mailchimp'] = array(
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_lists_subscribe_auth_form', 1),

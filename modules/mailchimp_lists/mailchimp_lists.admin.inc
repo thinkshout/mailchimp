@@ -5,6 +5,43 @@
  * mailchimp_lists module admin settings.
  */
 
+function mailchimp_list_add_form($form, &$form_state, $list = NULL) {
+  $form = array();
+  
+  $form['mailchimp_list_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Type of list'),
+    '#multiple' => FALSE,
+    '#description' => t('Select the type of list.'),
+    '#options' => array(
+      '' => t('-- Select --'),
+      MAILCHIMP_LISTTYPE_REQUIRED => t('Required'),
+      MAILCHIMP_LISTTYPE_OPTIN => t('Opt-in'),
+      MAILCHIMP_LISTTYPE_OPTOUT => t('Opt-out')
+    ),
+    '#default_value' => -1,
+    '#required' => TRUE
+  );
+  
+  $lists = mailchimp_get_lists();
+  $options = array('' => t('-- Select --'));
+  foreach($lists as $list) {
+    $options[$list['id']] = $list['name'];
+  }
+  
+  $form['mailchimp_list'] = array(
+    '#type' => 'select',
+    '#title' => t('MailChimp List'),
+    '#multiple' => FALSE,
+    '#description' => t('Select a MailChimp List.'),
+    '#options' => $options,
+    '#default_value' => -1,
+    '#required' => TRUE
+  );
+  
+  return $form;
+}
+
 /**
  * Implementation of hook_admin_settings().
  */
