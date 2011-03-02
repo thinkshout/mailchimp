@@ -70,6 +70,13 @@ function mailchimp_lists_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'label' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'description' => 'The {mailchimp_lists}.label of this mailchimp_list.',
+        'not null' => TRUE,
+        'default' => '',
+      ),      
       'type' => array(
         'type' => 'varchar',
         'length' => 32,
