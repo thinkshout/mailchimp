@@ -5,8 +5,21 @@
  * mailchimp_lists module admin settings.
  */
 
+function mailchimp_lists_overview_page($form, &$form_state, $list = NULL) {
+  $rows = array();  
+  return theme('table', $rows);
+}
+
 function mailchimp_list_add_form($form, &$form_state, $list = NULL) {
   $form = array();
+  
+  $form['label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Label'),
+    '#description' => t('The label for this list that will appear on forms.'),
+    '#size' => 40,
+    '#maxlength' => 255,
+  );
   
   $form['mailchimp_list_type'] = array(
     '#type' => 'select',
@@ -38,6 +51,18 @@ function mailchimp_list_add_form($form, &$form_state, $list = NULL) {
     '#default_value' => -1,
     '#required' => TRUE
   );
+  
+  $form['save'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+  
+  $form['cancel'] = array(
+    '#type' => 'button',
+    '#value' => t('Cancel'),
+  );
+  
+  
   
   return $form;
 }

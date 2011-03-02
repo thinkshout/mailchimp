@@ -9,8 +9,7 @@ function mailchimp_lists_menu() {
   $items['admin/config/services/mailchimp/lists'] = array(
     'title' => 'List Settings',
     'description' => 'Manage MailChimp User Settings.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_lists_admin_settings'),
+    'page callback' => 'mailchimp_lists_overview_page',
     'access arguments' => array('administer mailchimp'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'mailchimp_lists.admin.inc',
