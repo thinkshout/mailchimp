@@ -10,6 +10,13 @@ function mailchimp_lists_overview_page($form, &$form_state, $list = NULL) {
   return theme('table', $rows);
 }
 
+/**
+ * Return a form for adding/editing a mailchimp list.
+ *
+ * @param array $form 
+ * @param array $form_state 
+ * @param object $list 
+ */
 function mailchimp_list_add_form($form, &$form_state, $list = NULL) {
   $form = array();
   
@@ -20,6 +27,14 @@ function mailchimp_list_add_form($form, &$form_state, $list = NULL) {
     '#size' => 40,
     '#maxlength' => 255,
   );
+  
+  $form['description'] = array(
+    '#type'           => 'textarea',
+    '#title'          => t('List Description'),
+    '#default_value'  => $list ? $list->description : '',
+    // '#text_format'    => FILTER_FORMAT_DEFAULT,
+    '#description'    => t('This description will be shown to the user on the list signup and user account settings pages')
+  );  
   
   $form['mailchimp_list_type'] = array(
     '#type' => 'select',
@@ -46,10 +61,26 @@ function mailchimp_list_add_form($form, &$form_state, $list = NULL) {
     '#type' => 'select',
     '#title' => t('MailChimp List'),
     '#multiple' => FALSE,
-    '#description' => t('Select a MailChimp List.'),
+    // '#description' => t('Select a MailChimp List.'),
     '#options' => $options,
     '#default_value' => -1,
-    '#required' => TRUE
+    '#required' => TRUE,
+    '#ajax' => array(
+      'callback' => 'mailchimp_list_get_mergefields_js',
+      'wrapper' => 'mailchimp_list_mergefields',
+      'method' => 'replace',
+      'effect' => 'fade',
+      'progress' => array(
+        'type' => 'throbber',
+        'message' => t('Retrieving merge fields for this list.')
+      )
+    )
+  );
+  
+  // this is our wrapper for merge fields
+  $form['mailchimp_list_mergefields'] = array(
+    '#prefix' => '<div id="mailchimp_list_mergefields">',
+    '#suffix' => '</div>',
   );
   
   $form['save'] = array(
@@ -62,7 +93,37 @@ function mailchimp_list_add_form($form, &$form_state, $list = NULL) {
     '#value' => t('Cancel'),
   );
   
-  
+  return $form;
+}
+
+/**
+ * AJAX callback for returning merge form fields for list.
+ */
+function mailchimp_list_get_mergefields_js($form, $form_state) {
+  $form = array();
+  $list_id = $form_state['values']['mailchimp_list'];
+  if ($q = mailchimp_get_api_object()) {
+    $result = $q->listMergeVars($list_id);
+    if (!empty($result)) {
+      $form['mailchimp_list_mergefields'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Merge Fields'),
+        '#id' => 'mailchimp_list_mergefields',
+        '#collapsible' => TRUE
+      );
+      foreach($result as $field) {
+        $form['mailchimp_list_mergefields'][$field['name']] = array(
+          '#type' => 'select',
+          '#title' => $field['name']
+        );
+      }
+    }
+    else {
+      $form['mailchimp_list_mergefields']['message'] = array(
+        '#markup' => t('There are no merge fields configured for this list.')
+      );
+    }
+  }
   
   return $form;
 }
