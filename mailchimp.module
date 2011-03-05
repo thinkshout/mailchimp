@@ -6,8 +6,8 @@
  */
 
 define('MAILCHIMP_LISTTYPE_REQUIRED', 'required');
-define('MAILCHIMP_LISTTYPE_OPTIN', 'optin');
-define('MAILCHIMP_LISTTYPE_OPTOUT', 'optout');
+define('MAILCHIMP_LISTTYPE_OPTIONAL', 'optional');
+define('MAILCHIMP_LISTTYPE_ANONYMOUS', 'anonymous');
 define('MAILCHIMP_USERSTATUS_PENDING', 'pending');
 define('MAILCHIMP_USERSTATUS_CURRENT', 'current');
 
