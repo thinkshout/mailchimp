@@ -28,14 +28,6 @@ function mailchimp_list_add_form($form, &$form_state, $list = NULL) {
     '#maxlength' => 255,
   );
   
-  $form['description'] = array(
-    '#type'           => 'textarea',
-    '#title'          => t('List Description'),
-    '#default_value'  => $list ? $list->description : '',
-    // '#text_format'    => FILTER_FORMAT_DEFAULT,
-    '#description'    => t('This description will be shown to the user on the list signup and user account settings pages')
-  );  
-  
   $form['mailchimp_list_type'] = array(
     '#type' => 'select',
     '#title' => t('Type of list'),
@@ -53,8 +45,8 @@ function mailchimp_list_add_form($form, &$form_state, $list = NULL) {
   
   $lists = mailchimp_get_lists();
   $options = array('' => t('-- Select --'));
-  foreach($lists as $list) {
-    $options[$list['id']] = $list['name'];
+  foreach($lists as $mc_list) {
+    $options[$mc_list['id']] = $mc_list['name'];
   }
   
   $form['mailchimp_list'] = array(
@@ -76,11 +68,39 @@ function mailchimp_list_add_form($form, &$form_state, $list = NULL) {
       )
     )
   );
-  
+
   // this is our wrapper for merge fields
   $form['mailchimp_list_mergefields'] = array(
-    '#prefix' => '<div id="mailchimp_list_mergefields">',
-    '#suffix' => '</div>',
+    '#type' => 'fieldset',
+    '#title' => t('Merge Fields'),
+    '#id' => 'mailchimp_list_mergefields',
+    '#description' => t('Merge fields will be loaded based on the selected MailChimp list.')
+  );
+  
+  $form['additional_settings'] = array(
+    '#type'         => 'vertical_tabs'
+  );
+    
+  $form['additional_settings']['roles_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Roles')
+  );
+  $form['additional_settings']['roles_fieldset']['roles'] = array(
+    '#type'           => 'checkboxes',
+    '#options'  => user_roles(),
+    '#description'  => t('Choose which roles may subscribe to this list. All users will see the lists they\'re eligble for at the !subscribe and in the subscription block. Lists assigned to the Authenticated role may also apear in the registration form if that option is selected below. Authenticated user may also manage their list settings from their profile.', array('!subscribe' => l(t('newsletter subscription page'), 'mailchimp/subscribe'))),
+    //'#default_value'  => ($saved_list &&  !empty($saved_list->roles[$rid])) ? $saved_list->roles[$rid] : FALSE,
+  );
+  
+  $form['additional_settings']['description_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('List Description')
+  );
+  $form['additional_settings']['description_fieldset']['description'] = array(
+    '#type'           => 'textarea',
+    '#default_value'  => $list ? $list->description : '',
+    // '#text_format'    => FILTER_FORMAT_DEFAULT,
+    '#description'    => t('This description will be shown to the user on the list signup and user account settings pages')
   );
   
   $form['save'] = array(
@@ -101,18 +121,19 @@ function mailchimp_list_add_form($form, &$form_state, $list = NULL) {
  */
 function mailchimp_list_get_mergefields_js($form, $form_state) {
   $form = array();
+  $form['additional_settings']['mailchimp_list_mergefields'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Merge Fields'),
+    '#id' => 'mailchimp_list_mergefields',
+    '#collapsible' => TRUE
+  );
+  
   $list_id = $form_state['values']['mailchimp_list'];
-  if ($q = mailchimp_get_api_object()) {
+  if (!empty($list_id) && $q = mailchimp_get_api_object()) {
     $result = $q->listMergeVars($list_id);
     if (!empty($result)) {
-      $form['mailchimp_list_mergefields'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Merge Fields'),
-        '#id' => 'mailchimp_list_mergefields',
-        '#collapsible' => TRUE
-      );
       foreach($result as $field) {
-        $form['mailchimp_list_mergefields'][$field['name']] = array(
+        $form['additional_settings']['mailchimp_list_mergefields'][$field['name']] = array(
           '#type' => 'select',
           '#title' => $field['name']
         );
