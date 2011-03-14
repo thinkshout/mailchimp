@@ -18,7 +18,7 @@ function mailchimp_form_user_register_form_alter(&$form, &$form_state) {
   $edit = $form;
   $account = $form['#user'];
   $category = $form['#user_category'];
-  if (TRUE && variable_get('mailchimp_user_register', TRUE)) {
+  if (variable_get('mailchimp_user_register', TRUE)) {
     $account->roles = array(2 => 'authenticated');
     if (count(_mailchimp_get_available_lists($account)) > 0 ) {
       // wrap in a fieldset
@@ -26,7 +26,7 @@ function mailchimp_form_user_register_form_alter(&$form, &$form_state) {
         '#type' => 'fieldset',
         '#title' => t('Newsletters')
       );
-      $form['mailchimp_lists'][] = mailchimp_subscribe_auth_form(NULL, $account, FALSE);
+      $form['mailchimp_lists'][] = mailchimp_subscribe_auth_form(NULL, NULL, $account, FALSE);
       $form['#submit'][] = 'mailchimp_subscribe_auth_form_submit';
     }
   }
@@ -133,7 +133,7 @@ function mailchimp_user_update(&$edit, $account, $category) {
  */
 function mailchimp_subscribe_auth_form($form, $form_state, $account, $standalone = TRUE, $list = NULL) {
   if ($q = _mailchimp_get_api_object()) {
-    if ($account->uid) {
+    if ($account->uid > 0) {
       $form['uid'] = array(
         '#type' => 'hidden',
         '#value' => $account->uid
@@ -170,7 +170,7 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
 
   // ignore required lists, handled by hook_user
   if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
-    if ($account && $account->uid) {
+    if ($account && $account->uid > 0) {
       $memberinfo = $q->listMemberInfo($list->id, $account->mail);
       $is_subscribed = $memberinfo['status'] == 'subscribed';
       $default_value = $is_subscribed;
@@ -481,7 +481,7 @@ function mailchimp_subscribe_anon_form_submit($form, &$form_state) {
     if (!empty($list['EMAIL'])) {
       $success = FALSE;
       // filter our interest groups and return in an comma delimited string
-      if (!empty($values['INTERESTS'])) {
+      if (!empty($list['INTERESTS'])) {
         $list['INTERESTS'] = implode(',', array_filter($list['INTERESTS']));
       }
 
@@ -758,6 +758,7 @@ function mailchimp_mailchimp_merge_keys() {
  * @return string
  */
 function implode_recursive($glue, $pieces) {
+  $retVal = array();
   foreach ($pieces as $piece) {
     if (is_array($piece)) {
       $retVal[] = implode_recursive($glue, $piece);
@@ -827,7 +828,7 @@ function mailchimp_get_merge_values($uid) {
  */
 function _mailchimp_load_user_list_mergevars($uid, $list_id, $mergevars) {
   $account = mailchimp_get_merge_values($uid);
-  $lists = unserialize(variable_get('mailchimp_lists', array()));
+  $lists = variable_get('mailchimp_lists', array());
   $list = $lists[$list_id];
 
   $uservars = array(
@@ -918,10 +919,9 @@ function _mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
  * Get all of the lists that the given user can subscribe to
  */
 function _mailchimp_get_available_lists($user) {
-  $all_lists = variable_get('mailchimp_lists', array());
+  $all_lists = variable_get('mailchimp_lists', NULL);
   $available_lists = array();
-  if (!empty($all_lists)) {
-    $all_lists = unserialize($all_lists);
+  if (is_array($all_lists)) {
     foreach ($all_lists as $key => $list) {
       foreach ($user->roles as $rid => $info) {
         if (!empty($list->roles[$rid])) {
@@ -939,10 +939,8 @@ function _mailchimp_get_available_lists($user) {
  * Get all of the lists that the given user must be subscribed to
  */
 function _mailchimp_get_required_lists() {
-  $data = variable_get('mailchimp_lists', NULL);
-  $lists = array();
-  if (!empty($data)) {
-    $lists = unserialize($data);
+  $lists = variable_get('mailchimp_lists', NULL);
+  if (is_array($lists)) {
     foreach ($lists as $key => $list) {
       if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
         unset($lists[$key]);
@@ -974,9 +972,8 @@ function _mailchimp_get_api_object() {
  */
 function mailchimp_block_info() {
   $blocks = array();
-  $all_lists = variable_get('mailchimp_lists', array());
-  if (!empty($all_lists)) {
-    $all_lists = unserialize($all_lists);
+  $all_lists = variable_get('mailchimp_lists', NULL);
+  if (is_array($all_lists)) {
     foreach ($all_lists as $key => $list) {
       // exclude required lists
       if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
@@ -994,8 +991,10 @@ function mailchimp_block_info() {
  */
 function mailchimp_block_view($delta = '') {
   global $user;
+  $block = array();
   $lists = _mailchimp_get_available_lists($user);
-  $list = $lists[$delta];
+
+  $list = isset($lists[$delta]) ? $lists[$delta] : array();
   if (!empty($list) && $q = _mailchimp_get_api_object()) {
     $block['subject'] = t('Subscribe to @title', array('@title' => $list->name));
     $block['content'] = drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);

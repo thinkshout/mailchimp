@@ -40,9 +40,10 @@ function mailchimp_admin_settings() {
             '#title'      => 'MailChimp Subscription Lists',
             '#tree'         => TRUE
         );
+        $saved_lists = variable_get('mailchimp_lists', array());
+
         foreach ($lists as $list) {
-          $saved_list = unserialize(variable_get('mailchimp_lists', NULL));
-          $saved_list = $saved_list[$list['id']];
+          $saved_list = isset($saved_lists[$list['id']]) ? $saved_lists[$list['id']] : false;
 
           $form['mailchimp_lists']['mailchimp_list_' . $list['id']] = array(
               '#type'       => 'fieldset',
@@ -254,5 +255,5 @@ function mailchimp_admin_settings_validate($form, &$form_state) {
 
   // remove lists from the form_state
   unset($form_state['values']['mailchimp_lists']);
-  variable_set('mailchimp_lists', serialize($lists));
+  variable_set('mailchimp_lists', $lists);
 }

@@ -90,6 +90,24 @@ function mailchimp_update_6202() {
 }
 
 /**
+ * Implements hook_update_N().
+ *
+ * Fix for double serialized list data
+ */
+function mailchimp_update_7001() {
+  $lists = variable_get('mailchimp_lists', array());
+
+  if (!empty($lists)) {
+    $unserialized_list = unserialize($lists);
+    if ($unserialized_list) {
+      variable_set('mailchimp_lists', $unserialized_list);
+    }
+  }
+
+  return TRUE;
+}
+
+/**
  * Implements hook_uninstall().
  */
 function mailchimp_uninstall() {
