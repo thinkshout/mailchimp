@@ -215,7 +215,7 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
           '#title'          => $intgroup['name'],
           '#options'        => $options,
           '#default_value'  => $is_subscribed ? explode(",", str_replace(', ', ',', $memberinfo['merges']['INTERESTS'])) : array(),
-          '#attributes'     => array('class' => 'mailchimp-newsletter-interests-' . $list->id)
+          '#attributes'     => array('class' => array('mailchimp-newsletter-interests-' . $list->id))
         );
         drupal_add_js('$(document).ready(function(){
           if($(".mailchimp-newsletter-checkbox-' . $list->id . '").attr("checked")){
