@@ -38,8 +38,8 @@ function mailchimp_user_insert(&$edit, $account, $category) {
   if ($q = _mailchimp_get_api_object()) {
     foreach ((array) _mailchimp_get_available_lists($account) as $list) {
       // first deal with all required lists
-      if ($list->listtype == MAILCHIMP_LISTTYPE_REQUIRED) {  
-        // process immediately    
+      if ($list->listtype == MAILCHIMP_LISTTYPE_REQUIRED) {
+        // process immediately
         if (!variable_get('mailchimp_cron', FALSE)) {
           $action_taken = TRUE;
 
@@ -75,9 +75,9 @@ function mailchimp_user_insert(&$edit, $account, $category) {
                 'uid' => $account->uid,
                 'status' => MAILCHIMP_USERSTATUS_PENDING,
               ))
-              ->execute();          
+              ->execute();
           }
-        }          
+        }
       }
       // process optional lists
       else {
@@ -96,7 +96,7 @@ function mailchimp_user_insert(&$edit, $account, $category) {
 
         if (!$ret) {
           drupal_set_message(t('There was a problem with your newsletter signup: @msg', array('@msg' => $q->errorMessage)));
-        }        
+        }
       }
     }
   }
@@ -280,7 +280,7 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
     else {
       $account = $form_state['user'];
     }
-    
+
     $lists = _mailchimp_get_available_lists($account);
     foreach ($lists as $list) {
       // ignore required lists, they are handled via hook_user
@@ -295,7 +295,7 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
         elseif ($selected) {
           // subscribe the user if they are not previously subscribed or update existing subscriptions
           $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
-          
+
           // include updated email address if already subscribed
           if (!empty($form_state['values']['mail']) && $is_subscribed) {
             $merge_vars['EMAIL'] = $form_state['values']['mail'];
@@ -426,6 +426,9 @@ function mailchimp_menu() {
   return $items;
 }
 
+/**
+ * Access callback for editing newsletter subscriptions.
+ */
 function mailchimp_user_edit_access($user) {
   if (variable_get('mailchimp_user_edit', TRUE) && user_edit_access($user)) {
     return TRUE;
@@ -434,6 +437,7 @@ function mailchimp_user_edit_access($user) {
     return FALSE;
   }
 }
+
 /**
  * Implements hook_permission().
  */
@@ -768,7 +772,7 @@ function mailchimp_mailchimp_merge_keys() {
     if (!empty($categories)) {
       foreach ($categories as $category) {
         $result = _profile_get_fields($category['name']);
-        foreach ($result as $field) {          
+        foreach ($result as $field) {
           $out[$field->name] = t('Profile: !cat - !field', array('!cat' => $field->category, '!field' => $field->title));
         }
       }
@@ -840,7 +844,6 @@ function _mailchimp_get_user_tokens($user) {
   return $out;
 }
 
-
 /**
  * Get the available merge var keys
  */
@@ -857,7 +860,6 @@ function mailchimp_get_merge_values($uid) {
   }
   return array();
 }
-
 
 /**
  * Get the relevent merge vars for the given user for the given list
@@ -928,7 +930,7 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
   }
   else {
     watchdog('mailchimp', 'A problem occurred subscribing @email to list @list. Message: @msg', array(
-      '@email' => $merge_vars['EMAIL'], 
+      '@email' => $merge_vars['EMAIL'],
       '@list' => $list->name,
       '@msg' => $q->errorMessage), WATCHDOG_WARNING);
   }
