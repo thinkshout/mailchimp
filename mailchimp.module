@@ -12,10 +12,10 @@ define('MAILCHIMP_USERSTATUS_PENDING', 'pending');
 define('MAILCHIMP_USERSTATUS_CURRENT', 'current');
 
 /**
- * Implements hook_form_user_register_form_alter().
+ * Implements hook_form_FORM_ID_alter().
+ *   Add newsletter fields to registration form.
  */
-function mailchimp_form_user_register_form_alter(&$form, &$form_state) {
-  $edit = $form;
+function mailchimp_form_user_register_form_alter(&$form, &$form_state, $form_id) {
   $account = $form['#user'];
   $category = $form['#user_category'];
   if (variable_get('mailchimp_user_register', TRUE)) {
@@ -27,68 +27,103 @@ function mailchimp_form_user_register_form_alter(&$form, &$form_state) {
         '#title' => t('Newsletters')
       );
       $form['mailchimp_lists'][] = mailchimp_subscribe_auth_form(NULL, NULL, $account, FALSE);
-      $form['#submit'][] = 'mailchimp_subscribe_auth_form_submit';
     }
   }
 }
 
+/**
+ * Implements hook_user_insert().
+ */
 function mailchimp_user_insert(&$edit, $account, $category) {
   if ($q = _mailchimp_get_api_object()) {
-    foreach ((array) _mailchimp_get_required_lists() as $list) {
-      if (!variable_get('mailchimp_cron', FALSE)) {
-        $action_taken = TRUE;
+    foreach ((array) _mailchimp_get_available_lists($account) as $list) {
+      // first deal with all required lists
+      if ($list->listtype == MAILCHIMP_LISTTYPE_REQUIRED) {  
+        // process immediately    
+        if (!variable_get('mailchimp_cron', FALSE)) {
+          $action_taken = TRUE;
 
-        // determine if a user is allowed in a given list
-        $is_allowed = FALSE;
-        $roles = $edit['roles'];
-        if (!is_array($roles)) {
-          $roles = $account->roles;
-        }
-        foreach ($list->roles as $key => $value) {
-          if (array_key_exists($key, $roles)) {
-            $is_allowed = TRUE;
-            break;
+          // determine if a user is allowed in a given list
+          $is_allowed = FALSE;
+          $roles = $edit['roles'];
+          if (!is_array($roles)) {
+            $roles = $account->roles;
+          }
+          foreach ($list->roles as $key => $value) {
+            if (array_key_exists($key, $roles)) {
+              $is_allowed = TRUE;
+              break;
+            }
+          }
+
+          // they are allowed, update or subscribe
+          if ($is_allowed) {
+            $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
+            $userinfo['EMAIL'] = $edit['mail'];
+            $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
+          }
+          // remove from list
+          else {
+            $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
           }
         }
-
-        // they are allowed, update or subscribe
-        if ($is_allowed) {
-          $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
-          $userinfo['EMAIL'] = $edit['mail'];
-          $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
-        }
-        // remove from list
+        // mark for processing during next cron, if not already done
         else {
-          $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
-        }
+          if (db_query("SELECT count(uid) FROM {mailchimp_user}")->fetchField() == 0) {
+            db_insert('mailchimp_user')
+              ->fields(array(
+                'uid' => $account->uid,
+                'status' => MAILCHIMP_USERSTATUS_PENDING,
+              ))
+              ->execute();          
+          }
+        }          
       }
+      // process optional lists
       else {
-        $id = db_insert('mailchimp_user')
-                ->fields(array(
-                  'uid' => $account->uid,
-                  'status' => MAILCHIMP_USERSTATUS_PENDING,
-                ))
-                ->execute();
+        $ret = TRUE;
+        $selected = @$edit['mailchimp_list_' . $list->id];
+        if ($selected) {
+          $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
+
+          // include interest groups
+          if (!empty($edit['mailchimp_list_' . $list->id . '_INTERESTS'])) {
+            $merge_vars['INTERESTS'] = implode(',', array_filter($edit['mailchimp_list_' . $list->id . '_INTERESTS']));
+          }
+
+          $ret = _mailchimp_subscribe_user($list, $account->mail, $merge_vars, TRUE, $q);
+        }
+
+        if (!$ret) {
+          drupal_set_message(t('There was a problem with your newsletter signup: @msg', array('@msg' => $q->errorMessage)));
+        }        
       }
     }
   }
 }
 
+/**
+ * Implements hook_user_delete().
+ */
 function mailchimp_user_delete(&$edit, $account, $category) {
   if ($q = _mailchimp_get_api_object()) {
+    // remove a user from all required lists.
     foreach ((array) _mailchimp_get_required_lists() as $list) {
       db_delete('mailchimp_user')
           ->condition('uid', $account->uid)
           ->execute();
-      $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
-      $action_taken = TRUE;
+      _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
     }
   }
 }
 
+/**
+ * Implements hook_user_update().
+ */
 function mailchimp_user_update(&$edit, $account, $category) {
   if ($q = _mailchimp_get_api_object()) {
     foreach ((array) _mailchimp_get_required_lists() as $list) {
+      // update a users newseletter subscription immediately
       if (!variable_get('mailchimp_cron', FALSE)) {
         $action_taken = TRUE;
 
@@ -116,6 +151,7 @@ function mailchimp_user_update(&$edit, $account, $category) {
           $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
         }
       }
+      // queue for processing during cron
       else {
         db_update('mailchimp_user')
             ->fields(array(
