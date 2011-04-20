@@ -58,7 +58,7 @@ function mailchimp_user_insert(&$edit, $account, $category) {
 
           // they are allowed, update or subscribe
           if ($is_allowed) {
-            $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
+            $userinfo = _mailchimp_load_user_list_mergevars($account, $list->id);
             $userinfo['EMAIL'] = $edit['mail'];
             $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
           }
@@ -84,7 +84,7 @@ function mailchimp_user_insert(&$edit, $account, $category) {
         $ret = TRUE;
         $selected = @$edit['mailchimp_list_' . $list->id];
         if ($selected) {
-          $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
+          $merge_vars = _mailchimp_load_user_list_mergevars($account, $list->id);
 
           // include interest groups
           if (!empty($edit['mailchimp_list_' . $list->id . '_INTERESTS'])) {
@@ -142,7 +142,7 @@ function mailchimp_user_update(&$edit, $account, $category) {
 
         // they are allowed, update or subscribe
         if ($is_allowed) {
-          $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
+          $userinfo = _mailchimp_load_user_list_mergevars($account, $list->id);
           $userinfo['EMAIL'] = $edit['mail'];
           $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
         }
@@ -209,6 +209,9 @@ function mailchimp_subscribe_auth_form($form, $form_state, $account, $standalone
   return $form;
 }
 
+/**
+ * Return a form element for a single newseltter.
+ */
 function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
   $is_subscribed = FALSE;
 
@@ -299,7 +302,7 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
         }
         elseif ($selected) {
           // subscribe the user if they are not previously subscribed or update existing subscriptions
-          $merge_vars = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
+          $merge_vars = _mailchimp_load_user_list_mergevars($account, $list->id);
 
           // include updated email address if already subscribed
           if (!empty($form_state['values']['mail']) && $is_subscribed) {
@@ -346,7 +349,7 @@ function mailchimp_cron() {
             foreach ((array) $lists as $key => $list) {
               foreach ((array) $account->roles as $rid => $info) {
                 if ($list->roles[$rid]) {
-                  $lists[$key]->batch[] = _mailchimp_load_user_list_mergevars($row->uid, $list->id, $lists[$key]->mergevars);
+                  $lists[$key]->batch[] = _mailchimp_load_user_list_mergevars(user_load($row->uid), $list->id);
                   break;
                 }
               }
@@ -591,7 +594,7 @@ function _mailchimp_subscribe_anon_form($list, $q, &$form) {
   global $user;
   $mergevalues = NULL;
   if ($user->uid) {
-    $mergevalues = _mailchimp_load_user_list_mergevars($user->uid, $list->id, $q->listMergeVars($list->id));
+    $mergevalues = _mailchimp_load_user_list_mergevars($user, $list->id);
   }
 
   foreach ((array) $q->listMergeVars($list->id) as $mergevar) {
@@ -754,135 +757,30 @@ function mailchimp_unsubscribe_form_validate($form, &$form_state) {
 }
 
 /**
- * Implements hook_mailchimp_merge_keys().
- */
-function mailchimp_mailchimp_merge_keys() {
-  $out = array(0 => '<none>');
-
-  $user_fields = array(
-      'name'      => t('Username'),
-      'mail'      => t('Email Address'),
-      'uid'       => t('User ID'),
-      'signature' => t("User's Signature"),
-      'created'   => t("User's Creation Date"),
-      'access'    => t("User's Last Access Date"),
-  );
-
-  foreach ($user_fields as $key => $field) {
-    $out[$key] = t('User: !field', array('!field' => $field));
-  }
-
-  if (function_exists('_profile_get_fields')) {
-    $categories = profile_user_categories();
-    if (!empty($categories)) {
-      foreach ($categories as $category) {
-        $result = _profile_get_fields($category['name']);
-        foreach ($result as $field) {
-          $out[$field->name] = t('Profile: !cat - !field', array('!cat' => $field->category, '!field' => $field->title));
-        }
-      }
-    }
-  }
-
-  if (function_exists('token_get_list')) {
-    $tokens = token_get_list(array('user', 'order'));
-    if (is_array($tokens['user'])) {
-      foreach ($tokens['user'] as $token => $name) {
-        $out['token_' . $token] = t('Token: !field', array('!field' => $name));
-      }
-    }
-  }
-
-  return $out;
-}
-
-/**
- * Recursive implode
- * @param string $glue
- * @param array $pieces
- * @return string
- */
-function implode_recursive($glue, $pieces) {
-  $retVal = array();
-  foreach ($pieces as $piece) {
-    if (is_array($piece)) {
-      $retVal[] = implode_recursive($glue, $piece);
-    } else {
-      $retVal[] = $piece;
-    }
-  }
-  return implode($glue, $retVal);
-}
-
-/**
- * Implements hook_mailchimp_merge_values().
- */
-function mailchimp_mailchimp_merge_values($user) {
-  $out = array();
-  $out = (array) $user;
-  foreach ((array) $user as $key => $value) {
-    if (is_array($value) && $key != 'role') {
-        $out[$key] = implode_recursive('/', $value);
-    }
-    elseif (in_array($key, array('login', 'access', 'created'))) {
-      $out[$key] = date('c', $value);
-    }
-    elseif ($key != 'roles') {
-      $out[$key] = $value;
-    }
-  }
-  $out = array_merge($out, _mailchimp_get_user_tokens($user));
-  return $out;
-}
-
-/**
- * Get the user tokens for merging
- */
-function _mailchimp_get_user_tokens($user) {
-  $out = array();
-  if (function_exists('token_get_values')) {
-    $vars = token_get_values('user', $user);
-    foreach ($vars->tokens as $key => $value) {
-      $out['token_' . $value] = $vars->values[$key];
-    }
-  }
-  return $out;
-}
-
-/**
- * Get the available merge var keys
- */
-function mailchimp_get_merge_keys() {
-  return module_invoke_all('mailchimp_merge_keys');
-}
-
-/**
- * Get all the potential merge var values for a given user
- */
-function mailchimp_get_merge_values($uid) {
-  if ($user = user_load($uid)) {
-    return module_invoke_all('mailchimp_merge_values', $user);
-  }
-  return array();
-}
-
-/**
  * Get the relevent merge vars for the given user for the given list
  */
-function _mailchimp_load_user_list_mergevars($uid, $list_id, $mergevars) {
-  $account = mailchimp_get_merge_values($uid);
+function _mailchimp_load_user_list_mergevars($account, $list_id) {
   $lists = variable_get('mailchimp_lists', array());
   $list = $lists[$list_id];
+  
+  // grab the saved list merge vars and filter out unset values
+  $mergevars = array_filter($list->mergevars);
+  $mergevars = array_flip($mergevars);
+  
+  // match with token values
+  $values = token_generate('user', $mergevars, array('user' => $account));
 
-  $uservars = array(
-      'EMAIL' => $account['mail']
-  );
-  foreach ($mergevars as $mergevar) {
-    if (!empty($list->mergevars[$mergevar['tag']]) && $key = $list->mergevars[$mergevar['tag']]) {
-      $uservars[$mergevar['tag']] = $account[$key];
-    }
+  // strip out any HTML, profile at least, seems to allow it in text fields.
+  foreach($values as $key => $value) {
+    $values[$key] = strip_tags($value);
   }
-  return $uservars;
+  
+  // always add email
+  $values += array(
+      'EMAIL' => $account->mail
+  );
+
+  return $values;
 }
 
 /**
