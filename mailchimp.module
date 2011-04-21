@@ -425,7 +425,13 @@ function mailchimp_menu() {
       'type' => MENU_NORMAL_ITEM,
       'file' => 'mailchimp.admin.inc',
   );
-
+  $items['admin/settings/mailchimp/rebuild'] = array(
+    'title' => 'Rebuild Users Table',
+    'page callback' => 'mailchimp_rebuild_users',
+    'access arguments' => array('administer mailchimp'),
+    'weight' => 10
+  );
+  
   return $items;
 }
 
@@ -952,4 +958,14 @@ function mailchimp_block_view($delta = '') {
     $block['content'] = drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
   }
   return $block;
+}
+
+/**
+ * Rebuild the MailChimp users's table.
+ */
+function mailchimp_rebuild_users() {
+  db_query("DELETE FROM {mailchimp_user}");
+  db_query("INSERT INTO {mailchimp_user} (uid, status) SELECT uid, '". MAILCHIMP_USERSTATUS_PENDING ."' FROM {users} WHERE uid > 0");
+  drupal_set_message('The MailChimp User\'s Table has been rebuilt with all user\'s status set to pending.', 'status');
+  drupal_goto('admin/config/services/mailchimp');
 }

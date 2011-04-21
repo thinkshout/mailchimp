@@ -181,8 +181,11 @@ function mailchimp_admin_settings() {
           '#title' => t('Mailchimp Cron'),
         );
         $form['cron']['info'] = array(
-          '#value' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when editing users. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site.<br /><strong>There are currently !count users with pending updates in the queue.</strong>', 
-            array('!count' => db_query('SELECT COUNT(*) FROM {mailchimp_user} WHERE status = \':status\'', array(':status' => MAILCHIMP_USERSTATUS_PENDING))->fetchField())),
+          '#markup' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when accounts are added, edited, or deleted. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site. You may need to !rebuild when switching to cron processing. There are currently !count users with pending updates in the queue.', 
+            array(
+              '!count' => db_query('SELECT COUNT(*) FROM {mailchimp_user} WHERE status = \':status\'', array(':status' => MAILCHIMP_USERSTATUS_PENDING))->fetchField(),
+              '!rebuild' => l('rebuild the MailChimp User table', 'admin/settings/mailchimp/rebuild')              
+          )),
         );
         $form['cron']['mailchimp_cron'] = array(
             '#type'           => 'checkbox',
@@ -236,17 +239,15 @@ function mailchimp_admin_settings() {
 }
 
 /**
- * validate the admin settings and serialize the saved lists into objects
- *
- * @param <type> $form
- * @param <type> $form_state
+ * Serialize the saved lists and notify users of the need to rebuild the user's table.
  */
 function mailchimp_admin_settings_submit($form, &$form_state) {
   // no lists selected or first time here
   if (empty($form_state['values']['mailchimp_lists'])) {
     return;
   }
-
+  
+  $required = FALSE;
   $lists = array();
   foreach ($form_state['values']['mailchimp_lists'] as $form_list) {
     $list = new stdClass();
@@ -259,11 +260,19 @@ function mailchimp_admin_settings_submit($form, &$form_state) {
     $list->doublein = $form_list['doublein'];
     $list->mergevars  = $form_list['mergevars'];
     $lists[$form_list['list_id']] = $list;
+    
+    $required = ($form_list['listtype'] == MAILCHIMP_LISTTYPE_REQUIRED && $form_state['values']['mailchimp_cron']);    
   }
 
   // remove lists from the form_state
   unset($form_state['values']['mailchimp_lists']);
   variable_set('mailchimp_lists', $lists);
+  
+  // let users know they may need to rebuild the user's table
+  if ($required) {
+    drupal_set_message(t('At least one list is marked as required and updates are handled via cron. You may need to !rebuild.', 
+      array('!rebuild' => l('rebuid the MailChimp users table', 'admin/settings/mailchimp/rebuild'))));
+  }    
 }
 
 /**
