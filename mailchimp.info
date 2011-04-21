@@ -1,6 +1,5 @@
-; $Id:
-name = Mailchimp
-description = Mailchimp email service integration.
+name = MailChimp
+description = MailChimp email service integration.
 package = MailChimp
 core = 7.x
 

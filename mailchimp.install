@@ -23,13 +23,6 @@ function mailchimp_schema() {
 }
 
 /**
- * Implements hook_install().
- */
-function mailchimp_install() {
-
-}
-
-/**
  * Implements hook_update_N().
  */
 function mailchimp_update_6200() {

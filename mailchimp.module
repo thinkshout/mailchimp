@@ -41,8 +41,6 @@ function mailchimp_user_insert(&$edit, $account, $category) {
       if ($list->listtype == MAILCHIMP_LISTTYPE_REQUIRED) {
         // process immediately
         if (!variable_get('mailchimp_cron', FALSE)) {
-          $action_taken = TRUE;
-
           // determine if a user is allowed in a given list
           $is_allowed = FALSE;
           $roles = $edit['roles'];
@@ -60,11 +58,11 @@ function mailchimp_user_insert(&$edit, $account, $category) {
           if ($is_allowed) {
             $userinfo = _mailchimp_load_user_list_mergevars($account, $list->id);
             $userinfo['EMAIL'] = $edit['mail'];
-            $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
+            _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
           }
           // remove from list
           else {
-            $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
+            _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
           }
         }
         // mark for processing during next cron, if not already done
@@ -124,7 +122,7 @@ function mailchimp_user_delete($account) {
 function mailchimp_user_update(&$edit, $account, $category) {
   if ($q = _mailchimp_get_api_object()) {
     foreach ((array) _mailchimp_get_required_lists() as $list) {
-      // update a users newseletter subscription immediately
+      // update a users newsletter subscription immediately
       if (!variable_get('mailchimp_cron', FALSE)) {
         // determine if a user is allowed in a given list
         $is_allowed = FALSE;
@@ -208,7 +206,7 @@ function mailchimp_subscribe_auth_form($form, $form_state, $account, $standalone
 }
 
 /**
- * Return a form element for a single newseltter.
+ * Return a form element for a single newsletter.
  */
 function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
   $is_subscribed = FALSE;
@@ -713,7 +711,7 @@ function mailchimp_unsubscribe_form($form, $form_state) {
  * @param <type> $form_state
  */
 function mailchimp_unsubscribe_form_submit($form, &$form_state) {
-  if ($q || $q = _mailchimp_get_api_object()) {
+  if ($q = _mailchimp_get_api_object()) {
     $success = TRUE;
     foreach ((array) $q->lists() as $list) {
       $success = $success && _mailchimp_unsubscribe_user($list, $form_state['values']['EMAIL'], TRUE, $q);
@@ -738,7 +736,7 @@ function mailchimp_unsubscribe_form_validate($form, &$form_state) {
     form_set_error('EMAIL', t('Please enter your email address.'));
   }
   else {
-    if ($q || $q = _mailchimp_get_api_object()) {
+    if ($q = _mailchimp_get_api_object()) {
       $subscribed = FALSE;
       foreach ((array) $q->lists() as $list) {
         $subscribed = $subscribed || _mailchimp_is_subscribed($list['id'], $form_state['values']['EMAIL'], $q);
@@ -754,7 +752,7 @@ function mailchimp_unsubscribe_form_validate($form, &$form_state) {
 }
 
 /**
- * Get the relevent merge vars for the given user for the given list
+ * Get the relevant merge vars for the given user for the given list
  */
 function _mailchimp_load_user_list_mergevars($account, $list_id) {
   $values = array();
@@ -796,7 +794,7 @@ function _mailchimp_is_subscribed($listid, $mail, $q = NULL) {
 }
 
 /**
- * Subscribe or update a user in a givne list
+ * Subscribe or update a user in a given list
  */
 function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $q = NULL) {
   if ($q || $q = _mailchimp_get_api_object()) {
@@ -863,7 +861,7 @@ function _mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
  *
  * @param object $user 
  * @param bool $exclude_required 
- * @return Array of avaialble lists
+ * @return Array of available lists
  */
 function _mailchimp_get_available_lists($user, $exclude_required = FALSE) {
   $all_lists = variable_get('mailchimp_lists', NULL);
@@ -908,7 +906,7 @@ function _mailchimp_get_api_object() {
   module_load_include('php', 'mailchimp', 'MCAPI.class');
 
   $q = new MCAPI(variable_get('mailchimp_api_key', ''));
-  // set the timeout to something reasonsable to avoid taking down the Drupal site
+  // set the timeout to something reasonable to avoid taking down the Drupal site
   $q->setTimeout(60);
 
   if ($q->errorCode) {
