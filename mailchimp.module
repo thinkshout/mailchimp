@@ -228,7 +228,7 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
 
   $form['wrapper' . $list->id]['mailchimp_list_' . $list->id] = array(
       '#type'           => 'checkbox',
-      '#title'          => t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
+      '#title'          => ($list->label) ? t($list->label) : t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
       '#default_value'  => $default_value,
       '#description'    => $list->description,
       '#attributes'     => array('class' => array('mailchimp-newsletter-checkbox-' . $list->id))

@@ -78,7 +78,14 @@ function mailchimp_admin_settings() {
                 '#default_value'  => ($saved_list &&  !empty($saved_list->roles[$rid])) ? $saved_list->roles[$rid] : FALSE,
             );
           }
-
+          
+          $form['mailchimp_lists']['mailchimp_list_'. $list['id']]['label'] = array(
+              '#type'           => 'textfield',
+              '#title'          => t('List Label'),
+              '#default_value'  => isset($saved_list->label) ? t($saved_list->label) : t('Subscribe to the @newsletter newsletter',  array('@newsletter' => $list['name'])),
+              '#description'    => t('Enter the text to display next to the checkbox for this list on the registration and user account settings pages.  If you have only one list enabled, this text will also act as the default title for the Mailchimp block (which can be further overridden in the block settings).')
+          );
+          
           $form['mailchimp_lists']['mailchimp_list_' . $list['id']]['description'] = array(
               '#type'           => 'textarea',
               '#title'          => t('List Description'),
@@ -222,7 +229,7 @@ function mailchimp_admin_settings() {
         }
   }
 
-  $form['#validate'][] = 'mailchimp_admin_settings_validate';
+  $form['#submit'][] = 'mailchimp_admin_settings_submit';
 
   return system_settings_form($form);
 }
@@ -233,7 +240,7 @@ function mailchimp_admin_settings() {
  * @param <type> $form
  * @param <type> $form_state
  */
-function mailchimp_admin_settings_validate($form, &$form_state) {
+function mailchimp_admin_settings_submit($form, &$form_state) {
   // no lists selected or first time here
   if (empty($form_state['values']['mailchimp_lists'])) {
     return;
@@ -246,6 +253,7 @@ function mailchimp_admin_settings_validate($form, &$form_state) {
     $list->name = $form_list['name'];
     $list->roles = array_filter($form_list['roles']);
     $list->description = $form_list['description'];
+    $list->label = $form_list['label'];    
     $list->listtype = $form_list['listtype'];
     $list->doublein = $form_list['doublein'];
     $list->mergevars  = $form_list['mergevars'];
