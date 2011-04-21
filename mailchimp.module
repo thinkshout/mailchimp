@@ -928,7 +928,7 @@ function mailchimp_block_info() {
       if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
         $blocks[$list->id] = array(
           'info' => t('Mailchimp Subscription Form: @name', array('@name' => $list->name)),
-          'cache' => BLOCK_CACHE_PER_USER,
+          'cache' => DRUPAL_CACHE_PER_USER,
          );
       }
     }
