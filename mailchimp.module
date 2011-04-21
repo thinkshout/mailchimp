@@ -69,7 +69,8 @@ function mailchimp_user_insert(&$edit, $account, $category) {
         }
         // mark for processing during next cron, if not already done
         else {
-          if (db_query("SELECT count(uid) FROM {mailchimp_user}")->fetchField() == 0) {
+          $result = db_query("SELECT uid FROM {mailchimp_user} WHERE uid = :uid", array(':uid' => $$account->uid));
+          if ($result->rowCount() == 0) {
             db_insert('mailchimp_user')
               ->fields(array(
                 'uid' => $account->uid,
@@ -105,14 +106,14 @@ function mailchimp_user_insert(&$edit, $account, $category) {
 /**
  * Implements hook_user_delete().
  */
-function mailchimp_user_delete(&$edit, $account, $category) {
+function mailchimp_user_delete($account) {
   if ($q = _mailchimp_get_api_object()) {
     // remove a user from all required lists.
     foreach ((array) _mailchimp_get_required_lists() as $list) {
       db_delete('mailchimp_user')
           ->condition('uid', $account->uid)
           ->execute();
-      _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
+      $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
     }
   }
 }
@@ -336,19 +337,17 @@ function mailchimp_cron() {
 
     if ($result) {
       $lists = _mailchimp_get_required_lists();
-      foreach ($lists as $key => $list) {
-        $lists[$key]->batch      = array();
-        $lists[$key]->mergevars  = $q->listMergeVars($list->id);
-      }
+
+      $batches = array();
       foreach ($result as $row) {
-        if ($account = user_load(array('uid' => $row->uid))) {
+        if ($account = user_load($row->uid)) {
           db_query('UPDATE {mailchimp_user} SET status = :status WHERE uid = :uid', array(':status' => MAILCHIMP_USERSTATUS_CURRENT, ':uid' => $account->uid));
           // We don't update people if their status = 0 (but perhaps we could unsubscribe them?)
           if ($account->status) {
-            foreach ((array) $lists as $key => $list) {
-              foreach ((array) $account->roles as $rid => $info) {
-                if ($list->roles[$rid]) {
-                  $lists[$key]->batch[] = _mailchimp_load_user_list_mergevars(user_load($row->uid), $list->id);
+            foreach ($lists as $key => $list) {
+              foreach ($account->roles as $rid => $info) {
+                if (isset($list->roles[$rid])) {
+                  $batches[$list->id][] = _mailchimp_load_user_list_mergevars($account, $list->id);
                   break;
                 }
               }
@@ -357,14 +356,15 @@ function mailchimp_cron() {
         }
         else {
           // user exists in mc_user table even though they don't have an account, remove
-          db_query('DELETE FROM {mailchimp_user} WHERE uid = :uid', array(':uid' =>$account->uid));
+          db_query('DELETE FROM {mailchimp_user} WHERE uid = :uid', array(':uid' => $account->uid));
         }
       }
 
       $count = 0;
-      foreach ($lists as $key => $list) {
-        if (count($lists[$key]->batch)) {
-          $ret = $q->listBatchSubscribe($list->id, $lists[$key]->batch, FALSE, TRUE);
+      $ret = array();
+      foreach ($batches as $listid => $batch) {
+        if (count($batch)) {
+          $ret = $q->listBatchSubscribe($listid, $batch, FALSE, TRUE);
           if ($ret['error_count'] > 0) {
             foreach ((array) $ret['errors'] as $error) {
               watchdog('mailchimp', $error['message'], NULL, WATCHDOG_ERROR);
@@ -759,25 +759,28 @@ function mailchimp_unsubscribe_form_validate($form, &$form_state) {
  * Get the relevent merge vars for the given user for the given list
  */
 function _mailchimp_load_user_list_mergevars($account, $list_id) {
+  $values = array();
   $lists = variable_get('mailchimp_lists', array());
   $list = $lists[$list_id];
-  
-  // grab the saved list merge vars and filter out unset values
-  $mergevars = array_filter($list->mergevars);
-  $mergevars = array_flip($mergevars);
-  
-  // match with token values
-  $values = token_generate('user', $mergevars, array('user' => $account));
 
-  // strip out any HTML, profile at least, seems to allow it in text fields.
-  foreach($values as $key => $value) {
-    $values[$key] = strip_tags($value);
+  // grab the saved list merge vars and filter out unset values
+  if (!empty($list->mergevars)) {
+    $mergevars = array_filter($list->mergevars);  
+    $mergevars = array_flip($mergevars);
+
+    // match with token values
+    $values = token_generate('user', $mergevars, array('user' => $account));
+
+    // strip out any HTML, profile at least, seems to allow it in text fields.
+    foreach($values as $key => $value) {
+      $values[$key] = strip_tags($value);
+    }
+
+    // always add email
+    $values += array(
+        'EMAIL' => $account->mail
+    );    
   }
-  
-  // always add email
-  $values += array(
-      'EMAIL' => $account->mail
-  );
 
   return $values;
 }
@@ -844,6 +847,7 @@ function _mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, 
  * Unsubscribe the given user from the given list
  */
 function _mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
+  $success = FALSE;
   if ($q || $q = _mailchimp_get_api_object()) {
     if (_mailchimp_is_subscribed($list->id, $mail, $q)) {
       $success = $q->listUnsubscribe($list->id, $mail, FALSE, FALSE, FALSE);
@@ -852,7 +856,8 @@ function _mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
       }
     }
   }
-  return TRUE; //$success; // the mailchim api seems to always return FALSE on unsubscribe operations
+  
+  return $success;
 }
 
 /**
