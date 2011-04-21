@@ -365,7 +365,7 @@ function mailchimp_cron() {
           $ret = $q->listBatchSubscribe($listid, $batch, FALSE, TRUE);
           if ($ret['error_count'] > 0) {
             foreach ((array) $ret['errors'] as $error) {
-              watchdog('mailchimp', $error['message'], NULL, WATCHDOG_ERROR);
+              watchdog('mailchimp', 'MCAPI Error: %errmsg', array('!errmsg' => $error['message']), WATCHDOG_ERROR);
             }
           }
         }
@@ -912,7 +912,7 @@ function _mailchimp_get_api_object() {
   $q->setTimeout(60);
 
   if ($q->errorCode) {
-    watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
+    watchdog('mailchimp', 'MCAPI Error: %errmsg', array('!errmsg' => $q->errorMessage()), WATCHDOG_ERROR);
     return NULL;
   }
   return $q;
