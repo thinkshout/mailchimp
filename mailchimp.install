@@ -90,6 +90,17 @@ function mailchimp_update_6202() {
 }
 
 /**
+ * Cache blocks with forms per-user.
+ */
+function mailchimp_update_6206() {
+  $return = array();
+
+  $return[] = update_sql("UPDATE {blocks} SET cache = " . BLOCK_CACHE_PER_USER . " WHERE module = 'mailchimp'");
+
+  return $return;
+}
+
+/**
  * Implements hook_update_N().
  *
  * Fix for double serialized list data

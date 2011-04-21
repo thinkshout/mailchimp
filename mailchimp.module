@@ -113,7 +113,7 @@ function mailchimp_user_delete($account) {
       db_delete('mailchimp_user')
           ->condition('uid', $account->uid)
           ->execute();
-      $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
+      _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
     }
   }
 }
@@ -126,8 +126,6 @@ function mailchimp_user_update(&$edit, $account, $category) {
     foreach ((array) _mailchimp_get_required_lists() as $list) {
       // update a users newseletter subscription immediately
       if (!variable_get('mailchimp_cron', FALSE)) {
-        $action_taken = TRUE;
-
         // determine if a user is allowed in a given list
         $is_allowed = FALSE;
         $roles = $account->roles;
@@ -144,11 +142,11 @@ function mailchimp_user_update(&$edit, $account, $category) {
           if(isset($edit['mail'])) {
             $userinfo['EMAIL'] = $edit['mail'];
           }
-          $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
+          _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
         }
         // remove from list
         else {
-          $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
+          _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
         }
       }
       // queue for processing during cron
@@ -930,7 +928,10 @@ function mailchimp_block_info() {
     foreach ($all_lists as $key => $list) {
       // exclude required lists
       if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
-        $blocks[$list->id]["info"] = t('Mailchimp Subscription Form: @name', array('@name' => $list->name));
+        $blocks[$list->id] = array(
+          'info' => t('Mailchimp Subscription Form: @name', array('@name' => $list->name)),
+          'cache' => BLOCK_CACHE_PER_USER,
+         );
       }
     }
   }
