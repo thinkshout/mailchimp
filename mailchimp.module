@@ -1089,7 +1089,7 @@ function mailchimp_block($op='list', $delta=0) {
  */
 function mailchimp_rebuild_users() {
   db_query("DELETE FROM {mailchimp_user}");
-  db_query("INSERT INTO {mailchimp_user} (uid, status) SELECT uid, '". MAILCHIMP_USERSTATUS_PENDING ."' FROM {users} WHERE uid > 0");
+  db_query("INSERT INTO {mailchimp_user} (uid, status) SELECT uid, '%s' FROM {users} WHERE uid > 0", MAILCHIMP_USERSTATUS_PENDING);  
   drupal_set_message('The MailChimp User\'s Table has been rebuilt with all user\'s status set to pending.', 'status');
   drupal_goto('admin/settings/mailchimp');
 }
