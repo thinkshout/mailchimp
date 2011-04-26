@@ -68,7 +68,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
     }    
   }
 
-  if (in_array($op, array('insert', 'delete', 'update')) && $q = _mailchimp_get_api_object()) {
+  if (in_array($op, array('insert', 'delete', 'after_update')) && $q = _mailchimp_get_api_object()) {
     foreach ((array)_mailchimp_get_required_lists() as $list) {
       $action_taken = FALSE;
       switch ($op) {
@@ -80,7 +80,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
           break;
         // insert or update a user to/in a MC list
         case 'insert':
-        case 'update':
+        case 'after_update':
           // don't repeat if already managing via cron
           if (!variable_get('mailchimp_cron', FALSE) ) {
             $action_taken = TRUE;
