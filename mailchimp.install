@@ -130,7 +130,19 @@ function mailchimp_update_6204() {
 function mailchimp_update_6205() {
   $ret = array();  
   $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE name = 'mailchimp' and type = 'module'");
-  return $ret;}
+  return $ret;
+}
+
+/**
+ * Cache blocks with forms per-user.
+ */
+function mailchimp_update_6206() {
+  $return = array();
+
+  $return[] = update_sql("UPDATE {blocks} SET cache = " . BLOCK_CACHE_PER_USER . " WHERE module = 'mailchimp'");
+
+  return $return;
+}
 
 /**
  * Implementation of hook_uninstall().

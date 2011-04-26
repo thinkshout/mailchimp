@@ -1052,7 +1052,10 @@ function mailchimp_block($op='list', $delta=0) {
       foreach ($all_lists as $key => $list) {
         // exclude required lists
         if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
-          $blocks[$list->id]["info"] = t('Mailchimp Subscription Form: @name', array('@name' => $list->name));
+          $blocks[$list->id] = array(
+            'info' => t('Mailchimp Subscription Form: @name', array('@name' => $list->name)),
+            'cache' => BLOCK_CACHE_PER_USER,
+          );
         }
       }
     }
