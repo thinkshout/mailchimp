@@ -623,9 +623,9 @@ function _mailchimp_subscribe_anon_form($list, $q, &$form){
   }
 
   // present interest groups
-    // $form['GROUPINGS'] = _mailchimp_interest_groups_element($q, $list->id, array(), TRUE);
+  if (variable_get('mailchimp_interest_groups_user_forms', FALSE)) {
     $form = array_merge($form, _mailchimp_interest_groups_element($q, $list->id, array(), TRUE));
-    // $form = array_merge($form['wrapper'. $list->id], $interests);
+  }
 }
 
 /**
