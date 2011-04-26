@@ -319,7 +319,7 @@ function mailchimp_cron() {
       $lists = _mailchimp_get_required_lists();
       foreach ($lists as $key => $list) {
         $lists[$key]->batch       = array();
-        $lists[$key]->mergevars   = $q->listMergeVars($list->id);
+        $lists[$key]->listMergeVars   = $q->listMergeVars($list->id);
         $lists[$key]->unsubscribe = array();
       }
       while ($row = db_fetch_object($result)) {
@@ -330,7 +330,7 @@ function mailchimp_cron() {
             $is_allowed = FALSE;
             foreach ((array)$account->roles as $rid => $info) {
               if ($list->roles[$rid]) {
-                $lists[$key]->batch[] = _mailchimp_load_user_list_mergevars($row->uid, $list->id, $lists[$key]->mergevars);
+                $lists[$key]->batch[] = _mailchimp_load_user_list_mergevars($row->uid, $list->id, $lists[$key]->listMergeVars);
                 $is_allowed = TRUE; // user is allowed in this list
                 break;
               }
