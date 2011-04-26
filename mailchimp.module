@@ -62,7 +62,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
         $ret = _mailchimp_subscribe_user($list, $account->mail, $merge_vars, TRUE, $q);
   
         if (!$ret) {
-          watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
+          watchdog('mailchimp', 'MCAPI Error: %errormsg', array('%errormsg' => $q->errorMessage), WATCHDOG_ERROR);
         }        
       }
     }    
@@ -124,7 +124,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
               array('%email' => $account->mail, '%list' => $list->name, '%action' => $op), WATCHDOG_NOTICE);
         }
         else {
-          watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
+          watchdog('mailchimp', 'MCAPI Error: %errormsg', array('%errormsg' => $q->errorMessage), WATCHDOG_ERROR);
         }
       }
     }
@@ -297,7 +297,7 @@ function mailchimp_subscribe_auth_form_submit($form, &$form_state) {
         }
 
         if (!$ret) {
-          watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
+          watchdog('mailchimp', 'MCAPI Error: %errormsg', array('%errormsg' => $q->errorMessage), WATCHDOG_ERROR);
         }
       }
     }
@@ -356,7 +356,7 @@ function mailchimp_cron() {
           $ret = $q->listBatchSubscribe($list->id, $lists[$key]->batch, FALSE, TRUE);
           if ($ret['error_count'] > 0) {
             foreach ((array)$ret['errors'] as $error) {
-              watchdog('mailchimp', $error['message'], NULL, WATCHDOG_ERROR);
+              watchdog('mailchimp', 'MCAPI Error: %errormsg', array('%errormsg' => $error['message']), WATCHDOG_ERROR);
             }
           }
           $count += $ret['success_count'];
@@ -367,7 +367,7 @@ function mailchimp_cron() {
           $ret = $q->listBatchUnsubscribe($list->id, $lists[$key]->unsubscribe, FALSE, FALSE);
           if ($ret['error_count'] > 0) {
             foreach ((array)$ret['errors'] as $error) {
-              watchdog('mailchimp', $error['message'], NULL, WATCHDOG_ERROR);
+              watchdog('mailchimp', 'MCAPI Error: %errormsg', array('%errormsg' => $error['message']), WATCHDOG_ERROR);
             }
           }
           $unsub_count += $ret['success_count'];
@@ -1034,7 +1034,7 @@ function _mailchimp_get_api_object() {
   $q->setTimeout(60);
 
   if ($q->errorCode) {
-    watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
+    watchdog('mailchimp', 'MCAPI Error: %errormsg', array('%errormsg' => $q->errorMessage), WATCHDOG_ERROR);
     return NULL;
   }
   return $q;
