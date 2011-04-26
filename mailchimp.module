@@ -374,7 +374,7 @@ function mailchimp_cron() {
         }        
       }
 
-      watchdog('mailchimp', 'Updated !count records in MailChimp and unsuscribed !unsub emails.', array('!count' => $count, '!unsub' => $unsub_count), WATCHDOG_NOTICE);
+      watchdog('mailchimp', 'Updated !count records in MailChimp and unsubscribed !unsub emails.', array('!count' => $count, '!unsub' => $unsub_count), WATCHDOG_NOTICE);
     }
   }
 }
