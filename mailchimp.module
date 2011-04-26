@@ -183,14 +183,21 @@ function mailchimp_subscribe_auth_form($form_state, $account, $standalone = TRUE
  * Implementation of hook_forms().
  */
 function mailchimp_forms($form_id, $args) {
-  // have all instances of  mailchimp_subscribe_auth_form map to a single form 
-  // factory. Needed in case more than one block on a single page.
+  // have all instances of mailchimp_subscribe_auth_form and 
+  // mailchimp_subscribe_auth_form map to a single form factory. Needed in 
+  // case more than one block on a single page.
   if (strpos($form_id, 'mailchimp_subscribe_auth_form') !== FALSE) {
     $forms[$form_id] = array(
       'callback' => 'mailchimp_subscribe_auth_form',
     );
     return $forms;
-   }
+  }
+  else if (strpos($form_id, 'mailchimp_subscribe_anon_form') !== FALSE) {
+    $forms[$form_id] = array(
+      'callback' => 'mailchimp_subscribe_anon_form',
+    );
+    return $forms;
+  }
 }
 
 /**
@@ -427,6 +434,9 @@ function mailchimp_menu() {
   return $items;
 }
 
+/**
+ * Access callback for the newseltter signup form from a user account.
+ */
 function mailchimp_user_edit_access($user){
   if(variable_get('mailchimp_user_edit', TRUE) && user_edit_access($user)){
     return TRUE;
@@ -1075,7 +1085,7 @@ function mailchimp_block($op='list', $delta=0) {
           $block['content'] = drupal_get_form('mailchimp_subscribe_auth_form_' . $list->id, $user, 1, $list);
         }
         else {
-          $block['content'] = drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
+          $block['content'] = drupal_get_form('mailchimp_subscribe_anon_form_' . $list->id, $list, $q);
         }
       }
     }
