@@ -525,10 +525,10 @@ function mailchimp_subscribe_anon_form_submit($form, &$form_state) {
       $success = _mailchimp_subscribe_user($list['list'], $list['EMAIL'], $list, TRUE);
 
       if ($success) {
-        $msg = variable_get('mailchimp_subscription_success_message', t('Thank you, you have been successfully subscribed.'));
+        $msg = t(variable_get('mailchimp_subscription_success_message', 'Thank you, you have been successfully subscribed.'));        
       }
       else {
-        $msg = variable_get('mailchimp_subscription_failure_message', t('We were unable to subscribe you at this time. Please try again later.'));
+        $msg = t(variable_get('mailchimp_subscription_failure_message', 'We were unable to subscribe you at this time. Please try again later.'));        
       }
 
       drupal_set_message($msg);
