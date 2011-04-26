@@ -479,7 +479,7 @@ function mailchimp_subscribe_anon_form_all($form_state, $q) {
     $form['mailchimp_lists'][$list->id] = array(
       '#type' => 'fieldset',
       '#title' => t('@name', array('@name' => $list->name)),
-      '#description' => t('@desc', array('@desc' => $list->description)),
+      '#description' => t('!desc', array('!desc' => $list->description)),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     );
