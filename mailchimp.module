@@ -594,6 +594,8 @@ function mailchimp_subscribe_anon_form($form_state, $list, $q) {
 
   _mailchimp_subscribe_anon_form($list, $q, $form['mailchimp_lists'][$list->id]);
 
+  $form['#submit'][] = 'mailchimp_subscribe_anon_form_submit';
+  
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Sign Up!'),
