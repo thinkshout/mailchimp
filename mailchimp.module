@@ -899,10 +899,11 @@ function mailchimp_get_merge_keys() {
  * Get all the potential merge var values for a given user
  */
 function mailchimp_get_merge_values($uid) {
+  $values = array();
   if ($user = user_load(array('uid' => $uid))) {
-    return module_invoke_all('mailchimp_merge_values', $user);
+    $values = module_invoke_all('mailchimp_merge_values', $user);
   }
-  return array();
+  return $values;
 }
 
 
