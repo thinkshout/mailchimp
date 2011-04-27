@@ -197,7 +197,7 @@ function mailchimp_admin_settings() {
             '#type'           => 'checkbox',
             '#title'          => t('Show Interest Groups on Registration and Account Forms'),
             '#default_value'  => variable_get('mailchimp_interest_groups_user_forms', FALSE),
-            '#description'    => t('If set, users will be able to select applicable interest groups when registering or editing their accounts.')
+            '#description'    => t('If set, users will be able to select applicable interest groups when signing up for newsletters.')
         );
 
         $form['cron'] = array(
