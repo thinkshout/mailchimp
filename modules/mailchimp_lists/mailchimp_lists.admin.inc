@@ -235,13 +235,12 @@ function mailchimp_lists_admin_settings() {
                 '#description'  => t('Select Drupal user variables to send to Mailchimp as Merge Variables. Available Drupal variables are any Profile or Token variables for the given user. For more information on Merge Variables, see the !doc', array('!doc' => l(t('Mailchimp Documentation'), 'http://server.iad. liveperson.net/hc/s-31286565/cmd/kbresource/kb-8214439208090042855/view_question!PAGETYPE?sq=merge%2bvariables&sf=101113&sg=0&st=188569&documentid=143258&action=view'))),
                 '#tree'         => TRUE,
             );
-            $mergeoptions = mailchimp_get_merge_keys();
             foreach ($mergevars as $mergevar) {
               if ($mergevar['tag'] !== 'EMAIL') {
                 $form['mailchimp_lists']['mailchimp_list_' . $list['id']]['mergevars'][$mergevar['tag']] = array(
                     '#type'           => 'select',
                     '#title'          => $mergevar['name'],
-                    '#options'        => $mergeoptions,
+                    '#options'        => mailchimp_lists_get_merge_tokens(),
                     '#required'       => is_bool($mergevar['req']) ? $mergevar['req'] : FALSE,
                     '#default_value'  => $saved_list ? $saved_list->mergevars[$mergevar['tag']] : ''
                 );
@@ -383,4 +382,21 @@ function mailchimp_lists_admin_settings_validate($form, &$form_state) {
   // remove lists from the form_state
   unset($form_state['values']['mailchimp_lists']);
   variable_set('mailchimp_lists', serialize($lists));
+}
+
+/**
+ * Return an array of available user tokens.
+ */
+function mailchimp_lists_get_merge_tokens() {
+  $out = array(0 => '<none>');
+ 
+  // grab user tokens
+  $token_info = token_info();
+  if (!empty($token_info['tokens']['user'])) {
+    foreach ($token_info['tokens']['user'] as $key => $token) {
+      $out[$key] = t('!field', array('!field' => $token['name']));
+    }
+  }
+ 
+  return $out;
 }
