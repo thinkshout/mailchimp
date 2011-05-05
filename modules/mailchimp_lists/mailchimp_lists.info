@@ -1,4 +1,4 @@
-name = Mailchimp List
+name = MailChimp Lists
 description = Manage and integrate MailChimp lists.
 package = MailChimp
 core = 7.x

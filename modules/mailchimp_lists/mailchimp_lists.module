@@ -96,7 +96,7 @@ function mailchimp_lists_cron() {
           $ret = $q->listBatchSubscribe($list->id, $lists[$key]->batch, FALSE, TRUE);
           if ($ret['error_count'] > 0) {
             foreach ((array) $ret['errors'] as $error) {
-              watchdog('mailchimp', $error['message'], NULL, WATCHDOG_ERROR);
+              watchdog('mailchimp', 'MCAPI Error: %errmsg', array('!errmsg' => $error['message']), WATCHDOG_ERROR);
             }
           }
         }

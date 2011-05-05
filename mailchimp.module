@@ -518,7 +518,7 @@ function mailchimp_get_api_object() {
   $q->setTimeout(60);
 
   if ($q->errorCode) {
-    watchdog('mailchimp', $q->errorMessage, NULL, WATCHDOG_ERROR);
+    watchdog('mailchimp', 'MCAPI Error: %errmsg', array('!errmsg' => $q->errorMessage), WATCHDOG_ERROR);
     return NULL;
   }
   
@@ -549,7 +549,10 @@ function mailchimp_block_info() {
     foreach ($all_lists as $key => $list) {
       // exclude required lists
       if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
-        $blocks[$list->id]["info"] = t('Mailchimp Subscription Form: @name', array('@name' => $list->name));
+        $blocks[$list->id] = array(
+          'info' => t('Mailchimp Subscription Form: @name', array('@name' => $list->name)),
+          'cache' => DRUPAL_CACHE_PER_USER,
+         );
       }
     }
   }

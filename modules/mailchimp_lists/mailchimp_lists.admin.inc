@@ -36,8 +36,8 @@ function mailchimp_list_add_form($form, &$form_state, $list = NULL) {
     '#options' => array(
       '' => t('-- Select --'),
       MAILCHIMP_LISTTYPE_REQUIRED => t('Required'),
-      MAILCHIMP_LISTTYPE_OPTIN => t('Opt-in'),
-      MAILCHIMP_LISTTYPE_OPTOUT => t('Opt-out')
+      MAILCHIMP_LISTTYPE_OPTIONAL => t('Optional'),
+      MAILCHIMP_LISTTYPE_ANONYMOUS => t('Anonymous')
     ),
     '#default_value' => -1,
     '#required' => TRUE
@@ -242,6 +242,7 @@ function mailchimp_lists_admin_settings() {
                     '#type'           => 'select',
                     '#title'          => $mergevar['name'],
                     '#options'        => $mergeoptions,
+                    '#required'       => is_bool($mergevar['req']) ? $mergevar['req'] : FALSE,
                     '#default_value'  => $saved_list ? $saved_list->mergevars[$mergevar['tag']] : ''
                 );
               }

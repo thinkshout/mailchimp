@@ -1,4 +1,4 @@
-name = Mailchimp
+name = MailChimp
 description = Mailchimp email service integration.
 package = MailChimp
 core = 7.x
