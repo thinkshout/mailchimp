@@ -3,6 +3,8 @@ description = Manage and integrate MailChimp lists.
 package = MailChimp
 core = 7.x
 dependencies[] = mailchimp
+dependencies[] = entity
 
 files[] = mailchimp_lists.install
-files[] = mailchimp_lists.module
+files[] = mailchimp_lists.entity.inc
+files[] = mailchimp_lists.admin.inc

@@ -25,7 +25,7 @@ function mailchimp_lists_schema() {
         'default' => '',
       ),
       'status' => array(
-        'type' => 'varchar', 
+        'type' => 'varchar',
         'length' => 15,
         'description' => 'The {mailchimp_user}.status of this mailchimp_user.',
       ),
@@ -57,18 +57,23 @@ function mailchimp_lists_schema() {
       'mailchimp_user_list' => array(
         'table' => 'mailchimp_lists',
         'columns' => array('list_id' => 'list_id'),
-      ),      
-    ),    
+      ),
+    ),
   );
 
   $schema['mailchimp_lists'] = array(
     'fields' => array(
-      'list_id' => array(
-        'type' => 'varchar',
-        'length' => 32,
-        'description' => 'The {mailchimp_lists}.list_id of this mailchimp_list.',
+      'id' => array(
+        'type' => 'serial',
         'not null' => TRUE,
-        'default' => '',
+        'description' => 'Primary Key: Unique mailchimp_list entity ID.',
+      ),
+      'mc_list' => array(
+        'type' => 'blob',
+        'not null' => TRUE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized object that stores the MailChimp list.',
       ),
       'label' => array(
         'type' => 'varchar',
@@ -76,8 +81,15 @@ function mailchimp_lists_schema() {
         'description' => 'The {mailchimp_lists}.label of this mailchimp_list.',
         'not null' => TRUE,
         'default' => '',
-      ),      
-      'type' => array(
+      ),
+      'description' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'description' => 'The {mailchimp_lists}.description of this mailchimp_list.',
+        'not null' => FALSE,
+        'default' => '',
+      ),
+      'list_type' => array(
         'type' => 'varchar',
         'length' => 32,
         'description' => 'The {mailchimp_lists}.type of this mailchimp_list.',
@@ -104,10 +116,7 @@ function mailchimp_lists_schema() {
         'default' => 0,
       ),
     ),
-    'primary key' => array('list_id'),
-    'indexes' => array(
-      'mailchimp_lists_type'      => array('type'),
-    ),
+    'primary key' => array('id'),
   );
 
   return $schema;
