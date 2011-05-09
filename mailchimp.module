@@ -916,7 +916,7 @@ function _mailchimp_get_api_object() {
   $q->setTimeout(60);
 
   if ($q->errorCode) {
-    watchdog('mailchimp', 'MCAPI Error: %errmsg', array('!errmsg' => $q->errorMessage()), WATCHDOG_ERROR);
+    watchdog('mailchimp', 'MCAPI Error: %errmsg', array('!errmsg' => $q->errorMessage), WATCHDOG_ERROR);
     return NULL;
   }
   return $q;
