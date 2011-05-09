@@ -184,7 +184,7 @@ function mailchimp_admin_settings() {
           '#markup' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when accounts are added, edited, or deleted. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site. You may need to !rebuild when switching to cron processing. There are currently !count users with pending updates in the queue.', 
             array(
               '!count' => db_query('SELECT COUNT(*) FROM {mailchimp_user} WHERE status = \':status\'', array(':status' => MAILCHIMP_USERSTATUS_PENDING))->fetchField(),
-              '!rebuild' => l('rebuild the MailChimp User table', 'admin/settings/mailchimp/rebuild')              
+              '!rebuild' => l('rebuild the MailChimp User table', 'mailchimp/rebuild')              
           )),
         );
         $form['cron']['mailchimp_cron'] = array(

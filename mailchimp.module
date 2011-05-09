@@ -425,7 +425,7 @@ function mailchimp_menu() {
       'type' => MENU_NORMAL_ITEM,
       'file' => 'mailchimp.admin.inc',
   );
-  $items['admin/settings/mailchimp/rebuild'] = array(
+  $items['mailchimp/rebuild'] = array(
     'title' => 'Rebuild Users Table',
     'page callback' => 'mailchimp_rebuild_users',
     'access arguments' => array('administer mailchimp'),
