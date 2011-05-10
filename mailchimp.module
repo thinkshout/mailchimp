@@ -490,7 +490,7 @@ function mailchimp_get_lists($reset = FALSE) {
     
     cache_set('mailchimp_lists', $lists, 'cache', CACHE_TEMPORARY);
   }
-  dpm($lists);
+
   return $lists;
 }
 
