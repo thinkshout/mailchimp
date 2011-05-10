@@ -269,10 +269,10 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#type' => 'submit',
     '#value' => t('Save'),
   );
-
   $form['cancel'] = array(
-    '#type' => 'button',
-    '#value' => t('Cancel'),
+    '#type' => 'link',
+    '#title' => t('Cancel'),
+    '#href' => 'admin/config/services/mailchimp/lists'
   );
 
   return $form;
