@@ -50,7 +50,7 @@ function mailchimp_lists_load($list_id) {
  *
  * @param $list_ids
  * @param $conditions
- *   An array of conditions on the {redhen_contact} table in the form
+ *   An array of conditions on the {mailchimp_list} table in the form
  *     'field' => $value.
  * @param $reset
  *   Whether to reset the internal contact loading cache.
