@@ -324,12 +324,13 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
   // }
 
   // wrap in a div
-  $form['wrapper' . $list->id] = array(
+  $wrapper_key = 'mailchimp_' . $list->id;
+  $form[$wrapper_key] = array(
     '#prefix' => '<div class="mailchimp-newsletter-wrapper">',
     '#suffix' => '</div>'
   );
 
-  $form['wrapper' . $list->id]['mailchimp_list_' . $list->id] = array(
+  $form[$wrapper_key]['subscribe'] = array(
       '#type'           => 'checkbox',
       '#title'          => ($list->label) ? t($list->label) : t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
       '#default_value'  => $is_subscribed,
@@ -339,9 +340,17 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
 
   // present interest groups
   if ($list->settings['include_interest_groups']) {
-    $mc_list = mailchimp_get_list($list->mc_list['id']);
-    if (isset($mc_list['intgroups'])) {
-      switch ($intgroup['form_field']) {
+    $mc_list = mailchimp_get_list($list->mc_list_id);
+    $form[$wrapper_key]['interest_groups'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Interest Groups'),
+      '#description' => t('Select applicable your interest groups.'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    
+    foreach($mc_list['intgroups'] as $group) {
+      switch ($group['form_field']) {
         case 'radio':
           $field_type = 'radios';
           break;
@@ -349,28 +358,21 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
           $field_type = 'checkboxes';
           break;
         default:
-          $field_type = $intgroup['form_field'];
+          $field_type = $group['form_field'];
       }
       $options = array();
-      foreach ((array)$intgroup['groups'] as $group) {
-        $options[$group] = $group;
+      foreach ((array)$group['groups'] as $option) {
+        $options[$option['bit']] = $option['name'];
       }
-      $form['wrapper'. $list->id]['mailchimp_list_' . $list->id .'_INTERESTS'] = array(
+      $form[$wrapper_key]['interest_groups']['interest_group_' . $group['id']] = array(
         '#type'           => $field_type,
-        '#title'          => $intgroup['name'],
+        '#title'          => $group['name'],
         '#options'        => $options,
-        '#default_value'  => $is_subscribed ? explode(",", str_replace(', ', ',', $memberinfo['merges']['INTERESTS'])) : array(),
+        // '#default_value'  => $is_subscribed ? explode(",", str_replace(', ', ',', $memberinfo['merges']['INTERESTS'])) : array(),
         '#attributes'     => array('class' => array('mailchimp-newsletter-interests-' . $list->id))
       );
-      drupal_add_js('$(document).ready(function(){
-        if($(".mailchimp-newsletter-checkbox-' . $list->id . '").attr("checked")){
-          $(".mailchimp-newsletter-interests-' . $list->id . '").parent(".form-item").show();
-        } else {
-          $(".mailchimp-newsletter-interests-' . $list->id . '").parent(".form-item").hide();
-        }
-        $(".mailchimp-newsletter-checkbox-' . $list->id . '").click(function(){ $(".mailchimp-newsletter-interests-'. $list->id .'").parent(".form-item").toggle("slow");});
-      });', 'inline');
     }
+dpm($mc_list);
   }
 
   return $form;
