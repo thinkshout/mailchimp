@@ -48,8 +48,6 @@ function mailchimp_lists_menu() {
   return $items;
 }
 
-
-
 /**
  * Access callback for mailchimp user local task.
  *
@@ -229,7 +227,7 @@ function mailchimp_lists_user_delete($account) {
  */
 function mailchimp_lists_user_update(&$edit, $account, $category) {
   if ($q = mailchimp_get_api_object()) {
-    foreach ((array) mailchimp_get_required_lists() as $list) {
+    foreach ((array) mailchimp_lists_get_required_lists() as $list) {
       // update a users newsletter subscription immediately
       if (!variable_get('mailchimp_cron', FALSE)) {
         // determine if a user is allowed in a given list
@@ -275,7 +273,9 @@ function mailchimp_lists_subscribe_auth_form($form, $form_state, $account, $stan
   $form = array();
   
   // get all available non-required lists
-  $lists = !empty($list) ? array($list) : _mailchimp_get_available_lists($account, TRUE);
+  $lists = mailchimp_lists_get_available_lists();
+  dpm($lists);
+  
   if (count($lists) == 0) {
     $form['value'] = array(
       '#markup' => t('There are no available newsletters subscriptions.'),
@@ -284,30 +284,28 @@ function mailchimp_lists_subscribe_auth_form($form, $form_state, $account, $stan
     );
   }
   else {
-    if ($q = _mailchimp_get_api_object()) {
-      if ($account->uid > 0) {
-        $form['uid'] = array(
-          '#type' => 'hidden',
-          '#value' => $account->uid
-        );
-      }
-      else {
-        // user registration or admin creating new user
-        $account->roles = array(2 => 'authenticated');
-      }
+    if ($account->uid > 0) {
+      $form['uid'] = array(
+        '#type' => 'hidden',
+        '#value' => $account->uid
+      );
+    }
+    else {
+      // user registration or admin creating new user
+      $account->roles = array(2 => 'authenticated');
+    }
 
-      foreach ($lists as $list) {
-        mailchimp_auth_newsletter_form($form, $list, $account, $q);
-      }
+    foreach ($lists as $list) {
+      mailchimp_lists_auth_newsletter_form($form, $list, $account);
+    }
 
-      if ($standalone) {
-        $form['submit'] = array(
-          '#type' => 'submit',
-          '#value' => t('save settings'),
-          '#weight' => 100
-        );
-      }
-    }    
+    if ($standalone) {
+      $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('save settings'),
+        '#weight' => 100
+      );
+    }
   }  
 
   return $form;
@@ -316,17 +314,14 @@ function mailchimp_lists_subscribe_auth_form($form, $form_state, $account, $stan
 /**
  * Return a form element for a single newsletter.
  */
-function mailchimp_lists_auth_newsletter_form(&$form, $list, $account, $q) {
+function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
   $is_subscribed = FALSE;
 
-  if ($account && $account->uid > 0) {
-    $memberinfo = $q->listMemberInfo($list->id, $account->mail);
-    $is_subscribed = $memberinfo['status'] == 'subscribed';
-    $default_value = $is_subscribed;
-  }
-  else {
-    $default_value = $list->listtype == MAILCHIMP_LISTTYPE_OPTOUT ? TRUE : FALSE;
-  }
+  // if ($account && $account->uid > 0) {
+  //   $memberinfo = $q->listMemberInfo($list->id, $account->mail);
+  //   $is_subscribed = $memberinfo['status'] == 'subscribed';
+  //   $default_value = $is_subscribed;
+  // }
 
   // wrap in a div
   $form['wrapper' . $list->id] = array(
@@ -337,14 +332,15 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account, $q) {
   $form['wrapper' . $list->id]['mailchimp_list_' . $list->id] = array(
       '#type'           => 'checkbox',
       '#title'          => ($list->label) ? t($list->label) : t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
-      '#default_value'  => $default_value,
+      '#default_value'  => $is_subscribed,
       '#description'    => $list->description,
       '#attributes'     => array('class' => array('mailchimp-newsletter-checkbox-' . $list->id))
   );
 
   // present interest groups
-  if (variable_get('mailchimp_interest_groups_user_forms', FALSE)) {
-    if ($intgroup = $q->listInterestGroups($list->id)) {
+  if ($list->settings['include_interest_groups']) {
+    $mc_list = mailchimp_get_list($list->mc_list['id']);
+    if (isset($mc_list['intgroups'])) {
       switch ($intgroup['form_field']) {
         case 'radio':
           $field_type = 'radios';
@@ -457,4 +453,36 @@ function _mailchimp_lists_load_user_list_mergevars($account, $list_id) {
   }
 
   return $values;
+}
+
+/**
+ * Return all available lists for a given user.
+ *
+ * @param string $account 
+ * @param string $list_type 
+ * @return array lists
+ */
+function mailchimp_lists_get_available_lists($account = NULL, $list_type = MAILCHIMP_LISTTYPE_OPTIONAL) {
+  if (empty($account)) {
+    global $user;
+    $account = $user;
+  }
+  
+  $lists = mailchimp_lists_load_multiple(FALSE, array('list_type' => $list_type));
+  $user_lists = array();
+  foreach($lists as $list) {
+    foreach ($account->roles as $rid => $role) {
+      if (isset($list->settings['roles'][$rid])) {
+        $user_lists[] = $list;
+        break;
+      }
+    }
+  }
+  
+  return $user_lists;
+}
+
+
+function mailchimp_lists_get_required_lists() {
+ return array(); 
 }

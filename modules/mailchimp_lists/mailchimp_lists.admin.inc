@@ -9,9 +9,10 @@ function mailchimp_lists_overview_page() {
   $lists = mailchimp_lists_load_multiple();
   $rows = array();
   foreach($lists as $list) {
+    $mc_list = mailchimp_get_list($list->mc_list_id);
     $rows[] = array(
       l($list->label, 'admin/config/services/mailchimp/lists/' . $list->id . '/edit'),
-      l($list->mc_list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $list->mc_list['web_id']),
+      l($mc_list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id']),
       $list->description,
       $list->list_type);
   }
@@ -66,9 +67,6 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
   $options = array('' => t('-- Select --'));
   foreach($lists as $mc_list) {
     $options[$mc_list['id']] = $mc_list['name'];
-
-    // store the lists to avoid a new API call
-    $form_state['mc_lists'][$mc_list['id']] = $mc_list;
   }
   $form['mc_list_id'] = array(
     '#type' => 'select',
@@ -77,7 +75,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#description' => t('Available MailChimp lists. If this field is empty, create a list at !MailChimp first.',
       array('!MailChimp' => l('MailChimp', 'https://admin.mailchimp.com'))),
     '#options' => $options,
-    '#default_value' => $list ? $list->mc_list['id'] : -1,
+    '#default_value' => $list ? $list->mc_list_id : -1,
     '#required' => TRUE,
     '#ajax' => array(
       'callback' => 'mailchimp_lists_mergefields_callback',
@@ -294,8 +292,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
   $list->label = $form_state['values']['label'];
   $list->description = $form_state['values']['description'];
   $list->list_type = $form_state['values']['list_type'];
-  $mc_list = $form_state['mc_lists'][$form_state['values']['mc_list_id']];
-  $list->mc_list = $mc_list;
+  $list->mc_list_id = $form_state['values']['mc_list_id'];
   $list->settings = array(
     'roles' => $form_state['values']['roles'],
     'mergefields' => $form_state['values']['mergefields'],

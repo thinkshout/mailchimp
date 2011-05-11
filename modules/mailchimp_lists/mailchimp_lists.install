@@ -68,12 +68,11 @@ function mailchimp_lists_schema() {
         'not null' => TRUE,
         'description' => 'Primary Key: Unique mailchimp_list entity ID.',
       ),
-      'mc_list' => array(
-        'type' => 'blob',
+      'mc_list_id' => array(
+        'type' => 'varchar',
         'not null' => TRUE,
-        'size' => 'big',
-        'serialize' => TRUE,
-        'description' => 'A serialized object that stores the MailChimp list.',
+        'length' => 32,
+        'description' => 'The MailChimp list id associated with this list.',
       ),
       'label' => array(
         'type' => 'varchar',
