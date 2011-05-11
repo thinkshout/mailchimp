@@ -14,6 +14,18 @@ function mailchimp_install() {
 }
 
 /**
+ * Implements hook_schema().
+ */
+function mailchimp_schema() {
+  $schema['cache_mailchimp_user'] = drupal_get_schema_unprocessed('system', 'cache');
+  $schema['cache_mailchimp_user']['description'] = 'Cache table for the MailChimp module to store a list subscribers member info.';
+
+  return $schema;
+}
+
+
+
+/**
  * Implements hook_uninstall().
  */
 function mailchimp_uninstall() {
