@@ -126,7 +126,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
         $form['mergefields'][$tag] = array(
           '#type' => 'select',
           '#title' => $name,
-          '#default_value' => $list ? $list->settings['mergefields'][$tag] : -1,
+          '#default_value' => isset($list->settings['mergefields']) ? $list->settings['mergefields'][$tag] : -1,
           '#options' => mailchimp_lists_get_merge_tokens()
         );
       }
