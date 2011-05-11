@@ -106,12 +106,16 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     
     $mergefields = array();
     // grab merge fields from existing list when we haven't changed form values
-    if (isset($list) && empty($form_state['values']['mc_list_id'])) {
-      $mergefields = $list->settings['mergefields'];
+    if (!empty($list) && isset($list->settings['mergefields']) && empty($form_state['values']['mc_list_id'])) {
+      // if (isset($list->settings['mergefields']) ) {        
+        $mergefields = $list->settings['mergefields'];
+      // }
     }
     // grab merge fields from the MC API
     else if ($q = mailchimp_get_api_object()){
-      $result = $q->listMergeVars($form_state['values']['mc_list_id']);
+      $list_id = isset($form_state['values']['mc_list_id']) ? 
+        $form_state['values']['mc_list_id'] : $list->mc_list_id;
+      $result = $q->listMergeVars($list_id);
       foreach($result as $field) {
         $mergefields[$field['tag']] = $field['name'];
       }      
@@ -169,7 +173,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#type'           => 'checkbox',
     '#title'          => t('Require subscribers to Double Opt-in'),
     '#description'    => t('New subscribers will be sent a link with an email they must follow to confirm their subscription.'),
-    '#default' => $list ? $list->settings['doublein'] : FALSE,
+    '#default' => isset($list->settings['doublein']) ? $list->settings['doublein'] : FALSE,
     '#states' => array(
       // Hide this option for required lists
       'invisible' => array(
@@ -182,7 +186,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#type'           => 'checkbox',
     '#title'          => t('Show subscription options on the user registration form.'),
     '#description'    => t('This will only apply for lists granted to an authenticated role.'),
-    '#default_value'  => $list ? $list->settings['show_register_form'] : FALSE,
+    '#default_value'  => isset($list->settings['show_register_form']) ? $list->settings['show_register_form'] : FALSE,
     '#states' => array(
       // only show for optional lists
       'visible' => array(
@@ -194,7 +198,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#type'           => 'checkbox',
     '#title'          => t('Show Subscription Options on User Edit Screen'),
     '#description'    => t('If set, a tab will be presented for managing newsletter subscriptions when editing an account.'),
-    '#default_value'  => $list ? $list->settings['show_account_form'] : FALSE,
+    '#default_value'  => isset($list->settings['show_account_form']) ? $list->settings['show_account_form'] : FALSE,
     '#states' => array(
       // only show for optional lists
       'visible' => array(
@@ -205,7 +209,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
   $form['tabs']['settings']['include_interest_groups'] = array(
     '#type'           => 'checkbox',
     '#title'          => t('Include interest groups on subscription form.'),
-    '#default_value'  => $list ? $list->settings['include_interest_groups'] : FALSE,
+    '#default_value'  => isset($list->settings['include_interest_groups']) ? $list->settings['include_interest_groups'] : FALSE,
     '#description'    => t('If set, users will be able to select applicable interest groups when registering or editing their accounts.'),
     '#states' => array(
       // hide for required groups
@@ -222,7 +226,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
   $form['tabs']['settings']['cron'] = array(
     '#type'           => 'checkbox',
     '#title'          => t('Sync List During Cron'),
-    '#default_value'  => $list ? $list->settings['cron'] : FALSE,
+    '#default_value'  => isset($list->settings['cron']) ? $list->settings['cron'] : FALSE,
     '#description'    => t('If this is set, users will be subscribed to the required list during cron runs. Otherwise subscription will take place when a user is added/edited.'),
     '#states' => array(
       // Hide this option for required lists
@@ -253,7 +257,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     ),
     '#title' => t('Batch limit'),
     '#description' => t('Maximum number of users to process in a single cron run. Mailchimp suggest keeping this below 5000-10000. Ignored if updates take place on user add / edit.'),
-    '#default_value' => $list ? $list->settings['cron_batch_limit'] : FALSE,
+    '#default_value' => isset($list->settings['cron_batch_limit']) ? $list->settings['cron_batch_limit'] : FALSE,
     '#states' => array(
       // Hide this option for required lists
       'visible' => array(
@@ -295,7 +299,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
   $list->mc_list_id = $form_state['values']['mc_list_id'];
   $list->settings = array(
     'roles' => $form_state['values']['roles'],
-    'mergefields' => $form_state['values']['mergefields'],
+    'mergefields' => isset($form_state['values']['mergefields']) ? $form_state['values']['mergefields'] : NULL,
     'doublein' => $form_state['values']['doublein'],
     'show_register_form' => $form_state['values']['show_register_form'],
     'show_account_form' => $form_state['values']['show_account_form'],
