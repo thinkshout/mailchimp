@@ -274,7 +274,6 @@ function mailchimp_lists_subscribe_auth_form($form, $form_state, $account, $stan
   
   // get all available non-required lists
   $lists = mailchimp_lists_get_available_lists();
-  dpm($lists);
   
   if (count($lists) == 0) {
     $form['value'] = array(
@@ -315,13 +314,12 @@ function mailchimp_lists_subscribe_auth_form($form, $form_state, $account, $stan
  * Return a form element for a single newsletter.
  */
 function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
+  // determine if a user is subscribed to the list
   $is_subscribed = FALSE;
-
-  // if ($account && $account->uid > 0) {
-  //   $memberinfo = $q->listMemberInfo($list->id, $account->mail);
-  //   $is_subscribed = $memberinfo['status'] == 'subscribed';
-  //   $default_value = $is_subscribed;
-  // }
+  if ($account && $account->uid > 0) {
+    $memberinfo = mailchimp_get_memberinfo($list->mc_list_id, $account->mail);
+    $is_subscribed = $memberinfo['status'] == 'subscribed';
+  }
 
   // wrap in a div
   $wrapper_key = 'mailchimp_' . $list->id;
@@ -330,12 +328,11 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
     '#suffix' => '</div>'
   );
 
-  $form[$wrapper_key]['subscribe'] = array(
+  $form[$wrapper_key]['subscribe_' . $list->id] = array(
       '#type'           => 'checkbox',
       '#title'          => ($list->label) ? t($list->label) : t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
       '#default_value'  => $is_subscribed,
       '#description'    => $list->description,
-      '#attributes'     => array('class' => array('mailchimp-newsletter-checkbox-' . $list->id))
   );
 
   // present interest groups
@@ -344,12 +341,26 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
     $form[$wrapper_key]['interest_groups'] = array(
       '#type' => 'fieldset',
       '#title' => t('Interest Groups'),
-      '#description' => t('Select applicable your interest groups.'),
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#collapsed' => !$is_subscribed,
+      '#states' => array(
+        'collapsed' => array(
+           ':input[name="subscribe_' . $list->id . '"]' => array('checked' => FALSE),
+        )
+      )      
     );
-    
-    foreach($mc_list['intgroups'] as $group) {
+
+    foreach($mc_list['intgroups'] as $group) {      
+      // grab the default values for this group
+      // @todo: find a better way
+      foreach($memberinfo['merges']['GROUPINGS'] as $membergroup) {
+        if ($membergroup['id'] == $group['id']) {
+          $default_merge_values = explode(",", str_replace(', ', ',', $membergroup['groups']));
+          break;
+        }
+      }
+      
+      // set the form field type
       switch ($group['form_field']) {
         case 'radio':
           $field_type = 'radios';
@@ -360,19 +371,20 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
         default:
           $field_type = $group['form_field'];
       }
+      
+      // extract the field options
       $options = array();
       foreach ((array)$group['groups'] as $option) {
-        $options[$option['bit']] = $option['name'];
+        $options[$option['name']] = $option['name'];
       }
       $form[$wrapper_key]['interest_groups']['interest_group_' . $group['id']] = array(
         '#type'           => $field_type,
         '#title'          => $group['name'],
         '#options'        => $options,
-        // '#default_value'  => $is_subscribed ? explode(",", str_replace(', ', ',', $memberinfo['merges']['INTERESTS'])) : array(),
+        '#default_value'  => $is_subscribed ? $default_merge_values : array(),
         '#attributes'     => array('class' => array('mailchimp-newsletter-interests-' . $list->id))
       );
     }
-dpm($mc_list);
   }
 
   return $form;
