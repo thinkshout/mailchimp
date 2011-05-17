@@ -42,7 +42,6 @@ function mailchimp_lists_menu() {
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'mailchimp_lists_edit_access',
     'access arguments' => array(1),
-    'tab_parent' => 'user/%/edit'
   );
 
   return $items;
