@@ -372,58 +372,58 @@ function mailchimp_unsubscribe_form_validate($form, &$form_state) {
 }
 
 /**
- * Check if the given user is subscribed to the given list.
+ * Check if the given email is subscribed to the given list. Simple
+ *   wrapper around mailchimp_get_memberinfo().
+ *
+ * @param  $list_id
+ * @param  $email
+ * @return bool
  */
-function mailchimp_is_subscribed($listid, $mail, $q = NULL) {
-  $is_subscribed = FALSE;
-  if ($q || $q = _mailchimp_get_api_object()) {
-    $sub_info       = $q->listMemberInfo($listid, $mail);
-    $is_subscribed  = @$sub_info['status'] == 'subscribed';
-  }
-  return $is_subscribed;
+function mailchimp_is_subscribed($list_id, $email) {
+  $memberinfo = mailchimp_get_memberinfo($list_id, $email);
+  return $memberinfo['status'] == 'subscribed';
 }
 
 /**
- * Subscribe or update a user in a givne list.
+ * Subscribe or update a user in a given list.
  */
-function mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $q = NULL) {
-  if ($q || $q = _mailchimp_get_api_object()) {
-    $double_optin   = $list->doublein;
+function mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $mcapi = NULL) {
+  $success = FALSE;
+  if ($mcapi || $mcapi = _mailchimp_get_api_object()) {
+    $double_optin = $list->settings['doublein'];
 
-    // required by MC API. An empty array will fail.
-    if (empty($merge_vars)) {
-      $merge_vars = '';
-    }
-
-    if (_mailchimp_is_subscribed($list->id, $email, $q)) {
+    if (mailchimp_is_subscribed($list->mc_list_id, $email)) {
       $action = 'updated in';
-      $success = $q->listUpdateMember($list->id, $email, $merge_vars);
+      $success = $mcapi->listUpdateMember($list->mc_list_id, $email, $merge_vars);
       if ($success && $message) {
-        drupal_set_message(t('You have updated your settings in %list.', array('%list' => $list->name)));
+        drupal_set_message(t('You have updated your settings in %list.', array('%list' => $list->label)));
       }
     }
     else {
       $action = 'subscribed to';
-      $success = $q->listSubscribe($list->id, $email, $merge_vars, 'html', $double_optin, TRUE);
+      $success = $mcapi->listSubscribe($list->mc_list_id, $email, $merge_vars, 'html', $double_optin, TRUE);
 
       if ($message && $success && $double_optin) {
         drupal_set_message(t('You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription.', array('%list' => $list->name)));
       }
       elseif ($message && $success) {
-        drupal_set_message(t('You have subscribed to %list.', array('%list' => $list->name)));
+        drupal_set_message(t('You have subscribed to %list.', array('%list' => $list->label)));
       }
     }
-  }
 
-  if ($success) {
-    watchdog('mailchimp', '@email was @action list @list.',
-      array('@action' => $action, '@email' => $merge_vars['EMAIL'], '@list' => $list->name), WATCHDOG_NOTICE);
-  }
-  else {
-    watchdog('mailchimp', 'A problem occurred subscribing @email to list @list. Message: @msg', array(
-      '@email' => $merge_vars['EMAIL'], 
-      '@list' => $list->name,
-      '@msg' => $q->errorMessage), WATCHDOG_WARNING);
+    // clear user cache
+    mailchimp_cache_clear_user($list->mc_list_id, $email);
+
+    if ($success) {
+      watchdog('mailchimp', '@email was @action list @list.',
+        array('@action' => $action, '@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE);
+    }
+    else {
+      watchdog('mailchimp', 'A problem occurred subscribing @email to list @list. Message: @msg', array(
+        '@email' => $merge_vars['EMAIL'],
+        '@list' => $list->label,
+        '@msg' => $mcapi->errorMessage), WATCHDOG_WARNING);
+    }
   }
 
   return $success;
@@ -433,15 +433,16 @@ function mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $
  * Unsubscribe the given user from the given list.
  */
 function mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
-  if ($q || $q = _mailchimp_get_api_object()) {
-    if (_mailchimp_is_subscribed($list->id, $mail, $q)) {
-      $success = $q->listUnsubscribe($list->id, $mail, FALSE, FALSE, FALSE);
+  $success = FALSE;
+  if ($q || $q = mailchimp_get_api_object()) {
+    if (mailchimp_is_subscribed($list->mc_list_id, $mail)) {
+      $success = $q->listUnsubscribe($list->mc_list_id, $mail, FALSE, FALSE, FALSE);
       if ($message && $success) {
-        drupal_set_message(t('You have unsubscribed from %list.', array('%list' => $list->name)));
+        drupal_set_message(t('You have unsubscribed from %list.', array('%list' => $list->label)));
       }
     }
   }
-  return TRUE; //$success; // the mailchim api seems to always return FALSE on unsubscribe operations
+  return $success;
 }
 
 /**
@@ -558,6 +559,17 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
 }
 
 /**
+ * Clear a mailchimp user memberinfo cache
+ * 
+ * @param  $list_id
+ * @param  $email
+ * @return void
+ */
+function mailchimp_cache_clear_user($list_id, $email) {
+  cache_clear_all($list_id . '-' . $email, 'cache_mailchimp_user');
+}
+
+/**
  * Implements hook_block_info.
  */
 function mailchimp_block_info() {
@@ -569,7 +581,7 @@ function mailchimp_block_info() {
       // exclude required lists
       if ($list->listtype !== MAILCHIMP_LISTTYPE_REQUIRED) {
         $blocks[$list->id] = array(
-          'info' => t('Mailchimp Subscription Form: @name', array('@name' => $list->name)),
+          'info' => t('Mailchimp Subscription Form: @name', array('@name' => $list->label)),
           'cache' => DRUPAL_CACHE_PER_USER,
          );
       }
@@ -588,7 +600,7 @@ function mailchimp_block_view($delta = '') {
   $lists = _mailchimp_get_available_lists($user);
   $list = $lists[$delta];
   if (!empty($list) && $q = _mailchimp_get_api_object()) {
-    $block['subject'] = t('Subscribe to @title', array('@title' => $list->name));
+    $block['subject'] = t('Subscribe to @title', array('@title' => $list->label));
     $block['content'] = drupal_get_form('mailchimp_subscribe_anon_form', $list, $q);
   }
   return $block;
