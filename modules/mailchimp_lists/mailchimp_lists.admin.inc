@@ -104,21 +104,13 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       '#tree' => TRUE
     );
     
+    $mc_list_id = !empty($form_state['values']['mc_list_id']) ? $form_state['values']['mc_list_id'] : $list->mc_list_id;
+    $mc_list = mailchimp_get_list($mc_list_id);
+    $mergevars = $mc_list['mergevars'];
+
     $mergefields = array();
-    // grab merge fields from existing list when we haven't changed form values
-    if (!empty($list) && isset($list->settings['mergefields']) && empty($form_state['values']['mc_list_id'])) {
-      // if (isset($list->settings['mergefields']) ) {        
-        $mergefields = $list->settings['mergefields'];
-      // }
-    }
-    // grab merge fields from the MC API
-    else if ($q = mailchimp_get_api_object()){
-      $list_id = isset($form_state['values']['mc_list_id']) ? 
-        $form_state['values']['mc_list_id'] : $list->mc_list_id;
-      $result = $q->listMergeVars($list_id);
-      foreach($result as $field) {
-        $mergefields[$field['tag']] = $field['name'];
-      }      
+    foreach($mergevars as $field) {
+      $mergefields[$field['tag']] = $field['name'];
     }
 
     if (!empty($mergefields)) {
