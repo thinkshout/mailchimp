@@ -210,11 +210,6 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       ),
     ),
   );
-
-  // $form['cron']['info'] = array(
-  //   '#value' => t('Updates to Mailchimp can be done when the user is added or edited, or deferred until the next cron run. Deferring these updates to cron will speed up the user interface when editing users. You need to ensure cron is running correctly, and that it keeping up with the number of user edits on your site.<br /><strong>There are currently !count users with pending updates in the queue.</strong>',
-  //     array('!count' => db_query('SELECT COUNT(*) FROM {mailchimp_lists} WHERE status = \':status\'', array(':status' => MAILCHIMP_USERSTATUS_PENDING))->fetchField())),
-  // );
   $form['tabs']['settings']['cron'] = array(
     '#type'           => 'checkbox',
     '#title'          => t('Sync List During Cron'),
@@ -226,37 +221,6 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
         ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_REQUIRED),
       ),
     ),
-  );
-  // NB: This is the maximum number of users to update, but unless you have required lists,
-  // the actual number of users subscribed and therefore updated will likely be signficantly less.
-  $form['tabs']['settings']['cron_batch_limit'] = array(
-    '#type' => 'select',
-    '#options' => array(
-      '1' => '1',
-      '10' => '10',
-      '25' => '25',
-      '50' => '50',
-      '75' => '75',
-      '100' => '100',
-      '250' => '250',
-      '500' => '500',
-      '750' => '750',
-      '1000' => '1000',
-      '2500' => '2500',
-      '5000' => '5000',
-      '7500' => '7500',
-      '10000' => '10000',
-    ),
-    '#title' => t('Batch limit'),
-    '#description' => t('Maximum number of users to process in a single cron run. Mailchimp suggest keeping this below 5000-10000. Ignored if updates take place on user add / edit.'),
-    '#default_value' => isset($list->settings['cron_batch_limit']) ? $list->settings['cron_batch_limit'] : FALSE,
-    '#states' => array(
-      // Hide this option for required lists
-      'visible' => array(
-        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_REQUIRED),
-      ),
-    ),
-
   );
 
   $form['save'] = array(
