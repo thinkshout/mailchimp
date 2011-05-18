@@ -10,57 +10,6 @@
  * Implements hook_schema().
  */
 function mailchimp_lists_schema() {
-  $schema['mailchimp_user'] = array(
-    'fields' => array(
-      'uid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'description' => 'The {mailchimp_user}.uid of this mailchimp_user.',
-      ),
-      'list_id' => array(
-        'type' => 'varchar',
-        'length' => 32,
-        'description' => 'The {mailchimp_user}.list_id of this mailchimp_user.',
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'status' => array(
-        'type' => 'varchar',
-        'length' => 15,
-        'description' => 'The {mailchimp_user}.status of this mailchimp_user.',
-      ),
-      'created' => array(
-        'description' => 'The Unix timestamp when the mailchimp_user was created.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'updated' => array(
-        'description' => 'The Unix timestamp when the mailchimp_user was most recently saved.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-    ),
-    'primary key' => array('uid', 'list_id'),
-    'indexes' => array(
-      'mailchimp_user_user'       => array('uid'),
-      'mailchimp_user_status'     => array('status'),
-      'mailchimp_user_updated'    => array('updated'),
-      'mailchimp_user_created'    => array('created'),
-    ),
-    'foreign keys' => array(
-      'mailchimp_user_user' => array(
-        'table' => 'user',
-        'columns' => array('uid' => 'uid'),
-      ),
-      'mailchimp_user_list' => array(
-        'table' => 'mailchimp_lists',
-        'columns' => array('list_id' => 'list_id'),
-      ),
-    ),
-  );
-
   $schema['mailchimp_lists'] = array(
     'fields' => array(
       'id' => array(
@@ -125,6 +74,6 @@ function mailchimp_lists_schema() {
  * Implements hook_uninstall().
  */
 function mailchimp_lists_uninstall() {
-  variable_del('mailchimp_lists_edit');
-  variable_del('mailchimp_lists_register');
+  $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+  $queue->deleteQueue();
 }
