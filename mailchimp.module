@@ -385,38 +385,28 @@ function mailchimp_is_subscribed($list_id, $email) {
 }
 
 /**
- * Subscribe or update a user in a given list.
+ * Subscribe a user to a given list.
  */
 function mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $mcapi = NULL) {
   $success = FALSE;
   if ($mcapi || $mcapi = _mailchimp_get_api_object()) {
     $double_optin = $list->settings['doublein'];
 
-    if (mailchimp_is_subscribed($list->mc_list_id, $email)) {
-      $action = 'updated in';
-      $success = $mcapi->listUpdateMember($list->mc_list_id, $email, $merge_vars);
-      if ($success && $message) {
-        drupal_set_message(t('You have updated your settings in %list.', array('%list' => $list->label)));
-      }
-    }
-    else {
-      $action = 'subscribed to';
-      $success = $mcapi->listSubscribe($list->mc_list_id, $email, $merge_vars, 'html', $double_optin, TRUE);
+    $success = $mcapi->listSubscribe($list->mc_list_id, $email, $merge_vars, 'html', $double_optin, TRUE);
 
-      if ($message && $success && $double_optin) {
-        drupal_set_message(t('You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription.', array('%list' => $list->name)));
-      }
-      elseif ($message && $success) {
-        drupal_set_message(t('You have subscribed to %list.', array('%list' => $list->label)));
-      }
+    if ($message && $success && $double_optin) {
+      drupal_set_message(t('You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription.', array('%list' => $list->name)));
+    }
+    elseif ($message && $success) {
+      drupal_set_message(t('You have subscribed to %list.', array('%list' => $list->label)));
     }
 
-    // clear user cache
+    // clear user cache, just in case there's some cruft leftover
     mailchimp_cache_clear_user($list->mc_list_id, $email);
 
     if ($success) {
-      watchdog('mailchimp', '@email was @action list @list.',
-        array('@action' => $action, '@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE);
+      watchdog('mailchimp', '@email was subscribed to list @list.',
+        array('@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE);
     }
     else {
       watchdog('mailchimp', 'A problem occurred subscribing @email to list @list. Message: @msg', array(
@@ -430,18 +420,53 @@ function mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $
 }
 
 /**
- * Unsubscribe the given user from the given list.
+ * Update a user in a given list.
  */
-function mailchimp_unsubscribe_user($list, $mail, $message = TRUE, $q = NULL) {
+function mailchimp_update_user($list, $email, $merge_vars, $message = TRUE, $mcapi = NULL) {
   $success = FALSE;
-  if ($q || $q = mailchimp_get_api_object()) {
-    if (mailchimp_is_subscribed($list->mc_list_id, $mail)) {
-      $success = $q->listUnsubscribe($list->mc_list_id, $mail, FALSE, FALSE, FALSE);
+  if ($mcapi || $mcapi = _mailchimp_get_api_object()) {
+
+    $success = $mcapi->listUpdateMember($list->mc_list_id, $email, $merge_vars);
+    
+    if ($success && $message) {
+      drupal_set_message(t('You have updated your settings in %list.', array('%list' => $list->label)));
+    }
+
+    // clear user cache
+    mailchimp_cache_clear_user($list->mc_list_id, $email);
+
+    if ($success) {
+      watchdog('mailchimp', '@email was updated in list @list.',
+        array('@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE);
+    }
+    else {
+      watchdog('mailchimp', 'A problem occurred subscribing @email to list @list. Message: @msg', array(
+        '@email' => $merge_vars['EMAIL'],
+        '@list' => $list->label,
+        '@msg' => $mcapi->errorMessage), WATCHDOG_WARNING);
+    }
+  }
+
+  return $success;
+}
+
+/**
+ * Unsubscribe a user from the given list.
+ */
+function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NULL) {
+  $success = FALSE;
+  if ($mcapi || $mcapi = mailchimp_get_api_object()) {
+    if (mailchimp_is_subscribed($list->mc_list_id, $email)) {
+      $success = $mcapi->listUnsubscribe($list->mc_list_id, $email, FALSE, FALSE, FALSE);
       if ($message && $success) {
         drupal_set_message(t('You have unsubscribed from %list.', array('%list' => $list->label)));
       }
+
+      // clear user cache
+      mailchimp_cache_clear_user($list->mc_list_id, $email);      
     }
   }
+  
   return $success;
 }
 
@@ -488,12 +513,10 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
       if ($result['total'] > 0) {
         foreach($result['data'] as $list) {
           // append mergefields
-          $mergevars = $q->listMergeVars($list['id']);
-          $list['mergevars'] = $mergevars;
-          
+          $list['mergevars'] = $q->listMergeVars($list['id']);
+
           // append interest groups
-          $intgroups = $q->listInterestGroupings($list['id']);
-          $list['intgroups'] = $intgroups;
+          $list['intgroups'] = $q->listInterestGroupings($list['id']);
           
           $lists[$list['id']] = $list;
         }
