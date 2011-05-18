@@ -380,8 +380,13 @@ function mailchimp_unsubscribe_form_validate($form, &$form_state) {
  * @return bool
  */
 function mailchimp_is_subscribed($list_id, $email) {
+  $subscribed = FALSE;
   $memberinfo = mailchimp_get_memberinfo($list_id, $email);
-  return $memberinfo['status'] == 'subscribed';
+  if (isset($memberinfo['status']) && $memberinfo['status'] == 'subscribed') {
+    $subscribed = TRUE;
+  }
+
+  return $subscribed;
 }
 
 /**
