@@ -1,4 +1,13 @@
 <?php
+
+/**
+ * @file
+ * Mailchimp lists module.
+ */
+
+define('MAILCHIMP_LISTTYPE_REQUIRED', 'required');
+define('MAILCHIMP_LISTTYPE_OPTIONAL', 'optional');
+define('MAILCHIMP_LISTTYPE_ANONYMOUS', 'anonymous');
 define('MAILCHIMP_QUEUE_CRON', 'mailchimp_cron');
 
 module_load_include('inc', 'mailchimp_lists', 'mailchimp_lists.entity');
@@ -478,7 +487,7 @@ function mailchimp_lists_get_available_lists($account = NULL, $list_type = MAILC
       if (isset($list->settings['roles'][$rid])) {
         if (!empty($conditions)) {
           foreach($conditions as $key => $condition) {
-            if ($list->settings[$key] == $condition) {
+            if (isset($list->settings[$key]) && $list->settings[$key] == $condition) {
               $user_lists[] = $list;
             }
           }
