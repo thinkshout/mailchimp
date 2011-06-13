@@ -348,11 +348,13 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
         $default_merge_values = array();
         if ($account->uid) {
           $memberinfo = mailchimp_get_memberinfo($list->mc_list_id, $account->mail);
-          foreach($memberinfo['merges']['GROUPINGS'] as $membergroup) {
-            if ($membergroup['id'] == $group['id']) {
-              $default_merge_values = explode(",", str_replace(', ', ',', $membergroup['groups']));
-              break;
-            }
+          if (!empty($memberinfo)) {
+            foreach($memberinfo['merges']['GROUPINGS'] as $membergroup) {
+              if ($membergroup['id'] == $group['id']) {
+                $default_merge_values = explode(",", str_replace(', ', ',', $membergroup['groups']));
+                break;
+              }
+            }            
           }
         }
 
