@@ -118,7 +118,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
         $form['mergefields'][$tag] = array(
           '#type' => 'select',
           '#title' => $name,
-          '#default_value' => isset($list->settings['mergefields']) ? $list->settings['mergefields'][$tag] : -1,
+          '#default_value' => isset($list->settings['mergefields'][$tag]) ? $list->settings['mergefields'][$tag] : -1,
           '#options' => mailchimp_lists_get_merge_tokens()
         );
       }
@@ -261,7 +261,6 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
     'show_account_form' => $form_state['values']['show_account_form'],
     'include_interest_groups' => $form_state['values']['include_interest_groups'],
     'cron' => $form_state['values']['cron'],
-    'cron_batch_limit' => $form_state['values']['cron_batch_limit'],
   );
 
   if ($ret = mailchimp_lists_save($list)) {
