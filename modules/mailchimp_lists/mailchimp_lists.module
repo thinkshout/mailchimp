@@ -177,6 +177,37 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
     }
   }
 
+  mailchimp_lists_user_sync($account);
+}
+
+/**
+ * Implements hook_user_delete().
+ */
+function mailchimp_lists_user_delete($account) {
+  // unsubscribe a user from all required lists
+  $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_REQUIRED);
+  if (!empty($lists)) {
+    $mcapi = mailchimp_get_api_object();
+    foreach ($lists as $list) {    
+      mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
+    }
+  }
+}
+
+/**
+ * Implements hook_user_update().
+ */
+function mailchimp_lists_user_update(&$edit, $account, $category) {
+  mailchimp_lists_user_sync($account, isset($edit['mail']) ? $edit['mail'] : '');
+}
+
+/**
+ * Update a users setting in all required list or add to cron queue.
+ *
+ * @param string $account 
+ * @param string $new_email 
+ */
+function mailchimp_lists_user_sync($account, $new_email = '') {
   $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_REQUIRED);
   if (!empty($lists)) {
     $mcapi = mailchimp_get_api_object();
@@ -190,6 +221,12 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
       }
       // process immediately
       else {
+        // grab merge values
+        $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
+        // set the EMAIL merge var if an email address is being updated
+        if (!empty($new_email)) {
+          $mergevars['EMAIL'] = $new_email;
+        }
         if ($is_subscribed) {
           mailchimp_update_user($list, $account->mail, $mergevars, FALSE, $mcapi);
         }
@@ -198,66 +235,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
         }
       }
     }    
-  }
-}
-
-/**
- * Implements hook_user_delete().
- */
-function mailchimp_lists_user_delete($account) {
-  if ($q = _mailchimp_get_api_object()) {
-    // remove a user from all required lists.
-    foreach ((array) _mailchimp_get_required_lists() as $list) {
-      db_delete('mailchimp_user')
-          ->condition('uid', $account->uid)
-          ->execute();
-      _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
-    }
-  }
-}
-
-/**
- * Implements hook_user_update().
- */
-function mailchimp_lists_user_update(&$edit, $account, $category) {
-  if ($q = mailchimp_get_api_object()) {
-    foreach ((array)mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_REQUIRED) as $list) {
-      // update a users newsletter subscription immediately
-      if (!variable_get('mailchimp_cron', FALSE)) {
-        // determine if a user is allowed in a given list
-        $is_allowed = FALSE;
-        $roles = $account->roles;
-        foreach ($list->roles as $key => $value) {
-          if (array_key_exists($key, $roles)) {
-            $is_allowed = TRUE;
-            break;
-          }
-        }
-
-        // they are allowed, update or subscribe
-        if ($is_allowed) {
-          $userinfo = _mailchimp_load_user_list_mergevars($account, $list->id);
-          if(isset($edit['mail'])) {
-            $userinfo['EMAIL'] = $edit['mail'];
-          }
-          _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
-        }
-        // remove from list
-        else {
-          _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
-        }
-      }
-      // queue for processing during cron
-      else {
-        db_update('mailchimp_user')
-            ->fields(array(
-              'status' => MAILCHIMP_USERSTATUS_PENDING,
-            ))
-            ->condition('uid', $account->uid)
-            ->execute();
-      }
-    }
-  }
+  }  
 }
 
 /**
@@ -501,4 +479,45 @@ function mailchimp_lists_get_available_lists($account = NULL, $list_type = MAILC
   }
   
   return $user_lists;
+}
+
+
+/**
+ * Implements hook_block_info.
+ */
+function mailchimp_lists_block_info() {
+  $blocks = array();
+  $lists = mailchimp_lists_load_multiple();
+  if (!empty($lists)) {
+    foreach ($lists as $list) {
+      // exclude required lists
+      if ($list->list_type !== MAILCHIMP_LISTTYPE_REQUIRED) {
+        $blocks[$list->id] = array(
+          'info' => t('Mailchimp Subscription Form: @name', array('@name' => $list->label)),
+          'cache' => DRUPAL_CACHE_PER_USER,
+         );
+      }
+    }
+  }
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ * Provides a block for each available list for a given user
+ */
+function mailchimp_lists_block_view($delta = '') {
+  $block = array();
+  global $user;
+  $list = reset(mailchimp_lists_load_multiple(array($delta)));
+  foreach ($user->roles as $rid => $role) {
+    if (isset($list->settings['roles'][$rid])) {
+      $block['subject'] = t('Subscribe to @title', array('@title' => $list->label));
+      $block['content'] = drupal_get_form('mail_lists_user_subscribe_form', array($list), $user);
+      break;
+    }
+  }
+  
+  return $block;
 }
