@@ -54,6 +54,13 @@ function mailchimp_lists_menu() {
     'access callback' => 'mailchimp_lists_user_subscribe_page_access',
     'access arguments' => array(1),
   );
+  $items['mailchimp/subscribe'] = array(
+    'title' => 'Newsletter Subscription',
+    'description' => 'Present all available free form newsletter subscriptions.',
+    'page callback' => 'mailchimp_lists_freeform_subscribe_page',
+    'access callback' => 'mailchimp_lists_freeform_subscribe_page_access',
+    'type' => MENU_SUGGESTED_ITEM,
+  );
 
   return $items;
 }
@@ -67,6 +74,18 @@ function mailchimp_lists_menu() {
 function mailchimp_lists_user_subscribe_page_access($user) {
   $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_OPTIONAL, array('show_account_form' => 1));
   return (count($lists) > 0) & user_edit_access($user);
+}
+
+/**
+ * Access callback for mailchimp_lists_user_subscribe_page().
+ * 
+ * @param  $user
+ * @return bool
+ */
+function mailchimp_lists_freeform_subscribe_page_access() {
+  global $user;
+  $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_ANONYMOUS);
+  return (count($lists) > 0);
 }
 
 /**
@@ -255,6 +274,18 @@ function mailchimp_lists_user_subscribe_page($account) {
   return drupal_get_form('mailchimp_lists_user_subscribe_form', $lists, $account);
 }
 
+function mailchimp_lists_freeform_subscribe_page() {
+  // get all available freeform lists
+  global $user;
+  $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_ANONYMOUS);
+  
+  if (count($lists) == 0) {
+    return(t('There are no available newsletters subscriptions.'));
+  }
+
+  return drupal_get_form('mailchimp_lists_user_subscribe_form', $lists, $user);
+}
+
 /**
  * Return all subscription forms for a given user.
  * 
@@ -294,9 +325,19 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
   // wrap in a div
   $wrapper_key = 'mailchimp_' . $list->id;
   $form[$wrapper_key] = array(
-    '#prefix' => '<div class="mailchimp-newsletter-wrapper">',
+    '#prefix' => '<div id="mailchimp-newsletter-' . $list->id . '" class="mailchimp-newsletter-wrapper">',
     '#suffix' => '</div>',
   );
+
+  // add the title and description to freeform lists
+  if ($list->list_type == MAILCHIMP_LISTTYPE_ANONYMOUS) {
+    $form[$wrapper_key]['title'] = array(
+      '#type' => 'item',
+      '#title' => t($list->label),
+      '#description' => t($list->description),
+    );
+  }
+
   $form[$wrapper_key]['list'] = array('#type' => 'value', '#value' => $list);
 
   if ($list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
