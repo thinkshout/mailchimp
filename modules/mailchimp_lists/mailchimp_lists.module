@@ -7,7 +7,7 @@
 
 define('MAILCHIMP_LISTTYPE_REQUIRED', 'required');
 define('MAILCHIMP_LISTTYPE_OPTIONAL', 'optional');
-define('MAILCHIMP_LISTTYPE_ANONYMOUS', 'anonymous');
+define('MAILCHIMP_LISTTYPE_FREEFORM', 'freeform');
 define('MAILCHIMP_QUEUE_CRON', 'mailchimp_cron');
 
 module_load_include('inc', 'mailchimp_lists', 'mailchimp_lists.entity');
@@ -84,7 +84,7 @@ function mailchimp_lists_user_subscribe_page_access($user) {
  */
 function mailchimp_lists_freeform_subscribe_page_access() {
   global $user;
-  $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_ANONYMOUS);
+  $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_FREEFORM);
   return (count($lists) > 0);
 }
 
@@ -277,7 +277,7 @@ function mailchimp_lists_user_subscribe_page($account) {
 function mailchimp_lists_freeform_subscribe_page() {
   // get all available freeform lists
   global $user;
-  $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_ANONYMOUS);
+  $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_FREEFORM);
   
   if (count($lists) == 0) {
     return(t('There are no available newsletters subscriptions.'));
@@ -330,7 +330,7 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
   );
 
   // add the title and description to freeform lists
-  if ($list->list_type == MAILCHIMP_LISTTYPE_ANONYMOUS) {
+  if ($list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) {
     $form[$wrapper_key]['title'] = array(
       '#type' => 'item',
       '#title' => t($list->label),
@@ -462,7 +462,7 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
     if ($is_subscribed && !$selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
       $ret = mailchimp_unsubscribe_user($list, $account->mail, TRUE, $mcapi);
     }
-    else if (($selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) || $list->list_type == MAILCHIMP_LISTTYPE_ANONYMOUS) {
+    else if (($selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) || $list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) {
       // include interest groups
       if (!empty($form_list['interest_groups'])) {
         $groupings = array();
