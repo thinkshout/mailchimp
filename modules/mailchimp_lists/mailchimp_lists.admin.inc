@@ -294,16 +294,22 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
   if (!$is_new && isset($list->settings['webhooks']) && 
     (!$form_state['values']['webhooks'] || 
     $form_state['values']['list_type'] == MAILCHIMP_LISTTYPE_FREEFORM)) {
-    $webhook_ret = $mcapi->listWebhookDel($list->mc_list_id, 'http://www.postbin.org/1bn3856');
+    $webhook_ret = $mcapi->listWebhookDel($list->mc_list_id, 
+      mailchimp_webhook_url());
   }
   // enable the web hook
   else if (
     (!isset($list->settings['webhooks']) || !$list->settings['webhooks']) && 
     $form_state['values']['webhooks']) {
     $webhook_ret = $mcapi->listWebhookAdd($list->mc_list_id, 
-      'http://www.postbin.org/1bn3856', 
+      mailchimp_webhook_url(), 
       array('unsubscribe', 'profile', 'cleaned', 'upemail')
     );
+    if (!$webhook_ret) {      
+      drupal_set_message(t('Unable to connect webhooks: @msg', 
+        array('@msg' => $mcapi->errorMessage)), 'error');
+      return '';
+    }
   }
 
   $list->label = $form_state['values']['label'];

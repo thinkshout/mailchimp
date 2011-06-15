@@ -25,6 +25,13 @@ function mailchimp_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
+  $items['mailchimp/webhook'] = array(
+    'title' => 'MailChimp webhooks endpoint',
+    'page callback' => 'mailchimp_process_webhook',
+    'access callback' => 'mailchimp_process_webhook_access',
+    'access arguments' => array(2),
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
 }
@@ -71,7 +78,9 @@ function mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $
     $success = $mcapi->listSubscribe($list->mc_list_id, $email, $merge_vars, 'html', $double_optin, TRUE);
 
     if ($message && $success && $double_optin) {
-      drupal_set_message(t('You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription.', array('%list' => $list->name)));
+      drupal_set_message(t('You have chosen to subscribe to %list. An email 
+        will be sent to your address. Click the link in the email to confirm 
+        the subscription.', array('%list' => $list->name)));
     }
     elseif ($message && $success) {
       drupal_set_message(t('You have subscribed to %list.', array('%list' => $list->label)));
@@ -265,14 +274,74 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
 }
 
 /**
+ * Sets the member info in the cache.
+ *
+ * @param string $list_id 
+ * @param string $email 
+ */
+function mailchimp_set_memberinfo($list_id, $email) {
+  mailchimp_get_memberinfo($list_id, $email, TRUE);
+}
+
+/**
  * Clear a mailchimp user memberinfo cache
  *
  * @param  $list_id
  * @param  $email
- *
- * @return void
  */
 function mailchimp_cache_clear_user($list_id, $email) {
   cache_clear_all($list_id . '-' . $email, 'cache_mailchimp_user');
 }
 
+/**
+ * Access callback for mailchimp_process_webhook().
+ *
+ * @param string $key 
+ * @return bool
+ */
+function mailchimp_process_webhook_access($key) {
+  return $key == mailchimp_webhook_key();
+}
+
+/**
+ * Process a webhook post from MailChimp
+ */
+function mailchimp_process_webhook() {
+  $data = $_POST['data'];
+  switch ($_POST['type']) {
+    case 'unsubscribe':
+    case 'profile':
+    case 'cleaned':
+      mailchimp_cache_clear_user($data['list_id'], $data['email']);
+      mailchimp_set_memberinfo($data['list_id'], $data['email']);
+      break;
+    case 'upemail':
+      mailchimp_cache_clear_user($data['list_id'], $data['old_email']);
+      mailchimp_set_memberinfo($data['list_id'], $data['new_email']);
+      break;
+  }
+  
+  // log event
+  watchdog('mailchimp', 'Webhook type !type has been processed.', 
+    array('!type' => $_POST['type']), WATCHDOG_INFO);
+}
+
+/**
+ * Generate a key to include in the webhook url based on a hash.
+ *
+ * @param string $list_id 
+ * @return string
+ */
+function mailchimp_webhook_key() {
+  return md5($GLOBALS['base_url']);
+}
+
+/**
+ * Generate the webhook endpoint URL.
+ *
+ * @param string $list_id 
+ * @return string
+ */
+function mailchimp_webhook_url() {
+  return $GLOBALS['base_url'] . '/mailchimp/webhook/' . mailchimp_webhook_key();
+}
