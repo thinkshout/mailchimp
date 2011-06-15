@@ -5,27 +5,26 @@
  * Mailchimp module.
  */
 
-
 /**
  * Implements hook_menu().
  */
 function mailchimp_menu() {
   $items = array();
-  
+
   $items['admin/config/services/mailchimp'] = array(
     'title' => 'MailChimp',
     'description' => 'Manage MailChimp Settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_admin_settings'),
     'access arguments' => array('administer mailchimp'),
-    'file' => 'includes/mailchimp.admin.inc',      
+    'file' => 'includes/mailchimp.admin.inc',
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/config/services/mailchimp/global'] = array(
     'title' => 'Global Settings',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
-  );  
+  );
 
   return $items;
 }
@@ -48,6 +47,7 @@ function mailchimp_permission() {
  *
  * @param  $list_id
  * @param  $email
+ *
  * @return bool
  */
 function mailchimp_is_subscribed($list_id, $email) {
@@ -82,13 +82,15 @@ function mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $
 
     if ($success) {
       watchdog('mailchimp', '@email was subscribed to list @list.',
-        array('@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE);
+        array('@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE
+      );
     }
     else {
       watchdog('mailchimp', 'A problem occurred subscribing @email to list @list. Message: @msg', array(
-        '@email' => $merge_vars['EMAIL'],
-        '@list' => $list->label,
-        '@msg' => $mcapi->errorMessage), WATCHDOG_WARNING);
+          '@email' => $merge_vars['EMAIL'],
+          '@list' => $list->label,
+          '@msg' => $mcapi->errorMessage,
+        ), WATCHDOG_WARNING);
     }
   }
 
@@ -103,7 +105,7 @@ function mailchimp_update_user($list, $email, $merge_vars, $message = TRUE, $mca
   if ($mcapi || $mcapi = _mailchimp_get_api_object()) {
 
     $success = $mcapi->listUpdateMember($list->mc_list_id, $email, $merge_vars);
-    
+
     if ($success && $message) {
       drupal_set_message(t('You have updated your settings in %list.', array('%list' => $list->label)));
     }
@@ -113,13 +115,15 @@ function mailchimp_update_user($list, $email, $merge_vars, $message = TRUE, $mca
 
     if ($success) {
       watchdog('mailchimp', '@email was updated in list @list.',
-        array('@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE);
+        array('@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE
+      );
     }
     else {
       watchdog('mailchimp', 'A problem occurred subscribing @email to list @list. Message: @msg', array(
-        '@email' => $merge_vars['EMAIL'],
-        '@list' => $list->label,
-        '@msg' => $mcapi->errorMessage), WATCHDOG_WARNING);
+          '@email' => $merge_vars['EMAIL'],
+          '@list' => $list->label,
+          '@msg' => $mcapi->errorMessage,
+        ), WATCHDOG_WARNING);
     }
   }
 
@@ -139,10 +143,10 @@ function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NUL
       }
 
       // clear user cache
-      mailchimp_cache_clear_user($list->mc_list_id, $email);      
+      mailchimp_cache_clear_user($list->mc_list_id, $email);
     }
   }
-  
+
   return $success;
 }
 
@@ -153,7 +157,7 @@ function mailchimp_get_api_object() {
   module_load_include('php', 'mailchimp', 'MCAPI.class');
 
   $q = new MCAPI(variable_get('mailchimp_api_key', ''));
-  
+
   // set the timeout to something reasonsable to avoid taking down the Drupal site
   $q->setTimeout(60);
 
@@ -161,7 +165,7 @@ function mailchimp_get_api_object() {
     watchdog('mailchimp', 'MCAPI Error: %errmsg', array('!errmsg' => $q->errorMessage), WATCHDOG_ERROR);
     return NULL;
   }
-  
+
   return $q;
 }
 
@@ -173,6 +177,7 @@ function mailchimp_get_api_object() {
  *   An array of list IDs to filter the results by.
  * @param bool $reset
  *   Force a cache reset.
+ *
  * @return An array of list arrays.
  */
 function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
@@ -184,40 +189,41 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
   }
   // Query lists from the MC API and store in cache
   else {
-    if ($q = mailchimp_get_api_object() ) {
+    if ($q = mailchimp_get_api_object()) {
       $result = $q->lists(array(), 0, 100);
       if ($result['total'] > 0) {
-        foreach($result['data'] as $list) {
+        foreach ($result['data'] as $list) {
           // append mergefields
           $list['mergevars'] = $q->listMergeVars($list['id']);
 
           // append interest groups
           $list['intgroups'] = $q->listInterestGroupings($list['id']);
-          
+
           $lists[$list['id']] = $list;
         }
       }
     }
-    
+
     cache_set('mailchimp_lists', $lists, 'cache', CACHE_TEMPORARY);
   }
-  
+
   // filter by given ids
   if (!empty($list_ids)) {
-    foreach($lists as $key => $list) {
+    foreach ($lists as $key => $list) {
       if (!in_array($key, $list_ids)) {
         unset($lists[$key]);
       }
     }
   }
-  
+
   return $lists;
 }
 
 /**
  * Wrapper around mailchimp_get_lists() to return a single list.
  *
- * @param string $list_id 
+ * @param string $list_id
+ *
  * @return array list
  */
 function mailchimp_get_list($list_id) {
@@ -229,15 +235,16 @@ function mailchimp_get_list($list_id) {
  * in the cache_mailchimp_user bin which is cleared by the MC web hooks system when
  * needed.
  *
- * @param string $list_id 
- * @param string $email 
- * @param bool $reset 
+ * @param string $list_id
+ * @param string $email
+ * @param bool $reset
+ *
  * @return array memberinfo
  */
 function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get($list_id . '-' . $email, 'cache_mailchimp_user');
   $memberinfo = array();
-  
+
   // return cached lists
   if ($cache) {
     $memberinfo = $cache->data;
@@ -259,11 +266,13 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
 
 /**
  * Clear a mailchimp user memberinfo cache
- * 
+ *
  * @param  $list_id
  * @param  $email
+ *
  * @return void
  */
 function mailchimp_cache_clear_user($list_id, $email) {
   cache_clear_all($list_id . '-' . $email, 'cache_mailchimp_user');
 }
+
