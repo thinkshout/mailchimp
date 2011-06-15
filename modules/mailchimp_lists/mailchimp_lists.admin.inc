@@ -241,6 +241,21 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       ),
     ),
   );
+  $form['tabs']['settings']['webhooks'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Enable MailChimp webhooks for this list'),
+    '#default_value'  => isset($list->settings['webhooks']) ? $list->settings['webhooks'] : FALSE,
+    '#description'    => t('When a user unsubscribes from a list or updates 
+      their profile outside of Drupal, MailChimp will trigger an event to 
+      update the user\'s cached MailChimp member information. This will 
+      <em>not</em> update any of their Drupal user information.'),
+    '#states' => array(
+      // Hide this option for freeform lists
+      'invisible' => array(
+        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_FREEFORM),
+      ),
+    ),
+  );
 
   $form['save'] = array(
     '#type' => 'submit',
@@ -266,7 +281,30 @@ function mailchimp_lists_mergefields_callback($form, $form_state) {
  * mailchimp_lists_list_form() submit handler.
  */
 function mailchimp_lists_list_form_submit($form, &$form_state) {
-  $list = isset($form_state['list']) ? $form_state['list'] : new stdClass();
+  $list = new stdClass();
+  $is_new = TRUE;
+  if (isset($form_state['list'])) {
+    $list = $form_state['list'];
+    $is_new = FALSE;
+  }
+
+  $mcapi = mailchimp_get_api_object();
+  $webhook_ret = FALSE;
+  // remove the webhook from this list if unchecked or list type changed to freeform
+  if (!$is_new && isset($list->settings['webhooks']) && 
+    (!$form_state['values']['webhooks'] || 
+    $form_state['values']['list_type'] == MAILCHIMP_LISTTYPE_FREEFORM)) {
+    $webhook_ret = $mcapi->listWebhookDel($list->mc_list_id, 'http://www.postbin.org/1bn3856');
+  }
+  // enable the web hook
+  else if (
+    (!isset($list->settings['webhooks']) || !$list->settings['webhooks']) && 
+    $form_state['values']['webhooks']) {
+    $webhook_ret = $mcapi->listWebhookAdd($list->mc_list_id, 
+      'http://www.postbin.org/1bn3856', 
+      array('unsubscribe', 'profile', 'cleaned', 'upemail')
+    );
+  }
 
   $list->label = $form_state['values']['label'];
   $list->description = $form_state['values']['description'];
@@ -281,6 +319,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
     'show_account_form' => $form_state['values']['show_account_form'],
     'include_interest_groups' => $form_state['values']['include_interest_groups'],
     'cron' => $form_state['values']['cron'],
+    'webhooks' => $webhook_ret & $form_state['values']['webhooks'],
   );
 
   if ($ret = mailchimp_lists_save($list)) {
