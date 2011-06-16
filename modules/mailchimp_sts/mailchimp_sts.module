@@ -1,0 +1,63 @@
+<?php
+/**
+ * @file
+ * Enables Drupal to send email directly through MailChimp STS.
+ *
+ * Overriding mail handling in Drupal to make MailChimp STS the default
+ * transport layer, requires to change the mail_system variable's
+ * default value array('default-system' => 'DefaultMailSystem').
+ * This module uses array('default-system' => 'MailChimpSTSMailSystem').
+ */
+
+/**
+ * Implements hook_help().
+ */
+function mailchimp_sts_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#mailchimp_sts':
+      return t('Allow for site emails to be sent through MailChimp STS.');
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function mailchimp_sts_menu() {
+  $items['admin/config/services/mailchimp/sts'] = array(
+    'title'            => 'MailChimp STS',
+    'page callback'    => 'mailchimp_sts_admin_page',
+    'access arguments' => array('administer mailchimp sts module'),
+    'description'      => 'Allow for site emails to be sent through MailChimp STS.',
+    'file'             => 'mailchimp_sts.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['admin/reports/mailchimp_sts'] = array(
+    'title'            => 'MailChimp STS Statistics',
+    'page callback'    => 'mailchimp_sts_admin_stats',
+    'access arguments' => array('administer mailchimp sts module'),
+    'description'      => 'View MailChimp STS email sending statistics.',
+    'file'             => 'mailchimp_sts.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function mailchimp_sts_permission() {
+  return array(
+    'administer mailchimp sts module' => array(
+      'title' => t('Administer MailChimp STS module'),
+      'description' => t('Perform administration tasks for MailChimp STS module.'))
+  );
+}
+
+/**
+ * Implements hook_mail().
+ */
+function mailchimp_sts_mail($key, &$message, $params) {
+  if ($key == 'amazon-ses-test') {
+    $message['subject'] = $params['subject'];
+    $message['body']    = $params['body'];
+  }
+}
