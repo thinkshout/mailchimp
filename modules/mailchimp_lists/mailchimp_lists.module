@@ -99,7 +99,8 @@ function mailchimp_lists_cron() {
   if ($queue->numberOfItems() > 0 ) {
     $batches = array();
     $count = 0;
-    while ($item = $queue->claimItem() && $count < 100) {
+    $batch_limit = variable_get('mailchimp_batch_limit', 100);
+    while ($item = $queue->claimItem() && $count < $batch_limit) {
       $account = user_load($item->data['uid']);
       $list = mailchimp_lists_load($item->data['list_id']);
       $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
