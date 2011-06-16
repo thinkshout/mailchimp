@@ -169,7 +169,7 @@ function mailchimp_get_api_object() {
 
   // set the timeout to something reasonsable to avoid taking down the Drupal site
   $q->setTimeout(60);
-  
+
   // specify if a secure connection should be used wit the API
   $q->useSecure(variable_get('mailchimp_use_secure', TRUE));
 
@@ -279,8 +279,8 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
 /**
  * Sets the member info in the cache.
  *
- * @param string $list_id 
- * @param string $email 
+ * @param string $list_id
+ * @param string $email
  */
 function mailchimp_set_memberinfo($list_id, $email) {
   mailchimp_get_memberinfo($list_id, $email, TRUE);
@@ -299,7 +299,8 @@ function mailchimp_cache_clear_user($list_id, $email) {
 /**
  * Access callback for mailchimp_process_webhook().
  *
- * @param string $key 
+ * @param string $key
+ *
  * @return bool
  */
 function mailchimp_process_webhook_access($key) {
@@ -318,21 +319,24 @@ function mailchimp_process_webhook() {
       mailchimp_cache_clear_user($data['list_id'], $data['email']);
       mailchimp_set_memberinfo($data['list_id'], $data['email']);
       break;
+
     case 'upemail':
       mailchimp_cache_clear_user($data['list_id'], $data['old_email']);
       mailchimp_set_memberinfo($data['list_id'], $data['new_email']);
       break;
   }
-  
+
   // log event
-  watchdog('mailchimp', 'Webhook type !type has been processed.', 
-    array('!type' => $_POST['type']), WATCHDOG_INFO);
+  watchdog('mailchimp', 'Webhook type !type has been processed.',
+    array('!type' => $_POST['type']), WATCHDOG_INFO
+  );
 }
 
 /**
  * Generate a key to include in the webhook url based on a hash.
  *
- * @param string $list_id 
+ * @param string $list_id
+ *
  * @return string
  */
 function mailchimp_webhook_key() {
@@ -342,9 +346,11 @@ function mailchimp_webhook_key() {
 /**
  * Generate the webhook endpoint URL.
  *
- * @param string $list_id 
+ * @param string $list_id
+ *
  * @return string
  */
 function mailchimp_webhook_url() {
   return $GLOBALS['base_url'] . '/mailchimp/webhook/' . mailchimp_webhook_key();
 }
+
