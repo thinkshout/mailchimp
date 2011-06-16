@@ -169,6 +169,9 @@ function mailchimp_get_api_object() {
 
   // set the timeout to something reasonsable to avoid taking down the Drupal site
   $q->setTimeout(60);
+  
+  // specify if a secure connection should be used wit the API
+  $q->useSecure(variable_get('mailchimp_use_secure', TRUE));
 
   if ($q->errorCode) {
     watchdog('mailchimp', 'MCAPI Error: %errmsg', array('!errmsg' => $q->errorMessage), WATCHDOG_ERROR);
