@@ -1,4 +1,5 @@
 <?php
+
 class MailChimpSTS {
   var $version = "1.0";
   var $errorMessage;
@@ -55,6 +56,15 @@ class MailChimpSTS {
   
   function get_send_statistics() {
     return $this->callServer("GetSendStatistics", array());    
+  }
+  
+  function send_email(array $message, $track_opens = TRUE, $track_clicks = TRUE, $tags = array()) {
+    return $this->callServer("SendEmail", array(
+      'message' => $message,
+      'track_opens' => $track_opens,
+      'track_clicks' => $track_clicks,
+      'tags' => $tags
+    ));
   }
 
   /**

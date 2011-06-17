@@ -6,9 +6,8 @@
 
 function mailchimp_sts_admin_page() {
   $mailchimp_sts = new MailChimpSTS();
-  $response = $mailchimp_sts->list_verified_email_addresses();
-  dpm($response);
-  if ($response['http_code'] == 200) {
+  $addresses = $mailchimp_sts->list_verified_email_addresses();
+  if (!$mailchimp_sts->errorCode) {
     $rows = array();
     if (in_array(variable_get('mailchimp_sts_from', ''), $addresses)) {
       $rows[] = array('Ready to send email', '<span style="color: #00ff00; font-weight: bold;">YES</span>');
@@ -19,12 +18,13 @@ function mailchimp_sts_admin_page() {
     }
     $rows[] = array('Verified email addresses', theme('item_list', array('items' => $addresses)));
     
-    return theme('table', array('rows' => $rows)) . l(t('View Amazon SES statistics'), 'admin/reports/mailchimp_sts');  
+    return theme('table', array('rows' => $rows)) . l(t('View Amazon SES statistics'), 'admin/reports/mailchimp_sts') .
+      drupal_render(drupal_get_form('mailchimp_sts_admin_settings'));  
   }
   else {
     drupal_set_message(
       t('There was a problem accessing the MailChimp STS service: %msg', 
-      array('%msg' => $response['message'])
+      array('%msg' => $mailchimp_sts->errorMessage)
     ));
     
     return t('Refer to the !link for properly configuring MailChimp STS.', 
@@ -184,14 +184,17 @@ function mailchimp_sts_admin_new_address_submit($form, &$form_state) {
   if ($address) {
     $mailchimp_sts = new MailChimpSTS();
     $new_address = $mailchimp_sts->verify_email_address($address);
-    if ($new_address->isOK()) {
+    if ($mailchimp_sts->errorCode) {
+      drupal_set_message(t('There has been an error verifying your message: %msg.', array('%msg' => $mailchimp_sts->errorMessage)));
+    }
+    else {
       drupal_set_message(t('The address %address has been verified. Please check your email for a confirmation message from Amazon.', array('%address' => $address)));
     }
   }
 }
 
 /**
- * Page callback -- admin/reports/mailchimp_sts
+ * Page callback for showing basic sts usage and quotas
  */
 function mailchimp_sts_admin_stats() {
   if ($quota = mailchimp_sts_quota()) {
@@ -201,20 +204,21 @@ function mailchimp_sts_admin_stats() {
         'Max24HourSend' => t('Maximum number of emails you can send per 24 hours:'),
         'MaxSendRate' => t('Maximum number of emails you can send per second:'
       )) AS $k => $v) {
-      $rows[] = array($v, str_replace('.0', '', (string) $quota->$k));
+      $rows[] = array($v, str_replace('.0', '', (string) $quota[$k]));
     }
     $output = theme('table', array('header' => array(array('data' => 'Quota', 'colspan' => 2)), 'rows' => $rows));
   }
 
-  $output .= l(t('Configure Amazon SES'), 'admin/config/system/mailchimp_sts');
+  $output .= l(t('Configure Amazon SES'), 'admin/config/services/mailchimp/sts');
   return $output;
 }
 
 function mailchimp_sts_quota() {
   $mailchimp_sts = new MailChimpSTS();
   $quota = $mailchimp_sts->get_send_quota();
-  if ($quota->IsOK()) {
-    return $quota->body->GetSendQuotaResult;
+  if (!$mailchimp_sts->errorCode) {
+    dpm($quota);
+    return $quota;
   }
 }
 
@@ -224,4 +228,19 @@ function mailchimp_sts_send_statistics() {
   if ($stats->IsOK()) {
     return $stats->body->GetSendStatisticsResult;
   }
+}
+
+function mailchimp_sts_verified_addresses() {
+  $emails = array();
+  $mailchimp_sts = new MailChimpSTS();
+  $response = $mailchimp_sts->list_verified_email_addresses();
+  if (!$mailchimp_sts->errorCode) {
+    foreach ($response['email_addresses'] AS $email) {
+      if (!empty($email)) {
+        $emails[$email] = $email;        
+      }
+    }
+  }
+  
+  return $emails;
 }

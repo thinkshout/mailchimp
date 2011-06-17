@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * @file
@@ -52,7 +51,7 @@ class MailChimpSTSMailSystem implements MailSystemInterface {
     $ses_message = array(
       'Subject.Data' => $message['subject'],
       'Body.Text.Data' => $message['body'],
-      'Body.Html.Data' => check_markup($message['body'], variable_get('amazon_ses_filter_format', 'full_html')),
+      'Body.Html.Data' => check_markup($message['body'], variable_get('mailchimp_sts_filter_format', 'full_html')),
     );
 
     $opt['ReturnPath'] = $source;
@@ -67,7 +66,7 @@ class MailChimpSTSMailSystem implements MailSystemInterface {
 
     if ($source == NULL || $source == '') {
       // If from email address is blank, use amazon_ses_from config option.
-      if (($source = variable_get('amazon_ses_from', '')) == '') {
+      if (($source = variable_get('mailchimp_sts_from', '')) == '') {
         // If amazon_ses_from config option is blank, use site_email.
         if (($source = variable_get('site_email', '')) == '') {
           drupal_set_message(t('There is no submitted from address.'), 'error');
@@ -124,19 +123,20 @@ class MailChimpSTSMailSystem implements MailSystemInterface {
       }
     }
 
-    if (variable_get('amazon_ses_debugging', 0) == 1) {
-      watchdog('amazon-ses', 'Sending mail to: @to', array('@to' => $destination['ToAddresses'][0]));
+    if (variable_get('mailchimp_sts_debugging', 0) == 1) {
+      watchdog('mailchimp_sts', 'Sending mail to: @to', array('@to' => $destination['ToAddresses'][0]));
       drupal_set_message(t('Sending mail to: @to.', array('@to' => $destination['ToAddresses'][0])), 'notice');
     }
 
-    $mailer = new AmazonSES();
+    $mailer = new MailChimpSTS();
     $status = $mailer->send_email($source, $destination, $ses_message, $opt);
 
-    if (!$status->isOK()) {
-      watchdog('amazon-ses', 'Error sending email from @from to @to : !error_message', array('@from' => $source, '@to' => print_r($destination['ToAddresses'], TRUE), '!error_message' => (string) $status->body->Error->Message), WATCHDOG_ERROR);
-      watchdog('amazon-ses', '<pre>Source: !source <br />Destination: !destination <br />Message: !message', array('!source' => print_r($source, TRUE), '!destination' => print_r($destination, TRUE), '!message' => print_r($ses_message, TRUE)), WATCHDOG_ERROR);
+    if ($mailer->errorCode) {
+      watchdog('mailchimp_sts', 'Error sending email from @from to @to : !error_message', array('@from' => $source, '@to' => print_r($destination['ToAddresses'], TRUE), '!error_message' => (string) $status->body->Error->Message), WATCHDOG_ERROR);
+      watchdog('mailchimp_sts', '<pre>Source: !source <br />Destination: !destination <br />Message: !message', array('!source' => print_r($source, TRUE), '!destination' => print_r($destination, TRUE), '!message' => print_r($ses_message, TRUE)), WATCHDOG_ERROR);
       return FALSE;
     }
+    
     return TRUE;
   }
 }
