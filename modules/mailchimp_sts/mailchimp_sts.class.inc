@@ -136,19 +136,9 @@ class MailChimpSTS {
 
     list($headers, $response) = explode("\r\n\r\n", $response, 2);
     $headers = explode("\r\n", $headers);
-    $errored = FALSE;
-    foreach ($headers as $h) {
-      if (substr($h, 0, 26) === "X-MailChimp-API-Error-Code") {
-        $errored = TRUE;
-        $error_code = trim(substr($h, 27));
-        break;
-      }
-    }
-
+    
     if (ini_get("magic_quotes_runtime")) {
-
       $response = stripslashes($response);
-
     }
 
     $serial = unserialize($response);
@@ -158,14 +148,10 @@ class MailChimpSTS {
     else {
       $response = $serial;
     }
-    if ($errored && is_array($response) && isset($response["error"])) {
+    
+    if (is_array($response) && isset($response["error"])) {
       $this->errorMessage = $response["error"];
       $this->errorCode = $response["code"];
-      return FALSE;
-    }
-    elseif ($errored) {
-      $this->errorMessage = "No error message was found";
-      $this->errorCode = $error_code;
       return FALSE;
     }
 

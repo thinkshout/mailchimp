@@ -32,12 +32,23 @@ function mailchimp_sts_menu() {
     'type' => MENU_LOCAL_TASK,
   );
   $items['admin/reports/mailchimp_sts'] = array(
-    'title'            => 'MailChimp STS Statistics',
-    'page callback'    => 'mailchimp_sts_admin_stats',
+    'title'            => 'MailChimp STS Reports',
+    'page callback'    => 'mailchimp_sts_quota',
     'access arguments' => array('administer mailchimp sts module'),
-    'description'      => 'View MailChimp STS email sending statistics.',
-    'file'             => 'mailchimp_sts.admin.inc',
+    'description'      => 'View MailChimp STS quotas.',
   );
+  $items['admin/reports/mailchimp_sts/quota'] = array(
+    'title'            => 'MailChimp STS Quota',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['admin/reports/mailchimp_sts/send_stats'] = array(
+    'title'            => 'MailChimp STS Send Statistics',
+    'page callback'    => 'mailchimp_sts_send_stats',
+    'access arguments' => array('administer mailchimp sts module'),
+    'description'      => 'View MailChimp STS sending statistics.',
+    'type' => MENU_LOCAL_TASK,
+  );  
   return $items;
 }
 
@@ -56,8 +67,46 @@ function mailchimp_sts_permission() {
  * Implements hook_mail().
  */
 function mailchimp_sts_mail($key, &$message, $params) {
-  if ($key == 'amazon-ses-test') {
+  if ($key == 'mailchimp-sts-test') {
     $message['subject'] = $params['subject'];
     $message['body']    = $params['body'];
   }
+}
+
+/**
+ * Page callback for showing MailChimp STS send statistics
+ */
+function mailchimp_sts_send_stats() {
+  $mailchimp_sts = new MailChimpSTS();
+  $stats = $mailchimp_sts->get_send_statistics();
+  if (!$mailchimp_sts->errorCode) {
+    $headers = array(t('Delivery Attemps'), t('Timestamp'), t('Rejects'), t('Bounces'), t('Complaints'));
+    $rows = array();
+    foreach($stats as $stat) {
+      $rows[] = array($stat['DeliveryAttempts'], $stat['Timestamp'], $stat['Rejects'], $stat['Bounces'], $stat['Complaints']);
+    }
+    return theme('table', array('header' => $headers, 'rows' => $rows));
+  }  
+}
+
+/**
+ * Page callback for showing basic sts usage and quotas
+ */
+function mailchimp_sts_quota() {
+  $mailchimp_sts = new MailChimpSTS();
+  $quota = $mailchimp_sts->get_send_quota();
+  if (!$mailchimp_sts->errorCode) {
+    $rows = array();
+    foreach (array(
+        'SentLast24Hours' => t('Emails sent in the past 24 hours:'),
+        'Max24HourSend' => t('Maximum number of emails you can send per 24 hours:'),
+        'MaxSendRate' => t('Maximum number of emails you can send per second:'
+      )) AS $k => $v) {
+      $rows[] = array($v, str_replace('.0', '', (string) $quota[$k]));
+    }
+    $output = theme('table', array('header' => array(array('data' => 'Quota', 'colspan' => 2)), 'rows' => $rows));
+  }
+
+  $output .= l(t('Configure MailChimp STS'), 'admin/config/services/mailchimp/sts');
+  return $output;
 }
