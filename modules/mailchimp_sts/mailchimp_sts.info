@@ -9,4 +9,4 @@ configure = admin/config/services/mailchimp/sts
 files[] = mailchimp_sts.module
 files[] = mailchimp_sts.admin.inc
 files[] = mailchimp_sts.mail.inc
-files[] = mailchimp_sts.class.inc
+files[] = mailchimp_sts.class.php
