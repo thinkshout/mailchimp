@@ -45,19 +45,37 @@ class MailChimpSTS {
   function verify_email_address($email) {
     return $this->callServer("VerifyEmailAddress", array('email' => $email));
   }
-  
+
   function list_verified_email_addresses() {
-    return $this->callServer("ListVerifiedEmailAddresses", array());
+    return $this->callServer("ListVerifiedEmailAddresses");
   }
-  
+
   function get_send_quota() {
-    return $this->callServer("GetSendQuota", array());    
+    return $this->callServer("GetSendQuota");
   }
-  
+
   function get_send_statistics() {
-    return $this->callServer("GetSendStatistics", array());    
+    return $this->callServer("GetSendStatistics");
   }
-  
+
+  function get_mc_send_stats($tag_id = 1, $since = NULL) {
+    return $this->callServer("GetSendStats",
+      array('tag_id' => $tag_id, 'since' => $since));
+  }
+
+  function get_tags() {
+    return $this->callServer('GetTags');
+  }
+
+  function get_url_stats($url_id = NULL, $since = NULL) {
+    return $this->callServer("GetUrlStats",
+      array('url_id' => $url_id, 'since' => $since));
+  }
+
+  function get_urls() {
+    return $this->callServer('GetUrls');
+  }
+
   function send_email(array $message, $track_opens = TRUE, $track_clicks = TRUE, $tags = array()) {
     return $this->callServer("SendEmail", array(
       'message' => $message,
@@ -71,7 +89,7 @@ class MailChimpSTS {
    * Actually connect to the server and call the requested methods, parsing the result
    * You should never have to call this function manually
    */
-  function callServer($method, $params) {
+  function callServer($method, $params = array()) {
     $dc = "us1";
     if (strstr($this->api_key, "-")) {
       list($key, $dc) = explode("-", $this->api_key, 2);
@@ -136,7 +154,7 @@ class MailChimpSTS {
 
     list($headers, $response) = explode("\r\n\r\n", $response, 2);
     $headers = explode("\r\n", $headers);
-    
+
     if (ini_get("magic_quotes_runtime")) {
       $response = stripslashes($response);
     }
@@ -148,7 +166,7 @@ class MailChimpSTS {
     else {
       $response = $serial;
     }
-    
+
     if (is_array($response) && isset($response["error"])) {
       $this->errorMessage = $response["error"];
       $this->errorCode = $response["code"];

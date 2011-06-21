@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Enables Drupal to send email directly through MailChimp STS.
@@ -24,31 +25,32 @@ function mailchimp_sts_help($path, $arg) {
  */
 function mailchimp_sts_menu() {
   $items['admin/config/services/mailchimp/sts'] = array(
-    'title'            => 'MailChimp STS',
-    'page callback'    => 'mailchimp_sts_admin_page',
+    'title' => 'MailChimp STS',
+    'page callback' => 'mailchimp_sts_admin_page',
     'access arguments' => array('administer mailchimp sts module'),
-    'description'      => 'Allow for site emails to be sent through MailChimp STS.',
-    'file'             => 'mailchimp_sts.admin.inc',
+    'description' => 'Allow for site emails to be sent through MailChimp STS.',
+    'file' => 'mailchimp_sts.admin.inc',
     'type' => MENU_LOCAL_TASK,
   );
   $items['admin/reports/mailchimp_sts'] = array(
-    'title'            => 'MailChimp STS Reports',
-    'page callback'    => 'mailchimp_sts_quota',
+    'title' => 'MailChimp STS Reports',
+    'page callback' => 'mailchimp_sts_quota',
     'access arguments' => array('administer mailchimp sts module'),
-    'description'      => 'View MailChimp STS quotas.',
+    'description' => 'View MailChimp STS quotas.',
   );
   $items['admin/reports/mailchimp_sts/quota'] = array(
-    'title'            => 'MailChimp STS Quota',
+    'title' => 'MailChimp STS Quota',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
   $items['admin/reports/mailchimp_sts/send_stats'] = array(
-    'title'            => 'MailChimp STS Send Statistics',
-    'page callback'    => 'mailchimp_sts_send_stats',
+    'title' => 'MailChimp STS Send Statistics',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_sts_send_stats'),
     'access arguments' => array('administer mailchimp sts module'),
-    'description'      => 'View MailChimp STS sending statistics.',
+    'description' => 'View MailChimp STS sending statistics.',
     'type' => MENU_LOCAL_TASK,
-  );  
+  );
   return $items;
 }
 
@@ -59,7 +61,8 @@ function mailchimp_sts_permission() {
   return array(
     'administer mailchimp sts module' => array(
       'title' => t('Administer MailChimp STS module'),
-      'description' => t('Perform administration tasks for MailChimp STS module.'))
+      'description' => t('Perform administration tasks for MailChimp STS module.'),
+    ),
   );
 }
 
@@ -69,24 +72,70 @@ function mailchimp_sts_permission() {
 function mailchimp_sts_mail($key, &$message, $params) {
   if ($key == 'mailchimp-sts-test') {
     $message['subject'] = $params['subject'];
-    $message['body']    = $params['body'];
+    $message['body'] = $params['body'];
   }
 }
 
 /**
- * Page callback for showing MailChimp STS send statistics
+ * Page callback for showing MailChimp STS send statistics along with tag filter
+ * form.
  */
-function mailchimp_sts_send_stats() {
+function mailchimp_sts_send_stats($form, &$form_state) {
   $mailchimp_sts = new MailChimpSTS();
-  $stats = $mailchimp_sts->get_send_statistics();
+  $rows = array();
+
+  if (isset($form_state['values']['tag'])) {
+    $stats = $mailchimp_sts->get_mc_send_stats($form_state['values']['tag']);
+  }
+  else {
+    $stats = $mailchimp_sts->get_mc_send_stats();
+  }
+
+  $tags = mailchimp_sts_get_tags();
   if (!$mailchimp_sts->errorCode) {
-    $headers = array(t('Delivery Attemps'), t('Timestamp'), t('Rejects'), t('Bounces'), t('Complaints'));
-    $rows = array();
-    foreach($stats as $stat) {
-      $rows[] = array($stat['DeliveryAttempts'], $stat['Timestamp'], $stat['Rejects'], $stat['Bounces'], $stat['Complaints']);
+    foreach ($stats as $stat) {
+      $rows[] = array($stat['hour'], $tags[$stat['tag_id']]['tag'], $stat['sent'], $stat['bounces'],
+        $stat['rejects'], $stat['complaints'], $stat['opens'], $stat['clicks'],
+      );
     }
-    return theme('table', array('header' => $headers, 'rows' => $rows));
-  }  
+  }
+
+  $options = array();
+  foreach ($tags as $tag) {
+    $options[$tag['tag_id']] = $tag['tag'];
+  }
+
+  $form['tag'] = array(
+    '#type' => 'select',
+    '#title' => t('Tags'),
+    '#description' => t('Filter statisitcs by this tag.'),
+    '#options' => $options,
+    '#default value' => isset($form_state['values']['tag']) ? $form_state['values']['tag'] : 0,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Filter'),
+  );
+
+  $headers = array(t('Hour'), t('Tag'), t('Sent'), t('Bounces'), t('Rejects'),
+    t('Complaints'), t('Opens'), t('Clicks'),
+  );
+
+  $form['stats'] = array(
+    '#theme' => 'table',
+    '#header' => $headers,
+    '#rows' => $rows,
+    '#empty' => t('No comments available.'),
+  );
+
+  return $form;
+}
+
+/**
+ * Process mailchimp_sts_send_stats form submissions.
+ */
+function mailchimp_sts_send_stats_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
 }
 
 /**
@@ -101,7 +150,8 @@ function mailchimp_sts_quota() {
         'SentLast24Hours' => t('Emails sent in the past 24 hours:'),
         'Max24HourSend' => t('Maximum number of emails you can send per 24 hours:'),
         'MaxSendRate' => t('Maximum number of emails you can send per second:'
-      )) AS $k => $v) {
+        ),
+      ) AS $k => $v) {
       $rows[] = array($v, str_replace('.0', '', (string) $quota[$k]));
     }
     $output = theme('table', array('header' => array(array('data' => 'Quota', 'colspan' => 2)), 'rows' => $rows));
@@ -110,3 +160,23 @@ function mailchimp_sts_quota() {
   $output .= l(t('Configure MailChimp STS'), 'admin/config/services/mailchimp/sts');
   return $output;
 }
+
+/**
+ * Get all available MailChimp STS tags
+ *
+ * @return array of tag objects
+ */
+function mailchimp_sts_get_tags() {
+  $ret = array();
+
+  $mailchimp_sts = new MailChimpSTS();
+  $tags = $mailchimp_sts->get_tags();
+  if (!$mailchimp_sts->errorCode) {
+    foreach ($tags as $tag) {
+      $ret[$tag['tag_id']] = $tag;
+    }
+  }
+
+  return $ret;
+}
+

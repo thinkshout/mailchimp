@@ -55,23 +55,24 @@ class MailChimpSTSMailSystem implements MailSystemInterface {
       'from_email' => $from,
       'to_email' => $to,
       //'to_name' => $message['subject'],
-      //'autogen_html' => 
+      //'autogen_html' =>
     );
-    
+
 		// Handle custom headers
 		foreach ($message['headers'] as $name => $value) {
 			if ($name == 'Reply-To') {
 				$sts_message['reply_to'] = $value;
 			}
-		}    
+		}
 
     if (variable_get('mailchimp_sts_debugging', 0) == 1) {
       watchdog('mailchimp_sts', 'Sending mail to: @to', array('@to' => $to[0]));
       drupal_set_message(t('Sending mail to: @to.', array('@to' => $to[0])), 'notice');
     }
 
+    // send the email passing the mail key as the tag for use in reporting
     $mailer = new MailChimpSTS();
-    $status = $mailer->send_email($sts_message);
+    $status = $mailer->send_email($sts_message, TRUE, TRUE, array($message['key']));
 
     if ($mailer->errorCode) {
       watchdog('mailchimp_sts', 'Error sending email from @from to @to : !error_message', array('@from' => $from, '@to' => print_r($to, TRUE), '!error_message' => $mailer->errorMessage), WATCHDOG_ERROR);
