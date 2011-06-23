@@ -17,7 +17,8 @@ function mailchimp_sts_admin_page() {
     }
     else {
       foreach ($response['email_addresses'] AS $email) {
-        if (!empty($email)) {
+        // filter out MailChimp transactional emails
+        if (!empty($email) && !stripos($email, 'transact.mcsv.net')) {
           $emails[$email] = $email;        
         }
       }      
