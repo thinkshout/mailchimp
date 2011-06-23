@@ -46,6 +46,13 @@ function mailchimp_lists_menu() {
     'file' => 'mailchimp_lists.admin.inc',
     'type' => MENU_CALLBACK,
   );
+  $items['admin/config/services/mailchimp/lists/%mailchimp_lists/delete'] = array(
+    'title' => 'Delete list',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_lists_delete_list_form', 5),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'mailchimp_lists.admin.inc',
+  );
   $items['user/%user/mailchimp'] = array(
     'page callback' => 'mailchimp_lists_user_subscribe_page',
     'page arguments' => array(1),

@@ -261,6 +261,12 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#type' => 'submit',
     '#value' => t('Save'),
   );
+  $form['delete'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete'),    
+    '#access' => isset($list),
+    '#submit' => array('mailchimp_lists_list_delete_submit'),    
+  );
   $form['cancel'] = array(
     '#type' => 'link',
     '#title' => t('Cancel'),
@@ -353,4 +359,40 @@ function mailchimp_lists_get_merge_tokens() {
   }
 
   return $out;
+}
+
+/**
+ * Submit function for the delete button on the menu item editing form.
+ */
+function mailchimp_lists_list_delete_submit($form, &$form_state) {
+  $form_state['redirect'] = 'admin/config/services/mailchimp/lists/' . $form_state['list']->id . '/delete';
+}
+
+/**
+ * List deletion form.
+ *
+ * @param string $form 
+ * @param string $form_state 
+ * @param object $list 
+ */
+function mailchimp_lists_delete_list_form($form, &$form_state, $list) {
+  $form_state['list'] = $list;
+  return confirm_form($form, 
+    t('Are you sure you want to delete %name?', array('%name' => $list->label)), 
+    'admin/config/services/mailchimp/lists/' . $list->id . '/edit', 
+    t('This action cannot be undone, although it will not have any effect on the MailChimp list.'), 
+    t('Delete list'));
+}
+
+/**
+ * Submit hanler for mailchimp_lists_delete_list_form();
+ *
+ * @param string $form 
+ * @param string $form_state 
+ */
+function mailchimp_lists_delete_list_form_submit($form, &$form_state) {
+  $list = $form_state['list'];
+  mailchimp_lists_delete_multiple(array($list->id));
+  drupal_set_message(t('%name has been deleted.', array('%name' => $list->label)));
+  drupal_goto('admin/config/services/mailchimp/lists');
 }
