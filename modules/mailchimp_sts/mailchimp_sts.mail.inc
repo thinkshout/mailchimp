@@ -71,7 +71,7 @@ class MailChimpSTSMailSystem implements MailSystemInterface {
     }
 
     // send the email passing the mail key as the tag for use in reporting
-    $mailer = new MailChimpSTS();
+    $mailer = mailchimp_sts_get_api_object();
     $status = $mailer->send_email($sts_message, TRUE, TRUE, array($message['key']));
 
     if ($mailer->errorCode) {

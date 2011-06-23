@@ -8,7 +8,7 @@
  * Page callback for mailchimp sts admin settings.
  */
 function mailchimp_sts_admin_page() {
-  $mailchimp_sts = new MailChimpSTS();
+  $mailchimp_sts = mailchimp_sts_get_api_object();
   $response = $mailchimp_sts->list_verified_email_addresses();
   if (!$mailchimp_sts->errorCode) {
     $emails = array();
@@ -198,7 +198,7 @@ function mailchimp_sts_admin_settings_submit($form, &$form_state) {
 function mailchimp_sts_admin_new_address_submit($form, &$form_state) {
   $address = $form_state['values']['new_address'];
   if ($address) {
-    $mailchimp_sts = new MailChimpSTS();
+    $mailchimp_sts = mailchimp_sts_get_api_object();
     $new_address = $mailchimp_sts->verify_email_address($address);
     if ($mailchimp_sts->errorCode) {
       drupal_set_message(t('There has been an error verifying your message: %msg.', array('%msg' => $mailchimp_sts->errorMessage)));

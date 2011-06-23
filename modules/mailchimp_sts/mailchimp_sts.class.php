@@ -36,10 +36,17 @@ class MailChimpSTS {
    * @param string $apikey Your MailChimp apikey
    * @param string $secure Whether or not this should use a secure connection
    */
-  function MailChimpSTS($secure = FALSE) {
+  function MailChimpSTS($api_key, $secure = FALSE) {
     $this->secure  = $secure;
     $this->apiUrl  = parse_url("http://sts.mailchimp.com/" . $this->version . "/");
-    $this->api_key = variable_get('mailchimp_api_key', '');
+    $this->api_key = $api_key;
+  }
+
+  function set_timeout($seconds){
+    if (is_int($seconds)){
+      $this->timeout = $seconds;
+      return true;
+    }
   }
 
   function verify_email_address($email) {

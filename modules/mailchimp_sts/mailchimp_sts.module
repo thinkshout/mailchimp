@@ -81,7 +81,7 @@ function mailchimp_sts_mail($key, &$message, $params) {
  * form.
  */
 function mailchimp_sts_send_stats($form, &$form_state) {
-  $mailchimp_sts = new MailChimpSTS();
+  $mailchimp_sts = mailchimp_sts_get_api_object();
   $rows = array();
 
   if (isset($form_state['values']['tag'])) {
@@ -142,7 +142,7 @@ function mailchimp_sts_send_stats_submit($form, &$form_state) {
  * Page callback for showing basic sts usage and quotas
  */
 function mailchimp_sts_quota() {
-  $mailchimp_sts = new MailChimpSTS();
+  $mailchimp_sts = mailchimp_sts_get_api_object();
   $quota = $mailchimp_sts->get_send_quota();
   if (!$mailchimp_sts->errorCode) {
     $rows = array();
@@ -169,7 +169,7 @@ function mailchimp_sts_quota() {
 function mailchimp_sts_get_tags() {
   $ret = array();
 
-  $mailchimp_sts = new MailChimpSTS();
+  $mailchimp_sts = mailchimp_sts_get_api_object();
   $tags = $mailchimp_sts->get_tags();
   if (!$mailchimp_sts->errorCode) {
     foreach ($tags as $tag) {
@@ -180,3 +180,25 @@ function mailchimp_sts_get_tags() {
   return $ret;
 }
 
+/**
+ * Get a Mailchimp STS API object for communication with the mailchimp server.
+ */
+function mailchimp_sts_get_api_object() {
+  $api_key = variable_get('mailchimp_api_key', '');
+  if (empty($api_key)) {
+    return FALSE;
+  }
+  
+  $api = new MailChimpSTS($api_key, variable_get('mailchimp_use_secure', TRUE));
+
+  // set the timeout to something reasonsable to avoid taking down the Drupal site
+  $api->set_timeout(60);
+
+  if ($api->errorCode) {
+    watchdog('mailchimp_sts', 'MCSTS Error: %errmsg', 
+      array('!errmsg' => $api->errorMessage), WATCHDOG_ERROR);
+    return NULL;
+  }
+
+  return $api;
+}
