@@ -32,6 +32,15 @@ function mailchimp_sts_menu() {
     'file' => 'mailchimp_sts.admin.inc',
     'type' => MENU_LOCAL_TASK,
   );
+  $items['admin/config/services/mailchimp/sts/test'] = array(
+    'title' => 'Send test email',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_sts_test_form'),
+    'access callback' => 'mailchimp_sts_test_access',
+    'description' => 'Send a test email using the STS API.',
+    'file' => 'mailchimp_sts.admin.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
   $items['admin/reports/mailchimp_sts'] = array(
     'title' => 'MailChimp STS Reports',
     'page callback' => 'mailchimp_sts_quota',
@@ -52,6 +61,11 @@ function mailchimp_sts_menu() {
     'type' => MENU_LOCAL_TASK,
   );
   return $items;
+}
+
+function mailchimp_sts_test_access() {
+  return user_access('administer mailchimp sts module') & 
+    variable_get('mailchimp_sts_on', 0);
 }
 
 /**

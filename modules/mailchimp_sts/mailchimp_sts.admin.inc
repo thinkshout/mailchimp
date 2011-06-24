@@ -109,30 +109,7 @@ function mailchimp_sts_admin_settings($form, &$form_state, $verified_emails = ar
     '#options' => $options,
     '#default_value' => array(variable_get('mailchimp_sts_filter_format', 'full_html')),
   );
-
-  $form['email_test'] = array(
-    '#type'  => 'fieldset',
-    '#title' => t('Send test email'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
-  $form['email_test']['mailchimp_sts_test_address'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Email address to send a test email to'),
-    '#default_value' => '',
-    '#description' => t('Type in an address to have a test email sent there.')
-  );
-  $form['email_test']['mailchimp_sts_test_body'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Test body contents'),
-    '#default_value' => t('If you receive this message it means your site is capable of using MailChimp STS to send email.'),
-  );
-  $form['email_test']['test_submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Send test email'),
-    '#submit' => array('mailchimp_sts_send_test'),
-  );  
-
+ 
   $form['#submit'][] = 'mailchimp_sts_admin_settings_submit';
   return system_settings_form($form);
 }
@@ -152,17 +129,9 @@ function mailchimp_sts_admin_settings_validate($form, &$form_state) {
       form_set_error('new_address', t('A valid email address is required.'));      
     }
   }
-  else if(isset($form_state['submit_handlers'][0]) &&
-      $form_state['submit_handlers'][0] == 'mailchimp_sts_send_test') {
-    if (empty($form_state['values']['mailchimp_sts_test_address']) || !valid_email_address($form_state['values']['mailchimp_sts_test_address'])) {
-      form_set_error('mailchimp_sts_test_address', t('A valid email address is required.'));      
-    }
-  }
   else {
     // unset form fields we don't want to save
     unset($form_state['values']['new_address']);
-    unset($form_state['values']['mailchimp_sts_test_address']);
-    unset($form_state['values']['mailchimp_sts_test_body']);
   }
 }
 
@@ -211,12 +180,54 @@ function mailchimp_sts_admin_new_address_submit($form, &$form_state) {
   }
 }
 
-function mailchimp_sts_send_test($form, &$form_state) {
+/**
+ * Return a form for sending a test email.
+ *
+ * @param string $form 
+ * @param string $form_state 
+ * @return array $form
+ */
+function mailchimp_sts_test_form($form, &$form_state) {
+  drupal_set_title(t('Send test email'));
+  
+  $form['mailchimp_sts_test_address'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Email address to send a test email to'),
+    '#default_value' => variable_get('site_mail', ''),
+    '#description' => t('Type in an address to have a test email sent there.'),
+    '#required' => TRUE
+  );
+  $form['mailchimp_sts_test_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Test body contents'),
+    '#default_value' => t('If you receive this message it means your site is capable of using MailChimp STS to send email.'),
+  );
+  $form['test_submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Send test email'),
+  );
+  $form['test_cancel'] = array(
+    '#type' => 'link',
+    '#href' => 'admin/config/services/mailchimp/sts',
+    '#title' => t('Cancel'),
+  );
+  
+  return $form;
+}
+
+/**
+ * Submit handler for mailchimp_sts_test_form(), sends the test email.
+ *
+ * @param string $form 
+ * @param string $form_state 
+ * @return void
+ */
+function mailchimp_sts_test_form_submit($form, &$form_state) {
   // If an address was given, send a test email message.
   $test_address = $form_state['values']['mailchimp_sts_test_address'];
   global $language;
   $params['subject'] = t('Drupal MailChimp STS test email');
   $params['body'] = $form_state['values']['mailchimp_sts_test_body'];
-  drupal_mail('mailchimp_sts', 'mailchimp-sts-test', $test_address, $language, $params, $form_state['values']['mailchimp_sts_from']);
+  drupal_mail('mailchimp_sts', 'mailchimp-sts-test', $test_address, $language, $params, variable_get('mailchimp_sts_from', ''));
   drupal_set_message(t('A test email has been sent to @email.', array('@email' => $test_address)));
 }
