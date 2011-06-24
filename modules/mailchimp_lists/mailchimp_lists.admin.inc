@@ -228,6 +228,20 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       ),
     ),
   );
+  $form['tabs']['settings']['interest_groups_label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Interest groups label'),
+    '#default_value'  => isset($list->settings['interest_groups_label']) ? 
+      $list->settings['interest_groups_label'] : t('Interest Groups'),    
+    '#description' => t('Label to appear above the interest group options.'),
+    '#size' => 40,
+    '#maxlength' => 255,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="include_interest_groups"]' => array('checked' => TRUE),
+      ),
+    ),    
+  );  
   $form['tabs']['settings']['cron'] = array(
     '#type'           => 'checkbox',
     '#title'          => t('Sync List During Cron'),
@@ -330,6 +344,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
     'show_register_form' => $form_state['values']['show_register_form'],
     'show_account_form' => $form_state['values']['show_account_form'],
     'include_interest_groups' => $form_state['values']['include_interest_groups'],
+    'interest_groups_label' => $form_state['values']['interest_groups_label'],
     'cron' => $form_state['values']['cron'],
     'webhooks' => $webhook_ret & $form_state['values']['webhooks'],
   );

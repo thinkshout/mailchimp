@@ -380,7 +380,8 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
     if (is_array($mc_list['intgroups'])) {
       $form[$wrapper_key]['interest_groups'] = array(
         '#type' => 'fieldset',
-        '#title' => t('Interest Groups'),
+        '#title' => isset($list->settings['interest_groups_label']) ? 
+          t($list->settings['interest_groups_label']) : t('Interest Groups'),
         '#collapsible' => TRUE,
         '#collapsed' => !$is_subscribed,
         '#weight' => 100,
