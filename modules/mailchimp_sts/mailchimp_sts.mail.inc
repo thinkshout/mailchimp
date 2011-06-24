@@ -46,15 +46,22 @@ class MailChimpSTSMailSystem implements MailSystemInterface {
     }
 
     $to = (count(explode(',', $message['to']) > 1) ? explode(',', $message['to']) : $message['to']);
+    
+    // apply input format to body
+    $html = $message['body'];
+    $format = variable_get('mailchimp_sts_filter_format', '');
+    if (!empty($format)) {
+      $html = check_markup($message['body'], $format);
+    }
 
     $sts_message = array(
-      'html' => check_markup($message['body'], variable_get('mailchimp_sts_filter_format', 'full_html')),
+      'html' => $html,
       'text' => drupal_html_to_text($message['body']),
       'subject' => $message['subject'],
-      //'from_name' => $from,
+      //'from_name' => ,
       'from_email' => $from,
       'to_email' => $to,
-      //'to_name' => $message['subject'],
+      //'to_name' => ,
       //'autogen_html' =>
     );
 

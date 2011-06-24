@@ -97,14 +97,15 @@ function mailchimp_sts_admin_settings($form, &$form_state, $verified_emails = ar
   );
 
   $formats = filter_formats();
-  $options = array();
+  $options = array('' => t('-- Select --'));
   foreach ($formats AS $v => $format) {          
     $options[$v] = $format->name;
   }
   $form['email_options']['mailchimp_sts_filter_format'] = array(
     '#type' => 'select',
     '#title' => t('Input format'),
-    '#description' => t('Email bodies must be converted to HTML prior to sending. Please select an Input Format to use. Full HTML recommended.'),
+    '#description' => t('If selected, the input format to apply to the message 
+      body before sending to the STS API.'),
     '#options' => $options,
     '#default_value' => array(variable_get('mailchimp_sts_filter_format', 'full_html')),
   );
