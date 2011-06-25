@@ -23,9 +23,17 @@ function mailchimp_sts_admin_page() {
         }
       }      
     }
+    
+    $message = t('Enable and configure this site to use the !STS 
+      for sending emails. You may also view the !reports.',
+      array(
+        '!reports' => l(t(' MailChimp STS quotas, statistics, and reports'), 'admin/reports/mailchimp_sts'),
+        '!STS' => l(t('MailChimp STS API'), 'http://apidocs.mailchimp.com/sts/1.0/')
+      ));
+    $form = drupal_render(drupal_get_form('mailchimp_sts_admin_settings', $emails));
 
-    return l(t('View MailChimp STS statistics'), 'admin/reports/mailchimp_sts') .
-      drupal_render(drupal_get_form('mailchimp_sts_admin_settings', $emails));  
+    return $message . $form;
+        
   }
   else {
     drupal_set_message(
@@ -48,7 +56,6 @@ function mailchimp_sts_admin_page() {
  *   An array containing form items to place on the module settings page.
  */
 function mailchimp_sts_admin_settings($form, &$form_state, $verified_emails = array()) {
-
   $form['mailchimp_sts_status'] = array(
     '#type'          => 'radios',
     '#title'         => t('MailChimp STS Mail interface status'),
