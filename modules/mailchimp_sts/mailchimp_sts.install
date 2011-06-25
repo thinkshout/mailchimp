@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * Implements hook_update_N().
+ */
+function mailchimp_sts_update_7201() {
+  if (variable_get('mailchimp_sts_on', 0)) {
+    variable_set('mailchimp_sts_status', 'on');
+  }
+
+  variable_del('mailchimp_sts_on');
+  variable_del('mailchimp_sts_debugging');
+  
+  return t('Updated MailChimp STS settings to use a status.');
+}
+

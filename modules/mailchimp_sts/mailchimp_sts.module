@@ -10,6 +10,10 @@
  * This module uses array('default-system' => 'MailChimpSTSMailSystem').
  */
 
+define('MAILCHIMP_STS_STATUS_ON', 'on');
+define('MAILCHIMP_STS_STATUS_OFF', 'off');
+define('MAILCHIMP_STS_STATUS_TEST', 'test');
+
 /**
  * Implements hook_help().
  */
@@ -63,9 +67,14 @@ function mailchimp_sts_menu() {
   return $items;
 }
 
+/**
+ * Access callback for sending test email.
+ *
+ * @return bool
+ */
 function mailchimp_sts_test_access() {
   return user_access('administer mailchimp sts module') & 
-    variable_get('mailchimp_sts_on', 0);
+    (variable_get('mailchimp_sts_status', MAILCHIMP_STS_STATUS_OFF) != MAILCHIMP_STS_STATUS_OFF);
 }
 
 /**

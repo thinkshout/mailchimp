@@ -48,23 +48,17 @@ function mailchimp_sts_admin_page() {
  *   An array containing form items to place on the module settings page.
  */
 function mailchimp_sts_admin_settings($form, &$form_state, $verified_emails = array()) {
-  $form['onoff'] = array(
-    '#type'  => 'fieldset',
-    '#collapsible' => TRUE,
-    '#title' => t('Install options'),
-  );  
-  $form['onoff']['mailchimp_sts_on'] = array(
+
+  $form['mailchimp_sts_status'] = array(
     '#type'          => 'radios',
-    '#title'         => t('Enable the MailChimp STS Mail interface'),
-    '#default_value' => variable_get('mailchimp_sts_on', 0),
-    '#options'       => array(1 => t('On'), 0 => t('Off')),
+    '#title'         => t('MailChimp STS Mail interface status'),
+    '#default_value' => variable_get('mailchimp_sts_status', MAILCHIMP_STS_STATUS_OFF),
+    '#options'       => array(
+      MAILCHIMP_STS_STATUS_ON => t('On'), 
+      MAILCHIMP_STS_STATUS_TEST => t('Test'), 
+      MAILCHIMP_STS_STATUS_OFF => t('Off')
+    ),
     '#description'   => t('To uninstall this module you must turn it off here first.'),
-  );
-  $form['onoff']['mailchimp_sts_debugging'] = array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Enable debugging'),
-    '#default_value' => variable_get('mailchimp_sts_debugging', 0),
-    '#description'   => t('Checking this box will print Amazon SES messages from the server for every email that is sent.'),
   );
 
   $form['email_options'] = array(
@@ -146,15 +140,23 @@ function mailchimp_sts_admin_settings_validate($form, &$form_state) {
 function mailchimp_sts_admin_settings_submit($form, &$form_state) {
   $values = $form_state['values'];
 
-  if ($values['mailchimp_sts_on']) {
-    variable_set('mail_system', array('default-system' => 'MailChimpSTSMailSystem'));
-    drupal_set_message(t('MailChimp STS will be used to deliver all site emails.'));
-    watchdog('mailchimp_sts', 'MailChimp STS has been enabled.');
-  }
-  else {
-    variable_set('mail_system', array('default-system' => 'DefaultMailSystem'));
-    drupal_set_message(t('The default mail system will be used to deliver all site emails.'));
-    watchdog('mailchimp_sts', 'MailChimp STS has been disabled.');
+  switch ($form_state['values']['mailchimp_sts_status']) {
+    case MAILCHIMP_STS_STATUS_ON:
+      variable_set('mail_system', array('default-system' => 'MailChimpSTSMailSystem'));
+      drupal_set_message(t('MailChimp STS will be used to deliver all site emails.'));
+      watchdog('mailchimp_sts', 'MailChimp STS has been enabled.');
+    break;
+    case MAILCHIMP_STS_STATUS_TEST:
+      variable_set('mail_system', array('default-system' => 'TestingMailChimpSTSMailSystem'));
+      drupal_set_message(t('MailChimp STS will be used in test mode. Emails will 
+        not actually be sent, just logged.'));
+      watchdog('mailchimp_sts', 'MailChimp STS has been placed in test mode.');
+    break;
+    case MAILCHIMP_STS_STATUS_OFF:
+      variable_set('mail_system', array('default-system' => 'DefaultMailSystem'));
+      drupal_set_message(t('The default mail system will be used to deliver all site emails.'));
+      watchdog('mailchimp_sts', 'MailChimp STS has been disabled.');
+    break;    
   }
 }
 
