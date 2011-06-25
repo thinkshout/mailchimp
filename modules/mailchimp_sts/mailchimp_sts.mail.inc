@@ -77,15 +77,40 @@ class MailChimpSTSMailSystem implements MailSystemInterface {
       drupal_set_message(t('Sending mail to: @to.', array('@to' => $to[0])), 'notice');
     }
 
-    // send the email passing the mail key as the tag for use in reporting
+    // send the email passing the message id as the tag for use in reporting
     $mailer = mailchimp_sts_get_api_object();
-    $status = $mailer->send_email($sts_message, TRUE, TRUE, array($message['key']));
+    $status = $mailer->send_email($sts_message, TRUE, TRUE, array($message['id']));
 
-    if ($mailer->errorCode) {
-      watchdog('mailchimp_sts', 'Error sending email from @from to @to : !error_message', array('@from' => $from, '@to' => print_r($to, TRUE), '!error_message' => $mailer->errorMessage), WATCHDOG_ERROR);
+    if (isset($status->aws_code) && !empty($status->aws_code)) {
+      watchdog('mailchimp_sts', 'Error sending email from %from to %to. @code: @message', 
+        array(
+          '%from' => $from, '%to' => print_r($to, TRUE), 
+          '@code' => $status->aws_code, '@message' => $status->message
+        ), 
+        WATCHDOG_ERROR);
       return FALSE;
     }
 
+    return TRUE;
+  }
+}
+
+/**
+ * A mail sending implementation that captures sent messages to a variable.
+ *
+ * This class is for running tests or for development.
+ */
+class TestingMailChimpSTSMailSystem extends MailChimpSTSMailSystem implements MailSystemInterface {
+  /**
+   * Accept an e-mail message and store it in a variable.
+   *
+   * @param $message
+   *   An e-mail message.
+   */
+  public function mail(array $message) {
+    $captured_emails = variable_get('drupal_test_email_collector', array());
+    $captured_emails[] = $message;
+    variable_set('drupal_test_email_collector', $captured_emails);
     return TRUE;
   }
 }
