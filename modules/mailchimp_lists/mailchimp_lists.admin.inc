@@ -55,8 +55,9 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#description' => t('Required lists are automatically syncronized with the
       sites users. Optional lists provide a checkbox allowing users to
       subscribe during registration or when updating their account. Free form
-      lists present a signup form with all MailChimp merge fields that have
-      default values set for authenticated users.'),
+      lists, the only type allowed for the Anonymous role, present a signup form
+      with all MailChimp merge fields displayed. Default values are allowed for
+      authenticated users based on token mappings.'),
     '#options' => array(
       '' => t('-- Select --'),
       MAILCHIMP_LISTTYPE_REQUIRED => t('Required'),
@@ -157,7 +158,8 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       users will see the lists they\'re eligble for at the !subscribe and in
       the subscription block. Lists assigned to the Authenticated role may
       also apear in the registration form if that option is selected below.
-      Authenticated user may also manage their list settings from their profile.',
+      Authenticated user may also manage their list settings from their profile.
+      The Anonymous role may <em>only</em> be set for free form lists.',
       array('!subscribe' => l(t('newsletter subscription page'),
       'mailchimp/subscribe'))),
     '#default_value'  => ($list &&  !empty($list->settings['roles'])) ? $list->settings['roles'] : array(),
@@ -300,6 +302,17 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
  */
 function mailchimp_lists_mergefields_callback($form, $form_state) {
   return $form['mergefields'];
+}
+
+/**
+ * mailchimp_lists_list_form() validation handler.
+ */
+function mailchimp_lists_list_form_validate($form, &$form_state) {
+  // anonymous role can only be applied to free form lists
+  if($form_state['values']['list_type'] != MAILCHIMP_LISTTYPE_FREEFORM &&
+     $form_state['values']['roles'][DRUPAL_ANONYMOUS_RID]) {
+    form_set_error('list_type', t('The anonymous role can only be set for free form lists.'));
+  }
 }
 
 /**
