@@ -46,6 +46,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#size' => 35,
     '#maxlength' => 32,
     '#default_value' => $list ? $list->label : '',
+    '#required' => TRUE
   );
 
   $form['list_type'] = array(
