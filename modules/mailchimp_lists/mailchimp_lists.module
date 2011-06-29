@@ -17,7 +17,7 @@ module_load_include('inc', 'mailchimp_lists', 'mailchimp_lists.entity');
  */
 function mailchimp_lists_menu() {
   $items = array();
-  
+
   $items['admin/config/services/mailchimp/lists'] = array(
     'title' => 'List Settings',
     'description' => 'Manage MailChimp Lists.',
@@ -74,7 +74,7 @@ function mailchimp_lists_menu() {
 
 /**
  * Access callback for mailchimp_lists_user_subscribe_page().
- * 
+ *
  * @param  $user
  * @return bool
  */
@@ -85,14 +85,18 @@ function mailchimp_lists_user_subscribe_page_access($user) {
 
 /**
  * Access callback for mailchimp_lists_user_subscribe_page().
- * 
+ *
  * @param  $user
  * @return bool
  */
 function mailchimp_lists_freeform_subscribe_page_access() {
-  global $user;
-  $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_FREEFORM);
-  return (count($lists) > 0);
+  $ret = user_access('administer mailchimp');
+  if (!$ret) {
+    global $user;
+    $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_FREEFORM);
+    $ret = (count($lists) > 0);
+  }
+  return $ret;
 }
 
 /**
@@ -144,7 +148,7 @@ function mailchimp_lists_cron() {
 */
 function mailchimp_lists_form_user_register_form_alter(&$form, &$form_state, $form_id) {
   $account = $form['#user'];
-  
+
   $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_OPTIONAL, array('show_register_form' => 1));
   if (!empty($lists)) {
     // wrap in a fieldset
@@ -173,7 +177,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
       // unsubscribe a subscribed user who unchecked a list
       if ($form_list['subscribe']) {
         $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
-        
+
         // grab merge values
         $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
 
@@ -196,7 +200,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
       }
 
       if (!$ret) {
-        drupal_set_message(t('There was a problem with your newsletter signup: @msg', 
+        drupal_set_message(t('There was a problem with your newsletter signup: @msg',
           array('@msg' => $mcapi->errorMessage)));
       }
     }
@@ -214,7 +218,7 @@ function mailchimp_lists_user_delete($account) {
   $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_REQUIRED);
   if (!empty($lists)) {
     $mcapi = mailchimp_get_api_object();
-    foreach ($lists as $list) {    
+    foreach ($lists as $list) {
       mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
     }
   }
@@ -230,8 +234,8 @@ function mailchimp_lists_user_update(&$edit, $account, $category) {
 /**
  * Update a users setting in all required list or add to cron queue.
  *
- * @param string $account 
- * @param string $new_email 
+ * @param string $account
+ * @param string $new_email
  */
 function mailchimp_lists_user_sync($account, $new_email = '') {
   $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_REQUIRED);
@@ -260,8 +264,8 @@ function mailchimp_lists_user_sync($account, $new_email = '') {
           mailchimp_subscribe_user($list, $account->mail, $mergevars, FALSE, $mcapi);
         }
       }
-    }    
-  }  
+    }
+  }
 }
 
 /**
@@ -273,7 +277,7 @@ function mailchimp_lists_user_sync($account, $new_email = '') {
 function mailchimp_lists_user_subscribe_page($account) {
   // get all available non-required lists
   $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_OPTIONAL, array('show_account_form' => 1));
-  
+
   if (count($lists) == 0) {
     return(t('There are no available newsletters subscriptions.'));
   }
@@ -285,7 +289,7 @@ function mailchimp_lists_freeform_subscribe_page() {
   // get all available freeform lists
   global $user;
   $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_FREEFORM);
-  
+
   if (count($lists) == 0) {
     return(t('There are no available newsletters subscriptions.'));
   }
@@ -295,7 +299,7 @@ function mailchimp_lists_freeform_subscribe_page() {
 
 /**
  * Return all subscription forms for a given user.
- * 
+ *
  * @param  $form
  * @param  $form_state
  * @param  $lists
@@ -306,7 +310,7 @@ function mailchimp_lists_user_subscribe_form($form, &$form_state, $lists, $accou
   $form['#id'] = $lists[0]->id;
   $form['account'] = array('#type' => 'value', '#value' => $account);
   $form['mailchimp_lists'] = array('#tree' => TRUE);
-  
+
   foreach ($lists as $list) {
     mailchimp_lists_auth_newsletter_form($form['mailchimp_lists'], $list, $account);
   }
@@ -370,16 +374,16 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
       $form[$wrapper_key]['mergevars'][$mergevar['tag']] = mailchimp_lists_insert_drupal_form_tag($mergevar);
     }
   }
-  
+
   // present interest groups
   if ($list->settings['include_interest_groups']) {
     $mc_list = mailchimp_get_list($list->mc_list_id);
 
-    // perform test in case error comes back from MCAPI when getting groups 
+    // perform test in case error comes back from MCAPI when getting groups
     if (is_array($mc_list['intgroups'])) {
       $form[$wrapper_key]['interest_groups'] = array(
         '#type' => 'fieldset',
-        '#title' => isset($list->settings['interest_groups_label']) ? 
+        '#title' => isset($list->settings['interest_groups_label']) ?
           t($list->settings['interest_groups_label']) : t('Interest Groups'),
         '#collapsible' => TRUE,
         '#collapsed' => !$is_subscribed,
@@ -409,7 +413,7 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
                 $default_merge_values = explode(",", str_replace(', ', ',', $membergroup['groups']));
                 break;
               }
-            }            
+            }
           }
         }
 
@@ -457,15 +461,15 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
     if ($list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
       $mail = $account->mail;
       $selected = $form_list['subscribe'];
-      $mergevars = mailchimp_lists_load_user_mergevars($account, $list);      
-    }      
+      $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
+    }
     else {
       $mail = $form_list['mergevars']['EMAIL'];
       $mergevars = $form_list['mergevars'];
     }
-    
+
     $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $mail);
-    
+
     // unsubscribe a subscribed user who unchecked a list
     if ($is_subscribed && !$selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
       $ret = mailchimp_unsubscribe_user($list, $account->mail, TRUE, $mcapi);
@@ -485,7 +489,7 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
         $ret = mailchimp_update_user($list, $mail, $mergevars, TRUE, $mcapi);
       }
       else {
-        $ret = mailchimp_subscribe_user($list, $mail, $mergevars, TRUE, $mcapi);        
+        $ret = mailchimp_subscribe_user($list, $mail, $mergevars, TRUE, $mcapi);
       }
     }
 
@@ -512,7 +516,7 @@ function mailchimp_lists_load_user_mergevars($account, $list) {
     // always add email
     $values += array(
         'EMAIL' => $account->mail
-    );    
+    );
   }
 
   return $values;
@@ -521,7 +525,7 @@ function mailchimp_lists_load_user_mergevars($account, $list) {
 /**
  * Return all available lists for a given user.
  *
- * @param string $account 
+ * @param string $account
  * @param string $list_type list type constant
  * @param array $conditions list settings to filter the results by.
  * @return array lists
@@ -531,9 +535,9 @@ function mailchimp_lists_get_available_lists($account = NULL, $list_type = MAILC
     global $user;
     $account = $user;
   }
-  
+
   $lists = mailchimp_lists_load_multiple(array(), array('list_type' => $list_type));
-  
+
   $user_lists = array();
   foreach($lists as $list) {
     foreach ($account->roles as $rid => $role) {
@@ -545,14 +549,14 @@ function mailchimp_lists_get_available_lists($account = NULL, $list_type = MAILC
             }
           }
         }
-        else {          
+        else {
           $user_lists[] = $list;
         }
         break;
       }
     }
   }
-  
+
   return $user_lists;
 }
 
@@ -593,7 +597,7 @@ function mailchimp_lists_block_view($delta = '') {
       break;
     }
   }
-  
+
   return $block;
 }
 
