@@ -1,21 +1,35 @@
-This module provides integration with the MailChimp email delivery service. While tools for sending email from your own server, like SimpleNews, are great, they lack the sophistication and ease of use of dedicated email providers like MailChimp. Other players in this field are Constant Contact and Campaign Monitor.
+This module provides integration with the MailChimp email delivery service.
+While tools for sending email from your own server, like SimpleNews, are great,
+they lack the sophistication and ease of use of dedicated email providers like
+MailChimp. Other players in this field are Constant Contact and Campaign Monitor.
 
-This module is still in active development, and here are the current features:
+Features
+  * API integration
+  * Support for an unlimited number of mailing lists
+  * Having an anonymous sign up form to enroll users in a general newsletter.
+  * Each MailChimp list can be assigned to one or more roles
+  * Editing of user list subscriptions on the user's edit page
+  * Allow users to subscribe during registration
+  * Map token and profile values to your MailChimp merge fields
+  * Required, optional, and free form list types.
+  * Standalone subscribe and unsubscribe forms
+  * Subscriptions can be maintained via cron or in real time
+  * Individual blocks for each newsletter
+  * Send all your site emails through the MailChimp STS API and see all of
+    those email statistics.
 
-   1. Support for an unlimited number of mailing lists
-   2. Having an anonymous sign up form to enroll users in a general newsletter.
-   3. list access by role
-   4. editing of user list subscriptions on the user's edit page
-   5. list subscribe on register page
-   6. customizable merge vars with token, profile and bio.module integreation
-   7. opt-in, opt-out and required lists
-   8. standalone subscribe and unsubscribe forms
-   9. subscriptions can be maintained via cron or real time.
+Installing Notes
+  * You need to have a MailChimp API Key.
+  * You need to have at least one list created in MailChimp to use the
+    mailchimp_list module.
+  * The mailchimp_sts module requires a paid MailChimp account (as of this
+    writing) as well as an account with Amazon AWS. MailChimp STS is a wrapper
+    arround Amazon SES, so all SES requirements apply.
 
-The new 5.2 and 6.x branches use the latest MailChimp API and have plenty of usability improvements.
-
-Installing Mailchimp:
-  Download the Mailchimp release for your version.
-  Untar it in the modules directory.
-  Activate the module through drupals administrative interface.
-  IMPORTANT: Please ensure you have at least one active list created in MailChimp.
+What each module does
+  * mailchimp_module: Core integration with the MailChimp API. Required by all
+    other modules and a tool for developers.
+  * mailchimp_lists: Syncronize Drupal users with MailChimp lists and allow
+    users to subscribe, unsubscribe, and update member information.
+  * mailchimp_sts: Expose the MailChimp STS gateway as a Drupal mail interface
+    and associated settings.
