@@ -397,7 +397,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
  * Return an array of available user tokens.
  */
 function mailchimp_lists_get_merge_tokens() {
-  $out = array(0 => '<none>');
+  $out = array('' => t('-- Select --'));
 
   // grab user tokens
   $token_info = token_info();
