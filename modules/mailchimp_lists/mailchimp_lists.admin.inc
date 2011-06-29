@@ -112,31 +112,25 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     $mc_list_id = !empty($form_state['values']['mc_list_id']) ?
       $form_state['values']['mc_list_id'] : $list->mc_list_id;
     $mc_list = mailchimp_get_list($mc_list_id);
-    $mergevars = $mc_list['mergevars'];
 
-    $mergefields = array();
-    foreach($mergevars as $field) {
-      $mergefields[$field['tag']] = $field['name'];
-    }
-
-    if (!empty($mergefields)) {
-      foreach($mergefields as $tag => $name) {
-        $default_value = isset($list->settings['mergefields'][$tag]) ?
-            $list->settings['mergefields'][$tag] : -1;
-        $disabled = $required = FALSE;
+    if (isset($mc_list['mergevars']) && !empty($mc_list['mergevars'])) {
+      foreach($mc_list['mergevars'] as $mergevar) {
+        $default_value = isset($list->settings['mergefields'][$mergevar['tag']]) ?
+            $list->settings['mergefields'][$mergevar['tag']] : -1;
+        $disabled = FALSE;
         $description = '';
-        if ($tag == 'EMAIL') {
+        if ($mergevar['tag'] == 'EMAIL') {
           $default_value = 'mail';
-          $disabled = $required = TRUE;
+          $disabled = TRUE;
           $description = t('Email is required and must map to a Drupal user\'s email.');
         }
-        $form['mergefields'][$tag] = array(
+        $form['mergefields'][$mergevar['tag']] = array(
           '#type' => 'select',
-          '#title' => $name,
+          '#title' => $mergevar['name'],
           '#description' => $description,
           '#default_value' => $default_value,
           '#disabled' => $disabled,
-          '#required' => $required,
+          '#required' => $mergevar['req'],
           '#options' => mailchimp_lists_get_merge_tokens()
         );
       }
