@@ -19,8 +19,8 @@ function mailchimp_lists_menu() {
   $items = array();
 
   $items['admin/config/services/mailchimp/lists'] = array(
-    'title' => 'List Settings',
-    'description' => 'Manage MailChimp Lists.',
+    'title' => 'Lists and Users',
+    'description' => 'Manage MailChimp Lists and user settings.',
     'page callback' => 'mailchimp_lists_overview_page',
     'access arguments' => array('administer mailchimp'),
     'type' => MENU_LOCAL_TASK,
