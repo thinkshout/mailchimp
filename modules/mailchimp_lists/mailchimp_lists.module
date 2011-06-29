@@ -149,7 +149,13 @@ function mailchimp_lists_cron() {
 function mailchimp_lists_form_user_register_form_alter(&$form, &$form_state, $form_id) {
   $account = $form['#user'];
 
-  $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_OPTIONAL, array('show_register_form' => 1));
+  // need to force feed the authenticated role to this account object so the
+  // right newseletters are avaialble
+  $account->roles[DRUPAL_AUTHENTICATED_RID] = 'authenticated user';
+
+  $lists = mailchimp_lists_get_available_lists($account,
+    MAILCHIMP_LISTTYPE_OPTIONAL, array('show_register_form' => 1));
+
   if (!empty($lists)) {
     // wrap in a fieldset
     $form['mailchimp_lists'] = array(
