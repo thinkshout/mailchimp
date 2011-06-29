@@ -168,15 +168,12 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
     $mcapi = mailchimp_get_api_object();
     foreach ($edit['mailchimp_lists'] as $form_list) {
       $list = $form_list['list'];
-      $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
       $ret = TRUE;
-      $selected = $form_list['subscribe'];
 
       // unsubscribe a subscribed user who unchecked a list
-      if ($is_subscribed && !$selected) {
-        $ret = mailchimp_unsubscribe_user($list, $account->mail, TRUE, $mcapi);
-      }
-      else if ($selected) {
+      if ($form_list['subscribe']) {
+        $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
+        
         // grab merge values
         $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
 
@@ -199,11 +196,13 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
       }
 
       if (!$ret) {
-        drupal_set_message(t('There was a problem with your newsletter signup: @msg', array('@msg' => $mcapi->errorMessage)));
+        drupal_set_message(t('There was a problem with your newsletter signup: @msg', 
+          array('@msg' => $mcapi->errorMessage)));
       }
     }
   }
 
+  // handle required lists
   mailchimp_lists_user_sync($account);
 }
 
