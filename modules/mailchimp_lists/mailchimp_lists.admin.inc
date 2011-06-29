@@ -43,8 +43,8 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#type' => 'textfield',
     '#title' => t('Label'),
     '#description' => t('The label for this list that will appear on forms.'),
-    '#size' => 40,
-    '#maxlength' => 255,
+    '#size' => 35,
+    '#maxlength' => 32,
     '#default_value' => $list ? $list->label : '',
   );
 
