@@ -312,7 +312,15 @@ function mailchimp_lists_list_form_validate($form, &$form_state) {
   // anonymous role can only be applied to free form lists
   if($form_state['values']['list_type'] != MAILCHIMP_LISTTYPE_FREEFORM &&
      $form_state['values']['roles'][DRUPAL_ANONYMOUS_RID]) {
-    form_set_error('list_type', t('The anonymous role can only be set for free form lists.'));
+    form_set_error('list_type',
+      t('The anonymous role can only be set for free form lists.'));
+  }
+
+  // ensure mail merge field is set correctly
+  if(!isset($form_state['values']['mergefields']['EMAIL']) ||
+     $form_state['values']['mergefields']['EMAIL'] != 'mail') {
+    form_set_error('EMAIL',
+      t('The email merge field must be set to the user mail token.'));
   }
 }
 
