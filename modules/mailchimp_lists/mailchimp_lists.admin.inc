@@ -49,7 +49,22 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#required' => TRUE
   );
 
-  $form['list_type'] = array(
+  $form['description'] = array(
+    '#title' => 'Description',
+    '#type'           => 'textarea',
+    '#default_value'  => $list ? $list->description : '',
+    // '#text_format'    => NULL, // @todo: should store this value
+    '#description'    => t('This description will be shown to the user on the
+      list signup and user account settings pages')
+  );
+
+  $form['list_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('List Settings'),
+    '#collapsible' => TRUE,
+  );
+
+  $form['list_settings']['list_type'] = array(
     '#type' => 'select',
     '#title' => t('Type of list'),
     '#multiple' => FALSE,
@@ -69,12 +84,137 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#required' => TRUE,
   );
 
+  $form['list_settings']['settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Settings'),
+  );
+
+  $form['list_settings']['settings']['doublein'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Require subscribers to Double Opt-in'),
+    '#description'    => t('New subscribers will be sent a link with an email
+      they must follow to confirm their subscription.'),
+    '#default' => isset($list->settings['doublein']) ? $list->settings['doublein'] : FALSE,
+    '#states' => array(
+      // Hide this option for required lists
+      'invisible' => array(
+        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_REQUIRED),
+      ),
+    ),
+  );
+
+  $form['list_settings']['settings']['show_register_form'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Show subscription options on the user registration form.'),
+    '#description'    => t('This will only apply for lists granted to an authenticated role.'),
+    '#default_value'  => isset($list->settings['show_register_form']) ? $list->settings['show_register_form'] : FALSE,
+    '#states' => array(
+      // only show for optional lists
+      'visible' => array(
+        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_OPTIONAL),
+      ),
+    ),
+  );
+  $form['list_settings']['settings']['show_account_form'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Show Subscription Options on User Edit Screen'),
+    '#description'    => t('If set, a tab will be presented for managing
+      newsletter subscriptions when editing an account.'),
+    '#default_value'  => isset($list->settings['show_account_form']) ? $list->settings['show_account_form'] : FALSE,
+    '#states' => array(
+      // only show for optional lists
+      'visible' => array(
+        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_OPTIONAL),
+      ),
+    ),
+  );
+  $form['list_settings']['settings']['include_interest_groups'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Include interest groups on subscription form.'),
+    '#default_value'  => isset($list->settings['include_interest_groups']) ?
+      $list->settings['include_interest_groups'] : FALSE,
+    '#description'    => t('If set, users will be able to select applicable
+      interest groups when registering or editing their accounts.'),
+    '#states' => array(
+      // hide for required groups
+      'invisible' => array(
+        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_REQUIRED),
+      ),
+    ),
+  );
+  $form['list_settings']['settings']['interest_groups_label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Interest groups label'),
+    '#default_value'  => isset($list->settings['interest_groups_label']) ?
+      $list->settings['interest_groups_label'] : t('Interest Groups'),
+    '#description' => t('Label to appear above the interest group options.'),
+    '#size' => 40,
+    '#maxlength' => 255,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="include_interest_groups"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+  $form['list_settings']['settings']['cron'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Sync List During Cron'),
+    '#default_value'  => isset($list->settings['cron']) ? $list->settings['cron'] : FALSE,
+    '#description'    => t('If this is set, users will be subscribed to the
+      required list during cron runs. Otherwise subscription will take place when a user is added/edited.'),
+    '#states' => array(
+      // Hide this option for required lists
+      'visible' => array(
+        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_REQUIRED),
+      ),
+    ),
+  );
+  $form['list_settings']['settings']['webhooks'] = array(
+    '#type'           => 'checkbox',
+    '#title'          => t('Enable MailChimp webhooks for this list'),
+    '#default_value'  => isset($list->settings['webhooks']) ? $list->settings['webhooks'] : FALSE,
+    '#description'    => t('When a user unsubscribes from a list or updates
+      their profile outside of Drupal, MailChimp will trigger an event to
+      update the user\'s cached MailChimp member information. This will
+      <em>not</em> update any of their Drupal user information.'),
+    '#states' => array(
+      // Hide this option for freeform lists
+      'invisible' => array(
+        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_FREEFORM),
+      ),
+    ),
+  );
+
+  $form['list_settings']['roles_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Roles')
+  );
+  $form['list_settings']['roles_fieldset']['roles'] = array(
+    '#type'           => 'checkboxes',
+    '#options'  => user_roles(),
+    '#description'  => t('Choose which roles may subscribe to this list. All
+      users will see the lists they\'re eligble for at the !subscribe and in
+      the subscription block. Lists assigned to the Authenticated role may
+      also apear in the registration form if that option is selected below.
+      Authenticated user may also manage their list settings from their profile.
+      The Anonymous role may <em>only</em> be set for free form lists.',
+      array('!subscribe' => l(t('newsletter subscription page'),
+      'mailchimp/subscribe'))),
+    '#default_value'  => ($list &&  !empty($list->settings['roles'])) ? $list->settings['roles'] : array(),
+  );
+
+  $form['mc_list'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('MailChimp List Settings'),
+    '#collapsible' => TRUE,
+  );
+
   $lists = mailchimp_get_lists();
   $options = array('' => t('-- Select --'));
   foreach($lists as $mc_list) {
     $options[$mc_list['id']] = $mc_list['name'];
   }
-  $form['mc_list_id'] = array(
+  $form['mc_list']['mc_list_id'] = array(
     '#type' => 'select',
     '#title' => t('MailChimp List'),
     '#multiple' => FALSE,
@@ -96,18 +236,17 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     )
   );
 
-  $form['mergefields'] = array(
+  $form['mc_list']['mergefields'] = array(
     '#prefix' => '<div id="mergefields-wrapper">',
     '#suffix' => '</div>'
   );
 
   // show merge fields if changing list field or editing existing list
   if (!empty($form_state['values']['mc_list_id']) || isset($list)) {
-    $form['mergefields'] = array(
+    $form['mc_list']['mergefields'] = array(
       '#type' => 'fieldset',
       '#title' => t('Merge Fields'),
       '#id' => 'mergefields-wrapper',
-      '#collapsible' => TRUE,
       '#tree' => TRUE
     );
 
@@ -126,7 +265,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
           $disabled = TRUE;
           $description = t('Email is required and must map to a Drupal user\'s email.');
         }
-        $form['mergefields'][$mergevar['tag']] = array(
+        $form['mc_list']['mergefields'][$mergevar['tag']] = array(
           '#type' => 'select',
           '#title' => $mergevar['name'],
           '#description' => $description,
@@ -138,146 +277,11 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       }
     }
     else {
-      $form['mergefields']['message'] = array(
+      $form['mc_list']['mergefields']['message'] = array(
         '#markup' => t('There are no merge fields configured for this list.')
       );
     }
   }
-
-  $form['tabs'] = array(
-    '#type'         => 'vertical_tabs'
-  );
-
-  $form['tabs']['roles_fieldset'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Roles')
-  );
-  $form['tabs']['roles_fieldset']['roles'] = array(
-    '#type'           => 'checkboxes',
-    '#options'  => user_roles(),
-    '#description'  => t('Choose which roles may subscribe to this list. All
-      users will see the lists they\'re eligble for at the !subscribe and in
-      the subscription block. Lists assigned to the Authenticated role may
-      also apear in the registration form if that option is selected below.
-      Authenticated user may also manage their list settings from their profile.
-      The Anonymous role may <em>only</em> be set for free form lists.',
-      array('!subscribe' => l(t('newsletter subscription page'),
-      'mailchimp/subscribe'))),
-    '#default_value'  => ($list &&  !empty($list->settings['roles'])) ? $list->settings['roles'] : array(),
-  );
-
-  $form['tabs']['description_fieldset'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('List Description')
-  );
-  $form['tabs']['description_fieldset']['description'] = array(
-    '#type'           => 'textarea',
-    '#default_value'  => $list ? $list->description : '',
-    // '#text_format'    => NULL, // @todo: should store this value
-    '#description'    => t('This description will be shown to the user on the
-      list signup and user account settings pages')
-  );
-
-  $form['tabs']['settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Additional Settings'),
-  );
-
-  $form['tabs']['settings']['doublein'] = array(
-    '#type'           => 'checkbox',
-    '#title'          => t('Require subscribers to Double Opt-in'),
-    '#description'    => t('New subscribers will be sent a link with an email
-      they must follow to confirm their subscription.'),
-    '#default' => isset($list->settings['doublein']) ? $list->settings['doublein'] : FALSE,
-    '#states' => array(
-      // Hide this option for required lists
-      'invisible' => array(
-        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_REQUIRED),
-      ),
-    ),
-  );
-
-  $form['tabs']['settings']['show_register_form'] = array(
-    '#type'           => 'checkbox',
-    '#title'          => t('Show subscription options on the user registration form.'),
-    '#description'    => t('This will only apply for lists granted to an authenticated role.'),
-    '#default_value'  => isset($list->settings['show_register_form']) ? $list->settings['show_register_form'] : FALSE,
-    '#states' => array(
-      // only show for optional lists
-      'visible' => array(
-        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_OPTIONAL),
-      ),
-    ),
-  );
-  $form['tabs']['settings']['show_account_form'] = array(
-    '#type'           => 'checkbox',
-    '#title'          => t('Show Subscription Options on User Edit Screen'),
-    '#description'    => t('If set, a tab will be presented for managing
-      newsletter subscriptions when editing an account.'),
-    '#default_value'  => isset($list->settings['show_account_form']) ? $list->settings['show_account_form'] : FALSE,
-    '#states' => array(
-      // only show for optional lists
-      'visible' => array(
-        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_OPTIONAL),
-      ),
-    ),
-  );
-  $form['tabs']['settings']['include_interest_groups'] = array(
-    '#type'           => 'checkbox',
-    '#title'          => t('Include interest groups on subscription form.'),
-    '#default_value'  => isset($list->settings['include_interest_groups']) ?
-      $list->settings['include_interest_groups'] : FALSE,
-    '#description'    => t('If set, users will be able to select applicable
-      interest groups when registering or editing their accounts.'),
-    '#states' => array(
-      // hide for required groups
-      'invisible' => array(
-        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_REQUIRED),
-      ),
-    ),
-  );
-  $form['tabs']['settings']['interest_groups_label'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Interest groups label'),
-    '#default_value'  => isset($list->settings['interest_groups_label']) ?
-      $list->settings['interest_groups_label'] : t('Interest Groups'),
-    '#description' => t('Label to appear above the interest group options.'),
-    '#size' => 40,
-    '#maxlength' => 255,
-    '#states' => array(
-      'visible' => array(
-        ':input[name="include_interest_groups"]' => array('checked' => TRUE),
-      ),
-    ),
-  );
-  $form['tabs']['settings']['cron'] = array(
-    '#type'           => 'checkbox',
-    '#title'          => t('Sync List During Cron'),
-    '#default_value'  => isset($list->settings['cron']) ? $list->settings['cron'] : FALSE,
-    '#description'    => t('If this is set, users will be subscribed to the
-      required list during cron runs. Otherwise subscription will take place when a user is added/edited.'),
-    '#states' => array(
-      // Hide this option for required lists
-      'visible' => array(
-        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_REQUIRED),
-      ),
-    ),
-  );
-  $form['tabs']['settings']['webhooks'] = array(
-    '#type'           => 'checkbox',
-    '#title'          => t('Enable MailChimp webhooks for this list'),
-    '#default_value'  => isset($list->settings['webhooks']) ? $list->settings['webhooks'] : FALSE,
-    '#description'    => t('When a user unsubscribes from a list or updates
-      their profile outside of Drupal, MailChimp will trigger an event to
-      update the user\'s cached MailChimp member information. This will
-      <em>not</em> update any of their Drupal user information.'),
-    '#states' => array(
-      // Hide this option for freeform lists
-      'invisible' => array(
-        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_FREEFORM),
-      ),
-    ),
-  );
 
   $form['save'] = array(
     '#type' => 'submit',
@@ -302,7 +306,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
  * AJAX callback to return fields for a given type.
  */
 function mailchimp_lists_mergefields_callback($form, $form_state) {
-  return $form['mergefields'];
+  return $form['mc_list']['mergefields'];
 }
 
 /**
@@ -335,6 +339,9 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
     $is_new = FALSE;
   }
 
+  // set this value here for use in webhook call below
+  $list->mc_list_id = $form_state['values']['mc_list_id'];
+
   $mcapi = mailchimp_get_api_object();
   $webhook_ret = FALSE;
   // remove the webhook from this list if unchecked or list type changed to freeform
@@ -352,17 +359,17 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
       mailchimp_webhook_url(),
       array('unsubscribe', 'profile', 'cleaned', 'upemail')
     );
+
+    // handle errors in setting webooks
     if (!$webhook_ret) {
       drupal_set_message(t('Unable to connect webhooks: @msg',
         array('@msg' => $mcapi->errorMessage)), 'error');
-      return '';
     }
   }
 
   $list->label = $form_state['values']['label'];
   $list->description = $form_state['values']['description'];
   $list->list_type = $form_state['values']['list_type'];
-  $list->mc_list_id = $form_state['values']['mc_list_id'];
   $list->settings = array(
     'roles' => $form_state['values']['roles'],
     'mergefields' => isset($form_state['values']['mergefields']) ?
