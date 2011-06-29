@@ -537,11 +537,10 @@ function mailchimp_lists_get_available_lists($account = NULL, $list_type = MAILC
   }
 
   $lists = mailchimp_lists_load_multiple(array(), array('list_type' => $list_type));
-
   $user_lists = array();
   foreach($lists as $list) {
     foreach ($account->roles as $rid => $role) {
-      if (isset($list->settings['roles'][$rid])) {
+      if (isset($list->settings['roles'][$rid]) && $list->settings['roles'][$rid]) {
         if (!empty($conditions)) {
           foreach($conditions as $key => $condition) {
             if (isset($list->settings[$key]) && $list->settings[$key] == $condition) {
