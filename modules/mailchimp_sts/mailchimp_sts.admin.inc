@@ -181,10 +181,12 @@ function mailchimp_sts_admin_new_address_submit($form, &$form_state) {
     $mailchimp_sts = mailchimp_sts_get_api_object();
     $new_address = $mailchimp_sts->verify_email_address($address);
     if ($mailchimp_sts->errorCode) {
-      drupal_set_message(t('There has been an error verifying your message: %msg.', array('%msg' => $mailchimp_sts->errorMessage)));
+      drupal_set_message(t('There has been an error verifying your message: %msg.', 
+        array('%msg' => $mailchimp_sts->errorMessage)));
     }
     else {
-      drupal_set_message(t('The address %address has been verified. Please check your email for a confirmation message from Amazon.', array('%address' => $address)));
+      drupal_set_message(t('The address %address has been verified. Please check 
+        your email for a confirmation message.', array('%address' => $address)));
     }
   }
 }
