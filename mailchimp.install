@@ -7,13 +7,6 @@
  */
 
 /**
- * Implements hook_install().
- */
-function mailchimp_install() {
-
-}
-
-/**
  * Implements hook_schema().
  */
 function mailchimp_schema() {
@@ -22,8 +15,6 @@ function mailchimp_schema() {
 
   return $schema;
 }
-
-
 
 /**
  * Implements hook_uninstall().
