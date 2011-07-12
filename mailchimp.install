@@ -21,11 +21,7 @@ function mailchimp_schema() {
  */
 function mailchimp_uninstall() {
   variable_del('mailchimp_api_key');
-  variable_del('mailchimp_cron');
-  variable_del('mailchimp_interest_groups_user_forms');
-  variable_del('mailchimp_lists');
-  variable_del('mailchimp_subscription_failure_message');
-  variable_del('mailchimp_subscription_success_message');
-  variable_del('mailchimp_unsubscription_failure_message');
-  variable_del('mailchimp_unsubscription_success_message');
+  variable_del('mailchimp_batch_limit');
+  variable_del('mailchimp_use_secure');  
 }
+
