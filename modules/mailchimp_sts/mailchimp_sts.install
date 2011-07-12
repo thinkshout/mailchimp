@@ -14,3 +14,13 @@ function mailchimp_sts_update_7201() {
   return t('Updated MailChimp STS settings to use a status.');
 }
 
+/**
+ * Implements hook_uninstall().
+ */
+function mailchimp_sts_uninstall() {
+  variable_del('mailchimp_sts_filter_format');
+  variable_del('mailchimp_sts_from');
+  variable_del('mailchimp_sts_status');
+  variable_del('mailchimp_sts_test_address');
+  variable_del('mailchimp_sts_test_body');
+}
