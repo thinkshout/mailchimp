@@ -80,13 +80,13 @@ function mailchimp_lists_delete_multiple($list_ids) {
 }
 
 /**
- * Saves a registration.
+ * Saves a list.
  *
- * @param $registration
- *   The full contact object to save.
+ * @param $list
+ *   The full list object to save.
  *
  * @return
- *   The saved registration object.
+ *   The saved list object.
  */
 function mailchimp_lists_save($list) {
   $list->updated = REQUEST_TIME;
