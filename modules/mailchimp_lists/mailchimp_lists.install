@@ -71,6 +71,53 @@ function mailchimp_lists_schema() {
 }
 
 /**
+ * Implements hook_install().
+ */
+function mailchimp_lists_install() {
+  // convert old lists if they exist
+  $old_lists = variable_get('mailchimp_lists', array());
+  if (!empty($old_lists)) {
+    $cron = variable_get('mailchimp_cron', FALSE);
+    $register = variable_get('mailchimp_user_register', FALSE);
+    $user = variable_get('mailchimp_user_edit', FALSE);
+    $intgroups = variable_get('mailchimp_interest_groups_user_forms', FALSE);
+    
+    foreach($old_lists as $id => $old_list) {
+      $list = new stdClass();
+      $list->mc_list_id = $id;
+      $list->label = $old_list->name;
+      $list->description = $old_list->description;
+      $list->list_type = ($old_list->list_type == 'required') ? MAILCHIMP_LISTTYPE_REQUIRED : MAILCHIMP_LISTTYPE_OPTIONAL;
+      $list->settings = array(
+        'roles' => $old_list->roles,
+        'mergefields' => isset($old_list->mergevars) ? $old_list->mergevars : NULL,
+        'show_register_form' => $register,
+        'show_account_form' => $user,
+        'include_interest_groups' => $intgroups,
+        'cron' => $cron,
+        'webhooks' => FALSE,
+      );
+
+      if ($ret = mailchimp_lists_save($list)) {
+        drupal_set_message(t('List @name has been converted.',
+          array('@name' => $list->label)));
+      }
+      else {
+        drupal_set_message(t('There has been an error converting list @name.',
+          array('@name' => $list->label)), 'error');
+      }
+    }
+  }
+
+  // now delete old variables
+  variable_del('mailchimp_cron');
+  variable_del('mailchimp_interest_groups_user_forms');
+  variable_del('mailchimp_lists');
+  variable_del('mailchimp_user_edit');
+  variable_del('mailchimp_user_register');  
+}
+
+/**
  * Implements hook_uninstall().
  */
 function mailchimp_lists_uninstall() {
