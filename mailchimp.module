@@ -172,7 +172,7 @@ function mailchimp_get_api_object() {
   $q->useSecure(variable_get('mailchimp_use_secure', TRUE));
 
   if ($q->errorCode) {
-    watchdog('mailchimp', 'MCAPI Error: %errmsg', array('!errmsg' => $q->errorMessage), WATCHDOG_ERROR);
+    watchdog('mailchimp', 'MCAPI Error: %errmsg', array('%errmsg' => $q->errorMessage), WATCHDOG_ERROR);
     return NULL;
   }
 
