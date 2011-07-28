@@ -595,7 +595,8 @@ function mailchimp_lists_block_info() {
 function mailchimp_lists_block_view($delta = '') {
   $block = array();
   global $user;
-  $list = reset(mailchimp_lists_load_multiple(array($delta)));
+  $lists = mailchimp_lists_load_multiple(array($delta));
+  $list = reset($lists);
   foreach ($user->roles as $rid => $role) {
     if (isset($list->settings['roles'][$rid])) {
       $block['subject'] = t('Subscribe to @title', array('@title' => $list->label));
