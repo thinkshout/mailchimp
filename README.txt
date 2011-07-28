@@ -18,7 +18,7 @@ Features
   * Send all your site emails through the MailChimp STS API and see all of
     those email statistics.
 
-Installing Notes
+Installation Notes
   * You need to have a MailChimp API Key.
   * You need to have at least one list created in MailChimp to use the
     mailchimp_list module.
@@ -29,7 +29,7 @@ Installing Notes
 What each module does
   * mailchimp_module: Core integration with the MailChimp API. Required by all
     other modules and a tool for developers.
-  * mailchimp_lists: Syncronize Drupal users with MailChimp lists and allow
+  * mailchimp_lists: Synchronize Drupal users with MailChimp lists and allow
     users to subscribe, unsubscribe, and update member information.
   * mailchimp_sts: Expose the MailChimp STS gateway as a Drupal mail interface
     and associated settings.
