@@ -10,14 +10,22 @@ function mailchimp_lists_overview_page() {
   $rows = array();
   foreach($lists as $list) {
     $mc_list = mailchimp_get_list($list->mc_list_id);
+    $actions = array(
+      l(t('Edit'), 'admin/config/services/mailchimp/lists/' . $list->id  . '/edit'),
+      l(t('Delete'), 'admin/config/services/mailchimp/lists/' . $list->id  . '/delete')
+    );
+    if ($list->list_type === MAILCHIMP_LISTTYPE_REQUIRED && $list->settings['cron']) {
+      $actions[] = l(t('Queue exsiting'), 'mailchimp/lists/' . $list->id . '/queue_existing');         
+    }    
     $rows[] = array(
       l($list->label, 'admin/config/services/mailchimp/lists/' . $list->id . '/edit'),
       l($mc_list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id']),
       $list->description,
-      $list->list_type);
+      $list->list_type,
+      implode(' | ', $actions));
   }
   $table = array(
-    'header' => array(t('Name'), t('MailChimp List'), t('Description'), t('Type')),
+    'header' => array(t('Name'), t('MailChimp List'), t('Description'), t('Type'), t('Actions')),
     'rows' => $rows
   );
 
@@ -444,4 +452,35 @@ function mailchimp_lists_delete_list_form_submit($form, &$form_state) {
   mailchimp_lists_delete_multiple(array($list->id));
   drupal_set_message(t('%name has been deleted.', array('%name' => $list->label)));
   drupal_goto('admin/config/services/mailchimp/lists');
+}
+
+/**
+ * Confirmation form for queing existing users.
+ *
+ * @param string $form
+ * @param string $form_state
+ * @param object $list
+ */
+function mailchimp_lists_queue_existing_form($form, &$form_state, $list) {
+  $form_state['list'] = $list;
+  return confirm_form($form,
+    t('Are you sure you want to queue existing users in %name?', array('%name' => $list->label)),
+    'admin/config/services/mailchimp/lists',
+    t('This action will queue all users who belong in this list based on roles 
+       for processing and cannot be undone. If you have lots of users, it could 
+       take some time and possibly timeout.'),
+    t('Queue existing users'));
+}
+
+/**
+ * Submit handler for mailchimp_lists_queue_existing_form();
+ *
+ * @param string $form 
+ * @param string $form_state 
+ */
+function mailchimp_lists_queue_existing_form_submit($form, &$form_state) {
+  $list = $form_state['list'];
+  $count = mailchimp_lists_queue_existing($list);
+  drupal_set_message(t('@count users have been queued for update in %list.', array('@count' => $count, '%list' => $list->label)));
+  drupal_goto('admin/config/services/mailchimp/lists');  
 }

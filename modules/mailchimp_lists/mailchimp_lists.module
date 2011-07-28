@@ -68,6 +68,15 @@ function mailchimp_lists_menu() {
     'access callback' => 'mailchimp_lists_freeform_subscribe_page_access',
     'type' => MENU_SUGGESTED_ITEM,
   );
+  $items['mailchimp/lists/%mailchimp_lists/queue_existing'] = array(
+    'title' => 'Queue existing users',
+    'description' => 'Add existing users to a required lists queue.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_lists_queue_existing_form', 2),
+    'access callback' => 'mailchimp_lists_queue_existing_access',
+    'access arguments' => array(2),
+    'file' => 'mailchimp_lists.admin.inc',
+  );
 
   return $items;
 }
@@ -81,6 +90,20 @@ function mailchimp_lists_menu() {
 function mailchimp_lists_user_subscribe_page_access($user) {
   $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_OPTIONAL, array('show_account_form' => 1));
   return (count($lists) > 0) & user_edit_access($user);
+}
+
+/**
+ * Access callback for mailchimp_lists_queue_existing_form().
+ *
+ * @param  $list
+ * @return bool
+ */
+function mailchimp_lists_queue_existing_access($list) {
+  $ret = FALSE;
+  if ($list->list_type === MAILCHIMP_LISTTYPE_REQUIRED && $list->settings['cron'] && user_access('administer mailchimp')) {
+    $ret = TRUE;
+  }  
+  return $ret;
 }
 
 /**
@@ -676,4 +699,37 @@ function mailchimp_lists_forms($form_id, $args) {
     );
     return $forms;
   }
+}
+
+/**
+ * Queue existing users in a list.
+ *
+ * @param object $list 
+ * @return $count Number of users queued
+ */
+function mailchimp_lists_queue_existing($list) {
+  // grab our queue
+  $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+  $queue->createQueue();
+
+  // get a list of active users
+  $query = new EntityFieldQuery;
+  $query
+     ->entityCondition('entity_type', 'user')
+     ->propertyCondition('status', 1);
+  $result = $query->execute();
+  $users = user_load_multiple(array_keys($result['user']));
+  
+  // if the user belongs in the list, add to queue
+  // @todo Use the batch system to avoid timeouts for lots of users.
+  $count = 0;
+  foreach ($users as $user) {
+    $intersect = array_intersect(array_keys($user->roles), $list->settings['roles']);
+    if (!empty($intersect)) {
+      $count++;
+      $queue->createItem(array('uid' => $user->uid, 'list_id' => $list->id));
+    }
+  }
+  
+  return $count;
 }
