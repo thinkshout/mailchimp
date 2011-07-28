@@ -117,9 +117,11 @@ function mailchimp_sts_send_stats($form, &$form_state) {
   $tags = mailchimp_sts_get_tags();
   if (!$mailchimp_sts->errorCode) {
     foreach ($stats as $stat) {
-      $rows[] = array($stat['hour'], $tags[$stat['tag_id']]['tag'], $stat['sent'], $stat['bounces'],
-        $stat['rejects'], $stat['complaints'], $stat['opens'], $stat['clicks'],
-      );
+      if (isset($stat['hour'])) {
+        $rows[] = array($stat['hour'], $tags[$stat['tag_id']]['tag'], $stat['sent'], $stat['bounces'],
+          $stat['rejects'], $stat['complaints'], $stat['opens'], $stat['clicks'],
+        );        
+      }
     }
   }
 
