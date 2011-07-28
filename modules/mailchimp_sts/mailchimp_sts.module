@@ -106,20 +106,30 @@ function mailchimp_sts_mail($key, &$message, $params) {
 function mailchimp_sts_send_stats($form, &$form_state) {
   $mailchimp_sts = mailchimp_sts_get_api_object();
   $rows = array();
-
-  if (isset($form_state['values']['tag'])) {
-    $stats = $mailchimp_sts->get_mc_send_stats($form_state['values']['tag']);
+  
+  // get the since date to filter reports by
+  $since = NULL;
+  if (isset($form_state['values']['since'])) {
+    if (!empty($form_state['values']['since'])) {
+      $since = $form_state['values']['since'];      
+    }
   }
   else {
-    $stats = $mailchimp_sts->get_mc_send_stats();
+    $since = date('Y-m-d', mktime(0, 0, 0, date('n'), 1));
   }
+  
+  // get the tag to filter reports by
+  $tag = isset($form_state['values']['tag']) ? $form_state['values']['tag'] : 1;
+
+  $stats = $mailchimp_sts->get_mc_send_stats($tag, $since);
 
   $tags = mailchimp_sts_get_tags();
   if (!$mailchimp_sts->errorCode) {
     foreach ($stats as $stat) {
       if (isset($stat['hour'])) {
-        $rows[] = array($stat['hour'], $tags[$stat['tag_id']]['tag'], $stat['sent'], $stat['bounces'],
-          $stat['rejects'], $stat['complaints'], $stat['opens'], $stat['clicks'],
+        $rows[] = array($stat['hour'], $tags[$stat['tag_id']]['tag'], 
+          $stat['sent'], $stat['bounces'], $stat['rejects'], 
+          $stat['complaints'], $stat['opens'], $stat['clicks'],
         );        
       }
     }
@@ -135,8 +145,23 @@ function mailchimp_sts_send_stats($form, &$form_state) {
     '#title' => t('Tags'),
     '#description' => t('Filter statisitcs by this tag.'),
     '#options' => $options,
-    '#default value' => isset($form_state['values']['tag']) ? $form_state['values']['tag'] : 0,
+    '#default value' => $tag,
   );
+  
+  $since_options = array('' => t('-- All --'));
+  $month = date('n');
+  for ($x = 0; $x < 12; $x++) {
+    $formatted_date = date('Y-m-d', mktime(0,0,0,$month - $x,1));
+  	$since_options[$formatted_date] = $formatted_date;
+  }  
+  $form['since'] = array(
+    '#type' => 'select',
+    '#title' => t('Since'),
+    '#description' => t('Return statistics since the selected month.'),
+    '#options' => $since_options,
+    '#default_value' => $since,
+  );
+  
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Filter'),
@@ -150,7 +175,7 @@ function mailchimp_sts_send_stats($form, &$form_state) {
     '#theme' => 'table',
     '#header' => $headers,
     '#rows' => $rows,
-    '#empty' => t('No comments available.'),
+    '#empty' => t('No statistics available.'),
   );
 
   return $form;
