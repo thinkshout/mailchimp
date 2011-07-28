@@ -141,12 +141,20 @@ function mailchimp_update_user($list, $email, $merge_vars, $message = TRUE, $mca
 
 /**
  * Unsubscribe a user from the given list.
+ *
+ * @param object $list 
+ * @param string $email 
+ * @param bool $message 
+ * @param object $mcapi 
+ * @param book $delete 
+ *   Indicates whether an email should be deleted or just unsubscribed.
+ * @return bool
  */
-function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NULL) {
+function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NULL, $delete = FALSE) {
   $success = FALSE;
   if ($mcapi || $mcapi = mailchimp_get_api_object()) {
     if (mailchimp_is_subscribed($list->mc_list_id, $email)) {
-      $success = $mcapi->listUnsubscribe($list->mc_list_id, $email, FALSE, FALSE, FALSE);
+      $success = $mcapi->listUnsubscribe($list->mc_list_id, $email, $delete, FALSE, FALSE);
       if ($message && $success) {
         drupal_set_message(t('You have unsubscribed from %list.', array('%list' => $list->label)));
       }
