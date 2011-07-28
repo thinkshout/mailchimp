@@ -315,7 +315,6 @@ function mailchimp_lists_freeform_subscribe_page() {
  * @return $form
  */
 function mailchimp_lists_user_subscribe_form($form, &$form_state, $lists, $account) {
-  $form['#id'] = $lists[0]->id;
   $form['account'] = array('#type' => 'value', '#value' => $account);
   $form['mailchimp_lists'] = array('#tree' => TRUE);
 
