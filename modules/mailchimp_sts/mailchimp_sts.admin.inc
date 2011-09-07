@@ -30,10 +30,9 @@ function mailchimp_sts_admin_page() {
         '!reports' => l(t(' MailChimp STS quotas, statistics, and reports'), 'admin/reports/mailchimp_sts'),
         '!STS' => l(t('MailChimp STS API'), 'http://apidocs.mailchimp.com/sts/1.0/')
       ));
-    $form = drupal_render(drupal_get_form('mailchimp_sts_admin_settings', $emails));
+    $form = drupal_get_form('mailchimp_sts_admin_settings', $emails);
 
-    return $message . $form;
-
+    return $message . drupal_render($form);
   }
   else {
     drupal_set_message(
@@ -46,7 +45,6 @@ function mailchimp_sts_admin_page() {
       'http://kb.mailchimp.com/article/how-does-mailchimp-integrate-with-amazon-ses'
     )));
   }
-
 }
 
 /**
