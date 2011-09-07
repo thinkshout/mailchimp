@@ -530,6 +530,36 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
 }
 
 /**
+ * Return an array of available user tokens.
+ */
+function mailchimp_lists_get_merge_tokens() {
+  $out = array('' => t('-- Select --'));
+	
+	// invoke hook to get all merge tokens
+	$tokens = module_invoke_all('mailchimp_lists_merge_tokens');
+  foreach ($tokens as $key => $token) {
+    $out[$key] = t('!field', array('!field' => $token['name']));
+  }
+
+  return $out;
+}
+
+/**
+ * Implement hook_mailchimp_lists_merge_tokens().
+ *
+ * @return array
+ */
+function mailchimp_lists_mailchimp_lists_merge_tokens() {
+	$tokens = array();
+  // grab user tokens
+  $token_info = token_info();
+  if (!empty($token_info['tokens']['user'])) {
+		$tokens = $token_info['tokens']['user'];
+  }
+	return $tokens;
+}
+
+/**
  * Get the relevant merge vars for the given user for the given list
  */
 function mailchimp_lists_load_user_mergevars($account, $list) {
@@ -541,7 +571,7 @@ function mailchimp_lists_load_user_mergevars($account, $list) {
     $mergevars = array_flip($mergevars);
 
     // match with token values
-    $values = token_generate('user', $mergevars, array('user' => $account));
+    $values = module_invoke_all('mailchimp_lists_merge_values', $mergevars, $account);
 
     // always add email
     $values += array(
@@ -550,6 +580,17 @@ function mailchimp_lists_load_user_mergevars($account, $list) {
   }
 
   return $values;
+}
+
+/**
+ * Implements hook_mailchimp_lists_merge_values().
+ *
+ * @param array $mergevars 
+ * @param object $account 
+ * @return array
+ */
+function mailchimp_lists_mailchimp_lists_merge_values($mergevars, $account) {
+	return token_generate('user', $mergevars, array('user' => $account));
 }
 
 /**

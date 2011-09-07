@@ -402,23 +402,6 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
 }
 
 /**
- * Return an array of available user tokens.
- */
-function mailchimp_lists_get_merge_tokens() {
-  $out = array('' => t('-- Select --'));
-
-  // grab user tokens
-  $token_info = token_info();
-  if (!empty($token_info['tokens']['user'])) {
-    foreach ($token_info['tokens']['user'] as $key => $token) {
-      $out[$key] = t('!field', array('!field' => $token['name']));
-    }
-  }
-
-  return $out;
-}
-
-/**
  * Submit function for the delete button on the menu item editing form.
  */
 function mailchimp_lists_list_delete_submit($form, &$form_state) {
