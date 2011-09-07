@@ -102,7 +102,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#title'          => t('Require subscribers to Double Opt-in'),
     '#description'    => t('New subscribers will be sent a link with an email
       they must follow to confirm their subscription.'),
-    '#default' => isset($list->settings['doublein']) ? $list->settings['doublein'] : FALSE,
+    '#default_value' => isset($list->settings['doublein']) ? $list->settings['doublein'] : FALSE,
     '#states' => array(
       // Hide this option for required lists
       'invisible' => array(
