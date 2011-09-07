@@ -18,14 +18,19 @@ function mailchimp_sts_update_7201() {
  * Implements hook_uninstall().
  */
 function mailchimp_sts_uninstall() {
-  // reset to default mail system
-  variable_set('mail_system', array('default-system' => 'DefaultMailSystem'));
-  watchdog('mailchimp_sts', 'MailChimp STS has been disabled.');
-  
   // delete other variables
   variable_del('mailchimp_sts_filter_format');
   variable_del('mailchimp_sts_from');
   variable_del('mailchimp_sts_status');
   variable_del('mailchimp_sts_test_address');
   variable_del('mailchimp_sts_test_body');
+}
+
+/**
+ * Implements hook_disable().
+ */
+function mailchimp_sts_disable() {
+  // reset to default mail system
+  variable_set('mail_system', array('default-system' => 'DefaultMailSystem'));
+  watchdog('mailchimp_sts', 'MailChimp STS has been disabled.');
 }
