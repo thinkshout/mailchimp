@@ -38,7 +38,7 @@ function mailchimp_sts_admin_page() {
     drupal_set_message(
       t('There was a problem accessing the MailChimp STS service: %msg',
       array('%msg' => $mailchimp_sts->errorMessage)
-    ));
+    ), 'warning');
 
     return t('Refer to the !link for properly configuring MailChimp STS.',
       array('!link' => l('MailChimp Documentation',

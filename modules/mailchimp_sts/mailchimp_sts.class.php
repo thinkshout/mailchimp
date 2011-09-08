@@ -174,9 +174,9 @@ class MailChimpSTS {
       $response = $serial;
     }
 
-    if (is_array($response) && isset($response["error"])) {
-      $this->errorMessage = $response["error"];
-      $this->errorCode = $response["code"];
+    if (is_array($response) && (isset($response["error"]) || isset($response["http_code"]))) {
+      $this->errorCode = @$response["code"] | @$response["http_code"];
+      $this->errorMessage = @$response["error"] . @$response["message"];
       return FALSE;
     }
 
