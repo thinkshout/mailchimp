@@ -399,7 +399,7 @@ function mailchimp_menu() {
     'type' => MENU_LOCAL_TASK,
     'access callback' => 'mailchimp_user_edit_access',
     'access arguments' => array(1),
-    'tab parent' => 'user/%/edit',
+    'tab_parent' => 'user/%/edit',
     'weight' => 10,
   );
   $items['mailchimp/subscribe'] = array(
