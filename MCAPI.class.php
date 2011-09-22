@@ -1,5 +1,4 @@
 <?php
-
 class MCAPI {
     var $version = "1.2";
     var $errorMessage;
@@ -1943,6 +1942,8 @@ class MCAPI {
      * Actually connect to the server and call the requested methods, parsing the result
      * You should never have to call this function manually
      */
+    
+
     function callServer($method, $params) {
 	    $dc = "us1";
 	    if (strstr($this->api_key,"-")){
@@ -1966,9 +1967,23 @@ class MCAPI {
         
         ob_start();
         if ($this->secure){
-            $sock = fsockopen("ssl://".$host, 443, $errno, $errstr, 30);
+            try {
+              $sock = @fsockopen("ssl://".$host, 443, $errno, $errstr, 30);
+              if(!$sock){
+              throw new Exception('Could not connect to Mailchimp');}
+            } catch (Exception $e) {
+              drupal_set_message($e->getMessage(), 'warning', $repeat=false);
+              watchdog('mailchimp', 'MCAPI Error: %errormsg', array('%errormsg' => $e->getMessage()), WATCHDOG_ERROR);
+            }
         } else {
-            $sock = fsockopen($host, 80, $errno, $errstr, 30);
+            try {
+              $sock = @fsockopen("ssl://".$host, 443, $errno, $errstr, 30);
+              if(!$sock){
+              throw new Exception('Could not connect to Mailchimp');}
+            } catch (Exception $e) {
+              drupal_set_message($e->getMessage(), 'warning', $repeat=false);
+              watchdog('mailchimp', 'MCAPI Error: %errormsg', array('%errormsg' => $e->getMessage()), WATCHDOG_ERROR);
+            }
         }
         if(!$sock) {
             $this->errorMessage = "Could not connect (ERR $errno: $errstr)";
