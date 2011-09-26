@@ -865,7 +865,7 @@ function mailchimp_mailchimp_merge_values($user) {
   foreach ((array)$user as $key => $value) {
     // handle profile dates
     if (is_array($value) && isset($value['month'])) {
-      $out[$key] = implode('/', $value);
+      $out[$key] = date('Y-m-d',strtotime(implode('/', $value)));
     }
     // handle time stamps
     else if (in_array($key, array('login', 'access', 'created'))) {
