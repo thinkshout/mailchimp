@@ -99,7 +99,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
             }
 
             // they are allowed, update or subscribe
-            if($is_allowed){
+            if($is_allowed  && $account->status == 1){
               $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
               $userinfo['EMAIL'] = $edit['mail'];
               $ret = _mailchimp_subscribe_user($list, $_SESSION['prev_email'], $userinfo, FALSE, $q);
