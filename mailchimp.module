@@ -68,7 +68,7 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
     }    
   }
 
-  if (in_array($op, array('insert', 'delete', 'after_update')) && $q = _mailchimp_get_api_object()) {
+  if (in_array($op, array('insert', 'delete', 'update', 'after_update')) && $q = _mailchimp_get_api_object()) {
     foreach ((array)_mailchimp_get_required_lists() as $list) {
       $action_taken = FALSE;
       switch ($op) {
@@ -77,6 +77,9 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
           db_query('DELETE FROM {mailchimp_user} WHERE uid = %d', $account->uid);
           $ret = _mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q);
           $action_taken = TRUE;
+          break;
+        case 'update';
+          $_SESSION['prev_email'] = $account->mail;
           break;
         // insert or update a user to/in a MC list
         case 'insert':
@@ -99,7 +102,8 @@ function mailchimp_user($op, &$edit, &$account, $category = NULL) {
             if($is_allowed){
               $userinfo = _mailchimp_load_user_list_mergevars($account->uid, $list->id, $q->listMergeVars($list->id));
               $userinfo['EMAIL'] = $edit['mail'];
-              $ret = _mailchimp_subscribe_user($list, $account->mail, $userinfo, FALSE, $q);
+              $ret = _mailchimp_subscribe_user($list, $_SESSION['prev_email'], $userinfo, FALSE, $q);
+              unset($_SESSION['prev_email']);
             }
             // remove from list
             else{
