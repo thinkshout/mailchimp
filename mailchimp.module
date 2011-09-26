@@ -239,7 +239,7 @@ function mailchimp_auth_newsletter_form(&$form, $list, $account, $q) {
         '#type'           => 'checkbox',
         '#title'          => ($list->label) ? t($list->label) : t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->name)),
         '#default_value'  => $default_value,
-        '#description'    => $list->description,
+        '#description'    => t($list->description),
         '#attributes'     => array('class' => 'mailchimp-newsletter-checkbox-' . $list->id)
     );
 
@@ -492,8 +492,8 @@ function mailchimp_subscribe_anon_form_all($form_state, $q) {
   foreach ($lists as $list) {
     $form['mailchimp_lists'][$list->id] = array(
       '#type' => 'fieldset',
-      '#title' => t('@name', array('@name' => $list->name)),
-      '#description' => t('!desc', array('!desc' => $list->description)),
+      '#title' => t($list->name),
+      '#description' => t($list->description),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     );
