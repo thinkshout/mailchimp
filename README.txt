@@ -1,9 +1,13 @@
 This module provides integration with the MailChimp email delivery service.
 While tools for sending email from your own server, like SimpleNews, are great,
 they lack the sophistication and ease of use of dedicated email providers like
-MailChimp. Other players in this field are Constant Contact and Campaign Monitor.
+MailChimp. Other players in the field are Constant Contact and Campaign Monitor.
 
-Features
+mailchimp.module provides provides basic configuration and API integration. 
+Specific functionality is provided by a set of submodules that depend upon 
+mailchimp.module. See their respective README's for more details.
+
+## Features
   * API integration
   * Support for an unlimited number of mailing lists
   * Having an anonymous sign up form to enroll users in a general newsletter.
@@ -18,18 +22,32 @@ Features
   * Send all your site emails through the MailChimp STS API and see all of
     those email statistics.
 
-Installation Notes
+## Installation Notes
   * You need to have a MailChimp API Key.
   * You need to have at least one list created in MailChimp to use the
     mailchimp_list module.
-  * The mailchimp_sts module requires a paid MailChimp account (as of this
-    writing) as well as an account with Amazon AWS. MailChimp STS is a wrapper
-    arround Amazon SES, so all SES requirements apply.
 
-What each module does
-  * mailchimp_module: Core integration with the MailChimp API. Required by all
-    other modules and a tool for developers.
+## Configuration
+  1. Direct your browser to http://example.com/admin/config/services/mailchimp 
+  to configure the module.
+
+  2. You will need to put in your Mailchimp API key for your Mailchimp account.
+  If you do not have a Mailchimp account, go to 
+  [http://www.mailchimp.com]([http://www.mailchimp.com) and sign up for a new 
+  account. Once you have set up your account and are logged into your account, 
+  Select "API keys and Authorized Apps" from the Account dropdown menu.
+
+  3. Click Add a Key.
+  Copy your newly create API key and go to the 
+  [Mailchimp config](http://example.com/admin/config/services/mailchimp) page in 
+  your Drupal site and paste it into the Mailchimp API Key field. 
+  Batch limit - Maximum number of users to process in a single cron run. 
+  Mailchimp suggest keeping this below 5000-10000. Use Secure Connection - 
+  Communicate with the MailChimp API over a secure connection.
+
+## Submodules
   * mailchimp_lists: Synchronize Drupal users with MailChimp lists and allow
     users to subscribe, unsubscribe, and update member information.
   * mailchimp_sts: Expose the MailChimp STS gateway as a Drupal mail interface
     and associated settings.
+  * mailchimp_campaigns: Create newsletters with Drupal content. Coming soon.
