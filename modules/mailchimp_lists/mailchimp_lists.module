@@ -534,9 +534,9 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
  */
 function mailchimp_lists_get_merge_tokens() {
   $out = array('' => t('-- Select --'));
-	
-	// invoke hook to get all merge tokens
-	$tokens = module_invoke_all('mailchimp_lists_merge_tokens');
+
+    // invoke hook to get all merge tokens
+    $tokens = module_invoke_all('mailchimp_lists_merge_tokens');
   foreach ($tokens as $key => $token) {
     $out[$key] = t('!field', array('!field' => $token['name']));
   }
@@ -550,13 +550,13 @@ function mailchimp_lists_get_merge_tokens() {
  * @return array
  */
 function mailchimp_lists_mailchimp_lists_merge_tokens() {
-	$tokens = array();
+    $tokens = array();
   // grab user tokens
   $token_info = token_info();
   if (!empty($token_info['tokens']['user'])) {
-		$tokens = $token_info['tokens']['user'];
+        $tokens = $token_info['tokens']['user'];
   }
-	return $tokens;
+    return $tokens;
 }
 
 /**
@@ -590,7 +590,7 @@ function mailchimp_lists_load_user_mergevars($account, $list) {
  * @return array
  */
 function mailchimp_lists_mailchimp_lists_merge_values($mergevars, $account) {
-	return token_generate('user', $mergevars, array('user' => $account));
+    return token_generate('user', $mergevars, array('user' => $account));
 }
 
 /**
@@ -760,7 +760,7 @@ function mailchimp_lists_queue_existing($list) {
      ->propertyCondition('status', 1);
   $result = $query->execute();
   $users = user_load_multiple(array_keys($result['user']));
-  
+
   // if the user belongs in the list, add to queue
   // @todo Use the batch system to avoid timeouts for lots of users.
   $count = 0;
@@ -771,6 +771,6 @@ function mailchimp_lists_queue_existing($list) {
       $queue->createItem(array('uid' => $user->uid, 'list_id' => $list->id));
     }
   }
-  
+
   return $count;
 }

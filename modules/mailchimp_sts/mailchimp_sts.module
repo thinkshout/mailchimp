@@ -106,7 +106,7 @@ function mailchimp_sts_mail($key, &$message, $params) {
 function mailchimp_sts_send_stats($form, &$form_state) {
   $mailchimp_sts = mailchimp_sts_get_api_object();
   $rows = array();
-  
+
   // get the since date to filter reports by
   $since = NULL;
   if (isset($form_state['values']['since'])) {
@@ -117,7 +117,7 @@ function mailchimp_sts_send_stats($form, &$form_state) {
   else {
     $since = date('Y-m-d', mktime(0, 0, 0, date('n'), 1));
   }
-  
+
   // get the tag to filter reports by
   $tag = isset($form_state['values']['tag']) ? $form_state['values']['tag'] : 1;
 
@@ -147,12 +147,12 @@ function mailchimp_sts_send_stats($form, &$form_state) {
     '#options' => $options,
     '#default value' => $tag,
   );
-  
+
   $since_options = array('' => t('-- All --'));
   $month = date('n');
   for ($x = 0; $x < 12; $x++) {
     $formatted_date = date('Y-m-d', mktime(0,0,0,$month - $x,1));
-  	$since_options[$formatted_date] = $formatted_date;
+    $since_options[$formatted_date] = $formatted_date;
   }  
   $form['since'] = array(
     '#type' => 'select',
@@ -161,7 +161,7 @@ function mailchimp_sts_send_stats($form, &$form_state) {
     '#options' => $since_options,
     '#default_value' => $since,
   );
-  
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Filter'),
@@ -238,7 +238,7 @@ function mailchimp_sts_get_api_object() {
   if (empty($api_key)) {
     return FALSE;
   }
-  
+
   $api = new MailChimpSTS($api_key, variable_get('mailchimp_use_secure', TRUE));
 
   // set the timeout to something reasonsable to avoid taking down the Drupal site

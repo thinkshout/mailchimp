@@ -32,7 +32,7 @@ function mailchimp_uninstall() {
 function mailchimp_update_7201() {
   // create cache_mailchimp_user table
   db_create_table('cache_mailchimp_user', drupal_get_schema_unprocessed('mailchimp', 'cache_mailchimp_user'));
-  
+
   // delete old unused variables
   variable_del('mailchimp_user_settings_title');
   variable_del('mailchimp_subscription_failure_message');

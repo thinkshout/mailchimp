@@ -81,7 +81,7 @@ function mailchimp_lists_install() {
     $register = variable_get('mailchimp_user_register', FALSE);
     $user = variable_get('mailchimp_user_edit', FALSE);
     $intgroups = variable_get('mailchimp_interest_groups_user_forms', FALSE);
-    
+
     foreach($old_lists as $id => $old_list) {
       $list = new stdClass();
       $list->mc_list_id = $id;
