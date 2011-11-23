@@ -304,6 +304,13 @@ function mailchimp_cache_clear_user($list_id, $email) {
 }
 
 /**
+ * Implements hook_flush_caches().
+ */
+function mailchimp_flush_caches() {
+  return array('cache_mailchimp_user');
+}
+
+/**
  * Access callback for mailchimp_process_webhook().
  *
  * @param string $key
