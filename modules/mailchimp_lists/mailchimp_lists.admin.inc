@@ -379,7 +379,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
   $list->description = $form_state['values']['description'];
   $list->list_type = $form_state['values']['list_type'];
   $list->settings = array(
-    'roles' => $form_state['values']['roles'],
+    'roles' => array_filter($form_state['values']['roles']),
     'mergefields' => isset($form_state['values']['mergefields']) ?
       $form_state['values']['mergefields'] : NULL,
     'doublein' => $form_state['values']['doublein'],

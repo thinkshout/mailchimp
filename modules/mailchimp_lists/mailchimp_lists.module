@@ -662,7 +662,7 @@ function mailchimp_lists_block_view($delta = '') {
   $lists = mailchimp_lists_load_multiple(array($delta));
   $list = reset($lists);
   foreach ($user->roles as $rid => $role) {
-    if (isset($list->settings['roles'][$rid])) {
+    if (isset($list->settings['roles'][$rid]) && $list->settings['roles'][$rid]) {
       $block['subject'] = t('Subscribe to @title', array('@title' => $list->label));
       $block['content'] = drupal_get_form('mailchimp_lists_user_subscribe_form_' . $list->id, array($list), $user);
       break;
