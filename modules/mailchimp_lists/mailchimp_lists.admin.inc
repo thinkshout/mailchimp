@@ -57,6 +57,20 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#required' => TRUE
   );
 
+  // Machine-readable list name.
+  $status = isset($list->status) && $list->id && (($list->status & ENTITY_IN_CODE) || ($list->status & ENTITY_FIXED));
+  $form['name'] = array(
+    '#type' => 'machine_name',
+    '#default_value' => isset($list->name) ? $list->name : '',
+    '#maxlength' => 32,
+    '#disabled' => $status,
+    '#machine_name' => array(
+      'exists' => 'mailchimp_lists_load_multiple_by_name',
+      'source' => array('label'),
+    ),
+    '#description' => t('A unique machine-readable name for this list. It must only contain lowercase letters, numbers, and underscores.'),
+  );
+
   $form['description'] = array(
     '#title' => 'Description',
     '#type'           => 'textarea',
@@ -376,6 +390,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
   }
 
   $list->label = $form_state['values']['label'];
+  $list->name = $form_state['values']['name'];
   $list->description = $form_state['values']['description'];
   $list->list_type = $form_state['values']['list_type'];
   $list->settings = array(
