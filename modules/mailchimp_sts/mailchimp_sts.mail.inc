@@ -62,11 +62,14 @@ class MailChimpSTSMailSystem implements MailSystemInterface {
       'html' => $html,
       'text' => drupal_html_to_text($message['body']),
       'subject' => $message['subject'],
-      //'from_name' => ,
+      'from_name' => variable_get('mailchimp_sts_from_name', ''),
       'from_email' => $from,
       'to_email' => $to,
-      //'to_name' => ,
-      //'autogen_html' =>
+      'to_name' => isset($message['to_name']) ? $message['to_name'] : array(),
+      'cc_email' => isset($message['cc_email']) ? $message['cc_email'] : array(),
+      'cc_name' => isset($message['cc_name']) ? $message['cc_name'] : array(),
+      'bcc_email' => isset($message['bcc_email']) ? $message['bcc_email'] : array(),
+      'bcc_name' => isset($message['bcc_name']) ? $message['bcc_name'] : array(),
     );
 
     // Handle custom headers
@@ -134,7 +137,7 @@ class TestingMailChimpSTSMailSystem extends MailChimpSTSMailSystem implements Ma
 }
 
 /**
- * Helperl to generate an array of recipients.
+ * Helper to generate an array of recipients.
  *
  * @param mixed $to
  *

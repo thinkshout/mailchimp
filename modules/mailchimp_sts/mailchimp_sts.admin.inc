@@ -97,6 +97,12 @@ function mailchimp_sts_admin_settings($form, &$form_state, $verified_emails = ar
     '#value' => t('Add email'),
     '#submit' => array('mailchimp_sts_admin_new_address_submit'),
   );
+  $form['email_options']['mailchimp_sts_from_name'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Email from name'),
+    '#default_value' => variable_get('mailchimp_sts_from_name', ''),
+    '#description'   => t('Optionally enter a from name to be used.'),
+  );
 
   $formats = filter_formats();
   $options = array('' => t('-- Select --'));
