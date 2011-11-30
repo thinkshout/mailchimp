@@ -535,8 +535,9 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
 function mailchimp_lists_get_merge_tokens() {
   $out = array('' => t('-- Select --'));
 
-    // invoke hook to get all merge tokens
-    $tokens = module_invoke_all('mailchimp_lists_merge_tokens');
+  // invoke hook to get all merge tokens
+  $tokens = module_invoke_all('mailchimp_lists_merge_tokens');
+
   foreach ($tokens as $key => $token) {
     $out[$key] = t('!field', array('!field' => $token['name']));
   }
@@ -550,13 +551,26 @@ function mailchimp_lists_get_merge_tokens() {
  * @return array
  */
 function mailchimp_lists_mailchimp_lists_merge_tokens() {
-    $tokens = array();
-  // grab user tokens
+  $tokens = array();
+
+  $tokens = array();
+  // Grab user tokens. Support nested tokens of one level.
   $token_info = token_info();
   if (!empty($token_info['tokens']['user'])) {
-        $tokens = $token_info['tokens']['user'];
+    $tokens = $token_info['tokens']['user'];
+    foreach ($tokens as $key => $info) {
+
+      if (isset($info['type']) && isset($token_info['tokens'][$info['type']])) {
+        foreach ($token_info['tokens'][$info['type']] as $key2 => $info2) {
+          // Add in nested tokens.
+          $info2['name'] = $info['name'] . ' - ' . $info2['name'];
+          $tokens[$key . ':' . $key2] = $info2;
+        }
+      }
+    }
   }
-    return $tokens;
+  dpm($tokens);
+  return $tokens;
 }
 
 /**
