@@ -681,7 +681,7 @@ function mailchimp_lists_block_view($delta = '') {
 function mailchimp_lists_insert_drupal_form_tag($mergevar) {
   // Insert common FormAPI properties
   $input = array(
-      '#title' => $mergevar['name'],
+      '#title' => t('@mergevar', array('@mergevar' => $mergevar['name'])),
       '#weight' => $mergevar['order'],
       '#required' => $mergevar['req'],
       '#default_value' => $mergevar['default']
