@@ -569,7 +569,6 @@ function mailchimp_lists_mailchimp_lists_merge_tokens() {
       }
     }
   }
-  dpm($tokens);
   return $tokens;
 }
 
