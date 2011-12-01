@@ -86,6 +86,7 @@ function mailchimp_lists_schema() {
       ),
     ),
     'primary key' => array('id'),
+    'unique key' => array('name')
   );
 
   return $schema;
@@ -153,10 +154,10 @@ function mailchimp_lists_uninstall() {
 function mailchimp_lists_update_7200() {
   // machine name field
   db_add_field('mailchimp_lists', 'name', array(
-    'description' => 'The machine-readable name of this mailchimp_list type.',
+    'description' => 'The machine-readable name of this mailchimp_list.',
     'type' => 'varchar',
     'length' => 32,
-    'not null' => TRUE,
+    'not null' => FALSE,
   ));
 
   // status field
@@ -178,5 +179,36 @@ function mailchimp_lists_update_7200() {
     'not null' => FALSE,
   ));
 
-  return t('Machine name, status, and module columns added to mailchimp_lists to make them exportable.');
+  // set the machine name for existing lists
+  $lists = mailchimp_lists_load_multiple();
+  foreach($lists as $list) {
+    $list->name = strtolower(str_replace(' ', '_', $list->label));
+    mailchimp_lists_save($list);
+  }
+
+  // now set the name field to be required
+  db_change_field('mailchimp_lists', 'name', 'name',  array(
+    'description' => 'The machine-readable name of this mailchimp_list.',
+    'type' => 'varchar',
+    'length' => 32,
+    'not null' => TRUE,
+  ));
+}
+
+/**
+ * Redo buggy version of update 7200 and add a unique key for the machine name field.
+ */
+function mailchimp_lists_update_7201() {
+  // the bunk 7200 update was run, so delete field and re-run
+  if (db_field_exists('mailchimp_lists', 'name') &&
+      (!db_field_exists('mailchimp_lists', 'module') && !db_field_exists('mailchimp_lists', 'status'))) {
+    // drop the name field in case it was created in the original bunk 7200 update
+    db_drop_field('mailchimp_lists', 'name');
+
+    // re-run the correct version of 7200.
+    mailchimp_lists_update_7200();
+  }
+
+  // always add the unique key in this step
+  db_add_unique_key('mailchimp_lists', 'name', array('name'));
 }
