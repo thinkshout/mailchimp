@@ -14,7 +14,7 @@ function mailchimp_lists_overview_page() {
       l(t('Edit'), 'admin/config/services/mailchimp/lists/' . $list->id  . '/edit'),
       l(t('Delete'), 'admin/config/services/mailchimp/lists/' . $list->id  . '/delete')
     );
-    if ($list->list_type === MAILCHIMP_LISTTYPE_REQUIRED && $list->settings['cron']) {
+    if ($list->list_type === MAILCHIMP_LISTTYPE_REQUIRED && isset($list->settings['cron']) && $list->settings['cron'] ) {
       $actions[] = l(t('Queue exsiting'), 'mailchimp/lists/' . $list->id . '/queue_existing');         
     }    
     $rows[] = array(
@@ -409,7 +409,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
   if ($ret = mailchimp_lists_save($list)) {
     drupal_set_message(t('List @name has been saved.',
       array('@name' => $list->label)));
-    drupal_goto('admin/config/services/mailchimp/lists');
+    $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
   }
   else {
     drupal_set_message(t('There has been an error saving your list.'), 'error');
@@ -449,7 +449,7 @@ function mailchimp_lists_delete_list_form_submit($form, &$form_state) {
   $list = $form_state['list'];
   mailchimp_lists_delete_multiple(array($list->id));
   drupal_set_message(t('%name has been deleted.', array('%name' => $list->label)));
-  drupal_goto('admin/config/services/mailchimp/lists');
+  $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
 }
 
 /**
@@ -480,5 +480,5 @@ function mailchimp_lists_queue_existing_form_submit($form, &$form_state) {
   $list = $form_state['list'];
   $count = mailchimp_lists_queue_existing($list);
   drupal_set_message(t('@count users have been queued for update in %list.', array('@count' => $count, '%list' => $list->label)));
-  drupal_goto('admin/config/services/mailchimp/lists');  
+  $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
 }
