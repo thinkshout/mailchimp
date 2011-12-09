@@ -440,7 +440,8 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
           if (isset($memberinfo['merges']['GROUPINGS'])) {
             foreach($memberinfo['merges']['GROUPINGS'] as $membergroup) {
               if ($membergroup['id'] == $group['id']) {
-                $default_merge_values = explode(",", str_replace(', ', ',', $membergroup['groups']));
+                $default_merge_values = preg_split('#(?<!\\\)\,#',str_replace(', ', ',', $membergroup['groups']));
+                $default_merge_values = str_replace('\\,', ', ', $default_merge_values);
                 break;
               }
             }
@@ -509,6 +510,7 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
       if (!empty($form_list['interest_groups'])) {
         $groupings = array();
         foreach($form_list['interest_groups'] as $key => $group) {
+          $group = preg_replace('/,/', '\,', $group);
           $groups = is_array($group) ? implode(',', array_filter($group)) : $group;
           $groupings[] = array('id' => $key, 'groups' => $groups);
         }
