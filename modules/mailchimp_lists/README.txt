@@ -21,7 +21,8 @@ You will now see a "Lists and Users" tab. http://example.com/admin/config/servic
 ## Usage
 
 Adding a list - click "Add a List". List settings vary depending on the type of 
-list being created.
+list being created. Lists are now exportable and have a machine name, so play
+nice with features or your own codified configurations.
 
 ### Required lists
 
