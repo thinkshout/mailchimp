@@ -136,7 +136,7 @@ function mailchimp_lists_install() {
   variable_del('mailchimp_interest_groups_user_forms');
   variable_del('mailchimp_lists');
   variable_del('mailchimp_user_edit');
-  variable_del('mailchimp_user_register');  
+  variable_del('mailchimp_user_register');
 }
 
 /**
@@ -152,7 +152,13 @@ function mailchimp_lists_uninstall() {
  * Add name, status, and module fields to make lists exportable.
  */
 function mailchimp_lists_update_7200() {
-  // machine name field
+  // The update was previously broken. To fix the broken state, we need to
+  // remove the left-over field first.
+  if (db_field_exists('mailchimp_lists', 'name')) {
+    db_drop_field('mailchimp_lists', 'name');
+  }
+
+  // Add the machine name field.
   db_add_field('mailchimp_lists', 'name', array(
     'description' => 'The machine-readable name of this mailchimp_list.',
     'type' => 'varchar',
@@ -160,33 +166,44 @@ function mailchimp_lists_update_7200() {
     'not null' => FALSE,
   ));
 
-  // status field
-  db_add_field('mailchimp_lists', 'status', array(
-    'type' => 'int',
-    'not null' => TRUE,
-    // Set the default to ENTITY_CUSTOM without using the constant as it is
-    // not safe to use it at this point.
-    'default' => 0x01,
-    'size' => 'tiny',
-    'description' => 'The exportable status of the entity.',
-  ));
-
-  // module field
-  db_add_field('mailchimp_lists', 'module', array(
-    'description' => 'The name of the providing module if the entity has been defined in code.',
-    'type' => 'varchar',
-    'length' => 255,
-    'not null' => FALSE,
-  ));
-
-  // set the machine name for existing lists
-  $lists = mailchimp_lists_load_multiple();
-  foreach($lists as $list) {
-    $list->name = strtolower(str_replace(' ', '_', $list->label));
-    mailchimp_lists_save($list);
+  // Add the exportable status field.
+  if (!db_field_exists('mailchimp_lists', 'status')) {
+    db_add_field('mailchimp_lists', 'status', array(
+      'type' => 'int',
+      'not null' => TRUE,
+      // Set the default to ENTITY_CUSTOM without using the constant as it is
+      // not safe to use it at this point.
+      'default' => 0x01,
+      'size' => 'tiny',
+      'description' => 'The exportable status of the entity.',
+    ));
   }
 
-  // now set the name field to be required
+  // Add the exportable module field.
+  if (!db_field_exists('mailchimp_lists', 'module')) {
+    db_add_field('mailchimp_lists', 'module', array(
+      'description' => 'The name of the providing module if the entity has been defined in code.',
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => FALSE,
+    ));
+  }
+
+  // Generate a machine name for existing lists.
+  $lists = db_select('mailchimp_lists', 'm')
+    ->fields('m')
+    ->execute()
+    ->fetchAll();
+
+  foreach ($lists as $list) {
+    $list->name = strtolower(str_replace(' ', '_', $list->label));
+    db_update('mailchimp_lists')
+      ->fields(array('name' => substr($list->name, 0, 32)))
+      ->condition('id', $list->id)
+      ->execute();
+  }
+
+  // Now set the name field to be required.
   db_change_field('mailchimp_lists', 'name', 'name',  array(
     'description' => 'The machine-readable name of this mailchimp_list.',
     'type' => 'varchar',
@@ -196,19 +213,8 @@ function mailchimp_lists_update_7200() {
 }
 
 /**
- * Redo buggy version of update 7200 and add a unique key for the machine name field.
+ * Add a unique key for the machine name field.
  */
 function mailchimp_lists_update_7201() {
-  // the bunk 7200 update was run, so delete field and re-run
-  if (db_field_exists('mailchimp_lists', 'name') &&
-      (!db_field_exists('mailchimp_lists', 'module') && !db_field_exists('mailchimp_lists', 'status'))) {
-    // drop the name field in case it was created in the original bunk 7200 update
-    db_drop_field('mailchimp_lists', 'name');
-
-    // re-run the correct version of 7200.
-    mailchimp_lists_update_7200();
-  }
-
-  // always add the unique key in this step
   db_add_unique_key('mailchimp_lists', 'name', array('name'));
 }
