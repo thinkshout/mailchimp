@@ -32,6 +32,16 @@ function mailchimp_lists_overview_page() {
   return theme('table', $table);
 }
 
+function mailchimp_lists_refresh_page() {
+  cache_clear_all('mailchimp_lists', 'cache');
+
+  // return render array.
+  return array(
+    '#markup' => t('!link have been refreshed.',
+      array('!link' => l('MailChimp lists', 'admin/config/services/mailchimp/lists')))
+  );
+}
+
 /**
  * Return a form for adding/editing a mailchimp list.
  *

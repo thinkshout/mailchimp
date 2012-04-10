@@ -36,6 +36,14 @@ function mailchimp_lists_menu() {
     'file' => 'mailchimp_lists.admin.inc',
     'type' => MENU_LOCAL_ACTION,
   );
+  $items['admin/config/services/mailchimp/lists/refresh'] = array(
+    'title' => 'Refresh lists from MailChimp',
+    'description' => 'Refresh lists from MailChimp.',
+    'page callback' => 'mailchimp_lists_refresh_page',
+    'access arguments' => array('administer mailchimp'),
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'mailchimp_lists.admin.inc',
+  );
   $items['admin/config/services/mailchimp/lists/%mailchimp_lists/edit'] = array(
     'title' => 'Edit a list',
     'description' => 'Edit a new MailChimp list.',
