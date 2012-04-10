@@ -282,25 +282,27 @@ function mailchimp_lists_user_sync($account, $new_email = '') {
     $mcapi = mailchimp_get_api_object();
     foreach ($lists as $list) {
       $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
-      // queue up for cron processing
-      if ($list->settings['cron']) {
-        $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
-        $queue->createQueue();
-        $queue->createItem(array('uid' => $account->uid, 'list_id' => $list->id));
-      }
-      // process immediately
-      else {
-        // grab merge values
-        $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
-        // set the EMAIL merge var if an email address is being updated
-        if (!empty($new_email)) {
-          $mergevars['EMAIL'] = $new_email;
+      if($account->status) {
+        // queue up for cron processing
+        if ($list->settings['cron']) {
+          $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+          $queue->createQueue();
+          $queue->createItem(array('uid' => $account->uid, 'list_id' => $list->id));
         }
-        if ($is_subscribed) {
-          mailchimp_update_user($list, $account->mail, $mergevars, FALSE, $mcapi);
-        }
+        // process immediately
         else {
-          mailchimp_subscribe_user($list, $account->mail, $mergevars, FALSE, $mcapi);
+          // grab merge values
+          $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
+          // set the EMAIL merge var if an email address is being updated
+          if (!empty($new_email)) {
+            $mergevars['EMAIL'] = $new_email;
+          }
+          if ($is_subscribed) {
+            mailchimp_update_user($list, $account->mail, $mergevars, FALSE, $mcapi);
+          }
+          else {
+            mailchimp_subscribe_user($list, $account->mail, $mergevars, FALSE, $mcapi);
+          }
         }
       }
     }
