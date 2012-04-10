@@ -32,6 +32,11 @@ function mailchimp_lists_overview_page() {
   return theme('table', $table);
 }
 
+/**
+ * @file
+ * mailchimp_lists refresh page.
+ */
+
 function mailchimp_lists_refresh_page() {
   cache_clear_all('mailchimp_lists', 'cache');
 
