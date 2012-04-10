@@ -9,6 +9,16 @@
  */
 function mailchimp_sts_admin_page() {
   $mailchimp_sts = mailchimp_sts_get_api_object();
+  
+  // display error if there is no api key.
+  if (!$mailchimp_sts) {
+    // return render array.
+    return array(
+      '#markup' => t('A !link must be set to use MailChimp STS.', 
+        array('!link' => l('MailChimp API key', 'admin/config/services/mailchimp')))
+    );
+  }
+  
   $response = $mailchimp_sts->list_verified_email_addresses();
   if (!$mailchimp_sts->errorCode) {
     $emails = array();
