@@ -8,11 +8,11 @@
 function mailchimp_lists_overview_page() {
   $lists = mailchimp_lists_load_multiple();
   $rows = array();
-  foreach($lists as $list) {
+  foreach ($lists as $list) {
     $mc_list = mailchimp_get_list($list->mc_list_id);
     $actions = array(
-      l(t('Edit'), 'admin/config/services/mailchimp/lists/' . $list->id  . '/edit'),
-      l(t('Delete'), 'admin/config/services/mailchimp/lists/' . $list->id  . '/delete')
+      l(t('Edit'), 'admin/config/services/mailchimp/lists/' . $list->id . '/edit'),
+      l(t('Delete'), 'admin/config/services/mailchimp/lists/' . $list->id . '/delete')
     );
     if ($list->list_type === MAILCHIMP_LISTTYPE_REQUIRED && isset($list->settings['cron']) && $list->settings['cron'] ) {
       $actions[] = l(t('Queue exsiting'), 'mailchimp/lists/' . $list->id . '/queue_existing');         

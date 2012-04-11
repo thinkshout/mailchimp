@@ -160,10 +160,13 @@ function mailchimp_lists_cron() {
       }
       $count ++;
     }
-
+    
+    $mcapi = mailchimp_get_api_object();
+    
+    // Remove if necessary
     $rem_count = 0;
     $ret = array();
-    $mcapi = mailchimp_get_api_object();
+   
     foreach ($batches_rem as $listid => $batch) {
       if (count($batch)) {
         $ret = $mcapi->listBatchUnsubscribe($listid, $batch, FALSE, TRUE);
@@ -172,13 +175,16 @@ function mailchimp_lists_cron() {
             watchdog('mailchimp', 'MCAPI Error: %errmsg', array('%errmsg' => $error['message']), WATCHDOG_ERROR);
           }
         }
+        else {
+          $rem_count++;
+        }
       }
-      $rem_count++;
     }
 
     watchdog('mailchimp', 'Removed !rem_count records in MailChimp',
       array('!update_count' => $rem_count), WATCHDOG_NOTICE);
     
+    // Add if necessary
     foreach ($batches_add as $listid => $batch) {
       if (count($batch)) {
         $ret = $mcapi->listBatchSubscribe($listid, $batch, FALSE, TRUE);
@@ -218,7 +224,7 @@ function mailchimp_lists_form_user_register_form_alter(&$form, &$form_state, $fo
       '#title' => t('Newsletters'),
       '#tree' => TRUE
     );
-    foreach($lists as $list) {
+    foreach ($lists as $list) {
       mailchimp_lists_auth_newsletter_form($form['mailchimp_lists'], $list, $account);
     }
   }
@@ -245,7 +251,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
         // include interest groups
         if (!empty($form_list['interest_groups'])) {
           $groupings = array();
-          foreach($form_list['interest_groups'] as $key => $group) {
+          foreach ($form_list['interest_groups'] as $key => $group) {
             $groups = is_array($group) ? implode(',', array_filter($group)) : $group;
             $groupings[] = array('id' => $key, 'groups' => $groups);
           }
@@ -313,9 +319,9 @@ function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles) {
     
     $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
     
-    if($is_subscribed) {
-      foreach($removed_roles as $role_id => $role) {
-        if(array_key_exists($role_id, $list->settings['roles'])) {
+    if ($is_subscribed) {
+      foreach ($removed_roles as $role_id => $role) {
+        if (array_key_exists($role_id, $list->settings['roles'])) {
           // queue up for cron processing
           if ($list->settings['cron']) {
             $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
@@ -341,7 +347,7 @@ function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles) {
     $mcapi = mailchimp_get_api_object();
     foreach ($lists as $list) {
       $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
-      if($account->status) {
+      if ($account->status) {
         // queue up for cron processing
         if ($list->settings['cron']) {
           $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
@@ -392,7 +398,7 @@ function mailchimp_lists_user_subscribe_page($account) {
   $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_OPTIONAL, array('show_account_form' => 1));
   
   if (count($lists) == 0) {
-    return(t('There are no available newsletter subscriptions.'));
+    return (t('There are no available newsletter subscriptions.'));
   }
 
   return drupal_get_form('mailchimp_lists_user_subscribe_form', $lists, $account);
@@ -404,7 +410,7 @@ function mailchimp_lists_freeform_subscribe_page() {
   $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_FREEFORM);
 
   if (count($lists) == 0) {
-    return(t('There are no available newsletter subscriptions.'));
+    return (t('There are no available newsletter subscriptions.'));
   }
 
   return drupal_get_form('mailchimp_lists_user_subscribe_form', $lists, $user);
@@ -456,8 +462,8 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
   if ($list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) {
     $form[$wrapper_key]['title'] = array(
       '#type' => 'item',
-      '#title' => t($list->label),
-      '#description' => t($list->description),
+      '#title' => check_plain(t($list->label)),
+      '#description' => check_plain(t($list->description)),
     );
   }
 
@@ -507,7 +513,7 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
         )
       );
 
-      foreach($mc_list['intgroups'] as $group) {
+      foreach ($mc_list['intgroups'] as $group) {
         // ignore hidden fields
         // @todo: consider merging to hidden values
         if ($group['form_field'] == 'hidden') {
@@ -520,9 +526,9 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
         if ($account->uid) {
           $memberinfo = mailchimp_get_memberinfo($list->mc_list_id, $account->mail);
           if (isset($memberinfo['merges']['GROUPINGS'])) {
-            foreach($memberinfo['merges']['GROUPINGS'] as $membergroup) {
+            foreach ($memberinfo['merges']['GROUPINGS'] as $membergroup) {
               if ($membergroup['id'] == $group['id']) {
-                $default_merge_values = preg_split('#(?<!\\\)\,#',str_replace(', ', ',', $membergroup['groups']));
+                $default_merge_values = preg_split('#(?<!\\\)\,#', str_replace(', ', ',', $membergroup['groups']));
                 $default_merge_values = str_replace('\\,', ', ', $default_merge_values);
                 break;
               }
@@ -587,11 +593,11 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
     if ($is_subscribed && !$selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
       $ret = mailchimp_unsubscribe_user($list, $account->mail, TRUE, $mcapi);
     }
-    else if (($selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) || $list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) {
+    elseif (($selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) || $list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) {
       // include interest groups
       if (!empty($form_list['interest_groups'])) {
         $groupings = array();
-        foreach($form_list['interest_groups'] as $key => $group) {
+        foreach ($form_list['interest_groups'] as $key => $group) {
           $group = preg_replace('/,/', '\,', $group);
           $groups = is_array($group) ? implode(',', array_filter($group)) : $group;
           $groupings[] = array('id' => $key, 'groups' => $groups);
@@ -706,11 +712,11 @@ function mailchimp_lists_get_available_lists($account = NULL, $list_type = MAILC
 
   $lists = mailchimp_lists_load_multiple(array(), array('list_type' => $list_type));
   $user_lists = array();
-  foreach($lists as $list) {
+  foreach ($lists as $list) {
     foreach ($account->roles as $rid => $role) {
       if (isset($list->settings['roles'][$rid]) && $list->settings['roles'][$rid]) {
         if (!empty($conditions)) {
-          foreach($conditions as $key => $condition) {
+          foreach ($conditions as $key => $condition) {
             if (isset($list->settings[$key]) && $list->settings[$key] == $condition) {
               $user_lists[] = $list;
             }
