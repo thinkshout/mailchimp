@@ -138,8 +138,10 @@ function mailchimp_lists_freeform_subscribe_page_access() {
 function mailchimp_lists_cron() {
   $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
   $queue->createQueue();
+  
   if ($queue->numberOfItems() > 0 ) {
-    $batches = array();
+    $batches_add = array();
+    $batches_rem = array();
     $count = 0;
     $batch_limit = variable_get('mailchimp_batch_limit', 100);
     while ($count < $batch_limit) {
@@ -147,17 +149,37 @@ function mailchimp_lists_cron() {
         $account = user_load($item->data['uid']);
         $list = mailchimp_lists_load($item->data['list_id']);
         $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
-        $batches[$list->mc_list_id][] = $mergevars;
-
+        if ($item->data['op'] == 'add') {
+          $batches_add[$list->mc_list_id][] = $mergevars;
+        }
+        else {
+          $batches_rem[$list->mc_list_id][] = $account->mail;
+        }
+        
         $queue->deleteItem($item);
       }
       $count ++;
     }
 
-    $add_count = $update_count = 0;
+    $rem_count = 0;
     $ret = array();
     $mcapi = mailchimp_get_api_object();
-    foreach ($batches as $listid => $batch) {
+    foreach ($batches_rem as $listid => $batch) {
+      if (count($batch)) {
+        $ret = $mcapi->listBatchUnsubscribe($listid, $batch, FALSE, TRUE);
+        if ($ret['error_count'] > 0) {
+          foreach ((array) $ret['errors'] as $error) {
+            watchdog('mailchimp', 'MCAPI Error: %errmsg', array('%errmsg' => $error['message']), WATCHDOG_ERROR);
+          }
+        }
+      }
+      $rem_count++;
+    }
+
+    watchdog('mailchimp', 'Removed !rem_count records in MailChimp',
+      array('!update_count' => $rem_count), WATCHDOG_NOTICE);
+    
+    foreach ($batches_add as $listid => $batch) {
       if (count($batch)) {
         $ret = $mcapi->listBatchSubscribe($listid, $batch, FALSE, TRUE);
         if ($ret['error_count'] > 0) {
@@ -279,15 +301,16 @@ function mailchimp_lists_user_update(&$edit, $account, $category) {
  * @param string $new_email
  */
 function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles) {
+  // Remove subscriptions if necessary
   $query = new EntityFieldQuery();
   
   $entities = $query->entityCondition('entity_type', 'mailchimp_list');
-  
   $results = $query->execute();
+  
   foreach ($results['mailchimp_list'] as $list_id => $result) {
     $list_array = entity_load('mailchimp_list', array($result->id));
     $list = $list_array[$list_id];
-    //dpm($list);
+    
     $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
     
     if($is_subscribed) {
@@ -295,8 +318,15 @@ function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles) {
         if(array_key_exists($role_id, $list->settings['roles'])) {
           // queue up for cron processing
           if ($list->settings['cron']) {
-            //Foo
+            $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+            $queue->createQueue();
+            $queue->createItem(array(
+              'uid' => $account->uid,
+              'list_id' => $list->id,
+              'op' => 'rem',
+            ));
           }
+          // process immediately
           else {
             mailchimp_unsubscribe_user($list, $account->mail, FALSE, NULL, TRUE);
           }
@@ -305,6 +335,7 @@ function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles) {
     }
   }
   
+  // Add subscriptions if necessary
   $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_REQUIRED);
   if (!empty($lists)) {
     $mcapi = mailchimp_get_api_object();
@@ -315,7 +346,11 @@ function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles) {
         if ($list->settings['cron']) {
           $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
           $queue->createQueue();
-          $queue->createItem(array('uid' => $account->uid, 'list_id' => $list->id));
+          $queue->createItem(array(
+            'uid' => $account->uid, 
+            'list_id' => $list->id,
+            'op' => 'add',
+          ));
         }
         // process immediately
         else {
@@ -691,41 +726,6 @@ function mailchimp_lists_get_available_lists($account = NULL, $list_type = MAILC
 
   return $user_lists;
 }
-
-/**
- * Return all lists that a given user is subscribed to.
- *
- * @param string $account
- * @param string $list_type list type constant
- * @param array $conditions list settings to filter the results by.
- * @return array lists
- */
-function mailchimp_lists_get_subscribed_lists($account = NULL, $list_type = MAILCHIMP_LISTTYPE_OPTIONAL, $conditions = array()) {
-  if (empty($account)) {
-    global $user;
-    $account = $user;
-  }
-
-  $lists = mailchimp_lists_load_multiple(array(), array('list_type' => $list_type));
-  $user_lists = array();
-  foreach($lists as $list) {
-    if(mailchimp_is_subscribed($list->mc_list_id, $account->mail)) {
-      if (!empty($conditions)) {
-        foreach($conditions as $key => $condition) {
-          if (isset($list->settings[$key]) && $list->settings[$key] == $condition) {
-            $user_lists[] = $list;
-          }
-        }
-      }
-      else {
-        $user_lists[] = $list;
-      }
-    }
-  }
-
-  return $user_lists;
-}
-
 
 /**
  * Implements hook_block_info.
