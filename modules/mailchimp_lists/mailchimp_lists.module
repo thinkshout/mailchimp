@@ -267,7 +267,9 @@ function mailchimp_lists_user_delete($account) {
  * Implements hook_user_update().
  */
 function mailchimp_lists_user_update(&$edit, $account, $category) {
-  mailchimp_lists_user_sync($account, isset($edit['mail']) ? $edit['mail'] : '');
+  $removed_roles = array_diff_key($edit['original']->roles, $edit['roles']);
+  
+  mailchimp_lists_user_sync($account, isset($edit['mail']) ? $edit['mail'] : '', $removed_roles);
 }
 
 /**
@@ -276,7 +278,33 @@ function mailchimp_lists_user_update(&$edit, $account, $category) {
  * @param string $account
  * @param string $new_email
  */
-function mailchimp_lists_user_sync($account, $new_email = '') {
+function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles) {
+  $query = new EntityFieldQuery();
+  
+  $entities = $query->entityCondition('entity_type', 'mailchimp_list');
+  
+  $results = $query->execute();
+  foreach ($results['mailchimp_list'] as $list_id => $result) {
+    $list_array = entity_load('mailchimp_list', array($result->id));
+    $list = $list_array[$list_id];
+    //dpm($list);
+    $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
+    
+    if($is_subscribed) {
+      foreach($removed_roles as $role_id => $role) {
+        if(array_key_exists($role_id, $list->settings['roles'])) {
+          // queue up for cron processing
+          if ($list->settings['cron']) {
+            //Foo
+          }
+          else {
+            mailchimp_unsubscribe_user($list, $account->mail, FALSE, NULL, TRUE);
+          }
+        }
+      }
+    }
+  }
+  
   $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_REQUIRED);
   if (!empty($lists)) {
     $mcapi = mailchimp_get_api_object();
@@ -307,6 +335,15 @@ function mailchimp_lists_user_sync($account, $new_email = '') {
       }
     }
   }
+//  // if no lists are available, check to see if the user is subscribed to any of them
+//  // if so, then unsubscribe them
+//  else {
+//    $lists = mailchimp_lists_get_subscribed_lists($account, MAILCHIMP_LISTTYPE_REQUIRED);
+//    
+//    foreach($lists as $list) {
+//       mailchimp_unsubscribe_user($list, $account->mail, FALSE, NULL, TRUE);
+//    }
+//  }
 }
 
 /**
@@ -318,9 +355,9 @@ function mailchimp_lists_user_sync($account, $new_email = '') {
 function mailchimp_lists_user_subscribe_page($account) {
   // get all available non-required lists
   $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_OPTIONAL, array('show_account_form' => 1));
-
+  
   if (count($lists) == 0) {
-    return(t('There are no available newsletters subscriptions.'));
+    return(t('There are no available newsletter subscriptions.'));
   }
 
   return drupal_get_form('mailchimp_lists_user_subscribe_form', $lists, $account);
@@ -332,7 +369,7 @@ function mailchimp_lists_freeform_subscribe_page() {
   $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_FREEFORM);
 
   if (count($lists) == 0) {
-    return(t('There are no available newsletters subscriptions.'));
+    return(t('There are no available newsletter subscriptions.'));
   }
 
   return drupal_get_form('mailchimp_lists_user_subscribe_form', $lists, $user);
@@ -648,6 +685,40 @@ function mailchimp_lists_get_available_lists($account = NULL, $list_type = MAILC
           $user_lists[] = $list;
         }
         break;
+      }
+    }
+  }
+
+  return $user_lists;
+}
+
+/**
+ * Return all lists that a given user is subscribed to.
+ *
+ * @param string $account
+ * @param string $list_type list type constant
+ * @param array $conditions list settings to filter the results by.
+ * @return array lists
+ */
+function mailchimp_lists_get_subscribed_lists($account = NULL, $list_type = MAILCHIMP_LISTTYPE_OPTIONAL, $conditions = array()) {
+  if (empty($account)) {
+    global $user;
+    $account = $user;
+  }
+
+  $lists = mailchimp_lists_load_multiple(array(), array('list_type' => $list_type));
+  $user_lists = array();
+  foreach($lists as $list) {
+    if(mailchimp_is_subscribed($list->mc_list_id, $account->mail)) {
+      if (!empty($conditions)) {
+        foreach($conditions as $key => $condition) {
+          if (isset($list->settings[$key]) && $list->settings[$key] == $condition) {
+            $user_lists[] = $list;
+          }
+        }
+      }
+      else {
+        $user_lists[] = $list;
       }
     }
   }
