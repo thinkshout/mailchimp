@@ -182,9 +182,10 @@ function mailchimp_lists_cron() {
     }
 
     watchdog('mailchimp', 'Removed !rem_count records in MailChimp',
-      array('!update_count' => $rem_count), WATCHDOG_NOTICE);
+      array('!rem_count' => $rem_count), WATCHDOG_NOTICE);
     
     // Add if necessary
+    $add_count = $update_count = 0;
     foreach ($batches_add as $listid => $batch) {
       if (count($batch)) {
         $ret = $mcapi->listBatchSubscribe($listid, $batch, FALSE, TRUE);
@@ -306,41 +307,36 @@ function mailchimp_lists_user_update(&$edit, $account, $category) {
  * @param string $account
  * @param string $new_email
  */
-function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles) {
+function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles = array()) {
   // Remove subscriptions if necessary
-  $query = new EntityFieldQuery();
-  
-  $entities = $query->entityCondition('entity_type', 'mailchimp_list');
-  $results = $query->execute();
-  
-  foreach ($results['mailchimp_list'] as $list_id => $result) {
-    $list_array = entity_load('mailchimp_list', array($result->id));
-    $list = $list_array[$list_id];
-    
-    $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
-    
-    if ($is_subscribed) {
-      foreach ($removed_roles as $role_id => $role) {
-        if (array_key_exists($role_id, $list->settings['roles'])) {
-          // queue up for cron processing
-          if ($list->settings['cron']) {
-            $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
-            $queue->createQueue();
-            $queue->createItem(array(
-              'uid' => $account->uid,
-              'list_id' => $list->id,
-              'op' => 'rem',
-            ));
-          }
-          // process immediately
-          else {
-            mailchimp_unsubscribe_user($list, $account->mail, FALSE, NULL, TRUE);
+  if (!empty($removed_roles)) {
+    $all_lists = mailchimp_lists_load_multiple();
+    foreach ($all_lists as $list) {
+      $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
+
+      if ($is_subscribed) {
+        foreach ($removed_roles as $role_id => $role) {
+          if (array_key_exists($role_id, $list->settings['roles'])) {
+            // queue up for cron processing
+            if ($list->settings['cron']) {
+              $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+              $queue->createQueue();
+              $queue->createItem(array(
+                'uid' => $account->uid,
+                'list_id' => $list->id,
+                'op' => 'remove',
+              ));
+            }
+            // process immediately
+            else {
+              mailchimp_unsubscribe_user($list, $account->mail, FALSE, NULL, TRUE);
+            }
           }
         }
       }
     }
   }
-  
+
   // Add subscriptions if necessary
   $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_REQUIRED);
   if (!empty($lists)) {
@@ -376,15 +372,6 @@ function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles) {
       }
     }
   }
-//  // if no lists are available, check to see if the user is subscribed to any of them
-//  // if so, then unsubscribe them
-//  else {
-//    $lists = mailchimp_lists_get_subscribed_lists($account, MAILCHIMP_LISTTYPE_REQUIRED);
-//    
-//    foreach($lists as $list) {
-//       mailchimp_unsubscribe_user($list, $account->mail, FALSE, NULL, TRUE);
-//    }
-//  }
 }
 
 /**
