@@ -14,28 +14,28 @@ function mailchimp_campaigns_schema() {
       'mc_campaign_id' => array(
         'description' => 'MailChimp campaign ID.',
         'type' => 'varchar',
-				'length' => 16,
+        'length' => 16,
         'not null' => TRUE,
       ),
-			'template' => array(
+      'template' => array(
         'description' => 'Campaign body template.',
         'type' => 'blob',
         'not null' => FALSE,
         'size' => 'big',
         'serialize' => TRUE,
-			),
-	    'created' => array(
-	      'description' => 'The Unix timestamp when the campaign was created.',
-	      'type' => 'int',
-	      'not null' => TRUE,
-	      'default' => 0,
-	    ),
-	    'updated' => array(
-	      'description' => 'The Unix timestamp when the campaign was most recently saved.',
-	      'type' => 'int',
-	      'not null' => TRUE,
-	      'default' => 0,
-	    ),
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the campaign was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'updated' => array(
+        'description' => 'The Unix timestamp when the campaign was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('mc_campaign_id'),
   );

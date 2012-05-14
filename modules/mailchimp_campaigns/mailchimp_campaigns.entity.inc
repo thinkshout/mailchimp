@@ -48,19 +48,15 @@ function mailchimp_campaigns_load($cid) {
 /**
  * Loads multiple campaigns.
  */
-function mailchimp_campaigns_load_multiple($campaign_ids = array(),
-  $conditions = array(), $reset = FALSE
-) {
+function mailchimp_campaigns_load_multiple($campaign_ids = array(), $conditions = array(), $reset = FALSE) {
   if (empty($campaign_ids)) {
     $campaign_ids = FALSE;
   }
-  $campaigns = entity_load('mailchimp_campaigns', $campaign_ids, $conditions,
-    $reset
-  );
+  $campaigns = entity_load('mailchimp_campaigns', $campaign_ids, $conditions, $reset);
 
   foreach ($campaigns as $campaign) {
     $cache = $reset ? NULL : cache_get('mailchimp_campaigns_' .
-      $campaign->mc_campaign_id
+        $campaign->mc_campaign_id
     );
     // return cached lists
     if ($cache) {

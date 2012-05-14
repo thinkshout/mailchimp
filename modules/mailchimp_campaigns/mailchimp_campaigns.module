@@ -27,60 +27,68 @@ function mailchimp_campaigns_menu() {
     'file' => 'mailchimp_campaigns.admin.inc',
     'weight' => 10
   );
-	$items['admin/config/services/mailchimp/campaigns/add'] = array(
-	  'title' => 'Add a Campaign',
-	  'description' => 'Add a new MailChimp campaign.',
-	  'page callback' => 'drupal_get_form',
-	  'page arguments' => array('mailchimp_campaigns_campaign_form'),
-	  'access arguments' => array('administer mailchimp'),
-	  'file' => 'mailchimp_campaigns.admin.inc',
-	  'type' => MENU_LOCAL_ACTION,
-	);
-	$items['admin/config/services/mailchimp/campaigns/%mailchimp_campaigns/edit'] = array(
-	  'title' => 'Edit a list',
-	  'description' => 'Edit a MailChimp campaign.',
-	  'page callback' => 'drupal_get_form',
-	  'page arguments' => array('mailchimp_campaigns_campaign_form', 5),
-	  'load arguments' => array(5),
-	  'access arguments' => array('administer mailchimp'),
-	  'file' => 'mailchimp_campaigns.admin.inc',
-	  'type' => MENU_CALLBACK,
-	);
-	$items['admin/config/services/mailchimp/campaigns/%mailchimp_campaigns/delete'] = array(
-	  'title' => 'Delete list',
-	  'page callback' => 'drupal_get_form',
-	  'page arguments' => array('mailchimp_campaigns_delete_list_form', 5),
-	  'access arguments' => array('administer mailchimp'),
-	  'file' => 'mailchimp_campaigns.admin.inc',
-	);
+  $items['admin/config/services/mailchimp/campaigns/add'] = array(
+    'title' => 'Add a Campaign',
+    'description' => 'Add a new MailChimp campaign.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_campaigns_campaign_form'),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'mailchimp_campaigns.admin.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
+  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaigns/edit'] = array(
+    'title' => 'Edit a list',
+    'description' => 'Edit a MailChimp campaign.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_campaigns_campaign_form', 5),
+    'load arguments' => array(5),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'mailchimp_campaigns.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaigns/delete'] = array(
+    'title' => 'Delete list',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_campaigns_delete_list_form', 5),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'mailchimp_campaigns.admin.inc',
+  );
   return $items;
 }
 
 function mailchimp_campaigns_overview_page() {
-	$campaigns = mailchimp_campaigns_load_multiple();
+  $campaigns = mailchimp_campaigns_load_multiple();
 
   $rows = array();
-  foreach($campaigns as $campaign) {
+  foreach ($campaigns as $campaign) {
     $actions = array(
       l(t('View Archive'), $campaign->data['archive_url']),
-      l(t('Delete'), 'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id  . '/delete')
+      l(t('Delete'), 'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id . '/delete')
     );
 
     $rows[] = array(
       l($campaign->data['title'],
-				'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id . '/edit'),
+        'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id . '/edit'),
       $campaign->data['subject'],
       $campaign->data['status'],
       $campaign->data['emails_sent'],
       $campaign->data['create_time'],
-      implode(' | ', $actions));
+      implode(' | ', $actions)
+    );
   }
-  $table = array(
-    'header' => array(t('Title'), t('Subject'), t('Status'), t('Emails Sent'), t('Created'), t('Actions')),
-    'rows' => $rows
-  );
 
-  return theme('table', $table);
+  return array(
+    '#theme' => 'table',
+    '#header' => array(
+      t('Title'),
+      t('Subject'),
+      t('Status'),
+      t('Emails Sent'),
+      t('Created'),
+      t('Actions')
+    ),
+    '#rows' => $rows
+  );
 }
 
 /**
@@ -124,13 +132,13 @@ function mailchimp_campaigns_create_campaign($content, $options) {
   }
   else {
     drupal_set_message(t('Campaign %cid was successfully created.',
-			array('%cid' => $cid)));
+      array('%cid' => $cid)));
 
-		// save the campaign entity
-		$campaign = new stdClass;
+    // save the campaign entity
+    $campaign = new stdClass;
     $campaign->mc_campaign_id = $cid;
-		$campaign->template = $content;
-		$campaign->is_new = TRUE;
+    $campaign->template = $content;
+    $campaign->is_new = TRUE;
     mailchimp_campaigns_save($campaign);
   }
 }
@@ -195,14 +203,14 @@ function mailchimp_campaigns_get_templates($reset = FALSE) {
     if ($mcapi = mailchimp_get_api_object()) {
       $response = $mcapi->templates();
       if (isset($response['user']) && count($response['user']) > 0) {
-			  $templates = $response['user'];
+        $templates = $response['user'];
       }
     }
 
     cache_set('mailchimp_templates', $templates, 'cache', CACHE_TEMPORARY);
   }
 
-	return $templates;
+  return $templates;
 }
 
 /**
@@ -211,16 +219,16 @@ function mailchimp_campaigns_get_templates($reset = FALSE) {
  * @return array().
  */
 function mailchimp_campaigns_get_template($tid) {
-	$template = array();
+  $template = array();
   if ($mcapi = mailchimp_get_api_object()) {
     $response = $mcapi->templateInfo($tid);
 
     if (!empty($response)) {
-		$template = $response;
+      $template = $response;
     }
   }
 
-	return $template;
+  return $template;
 }
 
 /**
@@ -228,7 +236,10 @@ function mailchimp_campaigns_get_template($tid) {
  */
 function _mailchimp_campaigns_mcapi_error_message($mcapi, $message, $variables = array()) {
   $mcapiErrorMessage = 'MailChimp error code: %errorCode, MailChimp error message: %errorMessage.';
-  $mcapiErrorVariables = array('%errorCode' => $mcapi->errorCode, '%errorMessage' => $mcapi->errorMessage);
+  $mcapiErrorVariables = array(
+    '%errorCode' => $mcapi->errorCode,
+    '%errorMessage' => $mcapi->errorMessage
+  );
 
   $human = t($message, $variables) . ' ' . t($mcapiErrorMessage, $mcapiErrorVariables);
   drupal_set_message($human, 'error');
