@@ -8,30 +8,33 @@
  * Implements hook_form().
  */
 function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL) {
+  $form_state['campaign'] = $campaign;
 	$form['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
 		'#description' => t('An internal name to use for this campaign. By default, the campaign subject will be used.'),
     '#required' => FALSE,
+    '#default_value' => ($campaign) ? $campaign->data['title'] : ''
   );
   $form['subject'] = array(
     '#type' => 'textfield',
     '#title' => t('Subject'),
     '#required' => TRUE,
+    '#default_value' => ($campaign) ? $campaign->data['subject'] : ''
   );
 	$form['list_id'] = array(
 	  '#type' => 'select',
 	  '#title' => t('List'),
 	  '#description' => t('Select the list this campaign should be sent to.'),
 	  '#options' => _mailchimp_campaigns_options_list(mailchimp_get_lists()),
-	  '#default_value' => -1,
+	  '#default_value' => ($campaign) ? $campaign->data['list_id'] : -1,
 		'#required' => TRUE
 	);
 	$form['from_email'] = array(
 	  '#type' => 'textfield',
 	  '#title' => t('From Email'),
 	  '#description' => t('the From: email address for your campaign message.'),
-		'#default_value' => variable_get('site_mail'),
+		'#default_value' => ($campaign) ? $campaign->data['from_email'] : variable_get('site_mail'),
 	  '#size' => 40,
 	  '#maxlength' => 255,
 	);
@@ -39,7 +42,7 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
 	  '#type' => 'textfield',
 	  '#title' => t('From Name'),
 	  '#description' => t('the From: name for your campaign message (not an email address)'),
-		'#default_value' => variable_get('site_name'),
+		'#default_value' => ($campaign) ? $campaign->data['from_name'] : variable_get('site_name'),
 	  '#size' => 40,
 	  '#maxlength' => 255,
 	);
@@ -48,10 +51,10 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
 	  '#title' => t('Template'),
 	  '#description' => t('Select a user template to use. If empty, the default template will be applied.'),
 	  '#options' => _mailchimp_campaigns_options_list(mailchimp_campaigns_get_templates()),
-	  '#default_value' => -1,
+    '#default_value' => ($campaign) ? $campaign->data['template_id'] : -1,
     '#ajax' => array(
       'callback' => 'mailchimp_campaigns_template_callback',
-      'wrapper' => 'template-sections'
+      'wrapper' => 'content-sections'
     )
 	);
 
@@ -70,7 +73,8 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
    	  '#type' => 'textarea',
    	  '#title' => t('Content'),
    	  '#description' => t('The HTML content of the campaign.'),
-       '#access' => empty($form_state['values']['template_id'])
+      '#access' => empty($form_state['values']['template_id']),
+      '#default_value' => ($campaign) ? $campaign->template['html'] : ''
    	);
   }
   else {
@@ -81,7 +85,8 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
       $form['content']['html_' . $section] = array(
         '#type' => 'textarea',
         '#title' =>  drupal_ucfirst($section),
-        '#default_value' => $content
+        '#default_value' => $content,
+        '#default_value' => ($campaign) ? $campaign->template['html_' . $section] : ''
       );
     }
   }
@@ -103,7 +108,7 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
  * @return mixed
  */
 function mailchimp_campaigns_template_callback($form, $form_state) {
-  return $form['sections'];
+  return $form['content'];
 }
 
 /**
