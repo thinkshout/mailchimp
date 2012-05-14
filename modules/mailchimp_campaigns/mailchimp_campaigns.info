@@ -1,0 +1,11 @@
+name = MailChimp Campaigns
+description = Create, send and import MailChimp campaigns.
+package = MailChimp
+core = 7.x
+
+dependencies[] = mailchimp
+
+files[] = mailchimp_campaigns.install
+files[] = mailchimp_campaigns.module
+files[] = mailchimp_campaigns.admin.inc
+files[] = mailchimp_campaigns.entity.inc
