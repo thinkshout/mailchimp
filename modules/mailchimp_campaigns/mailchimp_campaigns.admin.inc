@@ -55,17 +55,18 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
     )
 	);
 
-  $form['sections'] = array(
-    '#id' => 'template-sections',
+  $form['content'] = array(
+    '#id' => 'content-sections',
  	  '#type' => 'fieldset',
- 	  '#title' => t('Template sections'),
- 	  '#description' => t('Add content for each template section.'),
+ 	  '#title' => t('Content sections'),
+ 	  '#description' => t('The HTML content or, if a template is selected, the content for each section.'),
  	  '#collapsible' => TRUE,
  	  '#collapsed' => FALSE,
+    '#tree' => TRUE
  	);
 
   if (empty($form_state['values']['template_id'])) {
-    $form['sections']['html'] = array(
+    $form['content']['html'] = array(
    	  '#type' => 'textarea',
    	  '#title' => t('Content'),
    	  '#description' => t('The HTML content of the campaign.'),
@@ -77,9 +78,9 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
     $api = mailchimp_get_api_object();
     $response = $api->templateInfo($tid);
     foreach ($response['default_content'] as $section => $content) {
-      $form['sections'][$section] = array(
+      $form['content']['html_' . $section] = array(
         '#type' => 'textarea',
-        '#title' => $section,
+        '#title' =>  drupal_ucfirst($section),
         '#default_value' => $content
       );
     }
@@ -119,21 +120,10 @@ function mailchimp_campaigns_campaign_form_submit($form, &$form_state) {
 		'list_id' => $values['list_id'],
 		'from_email' => check_plain($values['from_email']),
 		'from_name' => check_plain($values['from_name']),
+    'template_id' => $values['template_id']
 	);
 
-	$content = array();
-	if (!empty($values['template_id'])) {
-		$options['template_id'] = $values['template_id'];
-		$content['html_header'] = $values['html_header'];
-		$content['html_main'] = $values['html_main'];
-		$content['html_sidecolumn'] = $values['html_sidecolumn'];
-		$content['html_footer'] = $values['html_footer'];
-	}
-	else {
-		$content['html'] = check_markup($values['html']['value'], $values['html']['format']);
-	}
-
-	mailchimp_campaigns_create_campaign($content, $options);
+	mailchimp_campaigns_create_campaign($values['content'], $options);
 
 	cache_clear_all('mailchimp_campaigns_campaigns', 'cache');
 
