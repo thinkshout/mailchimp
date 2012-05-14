@@ -7,8 +7,7 @@
 /**
  * Implements hook_form().
  */
-function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign) {
-	dpm($campaign);
+function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL) {
 	$form['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
@@ -50,69 +49,68 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign) {
 	  '#description' => t('Select a user template to use. If empty, the default template will be applied.'),
 	  '#options' => _mailchimp_campaigns_options_list(mailchimp_campaigns_get_templates()),
 	  '#default_value' => -1,
+    '#ajax' => array(
+      'callback' => 'mailchimp_campaigns_template_callback',
+      'wrapper' => 'template-sections'
+    )
 	);
 
-	$form['html'] = array(
-	  '#type' => 'text_format',
-	  '#title' => t('Content'),
-	  '#description' => t('The HTML content of the campaign.'),
-	  '#cols' => 60,
-	  '#rows' => 5,
-		'#format' => 'plain_text',
-		'#states' => array(
-			'visible' => array(
-				':input[name="template_id"]' => array('value' => ''),
-			)
-		)
-	);
+  $form['sections'] = array(
+    '#id' => 'template-sections',
+ 	  '#type' => 'fieldset',
+ 	  '#title' => t('Template sections'),
+ 	  '#description' => t('Add content for each template section.'),
+ 	  '#collapsible' => TRUE,
+ 	  '#collapsed' => FALSE,
+ 	);
 
-	$form['sections'] = array(
-	  '#type' => 'fieldset',
-	  '#title' => t('Template sections'),
-	  '#description' => t('Add content for each template section.'),
-	  '#collapsible' => TRUE,
-	  '#collapsed' => FALSE,
-		'#states' => array(
-			'invisible' => array(
-				':input[name="template_id"]' => array('value' => ''),
-			)
-		)
-	);
-	$form['sections']['html_header'] = array(
-	  '#type' => 'text_format',
-	  '#title' => t('Header'),
-	  '#cols' => 60,
-	  '#rows' => 5,
-	);
-	$form['sections']['html_main'] = array(
-	  '#type' => 'text_format',
-	  '#title' => t('Main'),
-	  '#cols' => 60,
-	  '#rows' => 5,
-	);
-	$form['sections']['html_sidecolumn'] = array(
-	  '#type' => 'text_format',
-	  '#title' => t('Side Column'),
-	  '#cols' => 60,
-	  '#rows' => 5,
-	);
-	$form['sections']['html_footer'] = array(
-	  '#type' => 'text_format',
-	  '#title' => t('Footer'),
-	  '#cols' => 60,
-	  '#rows' => 5,
-	);
+  if (empty($form_state['values']['template_id'])) {
+    $form['sections']['html'] = array(
+   	  '#type' => 'textarea',
+   	  '#title' => t('Content'),
+   	  '#description' => t('The HTML content of the campaign.'),
+       '#access' => empty($form_state['values']['template_id'])
+   	);
+  }
+  else {
+    $tid = $form_state['values']['template_id'];
+    $api = mailchimp_get_api_object();
+    $response = $api->templateInfo($tid);
+    foreach ($response['default_content'] as $section => $content) {
+      $form['sections'][$section] = array(
+        '#type' => 'textarea',
+        '#title' => $section,
+        '#default_value' => $content
+      );
+    }
+  }
 
 	$form['save'] = array(
 	  '#type' => 'submit',
 	  '#value' => t('Save'),
 	);
 
-
-
   return $form;
 }
 
+/**
+ * AJAX callback when changing template id.
+ *
+ * @param $form
+ * @param $form_state
+ *
+ * @return mixed
+ */
+function mailchimp_campaigns_template_callback($form, $form_state) {
+  return $form['sections'];
+}
+
+/**
+ * Submit handler for mailchimp_campaigns_campaign_form().
+ *
+ * @param $form
+ * @param $form_state
+ */
 function mailchimp_campaigns_campaign_form_submit($form, &$form_state) {
 	$values = $form_state['values'];
 	$options = array(
