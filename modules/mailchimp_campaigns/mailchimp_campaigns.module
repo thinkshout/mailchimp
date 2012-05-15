@@ -7,9 +7,9 @@ module_load_include('inc', 'mailchimp_campaigns', 'mailchimp_campaigns.entity');
  */
 function mailchimp_campaigns_permission() {
   return array(
-    'send mailchimp campaign' => array(
-      'title' => t('Send MailChimp campaigns'),
-      'description' => t('Create and send MailChimp campaigns form nodes.'),
+    'administer mailchimp campaigns' => array(
+      'title' => t('Administer MailChimp campaigns'),
+      'description' => t('Create and send MailChimp campaigns.'),
     ),
   );
 }
@@ -22,7 +22,7 @@ function mailchimp_campaigns_menu() {
     'title' => 'Campaigns',
     'description' => 'Manage MailChimp Campaigns.',
     'page callback' => 'mailchimp_campaigns_overview_page',
-    'access arguments' => array('administer mailchimp'),
+    'access arguments' => array('administer mailchimp campaigns'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'mailchimp_campaigns.admin.inc',
     'weight' => 10
@@ -32,28 +32,77 @@ function mailchimp_campaigns_menu() {
     'description' => 'Add a new MailChimp campaign.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_campaigns_campaign_form'),
-    'access arguments' => array('administer mailchimp'),
+    'access arguments' => array('administer mailchimp campaigns'),
     'file' => 'mailchimp_campaigns.admin.inc',
     'type' => MENU_LOCAL_ACTION,
   );
+
+  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaigns'] = array(
+    'title callback' => 'mailchimp_campaigns_page_title',
+    'title arguments' => array(5),
+    'page callback' => 'mailchimp_campaigns_view',
+    'page arguments' => array(5),
+    'access arguments' => array('administer mailchimp campaigns'),
+  );
+  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaigns/view'] = array(
+    'title' => 'View',
+    'page callback' => 'mailchimp_campaigns_view',
+    'page arguments' => array(5),
+    'load arguments' => array(5),
+    'access arguments' => array('administer mailchimp campaigns'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaigns/edit'] = array(
-    'title' => 'Edit a list',
+    'title' => 'Edit',
     'description' => 'Edit a MailChimp campaign.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_campaigns_campaign_form', 5),
     'load arguments' => array(5),
-    'access arguments' => array('administer mailchimp'),
+    'access callback' => 'mailchimp_campaigns_edit_access',
+    'access arguments' => array(5),
     'file' => 'mailchimp_campaigns.admin.inc',
-    'type' => MENU_CALLBACK,
+    'type' => MENU_LOCAL_TASK,
   );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaigns/delete'] = array(
-    'title' => 'Delete list',
+    'title' => 'Delete',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_campaigns_delete_list_form', 5),
-    'access arguments' => array('administer mailchimp'),
+    'access callback' => 'mailchimp_campaigns_edit_access',
+    'access arguments' => array(5),
     'file' => 'mailchimp_campaigns.admin.inc',
+    'type' => MENU_LOCAL_TASK,
   );
   return $items;
+}
+
+/**
+ * Title callback: Generate a title for a registration entity.
+ *
+ * Callback for hook_menu() within system_themes_page().
+ *
+ * @param @registration
+ *   A fully loaded registration object.
+ *
+ * @return string
+ */
+function mailchimp_campaigns_page_title(MailChimpCampaign $campaign) {
+  return $campaign->label();
+}
+
+/**
+ * Access callback for editing and deleting campaigns.
+ *
+ * @param $campaign
+ *
+ * @return bool
+ */
+function mailchimp_campaigns_edit_access(MailChimpCampaign $campaign) {
+  $access = FALSE;
+  // only campaigns that haven't been sent can be changed
+  if (user_access('administer mailchimp campaigns') && $campaign->data['status'] !== 'sent') {
+    $access = TRUE;
+  }
+  return $access;
 }
 
 /**
@@ -68,12 +117,13 @@ function mailchimp_campaigns_overview_page() {
   foreach ($campaigns as $campaign) {
     $actions = array(
       l(t('View Archive'), $campaign->data['archive_url']),
+      l(t('Edit'), 'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id . '/edit'),
       l(t('Delete'), 'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id . '/delete')
     );
 
     $rows[] = array(
-      l($campaign->data['title'],
-        'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id . '/edit'),
+      l($campaign->label(),
+        'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id),
       $campaign->data['subject'],
       $campaign->data['status'],
       $campaign->data['emails_sent'],
@@ -147,7 +197,7 @@ function mailchimp_campaigns_save_campaign($content, $options, $campaign_id = NU
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
-    $message = 'MailChimp error. The campaign was not created.';
+    $message = 'MailChimp error. The campaign was not saved.';
     _mailchimp_campaigns_mcapi_error_message($mcapi, $message);
   }
   else {

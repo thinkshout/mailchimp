@@ -106,13 +106,13 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
 
   $form['actions']['preview'] = array(
     '#type' => 'submit',
-    '#value' => t('Preview'),
+    '#value' => t('Preview content'),
     '#weight' => 10,
     '#submit' => array('mailchimp_campaigns_campaign_preview'),
   );
   $form['actions']['save'] = array(
     '#type' => 'submit',
-    '#value' => t('Save'),
+    '#value' => t('Save as draft'),
   );
 
   return $form;

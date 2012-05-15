@@ -13,11 +13,21 @@ function mailchimp_campaigns_entity_info() {
     'mailchimp_campaigns' => array(
       'label' => t('MailChimp Campaigns'),
       'controller class' => 'EntityAPIController',
+      'entity class' => 'MailChimpCampaign',
       'base table' => 'mailchimp_campaigns',
       'uri callback' => 'mailchimp_campaigns_uri',
-      'fieldable' => TRUE,
+      'fieldable' => FALSE,
       'entity keys' => array(
         'id' => 'mc_campaign_id',
+      ),
+      'token type' => 'mailchimp_campaigns',
+      'module' => 'mailchimp_campaigns',
+      'label callback' => 'entity_class_label',
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full Campaign'),
+          'custom settings' => FALSE,
+        ),
       ),
     ),
   );
@@ -27,14 +37,14 @@ function mailchimp_campaigns_entity_info() {
 /**
  * Saves a campaign.
  */
-function mailchimp_campaigns_save($campaign) {
+function mailchimp_campaigns_save(MailChimpCampaign $campaign) {
   $campaign->updated = REQUEST_TIME;
   // Set the creation timestamp if not set.
   if (!isset($campaign->created) || empty($campaign->created)) {
     $campaign->created = REQUEST_TIME;
   }
 
-  return entity_get_controller('mailchimp_campaigns')->save($campaign);
+  return $campaign->save();
 }
 
 /**
@@ -100,4 +110,33 @@ function mailchimp_campaigns_delete($cid) {
  */
 function mailchimp_campaigns_delete_multiple($campaign_ids) {
   return entity_get_controller('mailchimp_campaigns')->delete($campaign_ids);
+}
+
+/**
+ * Display a campaign.
+ *
+ * @param object $campaign
+ *   A fully loaded campaign object.
+ *
+ * @return array
+ *   Renderable elements.
+ */
+function mailchimp_campaigns_view($campaign) {
+  return $campaign->view();
+}
+
+class MailChimpCampaign extends Entity{
+  public $mc_campaign_id, $template, $created, $updated;
+
+  public function __construct(array $values = array(), $entityType = 'mailchimp_campaigns') {
+     parent::__construct($values, $entityType);
+  }
+
+  public function buildContent($view_mode = 'full', $langcode = NULL) {
+    return parent::buildContent($view_mode, $langcode);
+  }
+
+  protected function defaultLabel() {
+    return $this->data['title'];
+  }
 }
