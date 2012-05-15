@@ -91,7 +91,26 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
     }
   }
 
-  $form['save'] = array(
+  // Message preview
+  if (isset($form_state['mailchimp_campaigns_campaign_preview'])) {
+    $form['preview_wrapper'] = array(
+      '#title' => t('Campaign content preview'),
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    );
+    $form['preview_wrapper']['preview'] = array(
+      '#markup' => $form_state['mailchimp_campaigns_campaign_preview'],
+    );
+  }
+
+  $form['actions']['preview'] = array(
+    '#type' => 'submit',
+    '#value' => t('Preview'),
+    '#weight' => 10,
+    '#submit' => array('mailchimp_campaigns_campaign_preview'),
+  );
+  $form['actions']['save'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
   );
@@ -109,6 +128,16 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
  */
 function mailchimp_campaigns_template_callback($form, $form_state) {
   return $form['content'];
+}
+
+function mailchimp_campaigns_campaign_preview($form, &$form_state) {
+  $text = '';
+  foreach ($form_state['values']['content'] as $content) {
+    $text .= check_markup($content, variable_get('mailchimp_campaigns_format', 'mailchimp_campaign'));
+  }
+
+  $form_state['mailchimp_campaigns_campaign_preview'] = $text;
+  $form_state['rebuild'] = TRUE;
 }
 
 /**

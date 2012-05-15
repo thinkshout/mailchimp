@@ -56,6 +56,11 @@ function mailchimp_campaigns_menu() {
   return $items;
 }
 
+/**
+ * Page callback for showing a list of MC Campaign entities.
+ *
+ * @return array
+ */
 function mailchimp_campaigns_overview_page() {
   $campaigns = mailchimp_campaigns_load_multiple();
 
@@ -121,6 +126,11 @@ function mailchimp_campaigns_create_campaign($content, $options) {
       'text_clicks' => TRUE,
     ),
   );
+
+  // run our content through our text formatter
+  foreach ($content as $key => $content_part) {
+    $content[$key] = check_markup($content_part, variable_get('mailchimp_campaigns_format', 'mailchimp_campaign'));
+  }
 
   // Create campaign on MailChimp. (Only regular campaigns are supported)
   $cid = $mcapi->campaignCreate('regular', $options, $content);
@@ -252,7 +262,7 @@ function _mailchimp_campaigns_mcapi_error_message($mcapi, $message, $variables =
 /**
  * Change the relative URLs to absolute ones in the message.
  */
-function _mailchimp_campaigns_convert_url($text) {
+function mailchimp_campaigns_convert_url($text) {
   global $base_url;
   $matches = array();
   preg_match_all('/<(a|img).*?(href|src)="(.*?)"/', $text, $matches);
@@ -268,10 +278,76 @@ function _mailchimp_campaigns_convert_url($text) {
 }
 
 /**
- * Returns campaign content of a node.
+ * Implements hook_filter_info().
  */
-function _mailchimp_campaigns_body($node) {
-  $render = node_view($node, 'mailchimp_campaigns');
-  $content = drupal_render($render);
-  return _mailchimp_campaigns_convert_url($content);
+function mailchimp_campaigns_filter_info() {
+  $filters['mailchimp_campaigns'] = array(
+    'title' => t('MailChimp Campaign filter'),
+    'description' => t('Add content and covert URLs for sending as MailChimp campaigns.'),
+    'process callback' => 'mailchimp_campaigns_filter_campaign_process',
+  );
+  return $filters;
+}
+
+/**
+ * Process callback for mailchimp_campaigns_filter_info().
+ *
+ * @param $text
+ *   The text string to be filtered.
+ * @param $filter
+ *   The filter object containing settings for the given format.
+ * @param $format
+ *   The text format object assigned to the text to be filtered.
+ * @param $langcode
+ *   The language code of the text to be filtered.
+ * @param $cache
+ *   A Boolean indicating whether the filtered text is going to be cached in
+ *   {cache_filter}.
+ * @param $cache_id
+ *   The ID of the filtered text in {cache_filter}, if $cache is TRUE.
+ *
+ * @return
+ *   The filtered text.
+ */
+function mailchimp_campaigns_filter_campaign_process($text, $filter, $format, $langcode, $cache, $cache_id) {
+  // replace node macros with entity content
+  $pattern = '/\[mailchimp_campaign\|entity_type=(\w+)\|entity_id=(\d+)\|view_mode=(\w+)\]/s';
+  $text = preg_replace_callback($pattern, 'mailchimp_campaigns_process_callback', $text);
+
+  // convert URL to absolute
+  $text = mailchimp_campaigns_convert_url($text);
+
+  return $text;
+}
+
+/**
+ * preg_replace_callback() callback for mailchimp_campaigns_filter_campaign_process().
+ *
+ * @param array $matches
+ *
+ * @return string
+ */
+function mailchimp_campaigns_process_callback($matches = array()) {
+  $content = '';
+  foreach ($matches as $key => $match) {
+    switch ($key) {
+      case 1:
+        $entity_type = $match;
+        break;
+      case 2:
+        $entity_id = $match;
+        break;
+      case 3:
+        $view_mode = $match;
+        break;
+    }
+  }
+
+  $entities = entity_load($entity_type, array($entity_id));
+  if (!empty($entities)) {
+    $render_array = entity_view($entity_type, $entities, $view_mode, NULL, TRUE);
+    $content =  render($render_array);
+  }
+
+  return $content;
 }
