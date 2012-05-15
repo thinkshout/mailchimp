@@ -130,6 +130,12 @@ function mailchimp_campaigns_template_callback($form, $form_state) {
   return $form['content'];
 }
 
+/**
+ * Preview callback for mailchimp_campaigns_campaign_form().
+ *
+ * @param $form
+ * @param $form_state
+ */
 function mailchimp_campaigns_campaign_preview($form, &$form_state) {
   $text = '';
   foreach ($form_state['values']['content'] as $content) {
@@ -157,7 +163,8 @@ function mailchimp_campaigns_campaign_form_submit($form, &$form_state) {
     'template_id' => $values['template_id']
   );
 
-  mailchimp_campaigns_create_campaign($values['content'], $options);
+  $campaign_id = (isset($form_state['campaign']) ? $form_state['campaign']->mc_campaign_id : NULL);
+  mailchimp_campaigns_save_campaign($values['content'], $options, $campaign_id);
 
   cache_clear_all('mailchimp_campaigns_campaigns', 'cache');
 

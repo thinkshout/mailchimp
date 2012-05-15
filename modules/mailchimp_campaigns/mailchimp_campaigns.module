@@ -116,7 +116,7 @@ function mailchimp_campaigns_theme($existing, $type, $theme, $path) {
 /**
  * Create MailChimp campaign from a node.
  */
-function mailchimp_campaigns_create_campaign($content, $options) {
+function mailchimp_campaigns_save_campaign($content, $options, $campaign_id = NULL) {
   $mcapi = mailchimp_get_api_object();
   $options += array(
     'generate_text' => TRUE,
@@ -132,8 +132,18 @@ function mailchimp_campaigns_create_campaign($content, $options) {
     $content[$key] = check_markup($content_part, variable_get('mailchimp_campaigns_format', 'mailchimp_campaign'));
   }
 
-  // Create campaign on MailChimp. (Only regular campaigns are supported)
-  $cid = $mcapi->campaignCreate('regular', $options, $content);
+  // Save campaign to MailChimp. (Only regular campaigns are supported)
+  $is_new = empty($campaign_id);
+  if ($is_new) {
+    $campaign_id = $mcapi->campaignCreate('regular', $options, $content);
+  }
+  else {
+    // updates must be done one value at a time
+    $values = $options += array('content' => $content);
+    foreach ($values as $key => $value) {
+      $mcapi->campaignUpdate($campaign_id, $key, $value);
+    }
+  }
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
@@ -141,14 +151,14 @@ function mailchimp_campaigns_create_campaign($content, $options) {
     _mailchimp_campaigns_mcapi_error_message($mcapi, $message);
   }
   else {
-    drupal_set_message(t('Campaign %cid was successfully created.',
-      array('%cid' => $cid)));
+    drupal_set_message(t('Campaign %cid was successfully saved.',
+      array('%cid' => $campaign_id)));
 
     // save the campaign entity
     $campaign = new stdClass;
-    $campaign->mc_campaign_id = $cid;
+    $campaign->mc_campaign_id = $campaign_id;
     $campaign->template = $content;
-    $campaign->is_new = TRUE;
+    $campaign->is_new = $is_new;
     mailchimp_campaigns_save($campaign);
   }
 }
