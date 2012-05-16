@@ -112,7 +112,7 @@ function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
 function mailchimp_campaign_edit_access(MailChimpCampaign $campaign) {
   $access = FALSE;
   // only campaigns that haven't been sent can be changed
-  if (user_access('administer mailchimp campaigns') && $campaign->data['status'] !== 'sent') {
+  if (user_access('administer mailchimp campaigns') && $campaign->mc_data['status'] !== 'sent') {
     $access = TRUE;
   }
   return $access;
@@ -129,17 +129,17 @@ function mailchimp_campaign_overview_page() {
   $rows = array();
   foreach ($campaigns as $campaign) {
     $actions = array(
-      l(t('View Archive'), $campaign->data['archive_url']),
+      l(t('View Archive'), $campaign->mc_data['archive_url']),
       l(t('View'), 'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id),
     );
 
     $rows[] = array(
       l($campaign->label(),
         'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id),
-      $campaign->data['subject'],
-      $campaign->data['status'],
-      $campaign->data['emails_sent'],
-      $campaign->data['create_time'],
+      $campaign->mc_data['subject'],
+      $campaign->mc_data['status'],
+      $campaign->mc_data['emails_sent'],
+      $campaign->mc_data['create_time'],
       implode(' | ', $actions)
     );
   }
@@ -245,6 +245,8 @@ function mailchimp_campaign_send_campaign($cid) {
     drupal_set_message(t($message));
     watchdog('mailchimp_campaign', $message);
   }
+
+  return $sent;
 }
 
 /**

@@ -65,13 +65,12 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions =
   $campaigns = entity_load('mailchimp_campaign', $campaign_ids, $conditions, $reset);
 
   foreach ($campaigns as $campaign) {
-    $cache = $reset ? NULL : cache_get('mailchimp_campaign_' .
-        $campaign->mc_campaign_id
-    );
+    $cache = $reset ? NULL : cache_get('mailchimp_campaign_' . $campaign->mc_campaign_id);
+
     // return cached lists
     if ($cache) {
-      $campaign->data = $cache->data->data;
-      $campaign->content = $cache->data->content;
+      $campaign->mc_data = $cache->data->mc_data;
+      $campaign->mc_content = $cache->data->mc_content;
     }
     // Query lists from the MC API and store in cache
     else {
@@ -81,12 +80,12 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions =
         array('campaign_id' => $campaign->mc_campaign_id)
       );
       if (isset($response['total']) && $response['total'] > 0) {
-        $campaign->data = $response['data'][0];
+        $campaign->mc_data = $response['data'][0];
       }
 
       $response = $mcapi->campaignContent($campaign->mc_campaign_id);
       if (isset($response)) {
-        $campaign->content = $response;
+        $campaign->mc_content = $response;
       }
 
       cache_set('mailchimp_campaign_' . $campaign->mc_campaign_id, $campaign,
@@ -129,7 +128,7 @@ function mailchimp_campaign_view($campaign) {
  * Defines MailChimpCampaign entities
  */
 class MailChimpCampaign extends Entity {
-  public $mc_campaign_id, $template, $created, $updated;
+  public $mc_campaign_id, $template, $created, $updated, $mc_data, $mc_content;
 
   public function __construct(array $values = array(), $entityType = 'mailchimp_campaign') {
      parent::__construct($values, $entityType);
@@ -149,15 +148,22 @@ class MailChimpCampaign extends Entity {
     foreach ($fields as $key => $label) {
       $build[$key] = array(
         '#prefix' => "<div class=\"field campaign-{$key}\"><div class=\"field-label\">{$label}</div>",
-        '#markup' => $this->data[$key],
+        '#markup' => $this->mc_data[$key],
         '#suffix' => '</div>',
       );
     }
+
+    // show the content
+    $build['content'] = array(
+      '#prefix' => '<div class="field campaign-content"><div class="field-label">' . t('MailChimp HTML content') . '</div>',
+      '#markup' => $this->mc_content['html'],
+      '#suffix' => '</div>',
+    );
 
     return $build;
   }
 
   protected function defaultLabel() {
-    return $this->data['title'];
+    return $this->mc_data['title'];
   }
 }

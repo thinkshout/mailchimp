@@ -7,34 +7,34 @@
 /**
  * Implements hook_form().
  */
-function mailchimp_campaign_campaign_form($form, &$form_state, $campaign = NULL) {
+function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign $campaign = NULL) {
   $form_state['campaign'] = $campaign;
   $form['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
     '#description' => t('An internal name to use for this campaign. By default, the campaign subject will be used.'),
     '#required' => FALSE,
-    '#default_value' => ($campaign) ? $campaign->data['title'] : ''
+    '#default_value' => ($campaign) ? $campaign->mc_data['title'] : ''
   );
   $form['subject'] = array(
     '#type' => 'textfield',
     '#title' => t('Subject'),
     '#required' => TRUE,
-    '#default_value' => ($campaign) ? $campaign->data['subject'] : ''
+    '#default_value' => ($campaign) ? $campaign->mc_data['subject'] : ''
   );
   $form['list_id'] = array(
     '#type' => 'select',
     '#title' => t('List'),
     '#description' => t('Select the list this campaign should be sent to.'),
     '#options' => _mailchimp_campaign_options_list(mailchimp_get_lists()),
-    '#default_value' => ($campaign) ? $campaign->data['list_id'] : -1,
+    '#default_value' => ($campaign) ? $campaign->mc_data['list_id'] : -1,
     '#required' => TRUE
   );
   $form['from_email'] = array(
     '#type' => 'textfield',
     '#title' => t('From Email'),
     '#description' => t('the From: email address for your campaign message.'),
-    '#default_value' => ($campaign) ? $campaign->data['from_email'] : variable_get('site_mail'),
+    '#default_value' => ($campaign) ? $campaign->mc_data['from_email'] : variable_get('site_mail'),
     '#size' => 40,
     '#maxlength' => 255,
   );
@@ -42,7 +42,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, $campaign = NULL)
     '#type' => 'textfield',
     '#title' => t('From Name'),
     '#description' => t('the From: name for your campaign message (not an email address)'),
-    '#default_value' => ($campaign) ? $campaign->data['from_name'] : variable_get('site_name'),
+    '#default_value' => ($campaign) ? $campaign->mc_data['from_name'] : variable_get('site_name'),
     '#size' => 40,
     '#maxlength' => 255,
   );
@@ -51,7 +51,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, $campaign = NULL)
     '#title' => t('Template'),
     '#description' => t('Select a user template to use. If empty, the default template will be applied.'),
     '#options' => _mailchimp_campaign_options_list(mailchimp_campaign_get_templates()),
-    '#default_value' => ($campaign) ? $campaign->data['template_id'] : -1,
+    '#default_value' => ($campaign) ? $campaign->mc_data['template_id'] : -1,
     '#ajax' => array(
       'callback' => 'mailchimp_campaign_template_callback',
       'wrapper' => 'content-sections'
@@ -190,10 +190,10 @@ function _mailchimp_campaign_options_list($list) {
  * @param string $form_state
  * @param object $list
  */
-function mailchimp_campaign_delete_form($form, &$form_state, $campaign) {
+function mailchimp_campaign_delete_form($form, &$form_state, MailChimpCampaign $campaign) {
   $form_state['campaign'] = $campaign;
   return confirm_form($form,
-    t('Are you sure you want to delete %name?', array('%name' => $campaign->data['title'])),
+    t('Are you sure you want to delete %name?', array('%name' => $campaign->mc_data['title'])),
     'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id,
     t('This action will delete both the MailChimp campaign and Drupal entity and cannot be undone.'),
     t('Delete campaign')
@@ -210,7 +210,7 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
   mailchimp_campaign_delete_campaign($campaign->mc_campaign_id);
   drupal_set_message(t('Campaign %name has been deleted.',
-    array('%name' => $campaign->data['title'])));
+    array('%name' => $campaign->mc_data['title'])));
   drupal_goto('admin/config/services/mailchimp/campaigns');
 }
 
@@ -221,10 +221,10 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
  * @param string $form_state
  * @param object $list
  */
-function mailchimp_campaign_send_form($form, &$form_state, $campaign) {
+function mailchimp_campaign_send_form($form, &$form_state, MailChimpCampaign $campaign) {
   $form_state['campaign'] = $campaign;
   return confirm_form($form,
-    t('Are you sure you want to send %name?', array('%name' => $campaign->data['title'])),
+    t('Are you sure you want to send %name?', array('%name' => $campaign->mc_data['title'])),
     'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id,
     t('This action will send the campaign through MailChimp and cannot be undone.'),
     t('Send campaign')
@@ -241,6 +241,6 @@ function mailchimp_campaign_send_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
   mailchimp_campaign_send_campaign($campaign->mc_campaign_id);
   drupal_set_message(t('Campaign %name has been sent.',
-    array('%name' => $campaign->data['title'])));
+    array('%name' => $campaign->mc_data['title'])));
   drupal_goto('admin/config/services/mailchimp/campaigns');
 }
