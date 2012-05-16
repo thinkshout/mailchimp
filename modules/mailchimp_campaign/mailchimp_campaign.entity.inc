@@ -2,26 +2,26 @@
 
 /**
  * @file
- * Entity API hooks for mailchimp_campaigns module.
+ * Entity API hooks for mailchimp_campaign module.
  */
 
 /**
  * Implements hook_entity_info().
  */
-function mailchimp_campaigns_entity_info() {
+function mailchimp_campaign_entity_info() {
   $return = array(
-    'mailchimp_campaigns' => array(
-      'label' => t('MailChimp Campaigns'),
+    'mailchimp_campaign' => array(
+      'label' => t('MailChimp Campaign'),
       'controller class' => 'EntityAPIController',
       'entity class' => 'MailChimpCampaign',
       'base table' => 'mailchimp_campaigns',
-      'uri callback' => 'mailchimp_campaigns_uri',
+      'uri callback' => 'mailchimp_campaign_uri',
       'fieldable' => FALSE,
       'entity keys' => array(
         'id' => 'mc_campaign_id',
       ),
-      'token type' => 'mailchimp_campaigns',
-      'module' => 'mailchimp_campaigns',
+      'token type' => 'mailchimp_campaign',
+      'module' => 'mailchimp_campaign',
       'label callback' => 'entity_class_label',
       'view modes' => array(
         'full' => array(
@@ -37,7 +37,7 @@ function mailchimp_campaigns_entity_info() {
 /**
  * Saves a campaign.
  */
-function mailchimp_campaigns_save(MailChimpCampaign $campaign) {
+function mailchimp_campaign_save(MailChimpCampaign $campaign) {
   $campaign->updated = REQUEST_TIME;
   // Set the creation timestamp if not set.
   if (!isset($campaign->created) || empty($campaign->created)) {
@@ -50,22 +50,22 @@ function mailchimp_campaigns_save(MailChimpCampaign $campaign) {
 /**
  * Load a campaign by ID.
  */
-function mailchimp_campaigns_load($cid) {
-  $campaign = mailchimp_campaigns_load_multiple(array($cid));
+function mailchimp_campaign_load($cid) {
+  $campaign = mailchimp_campaign_load_multiple(array($cid));
   return $campaign ? $campaign[$cid] : FALSE;
 }
 
 /**
  * Loads multiple campaigns.
  */
-function mailchimp_campaigns_load_multiple($campaign_ids = array(), $conditions = array(), $reset = FALSE) {
+function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions = array(), $reset = FALSE) {
   if (empty($campaign_ids)) {
     $campaign_ids = FALSE;
   }
-  $campaigns = entity_load('mailchimp_campaigns', $campaign_ids, $conditions, $reset);
+  $campaigns = entity_load('mailchimp_campaign', $campaign_ids, $conditions, $reset);
 
   foreach ($campaigns as $campaign) {
-    $cache = $reset ? NULL : cache_get('mailchimp_campaigns_' .
+    $cache = $reset ? NULL : cache_get('mailchimp_campaign_' .
         $campaign->mc_campaign_id
     );
     // return cached lists
@@ -89,7 +89,7 @@ function mailchimp_campaigns_load_multiple($campaign_ids = array(), $conditions 
         $campaign->content = $response;
       }
 
-      cache_set('mailchimp_campaigns_' . $campaign->mc_campaign_id, $campaign,
+      cache_set('mailchimp_campaign_' . $campaign->mc_campaign_id, $campaign,
         'cache', CACHE_TEMPORARY
       );
     }
@@ -101,15 +101,15 @@ function mailchimp_campaigns_load_multiple($campaign_ids = array(), $conditions 
 /**
  * Delete a campaign.
  */
-function mailchimp_campaigns_delete($cid) {
-  return mailchimp_campaigns_delete_multiple(array($cid));
+function mailchimp_campaign_delete($cid) {
+  return mailchimp_campaign_delete_multiple(array($cid));
 }
 
 /**
  * Delete multiple campaigns.
  */
-function mailchimp_campaigns_delete_multiple($campaign_ids) {
-  return entity_get_controller('mailchimp_campaigns')->delete($campaign_ids);
+function mailchimp_campaign_delete_multiple($campaign_ids) {
+  return entity_get_controller('mailchimp_campaign')->delete($campaign_ids);
 }
 
 /**
@@ -121,14 +121,14 @@ function mailchimp_campaigns_delete_multiple($campaign_ids) {
  * @return array
  *   Renderable elements.
  */
-function mailchimp_campaigns_view($campaign) {
+function mailchimp_campaign_view($campaign) {
   return $campaign->view();
 }
 
 class MailChimpCampaign extends Entity{
   public $mc_campaign_id, $template, $created, $updated;
 
-  public function __construct(array $values = array(), $entityType = 'mailchimp_campaigns') {
+  public function __construct(array $values = array(), $entityType = 'mailchimp_campaign') {
      parent::__construct($values, $entityType);
   }
 

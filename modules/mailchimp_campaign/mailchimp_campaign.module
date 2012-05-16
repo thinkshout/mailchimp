@@ -1,11 +1,11 @@
 <?php
 
-module_load_include('inc', 'mailchimp_campaigns', 'mailchimp_campaigns.entity');
+module_load_include('inc', 'mailchimp_campaign', 'mailchimp_campaign.entity');
 
 /**
  * Implements hook_permission().
  */
-function mailchimp_campaigns_permission() {
+function mailchimp_campaign_permission() {
   return array(
     'administer mailchimp campaigns' => array(
       'title' => t('Administer MailChimp campaigns'),
@@ -17,59 +17,59 @@ function mailchimp_campaigns_permission() {
 /**
  * Implements hook_menu().
  */
-function mailchimp_campaigns_menu() {
+function mailchimp_campaign_menu() {
   $items['admin/config/services/mailchimp/campaigns'] = array(
     'title' => 'Campaigns',
     'description' => 'Manage MailChimp Campaigns.',
-    'page callback' => 'mailchimp_campaigns_overview_page',
+    'page callback' => 'mailchimp_campaign_overview_page',
     'access arguments' => array('administer mailchimp campaigns'),
     'type' => MENU_LOCAL_TASK,
-    'file' => 'mailchimp_campaigns.admin.inc',
+    'file' => 'mailchimp_campaign.admin.inc',
     'weight' => 10
   );
   $items['admin/config/services/mailchimp/campaigns/add'] = array(
     'title' => 'Add a Campaign',
     'description' => 'Add a new MailChimp campaign.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_campaigns_campaign_form'),
+    'page arguments' => array('mailchimp_campaign_campaign_form'),
     'access arguments' => array('administer mailchimp campaigns'),
-    'file' => 'mailchimp_campaigns.admin.inc',
+    'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_ACTION,
   );
 
-  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaigns'] = array(
-    'title callback' => 'mailchimp_campaigns_page_title',
+  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign'] = array(
+    'title callback' => 'mailchimp_campaign_page_title',
     'title arguments' => array(5),
-    'page callback' => 'mailchimp_campaigns_view',
+    'page callback' => 'mailchimp_campaign_view',
     'page arguments' => array(5),
     'access arguments' => array('administer mailchimp campaigns'),
   );
-  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaigns/view'] = array(
+  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/view'] = array(
     'title' => 'View',
-    'page callback' => 'mailchimp_campaigns_view',
+    'page callback' => 'mailchimp_campaign_view',
     'page arguments' => array(5),
     'load arguments' => array(5),
     'access arguments' => array('administer mailchimp campaigns'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
-  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaigns/edit'] = array(
+  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/edit'] = array(
     'title' => 'Edit',
     'description' => 'Edit a MailChimp campaign.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_campaigns_campaign_form', 5),
+    'page arguments' => array('mailchimp_campaign_campaign_form', 5),
     'load arguments' => array(5),
-    'access callback' => 'mailchimp_campaigns_edit_access',
+    'access callback' => 'mailchimp_campaign_edit_access',
     'access arguments' => array(5),
-    'file' => 'mailchimp_campaigns.admin.inc',
+    'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
   );
-  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaigns/delete'] = array(
+  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/delete'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_campaigns_delete_list_form', 5),
-    'access callback' => 'mailchimp_campaigns_edit_access',
+    'page arguments' => array('mailchimp_campaign_delete_list_form', 5),
+    'access callback' => 'mailchimp_campaign_edit_access',
     'access arguments' => array(5),
-    'file' => 'mailchimp_campaigns.admin.inc',
+    'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
   );
   return $items;
@@ -85,7 +85,7 @@ function mailchimp_campaigns_menu() {
  *
  * @return string
  */
-function mailchimp_campaigns_page_title(MailChimpCampaign $campaign) {
+function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
   return $campaign->label();
 }
 
@@ -96,7 +96,7 @@ function mailchimp_campaigns_page_title(MailChimpCampaign $campaign) {
  *
  * @return bool
  */
-function mailchimp_campaigns_edit_access(MailChimpCampaign $campaign) {
+function mailchimp_campaign_edit_access(MailChimpCampaign $campaign) {
   $access = FALSE;
   // only campaigns that haven't been sent can be changed
   if (user_access('administer mailchimp campaigns') && $campaign->data['status'] !== 'sent') {
@@ -110,8 +110,8 @@ function mailchimp_campaigns_edit_access(MailChimpCampaign $campaign) {
  *
  * @return array
  */
-function mailchimp_campaigns_overview_page() {
-  $campaigns = mailchimp_campaigns_load_multiple();
+function mailchimp_campaign_overview_page() {
+  $campaigns = mailchimp_campaign_load_multiple();
 
   $rows = array();
   foreach ($campaigns as $campaign) {
@@ -149,15 +149,15 @@ function mailchimp_campaigns_overview_page() {
 /**
  * Implements hook_theme().
  */
-function mailchimp_campaigns_theme($existing, $type, $theme, $path) {
+function mailchimp_campaign_theme($existing, $type, $theme, $path) {
   return array(
-    'mailchimp_campaigns_node_campaigns_list' => array(
+    'mailchimp_campaign_node_campaigns_list' => array(
       'variables' => array('node_campaigns' => array()),
     ),
-    'mailchimp_campaigns_mclinks' => array(
+    'mailchimp_campaign_mclinks' => array(
       'variables' => array('data' => NULL),
     ),
-    'mailchimp_campaigns_actions' => array(
+    'mailchimp_campaign_actions' => array(
       'variables' => array('campaign' => NULL),
     ),
   );
@@ -166,7 +166,7 @@ function mailchimp_campaigns_theme($existing, $type, $theme, $path) {
 /**
  * Create MailChimp campaign from a node.
  */
-function mailchimp_campaigns_save_campaign($content, $options, $campaign_id = NULL) {
+function mailchimp_campaign_save_campaign($content, $options, $campaign_id = NULL) {
   $mcapi = mailchimp_get_api_object();
   $options += array(
     'generate_text' => TRUE,
@@ -179,7 +179,7 @@ function mailchimp_campaigns_save_campaign($content, $options, $campaign_id = NU
 
   // run our content through our text formatter
   foreach ($content as $key => $content_part) {
-    $content[$key] = check_markup($content_part, variable_get('mailchimp_campaigns_format', 'mailchimp_campaign'));
+    $content[$key] = check_markup($content_part, variable_get('mailchimp_campaign_format', 'mailchimp_campaign'));
   }
 
   // Save campaign to MailChimp. (Only regular campaigns are supported)
@@ -198,7 +198,7 @@ function mailchimp_campaigns_save_campaign($content, $options, $campaign_id = NU
   if ($mcapi->errorCode) {
     // Display and log error, if any.
     $message = 'MailChimp error. The campaign was not saved.';
-    _mailchimp_campaigns_mcapi_error_message($mcapi, $message);
+    _mailchimp_campaign_mcapi_error_message($mcapi, $message);
   }
   else {
     drupal_set_message(t('Campaign %cid was successfully saved.',
@@ -209,14 +209,14 @@ function mailchimp_campaigns_save_campaign($content, $options, $campaign_id = NU
     $campaign->mc_campaign_id = $campaign_id;
     $campaign->template = $content;
     $campaign->is_new = $is_new;
-    mailchimp_campaigns_save($campaign);
+    mailchimp_campaign_save($campaign);
   }
 }
 
 /**
  * Send MailChimp campaign.
  */
-function mailchimp_campaigns_send_campaign($cid) {
+function mailchimp_campaign_send_campaign($cid) {
   $mcapi = mailchimp_get_api_object();
 
   // Send campaign.
@@ -225,20 +225,20 @@ function mailchimp_campaigns_send_campaign($cid) {
   if ($mcapi->errorCode) {
     // Display and log error, if any.
     $message = 'MailChimp error. The campaign was not sent.';
-    _mailchimp_campaigns_mcapi_error_message($mcapi, $message);
+    _mailchimp_campaign_mcapi_error_message($mcapi, $message);
   }
   else {
     // Log action, and notify the user.
     $message = 'MailChimp campaign was sent.';
     drupal_set_message(t($message));
-    watchdog('mailchimp_campaigns', $message);
+    watchdog('mailchimp_campaign', $message);
   }
 }
 
 /**
  * Delete a MailChimp campaign and the local entity.
  */
-function mailchimp_campaigns_delete_campaign($cid) {
+function mailchimp_campaign_delete_campaign($cid) {
   $mcapi = mailchimp_get_api_object();
 
   // Delete campaign from MailChimp
@@ -247,12 +247,12 @@ function mailchimp_campaigns_delete_campaign($cid) {
   if ($mcapi->errorCode) {
     // Display and log error, if any.
     $message = 'MailChimp error. The campaign was not deleted.';
-    _mailchimp_campaigns_mcapi_error_message($mcapi, $message);
+    _mailchimp_campaign_mcapi_error_message($mcapi, $message);
   }
   else {
     // Delete campaign from the database
-    mailchimp_campaigns_delete($cid);
-    watchdog('mailchimp_campaigns', 'MailChimp campaign %cid was deleted.', array('%cid' => $cid));
+    mailchimp_campaign_delete($cid);
+    watchdog('mailchimp_campaign', 'MailChimp campaign %cid was deleted.', array('%cid' => $cid));
   }
 }
 
@@ -261,7 +261,7 @@ function mailchimp_campaigns_delete_campaign($cid) {
  *
  * @return array().
  */
-function mailchimp_campaigns_get_templates($reset = FALSE) {
+function mailchimp_campaign_get_templates($reset = FALSE) {
   $cache = $reset ? NULL : cache_get('mailchimp_templates');
   $templates = array();
   // return cached lists
@@ -288,7 +288,7 @@ function mailchimp_campaigns_get_templates($reset = FALSE) {
  *
  * @return array().
  */
-function mailchimp_campaigns_get_template($tid) {
+function mailchimp_campaign_get_template($tid) {
   $template = array();
   if ($mcapi = mailchimp_get_api_object()) {
     $response = $mcapi->templateInfo($tid);
@@ -304,7 +304,7 @@ function mailchimp_campaigns_get_template($tid) {
 /**
  * Set and log error messages after MailChimp API errors.
  */
-function _mailchimp_campaigns_mcapi_error_message($mcapi, $message, $variables = array()) {
+function _mailchimp_campaign_mcapi_error_message($mcapi, $message, $variables = array()) {
   $mcapiErrorMessage = 'MailChimp error code: %errorCode, MailChimp error message: %errorMessage.';
   $mcapiErrorVariables = array(
     '%errorCode' => $mcapi->errorCode,
@@ -316,13 +316,13 @@ function _mailchimp_campaigns_mcapi_error_message($mcapi, $message, $variables =
 
   $watchdog = $message . ' ' . $mcapiErrorMessage;
   $variables = $variables + $mcapiErrorVariables;
-  watchdog('mailchimp_campaigns', $watchdog, $variables, WATCHDOG_ERROR);
+  watchdog('mailchimp_campaign', $watchdog, $variables, WATCHDOG_ERROR);
 }
 
 /**
  * Change the relative URLs to absolute ones in the message.
  */
-function mailchimp_campaigns_convert_url($text) {
+function mailchimp_campaign_convert_url($text) {
   global $base_url;
   $matches = array();
   preg_match_all('/<(a|img).*?(href|src)="(.*?)"/', $text, $matches);
@@ -340,17 +340,17 @@ function mailchimp_campaigns_convert_url($text) {
 /**
  * Implements hook_filter_info().
  */
-function mailchimp_campaigns_filter_info() {
-  $filters['mailchimp_campaigns'] = array(
+function mailchimp_campaign_filter_info() {
+  $filters['mailchimp_campaign'] = array(
     'title' => t('MailChimp Campaign filter'),
     'description' => t('Add content and covert URLs for sending as MailChimp campaigns.'),
-    'process callback' => 'mailchimp_campaigns_filter_campaign_process',
+    'process callback' => 'mailchimp_campaign_filter_campaign_process',
   );
   return $filters;
 }
 
 /**
- * Process callback for mailchimp_campaigns_filter_info().
+ * Process callback for mailchimp_campaign_filter_info().
  *
  * @param $text
  *   The text string to be filtered.
@@ -369,25 +369,25 @@ function mailchimp_campaigns_filter_info() {
  * @return
  *   The filtered text.
  */
-function mailchimp_campaigns_filter_campaign_process($text, $filter, $format, $langcode, $cache, $cache_id) {
+function mailchimp_campaign_filter_campaign_process($text, $filter, $format, $langcode, $cache, $cache_id) {
   // replace node macros with entity content
   $pattern = '/\[mailchimp_campaign\|entity_type=(\w+)\|entity_id=(\d+)\|view_mode=(\w+)\]/s';
-  $text = preg_replace_callback($pattern, 'mailchimp_campaigns_process_callback', $text);
+  $text = preg_replace_callback($pattern, 'mailchimp_campaign_process_callback', $text);
 
   // convert URL to absolute
-  $text = mailchimp_campaigns_convert_url($text);
+  $text = mailchimp_campaign_convert_url($text);
 
   return $text;
 }
 
 /**
- * preg_replace_callback() callback for mailchimp_campaigns_filter_campaign_process().
+ * preg_replace_callback() callback for mailchimp_campaign_filter_campaign_process().
  *
  * @param array $matches
  *
  * @return string
  */
-function mailchimp_campaigns_process_callback($matches = array()) {
+function mailchimp_campaign_process_callback($matches = array()) {
   $content = '';
   foreach ($matches as $key => $match) {
     switch ($key) {

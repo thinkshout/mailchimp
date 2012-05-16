@@ -7,7 +7,7 @@
 /**
  * Implements hook_schema().
  */
-function mailchimp_campaigns_schema() {
+function mailchimp_campaign_schema() {
   $schema['mailchimp_campaigns'] = array(
     'description' => 'MailChimp campaigns.',
     'fields' => array(

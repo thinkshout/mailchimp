@@ -1,13 +1,13 @@
 <?php
 /**
  * @file
- * Administration pages for mailchimp_campaigns module.
+ * Administration pages for mailchimp_campaign module.
  */
 
 /**
  * Implements hook_form().
  */
-function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL) {
+function mailchimp_campaign_campaign_form($form, &$form_state, $campaign = NULL) {
   $form_state['campaign'] = $campaign;
   $form['title'] = array(
     '#type' => 'textfield',
@@ -26,7 +26,7 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
     '#type' => 'select',
     '#title' => t('List'),
     '#description' => t('Select the list this campaign should be sent to.'),
-    '#options' => _mailchimp_campaigns_options_list(mailchimp_get_lists()),
+    '#options' => _mailchimp_campaign_options_list(mailchimp_get_lists()),
     '#default_value' => ($campaign) ? $campaign->data['list_id'] : -1,
     '#required' => TRUE
   );
@@ -50,10 +50,10 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
     '#type' => 'select',
     '#title' => t('Template'),
     '#description' => t('Select a user template to use. If empty, the default template will be applied.'),
-    '#options' => _mailchimp_campaigns_options_list(mailchimp_campaigns_get_templates()),
+    '#options' => _mailchimp_campaign_options_list(mailchimp_campaign_get_templates()),
     '#default_value' => ($campaign) ? $campaign->data['template_id'] : -1,
     '#ajax' => array(
-      'callback' => 'mailchimp_campaigns_template_callback',
+      'callback' => 'mailchimp_campaign_template_callback',
       'wrapper' => 'content-sections'
     )
   );
@@ -92,7 +92,7 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
   }
 
   // Message preview
-  if (isset($form_state['mailchimp_campaigns_campaign_preview'])) {
+  if (isset($form_state['mailchimp_campaign_campaign_preview'])) {
     $form['preview_wrapper'] = array(
       '#title' => t('Campaign content preview'),
       '#type' => 'fieldset',
@@ -100,7 +100,7 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
       '#collapsed' => FALSE,
     );
     $form['preview_wrapper']['preview'] = array(
-      '#markup' => $form_state['mailchimp_campaigns_campaign_preview'],
+      '#markup' => $form_state['mailchimp_campaign_campaign_preview'],
     );
   }
 
@@ -108,7 +108,7 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
     '#type' => 'submit',
     '#value' => t('Preview content'),
     '#weight' => 10,
-    '#submit' => array('mailchimp_campaigns_campaign_preview'),
+    '#submit' => array('mailchimp_campaign_campaign_preview'),
   );
   $form['actions']['save'] = array(
     '#type' => 'submit',
@@ -126,33 +126,33 @@ function mailchimp_campaigns_campaign_form($form, &$form_state, $campaign = NULL
  *
  * @return mixed
  */
-function mailchimp_campaigns_template_callback($form, $form_state) {
+function mailchimp_campaign_template_callback($form, $form_state) {
   return $form['content'];
 }
 
 /**
- * Preview callback for mailchimp_campaigns_campaign_form().
+ * Preview callback for mailchimp_campaign_campaign_form().
  *
  * @param $form
  * @param $form_state
  */
-function mailchimp_campaigns_campaign_preview($form, &$form_state) {
+function mailchimp_campaign_campaign_preview($form, &$form_state) {
   $text = '';
   foreach ($form_state['values']['content'] as $content) {
-    $text .= check_markup($content, variable_get('mailchimp_campaigns_format', 'mailchimp_campaign'));
+    $text .= check_markup($content, variable_get('mailchimp_campaign_format', 'mailchimp_campaign'));
   }
 
-  $form_state['mailchimp_campaigns_campaign_preview'] = $text;
+  $form_state['mailchimp_campaign_campaign_preview'] = $text;
   $form_state['rebuild'] = TRUE;
 }
 
 /**
- * Submit handler for mailchimp_campaigns_campaign_form().
+ * Submit handler for mailchimp_campaign_campaign_form().
  *
  * @param $form
  * @param $form_state
  */
-function mailchimp_campaigns_campaign_form_submit($form, &$form_state) {
+function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $options = array(
     'title' => check_plain($values['title']),
@@ -164,9 +164,9 @@ function mailchimp_campaigns_campaign_form_submit($form, &$form_state) {
   );
 
   $campaign_id = (isset($form_state['campaign']) ? $form_state['campaign']->mc_campaign_id : NULL);
-  mailchimp_campaigns_save_campaign($values['content'], $options, $campaign_id);
+  mailchimp_campaign_save_campaign($values['content'], $options, $campaign_id);
 
-  cache_clear_all('mailchimp_campaigns_campaigns', 'cache');
+  cache_clear_all('mailchimp_campaign_campaigns', 'cache');
 
   $form_state['redirect'][] = 'admin/config/services/mailchimp/campaigns';
 }
@@ -174,7 +174,7 @@ function mailchimp_campaigns_campaign_form_submit($form, &$form_state) {
 /**
  * Returns an options list for a given array of items.
  */
-function _mailchimp_campaigns_options_list($list) {
+function _mailchimp_campaign_options_list($list) {
   $options = array('' => t('-- Select --'));
   foreach ($list as $item) {
     $options[$item['id']] = $item['name'];
@@ -190,7 +190,7 @@ function _mailchimp_campaigns_options_list($list) {
  * @param string $form_state
  * @param object $list
  */
-function mailchimp_campaigns_delete_list_form($form, &$form_state, $campaign) {
+function mailchimp_campaign_delete_list_form($form, &$form_state, $campaign) {
   $form_state['campaign'] = $campaign;
   return confirm_form($form,
     t('Are you sure you want to delete %name?', array('%name' => $campaign->data['title'])),
@@ -201,14 +201,14 @@ function mailchimp_campaigns_delete_list_form($form, &$form_state, $campaign) {
 }
 
 /**
- * Submit handler for mailchimp_campaigns_delete_list_form();
+ * Submit handler for mailchimp_campaign_delete_list_form();
  *
  * @param string $form
  * @param string $form_state
  */
-function mailchimp_campaigns_delete_list_form_submit($form, &$form_state) {
+function mailchimp_campaign_delete_list_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
-  mailchimp_campaigns_delete_campaign($campaign->mc_campaign_id);
+  mailchimp_campaign_delete_campaign($campaign->mc_campaign_id);
   drupal_set_message(t('Campaign %name has been deleted.',
     array('%name' => $campaign->data['title'])));
   drupal_goto('admin/config/services/mailchimp/campaigns');
