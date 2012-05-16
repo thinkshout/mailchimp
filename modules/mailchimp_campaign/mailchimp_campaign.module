@@ -51,6 +51,7 @@ function mailchimp_campaign_menu() {
     'load arguments' => array(5),
     'access arguments' => array('administer mailchimp campaigns'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0
   );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/edit'] = array(
     'title' => 'Edit',
@@ -62,6 +63,7 @@ function mailchimp_campaign_menu() {
     'access arguments' => array(5),
     'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
+    'weight' => 1
   );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/delete'] = array(
     'title' => 'Delete',
@@ -71,6 +73,7 @@ function mailchimp_campaign_menu() {
     'access arguments' => array(5),
     'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
+    'weight' => 2
   );
   return $items;
 }
