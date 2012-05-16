@@ -53,6 +53,16 @@ function mailchimp_campaign_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0
   );
+  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/send'] = array(
+    'title' => 'Send',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_campaign_send_form', 5),
+    'access callback' => 'mailchimp_campaign_edit_access',
+    'access arguments' => array(5),
+    'file' => 'mailchimp_campaign.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1
+  );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/edit'] = array(
     'title' => 'Edit',
     'description' => 'Edit a MailChimp campaign.',
@@ -63,7 +73,7 @@ function mailchimp_campaign_menu() {
     'access arguments' => array(5),
     'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
-    'weight' => 1
+    'weight' => 2
   );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/delete'] = array(
     'title' => 'Delete',
@@ -73,18 +83,17 @@ function mailchimp_campaign_menu() {
     'access arguments' => array(5),
     'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
-    'weight' => 2
+    'weight' => 3
   );
-  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/send'] = array(
-    'title' => 'Send',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_campaign_send_form', 5),
-    'access callback' => 'mailchimp_campaign_edit_access',
-    'access arguments' => array(5),
-    'file' => 'mailchimp_campaign.admin.inc',
+  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/stats'] = array(
+    'title' => 'Stats',
+    'page callback' => 'mailchimp_campaign_stats_page',
+    'page arguments' => array(5),
+    'access arguments' => array('administer mailchimp campaigns'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 2
+    'weight' => 4
   );
+
   return $items;
 }
 
@@ -424,4 +433,67 @@ function mailchimp_campaign_process_callback($matches = array()) {
   }
 
   return $content;
+}
+
+/**
+ * Page callback for a campaign's statistics.
+ *
+ * @param MailChimpCampaign $campaign
+ *
+ * @return array
+ */
+function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
+  $mcapi = mailchimp_get_api_object();
+  $response = $mcapi->campaignStats($campaign->mc_campaign_id);
+
+  if (empty($response)) {
+    return t('The campaign stats are unavailable at this time.');
+  }
+
+  // tabular summary
+  foreach ($response as $key => $stat) {
+    if (is_array($stat)) {
+      break;
+    }
+    $rows[] = array($key, drupal_ucfirst(str_replace('_', ' ', $stat)));
+  }
+
+   // time series chart data
+  $settings = array();
+  foreach ($response['timeseries'] as $series) {
+    $settings['mailchimp_campaign']['stats'][] = array(
+      'timestamp' => $series['timestamp'],
+      'emails_sent' => isset($series['emails_sent']) ? $series['emails_sent'] : 0,
+      'unique_opens' => $series['unique_opens'],
+      'recipients_click' => $series['recipients_click']
+    );
+  }
+
+  $render = array(
+    '#attached' => array(
+      'js' => array(
+        array(
+          'data' => 'https://www.google.com/jsapi',
+          'type' => 'external'
+        ),
+        drupal_get_path('module', 'mailchimp_campaign') . '/mailchimp_campaign.js',
+        array(
+          'data' => $settings,
+          'type' => 'setting'
+        )
+      )
+    ),
+    'charts' => array(
+      '#prefix' => '<h2>' . t('Hourly stats for the first 24 hours of the campaign') . '</h2>',
+      '#markup' => '<div id="mailchimp-campaign-chart"></div>'
+    ),
+    'overview' => array(
+      '#prefix' => '<h2>' . t('Other campaign metrics') . '</h2>',
+      '#theme' => 'table',
+      '#rows' => $rows,
+      '#header' => array(t('Key'), t('Value'))
+    )
+  );
+
+  return $render;
 }

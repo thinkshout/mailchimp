@@ -142,6 +142,8 @@ class MailChimpCampaign extends Entity {
       'template_id' => array('label' => t('Template'), 'value' => $this->mc_data['template_id']),
       'type' => array('label' => t('List type'), 'value' => $this->mc_data['type']),
       'status' => array('label' => t('Status'), 'value' => $this->mc_data['status']),
+      'emails_sent' => array('label' => t('Emails sent'), 'value' => $this->mc_data['emails_sent']),
+      'send_time' => array('label' => t('Send time'), 'value' => $this->mc_data['send_time']),
       'content' => array(
         'label' => t('Rendered template HTML (!archive)',
                   array('!archive' => l('View MailChimp archive', $this->mc_data['archive_url']))),
