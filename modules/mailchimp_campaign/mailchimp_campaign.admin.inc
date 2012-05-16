@@ -239,7 +239,7 @@ function mailchimp_campaign_send_form($form, &$form_state, MailChimpCampaign $ca
  */
 function mailchimp_campaign_send_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
-  mailchimp_campaign_send_campaign($campaign->mc_campaign_id);
+  mailchimp_campaign_send_campaign($campaign);
   drupal_set_message(t('Campaign %name has been sent.',
     array('%name' => $campaign->mc_data['title'])));
   drupal_goto('admin/config/services/mailchimp/campaigns');

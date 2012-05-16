@@ -237,11 +237,11 @@ function mailchimp_campaign_save_campaign($content, $options, $campaign_id = NUL
 /**
  * Send MailChimp campaign.
  */
-function mailchimp_campaign_send_campaign($cid) {
+function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
   $mcapi = mailchimp_get_api_object();
 
   // Send campaign.
-  $sent = $mcapi->campaignSendNow($cid);
+  $sent = $mcapi->campaignSendNow($campaign->mc_campaign_id);
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
@@ -250,9 +250,9 @@ function mailchimp_campaign_send_campaign($cid) {
   }
   else {
     // Log action, and notify the user.
-    $message = 'MailChimp campaign was sent.';
-    drupal_set_message(t($message));
-    watchdog('mailchimp_campaign', $message);
+    watchdog('mailchimp_campaign', 'MailChimp campaign %name has been sent.',
+      array('%name' => $campaign->label())
+    );
   }
 
   return $sent;
@@ -307,7 +307,7 @@ function mailchimp_campaign_get_templates($reset = FALSE) {
 }
 
 /**
- * Return all available user templates.
+ * Return details about a given template.
  *
  * @return array().
  */
