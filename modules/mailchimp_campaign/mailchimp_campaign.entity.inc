@@ -69,28 +69,18 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions =
 
     // return cached lists
     if ($cache) {
-      $campaign->mc_data = $cache->data->mc_data;
-      $campaign->mc_content = $cache->data->mc_content;
+      $campaign->mc_data = $cache->data;
     }
     // Query lists from the MC API and store in cache
     else {
       $mcapi = mailchimp_get_api_object();
 
-      $response = $mcapi->campaigns(
-        array('campaign_id' => $campaign->mc_campaign_id)
-      );
+      $response = $mcapi->campaigns(array('campaign_id' => $campaign->mc_campaign_id));
       if (isset($response['total']) && $response['total'] > 0) {
         $campaign->mc_data = $response['data'][0];
       }
 
-      $response = $mcapi->campaignContent($campaign->mc_campaign_id);
-      if (isset($response)) {
-        $campaign->mc_content = $response;
-      }
-
-      cache_set('mailchimp_campaign_' . $campaign->mc_campaign_id, $campaign,
-        'cache', CACHE_TEMPORARY
-      );
+      cache_set('mailchimp_campaign_' . $campaign->mc_campaign_id, $campaign->mc_data, 'cache', CACHE_TEMPORARY);
     }
   }
 
@@ -128,7 +118,7 @@ function mailchimp_campaign_view($campaign) {
  * Defines MailChimpCampaign entities
  */
 class MailChimpCampaign extends Entity {
-  public $mc_campaign_id, $template, $created, $updated, $mc_data, $mc_content;
+  public $mc_campaign_id, $template, $created, $updated, $mc_data;
 
   public function __construct(array $values = array(), $entityType = 'mailchimp_campaign') {
      parent::__construct($values, $entityType);
@@ -155,8 +145,11 @@ class MailChimpCampaign extends Entity {
 
     // show the content
     $build['content'] = array(
-      '#prefix' => '<div class="field campaign-content"><div class="field-label">' . t('MailChimp HTML content') . '</div>',
-      '#markup' => $this->mc_content['html'],
+      '#prefix' => '<div class="field campaign-content"><div class="field-label">' .
+        t('Rendered template HTML (!archive)',
+          array('!archive' => l('View MailChimp archive', $this->mc_data['archive_url']))) .
+        '</div>',
+      '#markup' => $this->template['html'],
       '#suffix' => '</div>',
     );
 
@@ -166,4 +159,5 @@ class MailChimpCampaign extends Entity {
   protected function defaultLabel() {
     return $this->mc_data['title'];
   }
+
 }
