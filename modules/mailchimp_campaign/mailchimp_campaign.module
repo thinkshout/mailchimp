@@ -130,8 +130,7 @@ function mailchimp_campaign_overview_page() {
   foreach ($campaigns as $campaign) {
     $actions = array(
       l(t('View Archive'), $campaign->data['archive_url']),
-      l(t('Edit'), 'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id . '/edit'),
-      l(t('Delete'), 'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id . '/delete')
+      l(t('View'), 'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id),
     );
 
     $rows[] = array(
