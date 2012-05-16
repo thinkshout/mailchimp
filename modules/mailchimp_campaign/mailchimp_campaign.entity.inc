@@ -82,6 +82,11 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions =
 
       cache_set('mailchimp_campaign_' . $campaign->mc_campaign_id, $campaign->mc_data, 'cache', CACHE_TEMPORARY);
     }
+
+    // lists are cachced separately, but we want to load them here.
+    if (isset($campaign->mc_data['list_id']) && $campaign->mc_data['list_id']) {
+      $campaign->list = mailchimp_get_list($campaign->mc_data['list_id']);
+    }
   }
 
   return $campaigns;
@@ -118,7 +123,7 @@ function mailchimp_campaign_view($campaign) {
  * Defines MailChimpCampaign entities
  */
 class MailChimpCampaign extends Entity {
-  public $mc_campaign_id, $template, $created, $updated, $mc_data;
+  public $mc_campaign_id, $template, $created, $updated, $mc_data, $list;
 
   public function __construct(array $values = array(), $entityType = 'mailchimp_campaign') {
      parent::__construct($values, $entityType);
@@ -127,31 +132,30 @@ class MailChimpCampaign extends Entity {
   public function buildContent($view_mode = 'full', $langcode = NULL) {
     $build = parent::buildContent($view_mode, $langcode);
     $fields = array(
-      'subject' => t('Subject'),
-      'list_id' => t('MailChimp List'),
-      'from_email' => t('From Email'),
-      'from_name' => t('From Name'),
-      'template_id' => t('Template'),
-      'type' => t('List type'),
-      'status' => t('Status'),
+      'subject' => array('label' => t('Subject'), 'value' => $this->mc_data['subject']),
+      'list' => array(
+        'label' => t('MailChimp List'),
+        'value' => l($this->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $this->list['web_id'])
+      ),
+      'from_email' => array('label' => t('From Email'), 'value' => $this->mc_data['from_email']),
+      'from_name' => array('label' => t('From Name'), 'value' => $this->mc_data['from_name']),
+      'template_id' => array('label' => t('Template'), 'value' => $this->mc_data['template_id']),
+      'type' => array('label' => t('List type'), 'value' => $this->mc_data['type']),
+      'status' => array('label' => t('Status'), 'value' => $this->mc_data['status']),
+      'content' => array(
+        'label' => t('Rendered template HTML (!archive)',
+                  array('!archive' => l('View MailChimp archive', $this->mc_data['archive_url']))),
+        'value' => $this->template['html']
+      )
     );
-    foreach ($fields as $key => $label) {
+
+    foreach ($fields as $key => $field) {
       $build[$key] = array(
-        '#prefix' => "<div class=\"field campaign-{$key}\"><div class=\"field-label\">{$label}</div>",
-        '#markup' => $this->mc_data[$key],
+        '#prefix' => "<div class=\"field campaign-{$key}\"><div class=\"field-label\">{$field['label']}</div>",
+        '#markup' => $field['value'],
         '#suffix' => '</div>',
       );
     }
-
-    // show the content
-    $build['content'] = array(
-      '#prefix' => '<div class="field campaign-content"><div class="field-label">' .
-        t('Rendered template HTML (!archive)',
-          array('!archive' => l('View MailChimp archive', $this->mc_data['archive_url']))) .
-        '</div>',
-      '#markup' => $this->template['html'],
-      '#suffix' => '</div>',
-    );
 
     return $build;
   }
