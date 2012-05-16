@@ -68,7 +68,17 @@ function mailchimp_campaign_menu() {
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/delete'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_campaign_delete_list_form', 5),
+    'page arguments' => array('mailchimp_campaign_delete_form', 5),
+    'access callback' => 'mailchimp_campaign_edit_access',
+    'access arguments' => array(5),
+    'file' => 'mailchimp_campaign.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2
+  );
+  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/send'] = array(
+    'title' => 'Send',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_campaign_send_form', 5),
     'access callback' => 'mailchimp_campaign_edit_access',
     'access arguments' => array(5),
     'file' => 'mailchimp_campaign.admin.inc',

@@ -190,11 +190,11 @@ function _mailchimp_campaign_options_list($list) {
  * @param string $form_state
  * @param object $list
  */
-function mailchimp_campaign_delete_list_form($form, &$form_state, $campaign) {
+function mailchimp_campaign_delete_form($form, &$form_state, $campaign) {
   $form_state['campaign'] = $campaign;
   return confirm_form($form,
     t('Are you sure you want to delete %name?', array('%name' => $campaign->data['title'])),
-    'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id . '/edit',
+    'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id,
     t('This action will delete both the MailChimp campaign and Drupal entity and cannot be undone.'),
     t('Delete campaign')
   );
@@ -206,10 +206,41 @@ function mailchimp_campaign_delete_list_form($form, &$form_state, $campaign) {
  * @param string $form
  * @param string $form_state
  */
-function mailchimp_campaign_delete_list_form_submit($form, &$form_state) {
+function mailchimp_campaign_delete_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
   mailchimp_campaign_delete_campaign($campaign->mc_campaign_id);
   drupal_set_message(t('Campaign %name has been deleted.',
+    array('%name' => $campaign->data['title'])));
+  drupal_goto('admin/config/services/mailchimp/campaigns');
+}
+
+/**
+ * List deletion form.
+ *
+ * @param string $form
+ * @param string $form_state
+ * @param object $list
+ */
+function mailchimp_campaign_send_form($form, &$form_state, $campaign) {
+  $form_state['campaign'] = $campaign;
+  return confirm_form($form,
+    t('Are you sure you want to send %name?', array('%name' => $campaign->data['title'])),
+    'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id,
+    t('This action will send the campaign through MailChimp and cannot be undone.'),
+    t('Send campaign')
+  );
+}
+
+/**
+ * Submit handler for mailchimp_campaign_delete_list_form();
+ *
+ * @param string $form
+ * @param string $form_state
+ */
+function mailchimp_campaign_send_form_submit($form, &$form_state) {
+  $campaign = $form_state['campaign'];
+  mailchimp_campaign_send_campaign($campaign->mc_campaign_id);
+  drupal_set_message(t('Campaign %name has been sent.',
     array('%name' => $campaign->data['title'])));
   drupal_goto('admin/config/services/mailchimp/campaigns');
 }
