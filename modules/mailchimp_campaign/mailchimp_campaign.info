@@ -3,7 +3,7 @@ description = Create, send and import MailChimp campaigns.
 package = MailChimp
 core = 7.x
 
-dependencies[] = mailchimp
+dependencies[] = mailchimp_lists
 dependencies[] = entity
 
 files[] = mailchimp_campaign.install
