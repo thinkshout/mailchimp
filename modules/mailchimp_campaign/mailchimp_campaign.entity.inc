@@ -125,7 +125,10 @@ function mailchimp_campaign_view($campaign) {
   return $campaign->view();
 }
 
-class MailChimpCampaign extends Entity{
+/**
+ * Defines MailChimpCampaign entities
+ */
+class MailChimpCampaign extends Entity {
   public $mc_campaign_id, $template, $created, $updated;
 
   public function __construct(array $values = array(), $entityType = 'mailchimp_campaign') {
@@ -133,7 +136,25 @@ class MailChimpCampaign extends Entity{
   }
 
   public function buildContent($view_mode = 'full', $langcode = NULL) {
-    return parent::buildContent($view_mode, $langcode);
+    $build = parent::buildContent($view_mode, $langcode);
+    $fields = array(
+      'subject' => t('Subject'),
+      'list_id' => t('MailChimp List'),
+      'from_email' => t('From Email'),
+      'from_name' => t('From Name'),
+      'template_id' => t('Template'),
+      'type' => t('List type'),
+      'status' => t('Status'),
+    );
+    foreach ($fields as $key => $label) {
+      $build[$key] = array(
+        '#prefix' => "<div class=\"field campaign-{$key}\"><div class=\"field-label\">{$label}</div>",
+        '#markup' => $this->data[$key],
+        '#suffix' => '</div>',
+      );
+    }
+
+    return $build;
   }
 
   protected function defaultLabel() {
