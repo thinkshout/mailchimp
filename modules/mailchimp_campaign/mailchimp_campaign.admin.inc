@@ -193,7 +193,7 @@ function _mailchimp_campaign_options_list($list) {
 function mailchimp_campaign_delete_form($form, &$form_state, MailChimpCampaign $campaign) {
   $form_state['campaign'] = $campaign;
   return confirm_form($form,
-    t('Are you sure you want to delete %name?', array('%name' => $campaign->mc_data['title'])),
+    t('Are you sure you want to delete %name?', array('%name' => $campaign->label())),
     'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id,
     t('This action will delete both the MailChimp campaign and Drupal entity and cannot be undone.'),
     t('Delete campaign')
@@ -210,7 +210,8 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
   mailchimp_campaign_delete_campaign($campaign->mc_campaign_id);
   drupal_set_message(t('Campaign %name has been deleted.',
-    array('%name' => $campaign->mc_data['title'])));
+    array('%name' => $campaign->label()))
+  );
   drupal_goto('admin/config/services/mailchimp/campaigns');
 }
 
@@ -224,7 +225,7 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
 function mailchimp_campaign_send_form($form, &$form_state, MailChimpCampaign $campaign) {
   $form_state['campaign'] = $campaign;
   return confirm_form($form,
-    t('Are you sure you want to send %name?', array('%name' => $campaign->mc_data['title'])),
+    t('Are you sure you want to send %name?', array('%name' => $campaign->label())),
     'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id,
     t('This action will send the campaign through MailChimp and cannot be undone.'),
     t('Send campaign')
@@ -241,6 +242,7 @@ function mailchimp_campaign_send_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
   mailchimp_campaign_send_campaign($campaign);
   drupal_set_message(t('Campaign %name has been sent.',
-    array('%name' => $campaign->mc_data['title'])));
+    array('%name' => $campaign->label()))
+  );
   drupal_goto('admin/config/services/mailchimp/campaigns');
 }

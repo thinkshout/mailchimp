@@ -57,8 +57,8 @@ function mailchimp_campaign_menu() {
     'title' => 'Send',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_campaign_send_form', 5),
-    'access callback' => 'mailchimp_campaign_edit_access',
-    'access arguments' => array(5),
+    'access callback' => 'mailchimp_campaign_access',
+    'access arguments' => array(5, FALSE),
     'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
     'weight' => 1
@@ -69,8 +69,8 @@ function mailchimp_campaign_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_campaign_campaign_form', 5),
     'load arguments' => array(5),
-    'access callback' => 'mailchimp_campaign_edit_access',
-    'access arguments' => array(5),
+    'access callback' => 'mailchimp_campaign_access',
+    'access arguments' => array(5, FALSE),
     'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
@@ -79,8 +79,8 @@ function mailchimp_campaign_menu() {
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_campaign_delete_form', 5),
-    'access callback' => 'mailchimp_campaign_edit_access',
-    'access arguments' => array(5),
+    'access callback' => 'mailchimp_campaign_access',
+    'access arguments' => array(5, FALSE),
     'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
     'weight' => 3
@@ -89,7 +89,8 @@ function mailchimp_campaign_menu() {
     'title' => 'Stats',
     'page callback' => 'mailchimp_campaign_stats_page',
     'page arguments' => array(5),
-    'access arguments' => array('administer mailchimp campaigns'),
+    'access callback' => 'mailchimp_campaign_access',
+    'access arguments' => array(5, TRUE),
     'type' => MENU_LOCAL_TASK,
     'weight' => 4
   );
@@ -112,16 +113,20 @@ function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
 }
 
 /**
- * Access callback for editing and deleting campaigns.
+ * Access callback for campaigns. Provides access to features based on
+ * whether or not a campaign has been sent.
  *
- * @param $campaign
+ * @param MailChimpCampaign $campaign
+ * @param bool $sent
+ *   Whether or not a campaign has been sent.
  *
  * @return bool
  */
-function mailchimp_campaign_edit_access(MailChimpCampaign $campaign) {
+function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
   $access = FALSE;
   // only campaigns that haven't been sent can be changed
-  if (user_access('administer mailchimp campaigns') && $campaign->mc_data['status'] !== 'sent') {
+  if (user_access('administer mailchimp campaigns') &&
+    ($campaign->mc_data['status'] === 'sent') === $sent) {
     $access = TRUE;
   }
   return $access;
