@@ -131,6 +131,14 @@ class MailChimpCampaign extends Entity {
 
   public function buildContent($view_mode = 'full', $langcode = NULL) {
     $build = parent::buildContent($view_mode, $langcode);
+
+    // prepare rendered content
+    $content = mailchimp_campaign_render_template($this->template);
+    $rendered = '';
+    foreach($content as $key => $section) {
+       $rendered .= "<h3>$key</h3>" . $section;
+     }
+
     $fields = array(
       'subject' => array('label' => t('Subject'), 'value' => $this->mc_data['subject']),
       'list' => array(
@@ -147,7 +155,7 @@ class MailChimpCampaign extends Entity {
       'content' => array(
         'label' => t('Rendered template HTML (!archive)',
                   array('!archive' => l('View MailChimp archive', $this->mc_data['archive_url']))),
-        'value' => $this->template['html']
+        'value' => $rendered
       )
     );
 

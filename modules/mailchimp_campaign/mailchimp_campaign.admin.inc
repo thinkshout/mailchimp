@@ -70,11 +70,12 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
 
   if (empty($form_state['values']['template_id'])) {
     $form['content']['html'] = array(
-      '#type' => 'textarea',
+      '#type' => 'text_format',
+      '#format' => ($campaign) ? $campaign->template['html']['format'] : 'mailchimp_campaign',
       '#title' => t('Content'),
       '#description' => t('The HTML content of the campaign.'),
       '#access' => empty($form_state['values']['template_id']),
-      '#default_value' => ($campaign) ? $campaign->template['html'] : ''
+      '#default_value' => ($campaign) ? $campaign->template['html']['value'] : ''
     );
   }
   else {
@@ -83,7 +84,8 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     $response = $api->templateInfo($tid);
     foreach ($response['default_content'] as $section => $content) {
       $form['content']['html_' . $section] = array(
-        '#type' => 'textarea',
+        '#type' => 'text_format',
+        '#format' => 'mailchimp_campaign',
         '#title' => drupal_ucfirst($section),
         '#default_value' => $content,
         '#default_value' => ($campaign) ? $campaign->template['html_' . $section] : ''

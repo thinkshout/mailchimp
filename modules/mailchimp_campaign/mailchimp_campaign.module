@@ -377,8 +377,21 @@ function mailchimp_campaign_filter_info() {
     'title' => t('MailChimp Campaign filter'),
     'description' => t('Add content and covert URLs for sending as MailChimp campaigns.'),
     'process callback' => 'mailchimp_campaign_filter_campaign_process',
+    'tips callback' => 'mailchimp_campaign_filter_tips',
   );
   return $filters;
+}
+
+/**
+ * Tips callback for mailchimp_campaign_filter_info().
+ *
+ * @return
+ *   Translated text to display as a tip.
+ */
+function mailchimp_campaign_filter_tips($filter, $format, $long) {
+ return t('Converts macros in the format %pattern into the appropriate rendered content and makes all paths absolute.',
+  array('%pattern' => '[mailchimp_campaign|entity_type=node|entity_id=1|view_mode=teaser]')
+ );
 }
 
 /**
@@ -519,7 +532,7 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
 function mailchimp_campaign_render_template($template) {
   $content = array();
   foreach ($template as $key => $part) {
-    $content[$key] = check_markup($part, variable_get('mailchimp_campaign_format', 'mailchimp_campaign'));
+    $content[$key] = check_markup($part['value'], $part['format']);
   }
 
   return $content;
