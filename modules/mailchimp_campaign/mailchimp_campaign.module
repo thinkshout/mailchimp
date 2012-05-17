@@ -190,9 +190,13 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Create MailChimp campaign from a node.
+ * Save a campaign in MailChimp and as a Drupal entity.
+ *
+ * @param $template
+ * @param $options
+ * @param null $campaign_id
  */
-function mailchimp_campaign_save_campaign($content, $options, $campaign_id = NULL) {
+function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NULL) {
   $mcapi = mailchimp_get_api_object();
   $options += array(
     'generate_text' => TRUE,
@@ -203,8 +207,9 @@ function mailchimp_campaign_save_campaign($content, $options, $campaign_id = NUL
     ),
   );
 
-  // run our content through our text formatter
-  foreach ($content as $key => $content_part) {
+  // convert template to content by running through formatter
+  $content = array();
+  foreach ($template as $key => $content_part) {
     $content[$key] = check_markup($content_part, variable_get('mailchimp_campaign_format', 'mailchimp_campaign'));
   }
 
@@ -233,7 +238,7 @@ function mailchimp_campaign_save_campaign($content, $options, $campaign_id = NUL
     // save the campaign entity
     $campaign = new stdClass;
     $campaign->mc_campaign_id = $campaign_id;
-    $campaign->template = $content;
+    $campaign->template = $template;
     $campaign->is_new = $is_new;
     mailchimp_campaign_save($campaign);
   }
