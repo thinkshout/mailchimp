@@ -257,7 +257,11 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     $message = 'MailChimp error. The campaign was not sent.';
     _mailchimp_campaign_mcapi_error_message($mcapi, $message);
   }
-  else {
+
+  if ($sent) {
+    // clear campaign cache
+    mailchimp_campaign_load_multiple(array($campaign->mc_campaign_id), array(), TRUE);
+
     // Log action, and notify the user.
     watchdog('mailchimp_campaign', 'MailChimp campaign %name has been sent.',
       array('%name' => $campaign->label())
