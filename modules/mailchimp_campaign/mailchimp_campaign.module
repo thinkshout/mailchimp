@@ -208,10 +208,7 @@ function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NU
   );
 
   // convert template to content by running through formatter
-  $content = array();
-  foreach ($template as $key => $content_part) {
-    $content[$key] = check_markup($content_part, variable_get('mailchimp_campaign_format', 'mailchimp_campaign'));
-  }
+  $content = mailchimp_campaign_render_template($template);
 
   // Save campaign to MailChimp. (Only regular campaigns are supported)
   $is_new = empty($campaign_id);
@@ -236,10 +233,12 @@ function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NU
       array('%cid' => $campaign_id)));
 
     // save the campaign entity
-    $campaign = new stdClass;
-    $campaign->mc_campaign_id = $campaign_id;
-    $campaign->template = $template;
-    $campaign->is_new = $is_new;
+    $campaign = entity_create('mailchimp_campaign', array(
+      'mc_campaign_id' => $campaign_id,
+      'template' => $template,
+      'is_new' => $is_new
+    ));
+
     mailchimp_campaign_save($campaign);
   }
 }
@@ -506,4 +505,22 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
   );
 
   return $render;
+}
+
+/**
+ * Convert an array of templates into rendered content.
+ *
+ * @param $template
+ *   Array keyed by the section name with a value of the template.
+ *
+ * @return array
+ *   Maintains section key with the value being the rendered content.
+ */
+function mailchimp_campaign_render_template($template) {
+  $content = array();
+  foreach ($template as $key => $part) {
+    $content[$key] = check_markup($part, variable_get('mailchimp_campaign_format', 'mailchimp_campaign'));
+  }
+
+  return $content;
 }

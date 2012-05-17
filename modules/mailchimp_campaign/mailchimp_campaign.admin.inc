@@ -138,8 +138,9 @@ function mailchimp_campaign_template_callback($form, $form_state) {
  */
 function mailchimp_campaign_campaign_preview($form, &$form_state) {
   $text = '';
-  foreach ($form_state['values']['content'] as $content) {
-    $text .= check_markup($content, variable_get('mailchimp_campaign_format', 'mailchimp_campaign'));
+  $content = mailchimp_campaign_render_template($form_state['values']['content']);
+  foreach($content as $key => $section) {
+    $text .= "<h3>$key</h3>" . $section;
   }
 
   $form_state['mailchimp_campaign_campaign_preview'] = $text;
