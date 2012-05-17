@@ -85,7 +85,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     foreach ($response['default_content'] as $section => $content) {
       $form['content']['html_' . $section] = array(
         '#type' => 'text_format',
-        '#format' => 'mailchimp_campaign',
+        '#format' => ($campaign) ? $campaign->template['html_' . $section]['format'] : 'mailchimp_campaign',
         '#title' => drupal_ucfirst($section),
         '#default_value' => $content,
         '#default_value' => ($campaign) ? $campaign->template['html_' . $section] : ''
