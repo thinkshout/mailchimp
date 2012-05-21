@@ -107,7 +107,8 @@ function mailchimp_lists_install() {
     foreach($old_lists as $id => $old_list) {
       $list = new stdClass();
       $list->mc_list_id = $id;
-      $list->label = $old_list->name;
+      $list->label = substr($old_list->label, 0, 32);
+      $list->name = substr($old_list->name, 0, 32);
       $list->description = $old_list->description;
       $list->list_type = ($old_list->list_type == 'required') ? MAILCHIMP_LISTTYPE_REQUIRED : MAILCHIMP_LISTTYPE_OPTIONAL;
       $list->settings = array(
