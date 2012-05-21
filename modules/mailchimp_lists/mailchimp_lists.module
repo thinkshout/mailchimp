@@ -439,9 +439,9 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
   }
 
   // wrap in a div
-  $wrapper_key = 'mailchimp_' . $list->id;
+  $wrapper_key = 'mailchimp_' . $list->name;
   $form[$wrapper_key] = array(
-    '#prefix' => '<div id="mailchimp-newsletter-' . $list->id . '" class="mailchimp-newsletter-wrapper">',
+    '#prefix' => '<div id="mailchimp-newsletter-' . $list->name . '" class="mailchimp-newsletter-wrapper">',
     '#suffix' => '</div>',
   );
 
@@ -725,16 +725,14 @@ function mailchimp_lists_get_available_lists($account = NULL, $list_type = MAILC
  */
 function mailchimp_lists_block_info() {
   $blocks = array();
-  $lists = mailchimp_lists_load_multiple();
-  if (!empty($lists)) {
-    foreach ($lists as $list) {
-      // exclude required lists
-      if ($list->list_type !== MAILCHIMP_LISTTYPE_REQUIRED) {
-        $blocks[$list->id] = array(
-          'info' => t('Mailchimp Subscription Form: @name', array('@name' => $list->label)),
-          'cache' => DRUPAL_CACHE_PER_USER,
-         );
-      }
+  $lists = mailchimp_lists_load_multiple_by_name();
+  foreach ($lists as $name => $list) {
+    // exclude required lists
+    if ($list->list_type !== MAILCHIMP_LISTTYPE_REQUIRED) {
+      $blocks[$name] = array(
+        'info' => t('Mailchimp Subscription Form: @name', array('@name' => $list->label)),
+        'cache' => DRUPAL_CACHE_PER_USER,
+      );
     }
   }
 
@@ -748,12 +746,12 @@ function mailchimp_lists_block_info() {
 function mailchimp_lists_block_view($delta = '') {
   $block = array();
   global $user;
-  $lists = mailchimp_lists_load_multiple(array($delta));
-  $list = reset($lists);
+  $list = mailchimp_lists_load($delta);
+
   foreach ($user->roles as $rid => $role) {
     if (isset($list->settings['roles'][$rid]) && $list->settings['roles'][$rid]) {
       $block['subject'] = t('Subscribe to @title', array('@title' => $list->label));
-      $block['content'] = drupal_get_form('mailchimp_lists_user_subscribe_form_' . $list->id, array($list), $user);
+      $block['content'] = drupal_get_form('mailchimp_lists_user_subscribe_form_' . $list->name, array($list), $user);
       break;
     }
   }
