@@ -504,7 +504,7 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
         // ignore hidden fields
         // @todo: consider merging to hidden values
         if ($group['form_field'] == 'hidden') {
-          break;
+          continue;
         }
 
         // grab the default values for this group
