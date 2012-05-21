@@ -449,8 +449,8 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
   if ($list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) {
     $form[$wrapper_key]['title'] = array(
       '#type' => 'item',
-      '#title' => check_plain(t($list->label)),
-      '#description' => check_plain(t($list->description)),
+      '#markup' => t('Sign up for %title', array('%title' => check_plain($list->label))),
+      '#description' => t('@mc_list_description', array('@mc_list_description' => $list->description)),
     );
   }
 
