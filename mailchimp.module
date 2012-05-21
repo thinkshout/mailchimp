@@ -78,9 +78,8 @@ function mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $
     $success = $mcapi->listSubscribe($list->mc_list_id, $email, $merge_vars, 'html', $double_optin, TRUE);
 
     if ($message && $success && $double_optin) {
-      drupal_set_message(t('You have chosen to subscribe to %list. An email 
-        will be sent to your address. Click the link in the email to confirm 
-        the subscription.', array('%list' => $list->label)));
+      drupal_set_message(t('You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription.',
+        array('%list' => $list->label)));
     }
     elseif ($message && $success) {
       drupal_set_message(t('You have subscribed to %list.', array('%list' => $list->label)));
