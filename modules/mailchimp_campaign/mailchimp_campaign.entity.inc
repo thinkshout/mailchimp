@@ -114,6 +114,15 @@ class MailChimpCampaign extends Entity {
        $rendered .= "<h3>$key</h3>" . $section;
     }
 
+    // get the template name
+    $mc_template_name = '';
+    foreach(mailchimp_campaign_get_templates() as $mc_template) {
+      if ($mc_template['id'] == $this->mc_data['template_id']) {
+        $mc_template_name = $mc_template['name'];
+        break;
+      }
+    }
+
     $fields = array(
       'subject' => array('label' => t('Subject'), 'value' => $this->mc_data['subject']),
       'list' => array(
@@ -124,7 +133,10 @@ class MailChimpCampaign extends Entity {
       ),
       'from_email' => array('label' => t('From Email'), 'value' => $this->mc_data['from_email']),
       'from_name' => array('label' => t('From Name'), 'value' => $this->mc_data['from_name']),
-      'template_id' => array('label' => t('Template'), 'value' => $this->mc_data['template_id']),
+      'template' => array(
+        'label' => t('Template'),
+        'value' => $mc_template_name
+      ),
       'type' => array('label' => t('List type'), 'value' => $this->mc_data['type']),
       'status' => array('label' => t('Status'), 'value' => $this->mc_data['status']),
       'emails_sent' => array('label' => t('Emails sent'), 'value' => $this->mc_data['emails_sent']),
