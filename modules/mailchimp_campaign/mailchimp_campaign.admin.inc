@@ -68,7 +68,35 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#tree' => TRUE
   );
 
-  if (empty($form_state['values']['template_id'])) {
+  $tid = NULL;
+  if (($campaign) && $campaign->mc_data['template_id']) {
+    $tid = $campaign->mc_data['template_id'];
+  }
+  else if (!empty($form_state['values']['template_id'])) {
+    $tid = $form_state['values']['template_id'];
+  }
+
+  if ($tid) {
+    $api = mailchimp_get_api_object();
+    $response = $api->templateInfo($tid);
+    foreach ($response['default_content'] as $section => $content) {
+      // Set the default value and text format to either saved campaign values
+      // or defaults coming from the MC template.
+      $default_value = $content;
+      $format = 'mailchimp_campaign';
+      if ($campaign && $campaign->template['html_' . $section]) {
+        $default_value = $campaign->template['html_' . $section]['value'];
+        $format = $campaign->template['html_' . $section]['format'];
+      }
+      $form['content']['html_' . $section] = array(
+        '#type' => 'text_format',
+        '#format' => $format,
+        '#title' => drupal_ucfirst($section),
+        '#default_value' => $default_value,
+      );
+    }
+  }
+  else {
     $form['content']['html'] = array(
       '#type' => 'text_format',
       '#format' => ($campaign) ? $campaign->template['html']['format'] : 'mailchimp_campaign',
@@ -77,20 +105,6 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
       '#access' => empty($form_state['values']['template_id']),
       '#default_value' => ($campaign) ? $campaign->template['html']['value'] : ''
     );
-  }
-  else {
-    $tid = $form_state['values']['template_id'];
-    $api = mailchimp_get_api_object();
-    $response = $api->templateInfo($tid);
-    foreach ($response['default_content'] as $section => $content) {
-      $form['content']['html_' . $section] = array(
-        '#type' => 'text_format',
-        '#format' => ($campaign) ? $campaign->template['html_' . $section]['format'] : 'mailchimp_campaign',
-        '#title' => drupal_ucfirst($section),
-        '#default_value' => $content,
-        '#default_value' => ($campaign) ? $campaign->template['html_' . $section] : ''
-      );
-    }
   }
 
   // Message preview
