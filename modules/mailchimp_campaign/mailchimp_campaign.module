@@ -138,7 +138,7 @@ function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
  * @return array
  */
 function mailchimp_campaign_overview_page() {
-  $campaigns = mailchimp_campaign_load_multiple();
+  $campaigns = mailchimp_campaign_load_multiple(array(), array(), TRUE);
 
   $rows = array();
   foreach ($campaigns as $campaign) {
@@ -263,9 +263,6 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
   }
 
   if ($sent) {
-    // clear campaign cache
-    mailchimp_campaign_load_multiple(array($campaign->mc_campaign_id), array(), TRUE);
-
     // Log action, and notify the user.
     watchdog('mailchimp_campaign', 'MailChimp campaign %name has been sent.',
       array('%name' => $campaign->label())
