@@ -5,7 +5,7 @@
  */
 
 /**
- * Implements hook_form().
+ * Returns a form for creating a campaign.
  */
 function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign $campaign = NULL) {
   $form_state['campaign'] = $campaign;
@@ -37,6 +37,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#default_value' => ($campaign) ? $campaign->mc_data['from_email'] : variable_get('site_mail'),
     '#size' => 40,
     '#maxlength' => 255,
+    '#required' => TRUE,
   );
   $form['from_name'] = array(
     '#type' => 'textfield',
@@ -164,6 +165,18 @@ function mailchimp_campaign_campaign_preview($form, &$form_state) {
 }
 
 /**
+ * Validation callback for mailchimp_campaign_campaign_form().
+ *
+ * @param $form
+ * @param $form_state
+ */
+function mailchimp_campaign_campaign_form_validate($form, &$form_state) {
+  if (!valid_email_address($form_state['values']['from_email'])) {
+    form_set_error('from_email', t('Please provide a valid From email address.'));
+  }
+}
+
+/**
  * Submit handler for mailchimp_campaign_campaign_form().
  *
  * @param $form
@@ -175,7 +188,7 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
     'title' => check_plain($values['title']),
     'subject' => check_plain($values['subject']),
     'list_id' => $values['list_id'],
-    'from_email' => check_plain($values['from_email']),
+    'from_email' => $values['from_email'],
     'from_name' => check_plain($values['from_name']),
     'template_id' => $values['template_id']
   );
