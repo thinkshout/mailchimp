@@ -185,8 +185,8 @@ function mailchimp_campaign_campaign_form_validate($form, &$form_state) {
 function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $options = array(
-    'title' => check_plain($values['title']),
-    'subject' => check_plain($values['subject']),
+    'title' => $values['title'],
+    'subject' => $values['subject'],
     'list_id' => $values['list_id'],
     'from_email' => $values['from_email'],
     'from_name' => check_plain($values['from_name']),
