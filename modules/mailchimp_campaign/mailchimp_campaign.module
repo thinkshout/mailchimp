@@ -138,7 +138,7 @@ function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
  * @return array
  */
 function mailchimp_campaign_overview_page() {
-  $campaigns = mailchimp_campaign_load_multiple(array(), array(), TRUE);
+  $campaigns = mailchimp_campaign_load_multiple();
 
   $rows = array();
   foreach ($campaigns as $campaign) {
@@ -541,4 +541,31 @@ function mailchimp_campaign_render_template($template) {
   }
 
   return $content;
+}
+
+/**
+ * Return MailChimp campaigns.
+ *
+ * @param Array $mc_campaign_ids
+ *   Array of MailChimp campaign IDs.
+ *
+ * @return array
+ *   Keyed by campaign ID.
+ */
+function mailchimp_campaign_get_campaigns($mc_campaign_ids) {
+  $mc_campaigns = drupal_static(__FUNCTION__, array());
+
+  if (!empty($mc_campaigns) || empty($mc_campaign_ids)) {
+    return $mc_campaigns;
+  }
+
+  $mcapi = mailchimp_get_api_object();
+  $response = $mcapi->campaigns(array('campaign_id' => implode(',', $mc_campaign_ids)));
+  if (isset($response['total']) && $response['total'] > 0) {
+    foreach ($response['data'] as $mc_campaign) {
+      $mc_campaigns[$mc_campaign['id']] = $mc_campaign;
+    }
+  }
+
+  return $mc_campaigns;
 }
