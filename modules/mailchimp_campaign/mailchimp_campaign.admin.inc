@@ -69,18 +69,16 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#tree' => TRUE
   );
 
-  $tid = NULL;
-  if (($campaign) && $campaign->mc_data['template_id']) {
-    $tid = $campaign->mc_data['template_id'];
+  $mc_template = NULL;
+  if (($campaign) && $campaign->mc_template) {
+    $mc_template = $campaign->mc_template;
   }
   else if (!empty($form_state['values']['template_id'])) {
-    $tid = $form_state['values']['template_id'];
+    $mc_template = mailchimp_campaign_get_template($form_state['values']['template_id']);
   }
 
-  if ($tid) {
-    $api = mailchimp_get_api_object();
-    $response = $api->templateInfo($tid);
-    foreach ($response['default_content'] as $section => $content) {
+  if ($mc_template) {
+    foreach ($mc_template['default_content'] as $section => $content) {
       // Set the default value and text format to either saved campaign values
       // or defaults coming from the MC template.
       $default_value = $content;
