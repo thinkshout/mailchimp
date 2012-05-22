@@ -12,7 +12,7 @@ function mailchimp_campaign_entity_info() {
   $return = array(
     'mailchimp_campaign' => array(
       'label' => t('MailChimp Campaign'),
-      'controller class' => 'EntityAPIController',
+      'controller class' => 'MailChimpCampaignController',
       'entity class' => 'MailChimpCampaign',
       'base table' => 'mailchimp_campaigns',
       'uri callback' => 'mailchimp_campaign_uri',
@@ -64,31 +64,6 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions =
   }
   $campaigns = entity_load('mailchimp_campaign', $campaign_ids, $conditions, $reset);
 
-  foreach ($campaigns as $campaign) {
-    $cache = $reset ? NULL : cache_get('mailchimp_campaign_' . $campaign->mc_campaign_id);
-
-    // return cached lists
-    if ($cache) {
-      $campaign->mc_data = $cache->data;
-    }
-    // Query lists from the MC API and store in cache
-    else {
-      $mcapi = mailchimp_get_api_object();
-
-      $response = $mcapi->campaigns(array('campaign_id' => $campaign->mc_campaign_id));
-      if (isset($response['total']) && $response['total'] > 0) {
-        $campaign->mc_data = $response['data'][0];
-      }
-
-      cache_set('mailchimp_campaign_' . $campaign->mc_campaign_id, $campaign->mc_data, 'cache', CACHE_TEMPORARY);
-    }
-
-    // lists are cachced separately, but we want to load them here.
-    if (isset($campaign->mc_data['list_id']) && $campaign->mc_data['list_id']) {
-      $campaign->list = mailchimp_get_list($campaign->mc_data['list_id']);
-    }
-  }
-
   return $campaigns;
 }
 
@@ -123,7 +98,7 @@ function mailchimp_campaign_view($campaign) {
  * Defines MailChimpCampaign entities
  */
 class MailChimpCampaign extends Entity {
-  public $mc_campaign_id, $template, $created, $updated, $mc_data, $list;
+  public $mc_campaign_id, $template, $created, $updated, $mc_data, $list, $mc_template;
 
   public function __construct(array $values = array(), $entityType = 'mailchimp_campaign') {
      parent::__construct($values, $entityType);
@@ -176,6 +151,44 @@ class MailChimpCampaign extends Entity {
 
   protected function defaultLabel() {
     return $this->mc_data['title'];
+  }
+
+}
+
+/**
+ * MailChimpCampaign controller class.
+ */
+class MailChimpCampaignController extends EntityAPIController {
+
+  public function load($ids = array(), $conditions = array()) {
+    $campaigns = parent::load($ids, $conditions);
+    if (empty($ids)) {
+      foreach ($campaigns as $campaign) {
+        $ids[] = $campaign->mc_campaign_id;
+      }
+    }
+    $mc_campaigns = mailchimp_campaign_get_campaigns($ids);
+
+    foreach ($campaigns as $mc_campaign_id => $campaign) {
+      $campaign->mc_data = $mc_campaigns[$mc_campaign_id];
+
+       // lists are cachced separately, but we want to load them here.
+      if (isset($campaign->mc_data['list_id']) && $campaign->mc_data['list_id']) {
+        $campaign->list = mailchimp_get_list($campaign->mc_data['list_id']);
+      }
+
+      if (isset($campaign->mc_data['template_id']) && $campaign->mc_data['template_id']) {
+        $campaign->mc_template = mailchimp_campaign_get_template($campaign->mc_data['template_id']);
+      }
+    }
+
+    return $campaigns;
+  }
+
+  public function resetCache(array $ids = NULL) {
+    parent::resetCache($ids);
+    drupal_static_reset('mailchimp_campaign_get_campaigns');
+    drupal_static_reset('mailchimp_campaign_get_template');
   }
 
 }
