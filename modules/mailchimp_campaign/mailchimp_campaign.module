@@ -143,7 +143,9 @@ function mailchimp_campaign_overview_page() {
   $rows = array();
   foreach ($campaigns as $campaign) {
     $actions = array(
-      l(t('View Archive'), $campaign->mc_data['archive_url']),
+      l(t('View Archive'), $campaign->mc_data['archive_url'], array(
+        'attributes' => array('target' => '_blank'),
+      )),
       l(t('View'), 'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id),
     );
 
@@ -152,7 +154,9 @@ function mailchimp_campaign_overview_page() {
         'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id),
       $campaign->mc_data['subject'],
       $campaign->mc_data['status'],
-      l($campaign->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list['web_id']),
+      l($campaign->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list['web_id'], array(
+        'attributes' => array('target' => '_blank'),
+      )),
       $campaign->mc_data['create_time'],
       implode(' | ', $actions)
     );

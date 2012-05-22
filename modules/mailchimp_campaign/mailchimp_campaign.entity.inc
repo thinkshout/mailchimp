@@ -135,15 +135,17 @@ class MailChimpCampaign extends Entity {
     // prepare rendered content
     $content = mailchimp_campaign_render_template($this->template);
     $rendered = '';
-    foreach($content as $key => $section) {
+    foreach ($content as $key => $section) {
        $rendered .= "<h3>$key</h3>" . $section;
-     }
+    }
 
     $fields = array(
       'subject' => array('label' => t('Subject'), 'value' => $this->mc_data['subject']),
       'list' => array(
         'label' => t('MailChimp List'),
-        'value' => l($this->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $this->list['web_id'])
+        'value' => l($this->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $this->list['web_id'], array(
+          'attributes' => array('target' => '_blank'),
+        ))
       ),
       'from_email' => array('label' => t('From Email'), 'value' => $this->mc_data['from_email']),
       'from_name' => array('label' => t('From Name'), 'value' => $this->mc_data['from_name']),
@@ -154,7 +156,9 @@ class MailChimpCampaign extends Entity {
       'send_time' => array('label' => t('Send time'), 'value' => $this->mc_data['send_time']),
       'content' => array(
         'label' => t('Rendered template HTML (!archive)',
-                  array('!archive' => l('View MailChimp archive', $this->mc_data['archive_url']))),
+                  array('!archive' => l('View MailChimp archive', $this->mc_data['archive_url'], array(
+                    'attributes' => array('target' => '_blank'),
+                  )))),
         'value' => $rendered
       )
     );
