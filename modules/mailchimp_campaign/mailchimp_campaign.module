@@ -328,7 +328,7 @@ function mailchimp_campaign_get_templates($reset = FALSE) {
 function mailchimp_campaign_get_template($tid) {
   $template = drupal_static(__FUNCTION__, array());
 
-  if (!empty($template)) {
+  if (empty($template)) {
     if ($mcapi = mailchimp_get_api_object()) {
       $response = $mcapi->templateInfo($tid);
 
