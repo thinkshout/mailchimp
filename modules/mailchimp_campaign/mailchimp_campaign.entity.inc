@@ -51,6 +51,7 @@ function mailchimp_campaign_save(MailChimpCampaign $campaign) {
  * Load a campaign by ID.
  */
 function mailchimp_campaign_load($cid, $reset = TRUE) {
+function mailchimp_campaign_load($cid, $reset = FALSE) {
   $campaign = mailchimp_campaign_load_multiple(array($cid), array(), $reset);
   return $campaign ? $campaign[$cid] : FALSE;
 }
