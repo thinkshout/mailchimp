@@ -115,13 +115,8 @@ class MailChimpCampaign extends Entity {
     }
 
     // get the template name
-    $mc_template_name = '';
-    foreach(mailchimp_campaign_get_templates() as $mc_template) {
-      if ($mc_template['id'] == $this->mc_data['template_id']) {
-        $mc_template_name = $mc_template['name'];
-        break;
-      }
-    }
+    $templates = mailchimp_campaign_get_templates();
+    $mc_template_name = isset($templates[$this->mc_data['template_id']]) ? $templates[$this->mc_data['template_id']]['name'] : '';
 
     $fields = array(
       'subject' => array('label' => t('Subject'), 'value' => $this->mc_data['subject']),

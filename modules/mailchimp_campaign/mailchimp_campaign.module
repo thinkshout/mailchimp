@@ -134,6 +134,7 @@ function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
  */
 function mailchimp_campaign_overview_page() {
   $campaigns = mailchimp_campaign_load_multiple();
+  $templates = mailchimp_campaign_get_templates();
 
   $rows = array();
   foreach ($campaigns as $campaign) {
@@ -152,6 +153,7 @@ function mailchimp_campaign_overview_page() {
       l($campaign->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list['web_id'], array(
         'attributes' => array('target' => '_blank'),
       )),
+      isset($templates[$campaign->mc_data['template_id']]) ? $templates[$campaign->mc_data['template_id']]['name'] : '',
       $campaign->mc_data['create_time'],
       implode(' | ', $actions)
     );
@@ -164,6 +166,7 @@ function mailchimp_campaign_overview_page() {
       t('Subject'),
       t('Status'),
       t('MailChimp list'),
+      t('MailChimp template'),
       t('Created'),
       t('Actions')
     ),
@@ -305,7 +308,9 @@ function mailchimp_campaign_get_templates($reset = FALSE) {
     if ($mcapi = mailchimp_get_api_object()) {
       $response = $mcapi->templates();
       if (isset($response['user']) && count($response['user']) > 0) {
-        $templates = $response['user'];
+        foreach ($response['user'] as $template) {
+          $templates[$template['id']] = $template;
+        }
       }
     }
 
