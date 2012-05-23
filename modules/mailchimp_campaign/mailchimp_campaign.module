@@ -46,10 +46,6 @@ function mailchimp_campaign_menu() {
   );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/view'] = array(
     'title' => 'View',
-    'page callback' => 'mailchimp_campaign_view',
-    'page arguments' => array(5),
-    'load arguments' => array(5),
-    'access arguments' => array('administer mailchimp campaigns'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0
   );
@@ -68,7 +64,6 @@ function mailchimp_campaign_menu() {
     'description' => 'Edit a MailChimp campaign.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_campaign_campaign_form', 5),
-    'load arguments' => array(5),
     'access callback' => 'mailchimp_campaign_access',
     'access arguments' => array(5, FALSE),
     'file' => 'mailchimp_campaign.admin.inc',
