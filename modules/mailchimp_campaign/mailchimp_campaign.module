@@ -321,19 +321,19 @@ function mailchimp_campaign_get_templates($reset = FALSE) {
  * @return array().
  */
 function mailchimp_campaign_get_template($tid) {
-  $template = drupal_static(__FUNCTION__, array());
+  $templates = &drupal_static(__FUNCTION__);
 
-  if (empty($template)) {
+  if (!isset($templates[$tid])) {
     if ($mcapi = mailchimp_get_api_object()) {
       $response = $mcapi->templateInfo($tid);
 
       if (!empty($response)) {
-        $template = $response;
+        $templates[$tid] = $response;
       }
     }
   }
 
-  return $template;
+  return $templates[$tid];
 }
 
 /**
