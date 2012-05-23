@@ -320,15 +320,20 @@ function mailchimp_campaign_get_templates($reset = FALSE) {
  *
  * @return array().
  */
-function mailchimp_campaign_get_template($tid) {
+function mailchimp_campaign_get_template($tid, $reset = FALSE) {
   $templates = &drupal_static(__FUNCTION__);
 
   if (!isset($templates[$tid])) {
-    if ($mcapi = mailchimp_get_api_object()) {
+    $cache = $reset ? NULL : cache_get('mailchimp_template' . $tid);
+    if ($cache) {
+      $templates[$tid] = $cache->data;
+    }
+    else {
+      $mcapi = mailchimp_get_api_object();
       $response = $mcapi->templateInfo($tid);
-
       if (!empty($response)) {
         $templates[$tid] = $response;
+        cache_set('mailchimp_template' . $tid, $response, 'cache', CACHE_TEMPORARY);
       }
     }
   }
