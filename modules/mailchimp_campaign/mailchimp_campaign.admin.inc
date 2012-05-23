@@ -70,11 +70,11 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
   );
 
   $mc_template = NULL;
-  if (($campaign) && $campaign->mc_template) {
-    $mc_template = $campaign->mc_template;
-  }
-  else if (!empty($form_state['values']['template_id'])) {
+  if (!empty($form_state['values']['template_id'])) {
     $mc_template = mailchimp_campaign_get_template($form_state['values']['template_id']);
+  }
+  else if (($campaign) && $campaign->mc_template) {
+    $mc_template = $campaign->mc_template;
   }
 
   if ($mc_template) {
