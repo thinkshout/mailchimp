@@ -555,19 +555,28 @@ function mailchimp_campaign_render_template($template) {
  * @return array
  *   Keyed by campaign ID.
  */
-function mailchimp_campaign_get_campaigns($mc_campaign_ids) {
-  $mc_campaigns = drupal_static(__FUNCTION__, array());
-
-  if (!empty($mc_campaigns) || empty($mc_campaign_ids)) {
-    return $mc_campaigns;
+function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
+  $mc_campaigns = array();
+  $cached_campaigns = cache_get('mailchimp_campaigns');
+  foreach ($mc_campaign_ids as $id) {
+    if (!isset($cached_campaigns->data[$id]) || $reset) {
+      $to_refresh[] = $id;
+    }
+    else {
+      $mc_campaigns[$id] = $cached_campaigns->data[$id];
+    }
   }
 
-  $mcapi = mailchimp_get_api_object();
-  $response = $mcapi->campaigns(array('campaign_id' => implode(',', $mc_campaign_ids)));
-  if (isset($response['total']) && $response['total'] > 0) {
-    foreach ($response['data'] as $mc_campaign) {
-      $mc_campaigns[$mc_campaign['id']] = $mc_campaign;
+  if (!empty($to_refresh)) {
+    $mcapi = mailchimp_get_api_object();
+    $response = $mcapi->campaigns(array('campaign_id' => implode(',', $to_refresh)));
+    if (isset($response['total']) && $response['total'] > 0) {
+      foreach ($response['data'] as $mc_campaign) {
+        $mc_campaigns[$mc_campaign['id']] = $mc_campaign;
+      }
     }
+
+    cache_set('mailchimp_campaigns', $mc_campaigns);
   }
 
   return $mc_campaigns;
