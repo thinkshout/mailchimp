@@ -50,7 +50,6 @@ function mailchimp_campaign_save(MailChimpCampaign $campaign) {
 /**
  * Load a campaign by ID.
  */
-function mailchimp_campaign_load($cid, $reset = TRUE) {
 function mailchimp_campaign_load($cid, $reset = FALSE) {
   $campaign = mailchimp_campaign_load_multiple(array($cid), array(), $reset);
   return $campaign ? $campaign[$cid] : FALSE;
@@ -173,9 +172,14 @@ class MailChimpCampaign extends Entity {
  */
 class MailChimpCampaignController extends EntityAPIController {
 
-  public function load($ids = array(), $conditions = array()) {
-    $campaigns = parent::load($ids, $conditions);
-    if (empty($ids)) {
+  /**
+   * Implement in order to attach MC data to campaign entities.
+   *
+   * @param $campaigns
+   * @param bool $revision_id
+   */
+  protected function attachLoad(&$campaigns, $revision_id = FALSE) {
+    if (!empty($campaigns)) {
       foreach ($campaigns as $campaign) {
         $ids[] = $campaign->mc_campaign_id;
       }
@@ -195,9 +199,14 @@ class MailChimpCampaignController extends EntityAPIController {
       }
     }
 
-    return $campaigns;
+    parent::attachLoad($campaigns, $revision_id);
   }
 
+  /**
+   * Implement to clear MC campaign data caches.
+   *
+   * @param array|null $ids
+   */
   public function resetCache(array $ids = NULL) {
     parent::resetCache($ids);
     drupal_static_reset('mailchimp_campaign_get_campaigns');
