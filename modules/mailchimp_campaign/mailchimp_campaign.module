@@ -242,6 +242,9 @@ function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NU
     ));
 
     mailchimp_campaign_save($campaign);
+
+    // clear cached data for this campaign
+    mailchimp_campaign_get_campaigns(array($campaign_id), TRUE);
   }
 }
 
