@@ -299,7 +299,7 @@ function mailchimp_campaign_delete_campaign($cid) {
  *
  * @return array().
  */
-function mailchimp_campaign_get_templates($reset = FALSE) {
+function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get('mailchimp_templates');
   $templates = array();
   // return cached lists
@@ -309,10 +309,17 @@ function mailchimp_campaign_get_templates($reset = FALSE) {
   // Query lists from the MC API and store in cache
   else {
     if ($mcapi = mailchimp_get_api_object()) {
-      $response = $mcapi->templates();
-      if (isset($response['user']) && count($response['user']) > 0) {
-        foreach ($response['user'] as $template) {
-          $templates[$template['id']] = $template;
+      $response = $mcapi->templates(array('user' => TRUE));
+      foreach ($response['user'] as $template) {
+        $tid = $template['id'];
+        $info = $mcapi->templateInfo($tid);
+
+        // exclude templates with repeating content. This is a current
+        // limitation of the MC API as repeating sections cannot be  updated
+        // through the API
+        if (!strpos($info['source'], 'mc:repeatable')) {
+          $template['info'] = $info;
+          $templates[$tid] = $template;
         }
       }
     }
@@ -320,33 +327,7 @@ function mailchimp_campaign_get_templates($reset = FALSE) {
     cache_set('mailchimp_templates', $templates, 'cache', CACHE_TEMPORARY);
   }
 
-  return $templates;
-}
-
-/**
- * Return details about a given template.
- *
- * @return array().
- */
-function mailchimp_campaign_get_template($tid, $reset = FALSE) {
-  $templates = &drupal_static(__FUNCTION__);
-
-  if (!isset($templates[$tid])) {
-    $cache = $reset ? NULL : cache_get('mailchimp_template' . $tid);
-    if ($cache) {
-      $templates[$tid] = $cache->data;
-    }
-    else {
-      $mcapi = mailchimp_get_api_object();
-      $response = $mcapi->templateInfo($tid);
-      if (!empty($response)) {
-        $templates[$tid] = $response;
-        cache_set('mailchimp_template' . $tid, $response, 'cache', CACHE_TEMPORARY);
-      }
-    }
-  }
-
-  return $templates[$tid];
+  return isset($template_id) ? $templates[$template_id] : $templates;
 }
 
 /**

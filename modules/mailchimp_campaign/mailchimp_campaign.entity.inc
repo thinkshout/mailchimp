@@ -115,8 +115,8 @@ class MailChimpCampaign extends Entity {
     }
 
     // get the template name
-    $templates = mailchimp_campaign_get_templates();
-    $mc_template_name = isset($templates[$this->mc_data['template_id']]) ? $templates[$this->mc_data['template_id']]['name'] : '';
+    $mc_template = mailchimp_campaign_get_templates($this->mc_data['template_id']);
+    $mc_template_name = isset($mc_template) ? $mc_template['name'] : '';
 
     $fields = array(
       'subject' => array('label' => t('Subject'), 'value' => $this->mc_data['subject']),
@@ -190,7 +190,7 @@ class MailChimpCampaignController extends EntityAPIController {
       }
 
       if (isset($campaign->mc_data['template_id']) && $campaign->mc_data['template_id']) {
-        $campaign->mc_template = mailchimp_campaign_get_template($campaign->mc_data['template_id']);
+        $campaign->mc_template = mailchimp_campaign_get_templates($campaign->mc_data['template_id']);
       }
     }
 
