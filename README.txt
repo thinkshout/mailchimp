@@ -19,8 +19,8 @@ mailchimp.module. See their respective README's for more details.
   * Standalone subscribe and unsubscribe forms
   * Subscriptions can be maintained via cron or in real time
   * Individual blocks for each newsletter
-  * Send all your site emails through the MailChimp STS API and see all of
-    those email statistics.
+  * Create campaigns containing any Drupal entity as content, send them, and
+    view statisitcs.
 
 ## Installation Notes
   * You need to have a MailChimp API Key.
@@ -48,6 +48,20 @@ mailchimp.module. See their respective README's for more details.
 ## Submodules
   * mailchimp_lists: Synchronize Drupal users with MailChimp lists and allow
     users to subscribe, unsubscribe, and update member information.
-  * mailchimp_sts: Expose the MailChimp STS gateway as a Drupal mail interface
-    and associated settings.
-  * mailchimp_campaigns: Create newsletters with Drupal content. Coming soon.
+  * mailchimp_campaigns: Create newsletters with Drupal content, send the
+    campaigns, and view statistics.
+
+## Related Modules
+### Mandrill
+  * IMPORTANT: The STS submodule has been removed as it's being deprecated by
+    MailChimp in favor of their new Mandrill service. STS has been moved into
+    it's own project (http://drupal.org/project/mailchimp_sts) for those already
+    using the service. New projects and those willing to make the change should
+    definitely use Mandrill.
+  * Mandrill is MailChimp's new transactional email service. The initial version
+    of the module provides the ability to send all site emails through Mandrill
+    with reporting available from within Drupal. Please refer to the project
+    page for more details.
+  * http://drupal.org/project/mandrill
+### MCC, an alternative campaign creation tool.
+  * http://drupal.org/project/mcc
