@@ -391,9 +391,9 @@ function mailchimp_campaign_filter_info() {
  *   Translated text to display as a tip.
  */
 function mailchimp_campaign_filter_tips($filter, $format, $long) {
- return t('Converts macros in the format %pattern into the appropriate rendered content and makes all paths absolute.',
-  array('%pattern' => '[mailchimp_campaign|entity_type=node|entity_id=1|view_mode=teaser]')
- );
+  return t('Converts macros in the format %pattern into the appropriate rendered content and makes all paths absolute.',
+    array('%pattern' => '[mailchimp_campaign|entity_type=node|entity_id=1|view_mode=teaser]')
+  );
 }
 
 /**
@@ -453,7 +453,7 @@ function mailchimp_campaign_process_callback($matches = array()) {
   $entities = entity_load($entity_type, array($entity_id));
   if (!empty($entities)) {
     $render_array = entity_view($entity_type, $entities, $view_mode, NULL, TRUE);
-    $content =  render($render_array);
+    $content = render($render_array);
   }
 
   return $content;
@@ -482,7 +482,7 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
     $rows[] = array($key, drupal_ucfirst(str_replace('_', ' ', $stat)));
   }
 
-   // time series chart data
+  // time series chart data
   $settings = array();
   foreach ($response['timeseries'] as $series) {
     $settings['mailchimp_campaign']['stats'][] = array(

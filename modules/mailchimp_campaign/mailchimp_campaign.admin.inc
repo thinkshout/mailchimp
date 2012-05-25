@@ -73,8 +73,10 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
   if (!empty($form_state['values']['template_id'])) {
     $mc_template = mailchimp_campaign_get_templates($form_state['values']['template_id']);
   }
-  else if (($campaign) && $campaign->mc_template) {
-    $mc_template = $campaign->mc_template;
+  else {
+    if (($campaign) && $campaign->mc_template) {
+      $mc_template = $campaign->mc_template;
+    }
   }
 
   if ($mc_template) {
@@ -154,7 +156,7 @@ function mailchimp_campaign_template_callback($form, $form_state) {
 function mailchimp_campaign_campaign_preview($form, &$form_state) {
   $text = '';
   $content = mailchimp_campaign_render_template($form_state['values']['content']);
-  foreach($content as $key => $section) {
+  foreach ($content as $key => $section) {
     $text .= "<h3>$key</h3>" . $section;
   }
 
@@ -238,7 +240,7 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
   mailchimp_campaign_delete_campaign($campaign->mc_campaign_id);
   drupal_set_message(t('Campaign %name has been deleted.',
-    array('%name' => $campaign->label()))
+      array('%name' => $campaign->label()))
   );
   drupal_goto('admin/config/services/mailchimp/campaigns');
 }
@@ -270,7 +272,7 @@ function mailchimp_campaign_send_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
   mailchimp_campaign_send_campaign($campaign);
   drupal_set_message(t('Campaign %name has been sent.',
-    array('%name' => $campaign->label()))
+      array('%name' => $campaign->label()))
   );
   drupal_goto('admin/config/services/mailchimp/campaigns');
 }

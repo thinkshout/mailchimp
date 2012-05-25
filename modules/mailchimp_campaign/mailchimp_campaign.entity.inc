@@ -101,7 +101,7 @@ class MailChimpCampaign extends Entity {
   public $mc_campaign_id, $template, $created, $updated, $mc_data, $list, $mc_template;
 
   public function __construct(array $values = array(), $entityType = 'mailchimp_campaign') {
-     parent::__construct($values, $entityType);
+    parent::__construct($values, $entityType);
   }
 
   public function buildContent($view_mode = 'full', $langcode = NULL) {
@@ -111,7 +111,7 @@ class MailChimpCampaign extends Entity {
     $content = mailchimp_campaign_render_template($this->template);
     $rendered = '';
     foreach ($content as $key => $section) {
-       $rendered .= "<h3>$key</h3>" . $section;
+      $rendered .= "<h3>$key</h3>" . $section;
     }
 
     // get the template name
@@ -119,28 +119,51 @@ class MailChimpCampaign extends Entity {
     $mc_template_name = isset($mc_template) ? $mc_template['name'] : '';
 
     $fields = array(
-      'subject' => array('label' => t('Subject'), 'value' => $this->mc_data['subject']),
+      'subject' => array(
+        'label' => t('Subject'),
+        'value' => $this->mc_data['subject']
+      ),
       'list' => array(
         'label' => t('MailChimp List'),
         'value' => l($this->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $this->list['web_id'], array(
           'attributes' => array('target' => '_blank'),
         ))
       ),
-      'from_email' => array('label' => t('From Email'), 'value' => $this->mc_data['from_email']),
-      'from_name' => array('label' => t('From Name'), 'value' => $this->mc_data['from_name']),
+      'from_email' => array(
+        'label' => t('From Email'),
+        'value' => $this->mc_data['from_email']
+      ),
+      'from_name' => array(
+        'label' => t('From Name'),
+        'value' => $this->mc_data['from_name']
+      ),
       'template' => array(
         'label' => t('Template'),
         'value' => $mc_template_name
       ),
-      'type' => array('label' => t('List type'), 'value' => $this->mc_data['type']),
-      'status' => array('label' => t('Status'), 'value' => $this->mc_data['status']),
-      'emails_sent' => array('label' => t('Emails sent'), 'value' => $this->mc_data['emails_sent']),
-      'send_time' => array('label' => t('Send time'), 'value' => $this->mc_data['send_time']),
+      'type' => array(
+        'label' => t('List type'),
+        'value' => $this->mc_data['type']
+      ),
+      'status' => array(
+        'label' => t('Status'),
+        'value' => $this->mc_data['status']
+      ),
+      'emails_sent' => array(
+        'label' => t('Emails sent'),
+        'value' => $this->mc_data['emails_sent']
+      ),
+      'send_time' => array(
+        'label' => t('Send time'),
+        'value' => $this->mc_data['send_time']
+      ),
       'content' => array(
         'label' => t('Rendered template HTML (!archive)',
-                  array('!archive' => l('View MailChimp archive', $this->mc_data['archive_url'], array(
-                    'attributes' => array('target' => '_blank'),
-                  )))),
+          array(
+            '!archive' => l('View MailChimp archive', $this->mc_data['archive_url'], array(
+              'attributes' => array('target' => '_blank'),
+            ))
+          )),
         'value' => $rendered
       )
     );
@@ -184,7 +207,7 @@ class MailChimpCampaignController extends EntityAPIController {
     foreach ($campaigns as $mc_campaign_id => $campaign) {
       $campaign->mc_data = $mc_campaigns[$mc_campaign_id];
 
-       // lists are cachced separately, but we want to load them here.
+      // lists are cachced separately, but we want to load them here.
       if (isset($campaign->mc_data['list_id']) && $campaign->mc_data['list_id']) {
         $campaign->list = mailchimp_get_list($campaign->mc_data['list_id']);
       }
