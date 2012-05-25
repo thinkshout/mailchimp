@@ -22,7 +22,7 @@ function mailchimp_lists_entity_info() {
         'bundle' => 'type',
       ),
       'bundles' => array(
-        'mailchimp_list'=> array(
+        'mailchimp_list' => array(
           'label' => t('MailChimp List'),
         ),
       ),
@@ -74,6 +74,7 @@ function mailchimp_lists_load_multiple($list_ids = array(), $conditions = array(
  *
  * @param $name
  *   If set, the list with the given name is returned.
+ *
  * @return MailchimpList[]
  *   Depending whether $name isset, an array of lists or a single one.
  */

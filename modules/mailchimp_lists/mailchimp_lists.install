@@ -104,7 +104,7 @@ function mailchimp_lists_install() {
     $user = variable_get('mailchimp_user_edit', FALSE);
     $intgroups = variable_get('mailchimp_interest_groups_user_forms', FALSE);
 
-    foreach($old_lists as $id => $old_list) {
+    foreach ($old_lists as $id => $old_list) {
       $list = new stdClass();
       $list->mc_list_id = $id;
       $list->label = substr($old_list->label, 0, 32);
@@ -205,7 +205,7 @@ function mailchimp_lists_update_7200() {
   }
 
   // Now set the name field to be required.
-  db_change_field('mailchimp_lists', 'name', 'name',  array(
+  db_change_field('mailchimp_lists', 'name', 'name', array(
     'description' => 'The machine-readable name of this mailchimp_list.',
     'type' => 'varchar',
     'length' => 32,
