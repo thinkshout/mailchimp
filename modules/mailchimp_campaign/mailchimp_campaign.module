@@ -328,7 +328,7 @@ function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
   }
 
   if (isset($template_id)) {
-    return isset($templates[$template_id]) ? $templates[$template_id] : NULL
+    return isset($templates[$template_id]) ? $templates[$template_id] : NULL;
   }
   else {
     return $templates;
