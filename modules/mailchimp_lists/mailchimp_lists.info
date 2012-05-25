@@ -7,7 +7,5 @@ dependencies[] = entity
 
 configure = admin/config/services/mailchimp/lists
 
-files[] = mailchimp_lists.install
 files[] = mailchimp_lists.entity.inc
 files[] = mailchimp_lists.admin.inc
-files[] = mailchimp_lists.rules.inc
