@@ -4,9 +4,6 @@ package = MailChimp
 core = 7.x
 
 files[] = MCAPI.class.php
-files[] = mailchimp.drush.inc
-files[] = mailchimp.admin.inc
-files[] = mailchimp.install
-files[] = mailchimp.module
+files[] = includes/mailchimp.drush.inc
 
 configure = admin/config/services/mailchimp
