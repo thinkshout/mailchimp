@@ -15,7 +15,7 @@ function mailchimp_lists_overview_page() {
       l(t('Delete'), 'admin/config/services/mailchimp/lists/' . $list->id . '/delete')
     );
     if ($list->list_type === MAILCHIMP_LISTTYPE_REQUIRED && isset($list->settings['cron']) && $list->settings['cron']) {
-      $actions[] = l(t('Queue exsiting'), 'mailchimp/lists/' . $list->id . '/queue_existing');
+      $actions[] = l(t('Queue existing'), 'mailchimp/lists/' . $list->id . '/queue_existing');
     }
     $rows[] = array(
       l($list->label, 'admin/config/services/mailchimp/lists/' . $list->id . '/edit'),
