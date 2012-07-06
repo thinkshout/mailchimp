@@ -219,3 +219,35 @@ function mailchimp_lists_update_7200() {
 function mailchimp_lists_update_7201() {
   db_add_unique_key('mailchimp_lists', 'name', array('name'));
 }
+
+/**
+ * Convert block deltas from ID numbers to machine names.
+ */
+function mailchimp_lists_update_7202() {
+  $query = db_select('block', 'b')
+    ->fields('b', array('bid', 'delta'))
+    ->condition('module', 'mailchimp_lists', '=')
+    ->execute();
+
+  $results = $query->fetchAll();
+
+  foreach ($results as $result) {
+    if (is_numeric($result->delta)) {
+      $list_query = db_select('mailchimp_lists', 'm')
+        ->fields('m', array('name'))
+        ->condition('id', $result->delta)
+        ->execute();
+
+      $list_results = $list_query->fetchAll();
+
+      $list_machine_name = $list_results[0]->name;
+
+      $num = db_update('block')
+        ->fields(array(
+          'delta' => $list_machine_name,
+        ))
+        ->condition('bid', $result->bid, '=')
+        ->execute();
+    }
+  }
+}
