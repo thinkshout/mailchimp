@@ -25,7 +25,7 @@ function mailchimp_lists_menu() {
     'access arguments' => array('administer mailchimp'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'mailchimp_lists.admin.inc',
-    'weight' => 10
+    'weight' => -10
   );
   $items['admin/config/services/mailchimp/lists/add'] = array(
     'title' => 'Add a list',
