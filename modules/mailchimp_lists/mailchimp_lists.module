@@ -678,7 +678,7 @@ function mailchimp_lists_load_user_mergevars($account, $list) {
     $mergevars = array_flip($mergevars);
 
     // match with token values
-    $values = module_invoke_all('mailchimp_lists_merge_values', $mergevars, $account);
+    $values = module_invoke_all('mailchimp_lists_merge_values', $mergevars, $account, $list);
 
     // always add email
     $values += array(
@@ -697,7 +697,7 @@ function mailchimp_lists_load_user_mergevars($account, $list) {
  *
  * @return array
  */
-function mailchimp_lists_mailchimp_lists_merge_values($mergevars, $account) {
+function mailchimp_lists_mailchimp_lists_merge_values($mergevars, $account, $list) {
   return token_generate('user', $mergevars, array('user' => $account));
 }
 
