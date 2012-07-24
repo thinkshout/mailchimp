@@ -283,7 +283,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
       }
     }
   }
-
+  
   // handle required lists
   mailchimp_lists_user_sync($account);
 }
@@ -439,7 +439,7 @@ function mailchimp_lists_user_subscribe_form($form, &$form_state, $lists, $accou
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Subscribe'),
+    '#value' => t('Save'),
   );
 
   return $form;
