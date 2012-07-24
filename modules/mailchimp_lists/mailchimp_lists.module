@@ -141,13 +141,15 @@ function mailchimp_lists_freeform_subscribe_page_access() {
 function mailchimp_lists_cron() {
   $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
   $queue->createQueue();
+  $queue_count = $queue->numberOfItems();
 
-  if ($queue->numberOfItems() > 0) {
+  if ($queue_count > 0) {
     $batches_add = array();
     $batches_rem = array();
     $count = 0;
     $batch_limit = variable_get('mailchimp_batch_limit', 100);
-    while ($count < $batch_limit) {
+    $batch_size = ($queue_count < $batch_limit) ? $queue_count : $batch_limit;
+    while ($count < $batch_size) {
       if ($item = $queue->claimItem()) {
         $account = user_load($item->data['uid']);
         $list = mailchimp_lists_load($item->data['list_id']);
