@@ -89,7 +89,7 @@ function mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $
     mailchimp_cache_clear_user($list->mc_list_id, $email);
 
     if ($success) {
-      module_invoke_all('mailchimp_subscribe_user', $list, $email);
+      module_invoke_all('mailchimp_subscribe_user', $list, $email, $merge_vars);
       watchdog('mailchimp', '@email was subscribed to list @list.',
         array('@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE
       );
