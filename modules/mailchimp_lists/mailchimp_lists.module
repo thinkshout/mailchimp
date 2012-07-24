@@ -310,7 +310,7 @@ function mailchimp_lists_user_update(&$edit, $account, $category) {
     if ($category == 'account') {
       $removed_roles = array_diff_key($edit['original']->roles, $edit['roles']);
 
-      mailchimp_lists_user_sync($account, isset($edit['mail']) ? $edit['mail'] : '', $removed_roles);
+      mailchimp_lists_user_sync($account, isset($edit['original']) ? $edit['original']->mail : '', isset($edit['mail']) ? $edit['mail'] : '', $removed_roles);
     }
   }
 }
@@ -321,12 +321,12 @@ function mailchimp_lists_user_update(&$edit, $account, $category) {
  * @param string $account
  * @param string $new_email
  */
-function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles = array()) {
+function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $removed_roles = array()) {
   // Remove subscriptions if necessary
   if (!empty($removed_roles)) {
     $all_lists = mailchimp_lists_load_multiple();
     foreach ($all_lists as $list) {
-      $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
+      $is_subscribed = !empty($old_email) && mailchimp_is_subscribed($list->mc_list_id, $old_email);
 
       if ($is_subscribed) {
         foreach ($removed_roles as $role_id => $role) {
@@ -343,7 +343,7 @@ function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles = a
             }
             // process immediately
             else {
-              mailchimp_unsubscribe_user($list, $account->mail, FALSE, NULL, TRUE);
+              mailchimp_unsubscribe_user($list, $old_email, FALSE, NULL, TRUE);
             }
           }
         }
@@ -356,7 +356,7 @@ function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles = a
   if (!empty($lists)) {
     $mcapi = mailchimp_get_api_object();
     foreach ($lists as $list) {
-      $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
+	  $is_subscribed = !empty($old_email) && mailchimp_is_subscribed($list->mc_list_id, $old_email);
       if ($account->status) {
         // queue up for cron processing
         if ($list->settings['cron']) {
@@ -377,7 +377,7 @@ function mailchimp_lists_user_sync($account, $new_email = '', $removed_roles = a
             $mergevars['EMAIL'] = $new_email;
           }
           if ($is_subscribed) {
-            mailchimp_update_user($list, $account->mail, $mergevars, FALSE, $mcapi);
+			mailchimp_update_user($list, $old_email, $mergevars, FALSE, $mcapi);
           }
           else {
             mailchimp_subscribe_user($list, $account->mail, $mergevars, FALSE, $mcapi);
