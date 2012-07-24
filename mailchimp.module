@@ -220,6 +220,7 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
         }
       }
     }
+    uasort($lists, '_mailchimp_list_cmp');
 
     cache_set('mailchimp_lists', $lists, 'cache', CACHE_TEMPORARY);
   }
@@ -367,3 +368,19 @@ function mailchimp_webhook_url() {
   return $GLOBALS['base_url'] . '/mailchimp/webhook/' . mailchimp_webhook_key();
 }
 
+/**
+ * Helper function used by uasort() to sort lists alphabetically by name.
+ *
+ * @param array $a
+ *   An array representing the first list.
+ * @param array $b
+ *   An array representing the second list.
+ *
+ * @return One of the values -1, 0, 1
+ */
+function _mailchimp_list_cmp($a, $b) {
+  if ($a['name'] == $b['name']) {
+    return 0;
+  }
+  return ($a['name'] < $b['name']) ? -1 : 1;
+}
