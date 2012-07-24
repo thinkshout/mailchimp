@@ -303,9 +303,11 @@ function mailchimp_lists_user_delete($account) {
  */
 function mailchimp_lists_user_update(&$edit, $account, $category) {
   if(isset($edit['roles'])) {
-    $removed_roles = array_diff_key($edit['original']->roles, $edit['roles']);
+    if ($category == 'account') {
+      $removed_roles = array_diff_key($edit['original']->roles, $edit['roles']);
 
-    mailchimp_lists_user_sync($account, isset($edit['mail']) ? $edit['mail'] : '', $removed_roles);
+      mailchimp_lists_user_sync($account, isset($edit['mail']) ? $edit['mail'] : '', $removed_roles);
+    }
   }
 }
 
