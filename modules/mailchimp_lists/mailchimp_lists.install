@@ -224,8 +224,11 @@ function mailchimp_lists_update_7201() {
  * Convert block deltas from ID numbers to machine names.
  */
 function mailchimp_lists_update_7202() {
+  $num_updated = 0;
+  $num_deleted = 0;
+  
   $query = db_select('block', 'b')
-    ->fields('b', array('bid', 'delta'))
+    ->fields('b', array('bid', 'delta', 'module', 'theme'))
     ->condition('module', 'mailchimp_lists', '=')
     ->execute();
 
@@ -241,13 +244,39 @@ function mailchimp_lists_update_7202() {
       $list_results = $list_query->fetchAll();
 
       $list_machine_name = $list_results[0]->name;
-
-      $num = db_update('block')
-        ->fields(array(
-          'delta' => $list_machine_name,
-        ))
-        ->condition('bid', $result->bid, '=')
+      
+      // Check to see if a machine name delta already exists
+      $check_query = db_select('block', 'b')
+        ->fields('b', array('bid', 'delta'))
+        ->condition('delta', $list_machine_name, '=')
+        ->condition('module', $result->module, '=')
+        ->condition('theme', $result->theme, '=')
         ->execute();
+
+      $check_results = $check_query->fetchAll();
+      
+      if (count($check_results)) {
+        // Delete the numeric fields
+        $num_deleted += db_delete('block')
+          ->condition('bid', $result->bid, '=')
+          ->execute();
+      }
+      else {
+        $num_updated += db_update('block')
+          ->fields(array(
+            'delta' => $list_machine_name,
+          ))
+          ->condition('bid', $result->bid, '=')
+          ->execute();
+      }
     }
+  }
+  
+  if ($num_deleted > 0) {
+    return t('Deleted !num duplicate block(s).', array('!num' => $num_deleted));
+  } elseif ($num_updated > 0) {
+    return t('Updated !num block(s).', array('!num' => $num_updated));
+  } else {
+    return TRUE;
   }
 }
