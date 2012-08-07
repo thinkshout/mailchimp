@@ -242,32 +242,34 @@ function mailchimp_lists_update_7202() {
         ->execute();
 
       $list_results = $list_query->fetchAll();
-
-      $list_machine_name = $list_results[0]->name;
       
-      // Check to see if a machine name delta already exists
-      $check_query = db_select('block', 'b')
-        ->fields('b', array('bid', 'delta'))
-        ->condition('delta', $list_machine_name, '=')
-        ->condition('module', $result->module, '=')
-        ->condition('theme', $result->theme, '=')
-        ->execute();
-
-      $check_results = $check_query->fetchAll();
-      
-      if (count($check_results)) {
-        // Delete the numeric fields
-        $num_deleted += db_delete('block')
-          ->condition('bid', $result->bid, '=')
+      if ($list_results) {
+        $list_machine_name = $list_results[0]->name;
+        
+        // Check to see if a machine name delta already exists
+        $check_query = db_select('block', 'b')
+          ->fields('b', array('bid', 'delta'))
+          ->condition('delta', $list_machine_name, '=')
+          ->condition('module', $result->module, '=')
+          ->condition('theme', $result->theme, '=')
           ->execute();
-      }
-      else {
-        $num_updated += db_update('block')
-          ->fields(array(
-            'delta' => $list_machine_name,
-          ))
-          ->condition('bid', $result->bid, '=')
-          ->execute();
+  
+        $check_results = $check_query->fetchAll();
+        
+        if (count($check_results)) {
+          // Delete the numeric fields
+          $num_deleted += db_delete('block')
+            ->condition('bid', $result->bid, '=')
+            ->execute();
+        }
+        else {
+          $num_updated += db_update('block')
+            ->fields(array(
+              'delta' => $list_machine_name,
+            ))
+            ->condition('bid', $result->bid, '=')
+            ->execute();
+        }
       }
     }
   }
