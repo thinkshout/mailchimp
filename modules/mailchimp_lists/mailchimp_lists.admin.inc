@@ -367,6 +367,19 @@ function mailchimp_lists_list_form_validate($form, &$form_state) {
       t('The anonymous role can only be set for free form lists.'));
   }
 
+  // required lists must have a role selected (other than anon)
+  if ($form_state['values']['list_type'] == MAILCHIMP_LISTTYPE_REQUIRED) {
+    $roles = $form_state['values']['roles'];
+    // unset anonymous role
+    unset($roles[DRUPAL_ANONYMOUS_RID]);
+    // check if there was a role selected
+    $roles = array_filter($roles);
+    if (empty($roles)) {
+      form_set_error('roles',
+        t('Required lists must have a role (other than Anonymous) selected.'));
+    }
+  }
+
   // ensure mail merge field is set correctly
   if (!isset($form_state['values']['mergefields']['EMAIL']) ||
     $form_state['values']['mergefields']['EMAIL'] != 'mail'
@@ -494,8 +507,8 @@ function mailchimp_lists_queue_existing_form($form, &$form_state, $list) {
   return confirm_form($form,
     t('Are you sure you want to queue existing users in %name?', array('%name' => $list->label)),
     'admin/config/services/mailchimp/lists',
-    t('This action will queue all users who belong in this list based on roles 
-       for processing and cannot be undone. If you have lots of users, it could 
+    t('This action will queue all users who belong in this list based on roles
+       for processing and cannot be undone. If you have lots of users, it could
        take some time and possibly timeout.'),
     t('Queue existing users'));
 }
