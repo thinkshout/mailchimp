@@ -513,7 +513,7 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
         '#weight' => 100,
         '#states' => array(
           'collapsed' => array(
-            ':input[name="mailchimp_lists[mailchimp_' . $list->id . '][subscribe]"]' => array('checked' => FALSE),
+            ':input[name="mailchimp_lists[mailchimp_' . $list->name . '][subscribe]"]' => array('checked' => FALSE),
           )
         )
       );
