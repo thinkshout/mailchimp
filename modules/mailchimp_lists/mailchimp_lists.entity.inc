@@ -18,9 +18,6 @@ function mailchimp_lists_entity_info() {
         'id' => 'id',
         'name' => 'name',
       ),
-      'bundle keys' => array(
-        'bundle' => 'type',
-      ),
       'bundles' => array(
         'mailchimp_list' => array(
           'label' => t('MailChimp List'),
