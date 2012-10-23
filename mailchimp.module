@@ -360,7 +360,7 @@ function mailchimp_process_webhook() {
  * @return string
  */
 function mailchimp_webhook_key() {
-  return md5($GLOBALS['base_url']);
+  return drupal_hash_base64($GLOBALS['base_url'] . drupal_get_private_key() . drupal_get_hash_salt());
 }
 
 /**
