@@ -197,6 +197,9 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
  * @param $template
  * @param $options
  * @param null $campaign_id
+ *
+ * @return string
+ *   New or existing campaign ID.
  */
 function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NULL) {
   $mcapi = mailchimp_get_api_object();
@@ -246,6 +249,8 @@ function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NU
     // clear cached data for this campaign
     mailchimp_campaign_get_campaigns(array($campaign_id), TRUE);
   }
+
+  return $campaign_id;
 }
 
 /**
