@@ -86,6 +86,13 @@ function mailchimp_lists_menu() {
     'file' => 'mailchimp_lists.admin.inc',
   );
 
+  $items['user/%user/mailchimp_log'] = array(
+    'page callback' => 'mailchimp_activity_log_user_page',
+    'page arguments' => array(1),
+    'title' => 'Mailchimp Log',
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array(1),
+  );
   return $items;
 }
 
@@ -222,7 +229,7 @@ function mailchimp_lists_form_user_register_form_alter(&$form, &$form_state, $fo
   $account = $form['#user'];
 
   // need to force feed the authenticated role to this account object so the
-  // right newseletters are avaialble
+  // right newsletters are available
   $account->roles[DRUPAL_AUTHENTICATED_RID] = 'authenticated user';
 
   $lists = mailchimp_lists_get_available_lists($account,
@@ -283,7 +290,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
       }
     }
   }
-  
+
   // handle required lists
   mailchimp_lists_user_sync($account);
 }
@@ -888,4 +895,88 @@ function mailchimp_lists_queue_existing($list) {
   }
 
   return $count;
+}
+
+/**
+ * Return all activity on all lists for a given email address
+ *
+ * @param string $email
+ *
+ * @return $array
+ */
+function mailchimp_get_all_user_activity($email) {
+  $all_activity = array();
+  $lists = mailchimp_lists_get_available_lists();
+  foreach ($lists as $list) {
+    $all_activity = array_merge($all_activity, mailchimp_get_member_activity($list->mc_list_id, $email));
+    //array_merge gives us a nice flat set of activities. To have an array of arrays, where each sub-array contains activities only on a given list:
+    //$all_activity[] = mailchimp_get_member_activity($list->mc_list_id, $email);
+  }
+  usort($all_activity, '_mailchimp_compare_activities_by_date');
+  rsort($all_activity);
+  return $all_activity;
+}
+
+/**
+ * Implements the cmp_function callback for usort. Sorts an array of
+ * mailchimp activity arrays by date.
+ *
+ * @param $A
+ * @param $B
+ * @return int (just the difference between the two timestamps)
+ */
+function _mailchimp_compare_activities_by_date($A, $B) {
+  return strtotime($A['timestamp']) - strtotime($B['timestamp']);
+}
+
+/**
+ * Content for the mailchimp log tab on the user page.
+ *
+ * Returns a renderable array.
+ *
+ * @param $user
+ * @return array
+ */
+
+function mailchimp_activity_log_user_page($user) {
+  $email = $user->mail;
+  $display =  array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Mailchimp History'),
+    '#theme' => 'table',
+    '#header' => array(
+      t('Campaign'),
+      t('Action'),
+      t('Date & Time'),
+    ),
+    '#rows' => _mailchimp_presentable_activity(mailchimp_get_all_user_activity($email)),
+  );
+  return $display;
+}
+
+/**
+ * take a flat array of activities as supplied by the mailchimp API's listMemberActivity function
+ * and returns an array of items formatted for human readability
+ *
+ * @param $activity_array
+ * @return array
+ */
+function _mailchimp_presentable_activity($activity_array) {
+  $presentable_array = array();
+  foreach ($activity_array as $activity) {
+    //once we have a lot of activities this is going to represent 100 api calls. Should rebuild mailchimp_get_campaign_data to use cache and pull in all campaigns
+    $campaign_data = mailchimp_get_campaign_data($activity['campaign_id']);
+    $presentable_array[] = array(
+      array(
+        'data' => array(
+          '#type'=>'link',
+          '#title' => $campaign_data['title'],
+          '#href' => 'https://us6.admin.mailchimp.com/campaigns/show?id=' . $campaign_data['web_id'],
+        ),
+      ),
+      'action' => $activity['action'],
+      'date_time' => $activity['timestamp'],
+    );
+  }
+  return $presentable_array;
 }

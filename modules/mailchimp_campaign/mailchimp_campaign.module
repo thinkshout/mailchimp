@@ -15,7 +15,7 @@ function mailchimp_campaign_permission() {
 }
 
 /**
- * Implements hook_menu().
+ * Implements   hook_menu().
  */
 function mailchimp_campaign_menu() {
   $items['admin/config/services/mailchimp/campaigns'] = array(

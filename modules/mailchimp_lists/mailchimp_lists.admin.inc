@@ -46,11 +46,11 @@ function mailchimp_lists_overview_page() {
 
 function mailchimp_lists_refresh_page() {
   cache_clear_all('mailchimp_lists', 'cache');
-
+  drupal_set_message(t('Mailchimp Lists refreshed'), 'status');
   // return render array.
   return array(
-    '#markup' => t('!link have been refreshed.',
-      array('!link' => l('MailChimp lists', 'admin/config/services/mailchimp/lists')))
+    '#markup' => t('Back to !link.',
+      array('!link' => l('my lists', 'admin/config/services/mailchimp/lists')))
   );
 }
 
