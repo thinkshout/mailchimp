@@ -39,6 +39,7 @@ function mailchimp_activity_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      // TODO: Add missing email property!!!
       'enabled' => array(
         'type' => 'int',
         'not null' => TRUE,
