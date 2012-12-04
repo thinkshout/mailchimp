@@ -79,4 +79,6 @@ function mailchimp_activity_schema() {
       ),
     ),
   );
+
+  return $schema;
 }
