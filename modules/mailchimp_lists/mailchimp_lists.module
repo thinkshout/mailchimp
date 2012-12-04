@@ -86,10 +86,10 @@ function mailchimp_lists_menu() {
     'file' => 'mailchimp_lists.admin.inc',
   );
 
-  $items['user/%user/mailchimp_log'] = array(
-    'page callback' => 'mailchimp_activity_log_user_page',
+  $items['user/%user/mailchimp/activity'] = array(
+    'page callback' => 'mailchimp_lists_activity_page',
     'page arguments' => array(1),
-    'title' => 'Mailchimp Log',
+    'title' => 'Mailchimp activity',
     'type' => MENU_LOCAL_TASK,
     'access arguments' => array(1),
   );
@@ -904,7 +904,7 @@ function mailchimp_lists_queue_existing($list) {
  *
  * @return $array
  */
-function mailchimp_get_all_user_activity($email) {
+function mailchimp_lists_get_all_user_activity($account) {
   $all_activity = array();
   $lists = mailchimp_lists_get_available_lists();
   foreach ($lists as $list) {
@@ -938,8 +938,8 @@ function _mailchimp_compare_activities_by_date($A, $B) {
  * @return array
  */
 
-function mailchimp_activity_log_user_page($user) {
   $email = $user->mail;
+function mailchimp_lists_activity_page($user) {
   $display =  array(
     '#type' => 'user_profile_item',
     '#title' => t('Mailchimp History'),
