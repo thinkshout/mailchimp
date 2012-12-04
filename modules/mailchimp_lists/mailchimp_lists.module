@@ -906,11 +906,9 @@ function mailchimp_lists_queue_existing($list) {
  */
 function mailchimp_lists_get_all_user_activity($account) {
   $all_activity = array();
-  $lists = mailchimp_lists_get_available_lists();
+  $lists = mailchimp_lists_get_available_lists($account);
   foreach ($lists as $list) {
-    $all_activity = array_merge($all_activity, mailchimp_get_member_activity($list->mc_list_id, $email));
-    //array_merge gives us a nice flat set of activities. To have an array of arrays, where each sub-array contains activities only on a given list:
-    //$all_activity[] = mailchimp_get_member_activity($list->mc_list_id, $email);
+    $all_activity = array_merge($all_activity, mailchimp_get_member_activity($list->mc_list_id, $account->mail));
   }
   usort($all_activity, '_mailchimp_compare_activities_by_date');
   rsort($all_activity);
