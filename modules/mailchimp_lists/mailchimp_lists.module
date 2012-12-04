@@ -938,8 +938,8 @@ function _mailchimp_compare_activities_by_date($A, $B) {
  * @return array
  */
 
-  $email = $user->mail;
 function mailchimp_lists_activity_page($user) {
+  $activity = mailchimp_lists_get_all_user_activity($user);
   $display =  array(
     '#type' => 'user_profile_item',
     '#title' => t('Mailchimp History'),
@@ -949,7 +949,7 @@ function mailchimp_lists_activity_page($user) {
       t('Action'),
       t('Date & Time'),
     ),
-    '#rows' => _mailchimp_presentable_activity(mailchimp_get_all_user_activity($email)),
+    '#rows' => _mailchimp_presentable_activity($activity),
   );
   return $display;
 }
