@@ -1,0 +1,10 @@
+name = MailChimp Activity
+description = View activity for an email address associated with any entity.
+package = MailChimp
+core = 7.x
+
+dependencies[] = mailchimp
+dependencies[] = entity
+
+files[] = mailchimp_activity.entity.inc
+

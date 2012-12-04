@@ -1,0 +1,69 @@
+<?php
+
+/**
+ * Implements hook_entity_info().
+ */
+function mailchimp_activity_entity_info() {
+  $return = array(
+    'mailchimp_activity_entity' => array(
+      'label' => t('MailChimp activity entity'),
+      'controller class' => 'EntityAPIControllerExportable',
+      'entity class' => 'MailchimpActivityEntity',
+      'base table' => 'mailchimp_activity_entity',
+      'uri callback' => 'entity_class_uri',
+      'fieldable' => FALSE,
+      'exportable' => TRUE,
+      'module' => 'mailchimp_activity',
+      'entity keys' => array(
+        'id' => 'mailchimp_activity_entity_id',
+        'name' => 'name',
+        'label' => 'label'
+      ),
+      // Enable the entity API's admin UI.
+      'admin ui' => array(
+        'path' => 'admin/config/services/mailchimp/activity',
+        'file' => 'mailchimp_activity.admin.inc',
+//        'controller class' => 'SalesforceMappingUIController',
+      ),
+      'access callback' => 'mailchimp_activity_access',
+      'label callback' => 'entity_class_label',
+    ),
+  );
+
+  return $return;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function mailchimp_activity_menu() {
+  $mailchimp_activity_entities = mailchimp_activity_entity_load();
+  foreach ($mailchimp_activity_entities as $mailchimp_activity_entity) {
+    $entity = entity_create($mailchimp_activity_entity->entity_type, array(
+      'bundle' => $mailchimp_activity_entity->bundle
+    ));
+    $uri = entity_uri($mailchimp_activity_entity->entity_type, $entity);
+    $items[$uri] = array(
+      'title' => 'MailChimp activity',
+      'page callback' => 'mailchimp_activity_page',
+      'page arguments' => array(1, $mailchimp_activity_entity),
+      'access callback' => 'mailchimp_activity_access',
+      'access arguments' => array(1),
+      'type' => MENU_NORMAL_ITEM,
+    );
+  }
+
+  return $items;
+}
+
+/**
+ * Loads a single mailchimp_activity_entity or all of them if no name provided.
+ *
+ * @param null $name
+ *
+ * @return array
+ */
+function mailchimp_activity_entity_load($name = NULL) {
+  $types = entity_load_multiple_by_name('mailchimp_activity_entity', isset($name) ? array($name) : FALSE);
+  return isset($name) ? reset($types) : $types;
+}
