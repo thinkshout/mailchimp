@@ -42,13 +42,27 @@ function mailchimp_activity_menu() {
       'title' => 'MailChimp activity',
       'page callback' => 'mailchimp_activity_page',
       'page arguments' => array(1, $mailchimp_activity_entity),
-//      'access callback' => 'mailchimp_activity_access',
-      'access arguments' => array(1),
-      'type' => MENU_NORMAL_ITEM,
+      'access callback' => 'mailchimp_activity_access',
+      'access arguments' => array($mailchimp_activity_entity),
+      'type' => MENU_LOCAL_TASK,
     );
   }
 
   return $items;
+}
+
+/**
+ * Access callback for activity menu items.
+ *
+ * @param MailchimpActivityEntity $mailchimp_activity_entity
+ *
+ * @return bool
+ */
+function mailchimp_activity_access(MailchimpActivityEntity $mailchimp_activity_entity) {
+  if ($mailchimp_activity_entity->enabled && user_access('access mailchimp activity')) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /**
