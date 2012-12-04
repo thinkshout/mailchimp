@@ -23,7 +23,6 @@ function mailchimp_activity_entity_info() {
       'admin ui' => array(
         'path' => 'admin/config/services/mailchimp/activity',
         'file' => 'mailchimp_activity.admin.inc',
-//        'controller class' => 'SalesforceMappingUIController',
       ),
       'label callback' => 'entity_class_label',
     ),
@@ -38,8 +37,9 @@ function mailchimp_activity_entity_info() {
 function mailchimp_activity_menu() {
   $mailchimp_activity_entities = mailchimp_activity_load_entities();
   foreach ($mailchimp_activity_entities as $mailchimp_activity_entity) {
-    $items[$mailchimp_activity_entity->entity_type . '/%/mailchimp_activity'] = array(
+    $items[$mailchimp_activity_entity->entity_type . '/%entity_object/mailchimp_activity'] = array(
       'title' => 'MailChimp activity',
+      'load arguments' => array($mailchimp_activity_entity->entity_type),
       'page callback' => 'mailchimp_activity_page',
       'page arguments' => array(1, $mailchimp_activity_entity),
       'access callback' => 'mailchimp_activity_access',
