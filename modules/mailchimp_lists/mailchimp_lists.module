@@ -965,6 +965,9 @@ function _mailchimp_presentable_activity($activity_array) {
   $presentable_array = array();
   foreach ($activity_array as $activity) {
     //once we have a lot of activities this is going to represent 100 api calls. Should rebuild mailchimp_get_campaign_data to use cache and pull in all campaigns
+    // once we have a lot of activities this is going to represent 100 api calls.
+    // Should rebuild mailchimp_get_campaign_data to use cache and pull in all
+    // campaigns
     $campaign_data = mailchimp_get_campaign_data($activity['campaign_id']);
     $presentable_array[] = array(
       array(
