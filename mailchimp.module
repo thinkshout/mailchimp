@@ -392,9 +392,9 @@ function _mailchimp_list_cmp($a, $b) {
 }
 
 /**
- * Get the MailChimp memberactivity for a given email address and list. Results are cached
- * in the cache_mailchimp_user bin which is cleared by the MC web hooks system when
- * needed.
+ * Get the MailChimp memberactivity for a given email address and list. Results
+ * are cached in the cache_mailchimp_user bin which is cleared by the MC web
+ * hooks system when needed.
  *
  * @param string $list_id
  * @param string $email
@@ -418,10 +418,16 @@ function mailchimp_get_member_activity($list_id, $email, $reset = FALSE) {
       $result = $q->listMemberActivity($list_id, array($email));
       if ($result['success']) {
         $memberactivity = reset($result['data']);
+        cache_set(
+          $list_id . '-' . $email . '-activity',
+          $memberactivity,
+          'cache_mailchimp_user',
+          REQUEST_TIME + (60 * 60 * 24) // TODO: Any particular reason for this?
+        );
       }
     }
-    cache_set($list_id . '-' . $email . '-activity', $memberactivity, 'cache_mailchimp_user', REQUEST_TIME + (60 * 60 * 24));
   }
+
   return $memberactivity;
 }
 
