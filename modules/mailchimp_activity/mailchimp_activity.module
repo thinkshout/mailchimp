@@ -38,15 +38,11 @@ function mailchimp_activity_entity_info() {
 function mailchimp_activity_menu() {
   $mailchimp_activity_entities = mailchimp_activity_load_entities();
   foreach ($mailchimp_activity_entities as $mailchimp_activity_entity) {
-    $entity = entity_create($mailchimp_activity_entity->entity_type, array(
-      'bundle' => $mailchimp_activity_entity->bundle
-    ));
-    $uri = entity_uri($mailchimp_activity_entity->entity_type, $entity);
-    $items[$uri] = array(
+    $items[$mailchimp_activity_entity->entity_type . '/%/mailchimp_activity'] = array(
       'title' => 'MailChimp activity',
       'page callback' => 'mailchimp_activity_page',
       'page arguments' => array(1, $mailchimp_activity_entity),
-      'access callback' => 'mailchimp_activity_access',
+//      'access callback' => 'mailchimp_activity_access',
       'access arguments' => array(1),
       'type' => MENU_NORMAL_ITEM,
     );
@@ -65,4 +61,128 @@ function mailchimp_activity_menu() {
 function mailchimp_activity_load_entities($name = NULL) {
   $types = entity_load_multiple_by_name('mailchimp_activity_entity', isset($name) ? array($name) : FALSE);
   return isset($name) ? reset($types) : $types;
+}
+
+/**
+ * Get the MailChimp memberactivity for a given email address and list. Results
+ * are cached in the cache_mailchimp_user bin which is cleared by the MC web
+ * hooks system when needed.
+ *
+ * @param string $list_id
+ * @param string $email
+ * @param bool $reset
+ *
+ * @return array memberactivity
+ *
+ * @todo MC Web hook clearance needs review for this function's cache behavior
+*/
+function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE) {
+  $cache = $reset ? NULL : cache_get($list_id . '-' . $email . '-activity', 'cache_mailchimp_user');
+  $memberactivity = array();
+
+  // return cached lists
+  if ($cache) {
+    $memberactivity = $cache->data;
+  }
+  // Query lists from the MC API and store in cache
+  else {
+    if ($q = mailchimp_get_api_object()) {
+      $result = $q->listMemberActivity($list_id, array($email));
+      if ($result['success']) {
+        $memberactivity = reset($result['data']);
+        cache_set(
+          $list_id . '-' . $email . '-activity',
+          $memberactivity,
+          'cache_mailchimp_user',
+          REQUEST_TIME + (60 * 60 * 24) // TODO: Any particular reason for this?
+        );
+      }
+    }
+  }
+
+  return $memberactivity;
+}
+
+/**
+ * Content for the mailchimp log tab on the user page.
+ *
+ * Returns a renderable array.
+ *
+ * @param $user
+ * @return array
+ */
+function mailchimp_activity_page($user) {
+  $activity = mailchimp_activity_get_all_user_activity($user);
+  $display =  array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Mailchimp History'),
+    '#theme' => 'table',
+    '#header' => array(
+      t('Campaign'),
+      t('Action'),
+      t('Date & Time'),
+    ),
+    '#rows' => _mailchimp_presentable_activity($activity),
+  );
+  return $display;
+}
+
+
+/**
+ * Return all activity on all lists for a given email address
+ *
+ * @param string $email
+ *
+ * @return $array
+ */
+function mailchimp_activity_get_all_user_activity($account) {
+  $all_activity = array();
+  $lists = mailchimp_lists_get_available_lists($account);
+  foreach ($lists as $list) {
+    $all_activity = array_merge($all_activity, mailchimp_activity_get_member_activity($list->mc_list_id, $account->mail));
+  }
+  usort($all_activity, '_mailchimp_compare_activities_by_date');
+  rsort($all_activity);
+  return $all_activity;
+}
+
+/**
+ * Implements the cmp_function callback for usort. Sorts an array of
+ * mailchimp activity arrays by date.
+ *
+ * @param $A
+ * @param $B
+ * @return int (just the difference between the two timestamps)
+ */
+function _mailchimp_compare_activities_by_date($A, $B) {
+  return strtotime($A['timestamp']) - strtotime($B['timestamp']);
+}
+
+/**
+ * take a flat array of activities as supplied by the mailchimp API's listMemberActivity function
+ * and returns an array of items formatted for human readability
+ *
+ * @param $activity_array
+ * @return array
+ */
+function _mailchimp_presentable_activity($activity_array) {
+  $presentable_array = array();
+  foreach ($activity_array as $activity) {
+    // once we have a lot of activities this is going to represent 100 api calls.
+    // Should rebuild mailchimp_get_campaign_data to use cache and pull in all
+    // campaigns
+    $campaign_data = mailchimp_get_campaign_data($activity['campaign_id']);
+    $presentable_array[] = array(
+      array(
+        'data' => array(
+          '#type'=>'link',
+          '#title' => $campaign_data['title'],
+          '#href' => 'https://us6.admin.mailchimp.com/campaigns/show?id=' . $campaign_data['web_id'],
+        ),
+      ),
+      'action' => $activity['action'],
+      'date_time' => $activity['timestamp'],
+    );
+  }
+  return $presentable_array;
 }
