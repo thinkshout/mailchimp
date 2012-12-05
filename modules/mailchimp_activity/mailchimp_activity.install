@@ -39,7 +39,13 @@ function mailchimp_activity_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
-      // TODO: Add missing email property!!!
+      'email_property' => array(
+        'description' => 'The property that contains the email address to track',
+        'type' => 'text',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'enabled' => array(
         'type' => 'int',
         'not null' => TRUE,

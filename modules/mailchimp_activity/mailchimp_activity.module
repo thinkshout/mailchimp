@@ -24,6 +24,7 @@ function mailchimp_activity_entity_info() {
         'path' => 'admin/config/services/mailchimp/activity',
         'file' => 'mailchimp_activity.admin.inc',
       ),
+      'access callback' => 'mailchimp_activity_admin_access',
       'label callback' => 'entity_class_label',
     ),
   );
@@ -38,7 +39,7 @@ function mailchimp_activity_menu() {
   $mailchimp_activity_entities = mailchimp_activity_load_entities();
   foreach ($mailchimp_activity_entities as $mailchimp_activity_entity) {
     $items[$mailchimp_activity_entity->entity_type . '/%entity_object/mailchimp_activity'] = array(
-      'title' => 'MailChimp activity',
+      'title' => 'MailChimp Activity',
       'load arguments' => array($mailchimp_activity_entity->entity_type),
       'page callback' => 'mailchimp_activity_page',
       'page arguments' => array(1, $mailchimp_activity_entity),
@@ -59,10 +60,15 @@ function mailchimp_activity_menu() {
  * @return bool
  */
 function mailchimp_activity_access(MailchimpActivityEntity $mailchimp_activity_entity) {
+  //return TRUE;
   if ($mailchimp_activity_entity->enabled && user_access('access mailchimp activity')) {
     return TRUE;
   }
   return FALSE;
+}
+
+function mailchimp_activity_admin_access() {
+  return TRUE;
 }
 
 /**
@@ -120,13 +126,15 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
 /**
  * Content for the mailchimp log tab on the user page.
  *
- * Returns a renderable array.
+ * @param $node
+ * @param $mailchimp_entity_definition
  *
- * @param $user
- * @return array
+ * @return array (renderable)
  */
-function mailchimp_activity_page($user) {
-  $activity = mailchimp_activity_get_all_user_activity($user);
+function mailchimp_activity_page($node, $mailchimp_entity_definition) {
+  $id = $mailchimp_entity_definition->email_property;
+  $email = $node->$id;
+  $activity = mailchimp_activity_get_all_user_activity($email);
   $display =  array(
     '#type' => 'user_profile_item',
     '#title' => t('Mailchimp History'),
@@ -149,11 +157,11 @@ function mailchimp_activity_page($user) {
  *
  * @return $array
  */
-function mailchimp_activity_get_all_user_activity($account) {
+function mailchimp_activity_get_all_user_activity($email) {
   $all_activity = array();
-  $lists = mailchimp_lists_get_available_lists($account);
+  $lists = mailchimp_lists_get_available_lists();
   foreach ($lists as $list) {
-    $all_activity = array_merge($all_activity, mailchimp_activity_get_member_activity($list->mc_list_id, $account->mail));
+    $all_activity = array_merge($all_activity, mailchimp_activity_get_member_activity($list->mc_list_id, $email));
   }
   usort($all_activity, '_mailchimp_compare_activities_by_date');
   rsort($all_activity);
@@ -199,4 +207,20 @@ function _mailchimp_presentable_activity($activity_array) {
     );
   }
   return $presentable_array;
+}
+
+/**
+ * Implements hook_permission().
+ *
+ * @returns permission_array
+ */
+function mailchimp_activity_permission() {
+  $return = array();
+
+  $return['access mailchimp activity'] = array(
+    'title' => t('access mailchimp activity'),
+    'description' => t('View MailChimp activity history'),
+  );
+
+  return $return;
 }
