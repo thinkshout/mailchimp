@@ -406,3 +406,19 @@ function mailchimp_get_campaign_data($campaign_id) {
   $res = $q->campaigns($filters);
   return $res['data'][0];
 }
+
+/**
+ * Returns an array of lists that the user is (currently) a member of
+ *
+ * @param $email
+ *
+ * @return array
+ * @todo come up with a coherent behavior for lists that the email was once a member of:
+ * this may require use of campaignForEmail to extract additional list ID's
+ */
+function mailchimp_get_current_lists_for_email($email) {
+  $q = mailchimp_get_api_object();
+  $list_ids = $q->listsForEmail($email);
+  $lists = mailchimp_get_lists($list_ids);
+  return $lists;
+}
