@@ -182,7 +182,12 @@ function mailchimp_activity_get_all_activity($email) {
     }
     $all_activity = array_merge($all_activity, $list_activity);
   }
-  //@todo extract some campaign data into the array here to save work in rendering
+  // now we extract some campaign data into the array to save work in rendering
+  foreach ($all_activity as &$activity) {
+    $campaign_data = mailchimp_get_campaign_data($activity['campaign_id']);
+    $activity['campaign_title'] = $campaign_data['title'];
+    $activity['campaign_id'] = $campaign_data['web_id'];
+  }
   usort($all_activity, '_mailchimp_compare_activities_by_date');
   rsort($all_activity);
   return $all_activity;
@@ -210,17 +215,13 @@ function _mailchimp_compare_activities_by_date($A, $B) {
 function _mailchimp_presentable_activity($activity_array) {
   $presentable_array = array();
   foreach ($activity_array as $activity) {
-    // once we have a lot of activities this is going to represent 100 api calls.
-    // Should rebuild mailchimp_get_campaign_data to use cache and pull in all
-    // campaigns
-    $campaign_data = mailchimp_get_campaign_data($activity['campaign_id']);
     $presentable_array[] = array(
       'list' => $activity['list'],
       array(
         'data' => array(
-          '#type'=>'link',
-          '#title' => $campaign_data['title'],
-          '#href' => 'https://us6.admin.mailchimp.com/campaigns/show?id=' . $campaign_data['web_id'],
+          '#type' => 'link',
+          '#title' => $activity['campaign_title'],
+          '#href' => 'https://us6.admin.mailchimp.com/campaigns/show?id=' . $activity['campaign_id'],
         ),
       ),
       'action' => $activity['action'],
