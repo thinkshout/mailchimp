@@ -164,7 +164,11 @@ function mailchimp_activity_page($node, $mailchimp_entity_definition) {
     ),
     array(
       'data' => t('Date & Time'),
-      //'field' => '$timestamp',
+      //'field' => 'timestamp',
+    ),
+    array(
+      'data' => t('Status'),
+      //'field' => 'status',
     ),
   );
   $display['mailchimp_activity'] =  array(
@@ -185,11 +189,12 @@ function mailchimp_activity_page($node, $mailchimp_entity_definition) {
  */
 function mailchimp_activity_get_all_activity($email) {
   $all_activity = array();
-  $lists = mailchimp_get_current_lists_for_email($email);
+  $lists = mailchimp_get_lists_for_email($email);
   foreach ($lists as $list) {
     $list_activity = mailchimp_activity_get_member_activity($list['id'], $email);
     foreach ($list_activity as &$activity) {
       $activity['list'] = $list['name'];
+      $activity['status'] = $list['status'];
     }
     $all_activity = array_merge($all_activity, $list_activity);
   }
@@ -255,6 +260,9 @@ function _mailchimp_presentable_activity($activity_array) {
       ),
       array(
         'data' => $activity['timestamp'],
+      ),
+      array(
+        'data' => $activity['status'],
       ),
     );
   }
