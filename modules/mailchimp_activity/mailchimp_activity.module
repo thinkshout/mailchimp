@@ -125,6 +125,10 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
           $memberactivity,
           'cache_mailchimp_user',
           REQUEST_TIME + (60 * 60 * 24) // TODO: Any particular reason for this?
+        // wanted to see how it worked, also thought this might be data that needed
+        // more regular refreshing than the existing caching accounted for. This
+        // will change for some entities every time an email is sent, which could
+        // easily be daily.
         );
       }
     }
@@ -144,12 +148,13 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
 function mailchimp_activity_page($node, $mailchimp_entity_definition) {
   $id = $mailchimp_entity_definition->email_property;
   $email = $node->$id;
-  $activity = mailchimp_activity_get_all_user_activity($email);
+  $activity = mailchimp_activity_get_all_activity($email);
   $display =  array(
     '#type' => 'user_profile_item',
     '#title' => t('Mailchimp History'),
     '#theme' => 'table',
     '#header' => array(
+      t('List'),
       t('Campaign'),
       t('Action'),
       t('Date & Time'),
@@ -167,12 +172,17 @@ function mailchimp_activity_page($node, $mailchimp_entity_definition) {
  *
  * @return $array
  */
-function mailchimp_activity_get_all_user_activity($email) {
+function mailchimp_activity_get_all_activity($email) {
   $all_activity = array();
-  $lists = mailchimp_lists_get_available_lists();
+  $lists = mailchimp_get_current_lists_for_email($email);
   foreach ($lists as $list) {
-    $all_activity = array_merge($all_activity, mailchimp_activity_get_member_activity($list->mc_list_id, $email));
+    $list_activity = mailchimp_activity_get_member_activity($list['id'], $email);
+    foreach ($list_activity as &$activity) {
+      $activity['list'] = $list['name'];
+    }
+    $all_activity = array_merge($all_activity, $list_activity);
   }
+  //@todo extract some campaign data into the array here to save work in rendering
   usort($all_activity, '_mailchimp_compare_activities_by_date');
   rsort($all_activity);
   return $all_activity;
@@ -205,6 +215,7 @@ function _mailchimp_presentable_activity($activity_array) {
     // campaigns
     $campaign_data = mailchimp_get_campaign_data($activity['campaign_id']);
     $presentable_array[] = array(
+      'list' => $activity['list'],
       array(
         'data' => array(
           '#type'=>'link',
