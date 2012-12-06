@@ -70,7 +70,6 @@ function mailchimp_activity_menu() {
  * @return bool
  */
 function mailchimp_activity_access(MailchimpActivityEntity $mailchimp_activity_entity) {
-  //return TRUE;
   if ($mailchimp_activity_entity->enabled && user_access('access mailchimp activity')) {
     return TRUE;
   }
@@ -149,17 +148,29 @@ function mailchimp_activity_page($node, $mailchimp_entity_definition) {
   $id = $mailchimp_entity_definition->email_property;
   $email = $node->$id;
   $activity = mailchimp_activity_get_all_activity($email);
-  $display =  array(
-    '#type' => 'user_profile_item',
-    '#title' => t('Mailchimp History'),
-    '#theme' => 'table',
-    '#header' => array(
-      t('List'),
-      t('Campaign'),
-      t('Action'),
-      t('Date & Time'),
+  $rows = _mailchimp_presentable_activity($activity);
+  $header = array(
+    array(
+      'data' => t('List'),
+      //'field' => 'list', // these just add meaningless clickability until we put this table into the DB
     ),
-    '#rows' => _mailchimp_presentable_activity($activity),
+    array(
+      'data' => t('Campaign'),
+      //'field' => 'campaign',
+    ),
+    array(
+      'data' => t('Action'),
+      //'field' => 'action',
+    ),
+    array(
+      'data' => t('Date & Time'),
+      //'field' => '$timestamp',
+    ),
+  );
+  $display['mailchimp_activity'] =  array(
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
   );
   return $display;
 }
@@ -188,8 +199,7 @@ function mailchimp_activity_get_all_activity($email) {
     $activity['campaign_title'] = $campaign_data['title'];
     $activity['campaign_id'] = $campaign_data['web_id'];
   }
-  usort($all_activity, '_mailchimp_compare_activities_by_date');
-  rsort($all_activity);
+  usort($all_activity, '_mailchimp_compare_activities_by_list_then_date');
   return $all_activity;
 }
 
@@ -206,6 +216,20 @@ function _mailchimp_compare_activities_by_date($A, $B) {
 }
 
 /**
+ * Implements the cmp_function callback for usort. Sorts an array of
+ * mailchimp activity arrays by list name (alpha) and then by date (newest first).
+ *
+ * @param $A
+ * @param $B
+ * @return int
+ */
+function _mailchimp_compare_activities_by_list_then_date($A, $B) {
+  $listsort = strcmp($A['list'],$B['list']);
+  if ($listsort) return $listsort;
+  return $datesort = strtotime($B['timestamp']) - strtotime($A['timestamp']);
+}
+
+/**
  * take a flat array of activities as supplied by the mailchimp API's listMemberActivity function
  * and returns an array of items formatted for human readability
  *
@@ -216,7 +240,9 @@ function _mailchimp_presentable_activity($activity_array) {
   $presentable_array = array();
   foreach ($activity_array as $activity) {
     $presentable_array[] = array(
-      'list' => $activity['list'],
+      array(
+        'data' => $activity['list'],
+      ),
       array(
         'data' => array(
           '#type' => 'link',
@@ -224,8 +250,12 @@ function _mailchimp_presentable_activity($activity_array) {
           '#href' => 'https://us6.admin.mailchimp.com/campaigns/show?id=' . $activity['campaign_id'],
         ),
       ),
-      'action' => $activity['action'],
-      'date_time' => $activity['timestamp'],
+      array(
+        'data' => $activity['action'],
+      ),
+      array(
+        'data' => $activity['timestamp'],
+      ),
     );
   }
   return $presentable_array;
