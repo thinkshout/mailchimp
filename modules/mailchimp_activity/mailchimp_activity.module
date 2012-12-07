@@ -135,14 +135,15 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
 /**
  * Content for the mailchimp log tab on the user page.
  *
- * @param $node
- * @param $mailchimp_entity_definition
+ * @param $entity
+ * @param $mailchimp_activity_entity
  *
  * @return array (renderable)
  */
-function mailchimp_activity_page($node, $mailchimp_entity_definition) {
-  $id = $mailchimp_entity_definition->email_property;
-  $email = $node->$id;
+function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_activity_entity) {
+  $wrapper = entity_metadata_wrapper($mailchimp_activity_entity->entity_type, $entity);
+  // TODO: Handle multiple cardinality, E.g., RedHen Contact can have more than one email.
+  $email = $wrapper->{$mailchimp_activity_entity->email_property}->value();
   $activity = mailchimp_activity_get_all_activity($email);
   $rows = _mailchimp_presentable_activity($activity);
   $header = array(
