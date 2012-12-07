@@ -257,7 +257,7 @@ function mailchimp_activity_permission() {
   $return = array();
 
   $return['access mailchimp activity'] = array(
-    'title' => t('access mailchimp activity'),
+    'title' => t('Access MailChimp activity'),
     'description' => t('View MailChimp activity history'),
   );
 
