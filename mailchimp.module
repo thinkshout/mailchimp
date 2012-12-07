@@ -428,33 +428,18 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
  *
  * @return array
  */
-function mailchimp_get_lists_for_email($email) {
+function mailchimp_get_lists_by_email($email) {
   $q = mailchimp_get_api_object();
   $campaign_ids = $q->campaignsForEmail($email);
-  $current_lists = mailchimp_get_current_lists_for_email($email);
-  $lists = array();
+  $lists = mailchimp_get_lists();
+  $filtered_lists = array();
+
   // iterate through campaigns, add each campaign's list as an array index with the value "unsubscribed"
   // Potentially a lot of redundant work here as the same index is overwritten repeatedly
   foreach ($campaign_ids as $campaign_id) {
     $campaign = mailchimp_get_campaign_data($campaign_id);
-    $lists[$campaign['list_id']] = 'unsubscribed';
+    $filtered_lists[$campaign['list_id']] = $lists[$campaign['list_id']];
   }
-  // Now go through and add all current lists as "subscribed". Will overwrite values,
-  // or create them if there has been no activity other than subscribing.
-  foreach ($current_lists as $list_data) {
-    $lists[$list_data['id']] = 'subscribed';
-  }
-  // Create an appropriately formatted filter for mailchimp_get_lists
-  // And use it to build a nice array of rich list data
-  $list_filter = array();
-  foreach ($lists as $list => $value) {
-    $list_filter[] = $list;
-  }
-  $rich_lists = mailchimp_get_lists($list_filter);
-  // The only data missing is our subscribed/unsubscribed data
-  // we insert it under the index "status"
-  foreach ($rich_lists as &$rich_list) {
-    $rich_list['status'] = $lists[$rich_list['id']];
-  }
-  return $rich_lists;
+
+  return $filtered_lists;
 }
