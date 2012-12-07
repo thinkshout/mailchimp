@@ -41,7 +41,7 @@ function mailchimp_activity_schema() {
       ),
       'email_property' => array(
         'description' => 'The property that contains the email address to track',
-        'type' => 'text',
+        'type' => 'varchar',
         'length' => 128,
         'not null' => TRUE,
         'default' => '',
