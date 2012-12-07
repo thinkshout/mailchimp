@@ -102,7 +102,7 @@ function mailchimp_activity_load_entities($name = NULL) {
  * @todo MC Web hook clearance needs review for this function's cache behavior
 */
 function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE) {
-  $cache = $reset ? NULL : cache_get($list_id . '-' . $email . '-activity', 'cache_mailchimp_user');
+  $cache = $reset ? NULL : cache_get($list_id . '-' . $email . '-activity');
   $memberactivity = array();
 
   // return cached lists
@@ -118,7 +118,7 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
         cache_set(
           $list_id . '-' . $email . '-activity',
           $memberactivity,
-          'cache_mailchimp_user',
+          'cache',
           REQUEST_TIME + (60 * 60 * 24) // TODO: Any particular reason for this?
         // wanted to see how it worked, also thought this might be data that needed
         // more regular refreshing than the existing caching accounted for. This
