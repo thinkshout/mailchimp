@@ -146,26 +146,11 @@ function mailchimp_activity_page($node, $mailchimp_entity_definition) {
   $activity = mailchimp_activity_get_all_activity($email);
   $rows = _mailchimp_presentable_activity($activity);
   $header = array(
-    array(
-      'data' => t('List'),
-      //'field' => 'list', // these just add meaningless clickability until we put this table into the DB
-    ),
-    array(
-      'data' => t('Campaign'),
-      //'field' => 'campaign',
-    ),
-    array(
-      'data' => t('Action'),
-      //'field' => 'action',
-    ),
-    array(
-      'data' => t('Date & Time'),
-      //'field' => 'timestamp',
-    ),
-    array(
-      'data' => t('Status'),
-      //'field' => 'status',
-    ),
+    t('List'),
+    t('Campaign'),
+    t('Action'),
+    t('Date & Time'),
+    t('Status'),
   );
   $display['mailchimp_activity'] =  array(
     '#theme' => 'table',
