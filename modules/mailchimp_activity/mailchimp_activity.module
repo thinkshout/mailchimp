@@ -76,10 +76,6 @@ function mailchimp_activity_access(MailchimpActivityEntity $mailchimp_activity_e
   return FALSE;
 }
 
-function mailchimp_activity_admin_access() {
-  return TRUE;
-}
-
 /**
  * Loads a single mailchimp_activity_entity or all of them if no name provided.
  *
