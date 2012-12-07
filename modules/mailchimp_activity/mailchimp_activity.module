@@ -252,8 +252,6 @@ function _mailchimp_presentable_activity($activity_array) {
 
 /**
  * Implements hook_permission().
- *
- * @returns permission_array
  */
 function mailchimp_activity_permission() {
   $return = array();
