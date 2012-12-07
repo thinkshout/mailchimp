@@ -180,6 +180,7 @@ function mailchimp_activity_get_all_activity($email) {
     }
     $all_activity = array_merge($all_activity, $list_activity);
   }
+
   // now we extract some campaign data into the array to save work in rendering
   foreach ($all_activity as &$activity) {
     $campaign_data = mailchimp_get_campaign_data($activity['campaign_id']);
@@ -187,6 +188,7 @@ function mailchimp_activity_get_all_activity($email) {
     $activity['campaign_id'] = $campaign_data['web_id'];
   }
   usort($all_activity, '_mailchimp_compare_activities_by_list_then_date');
+
   return $all_activity;
 }
 
