@@ -177,7 +177,6 @@ function mailchimp_activity_get_all_activity($email) {
     $list_activity = mailchimp_activity_get_member_activity($list['id'], $email);
     foreach ($list_activity as &$activity) {
       $activity['list'] = $list['name'];
-      $activity['status'] = $list['status'];
     }
     $all_activity = array_merge($all_activity, $list_activity);
   }
