@@ -144,15 +144,45 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
   $wrapper = entity_metadata_wrapper($mailchimp_activity_entity->entity_type, $entity);
   // TODO: Handle multiple cardinality, E.g., RedHen Contact can have more than one email.
   $email = $wrapper->{$mailchimp_activity_entity->email_property}->value();
-  $activity = mailchimp_activity_get_all_activity($email);
-  $rows = _mailchimp_presentable_activity($activity);
+  $activity_array = mailchimp_activity_get_all_activity($email);
   $header = array(
-    t('List'),
     t('Campaign'),
     t('Action'),
     t('Date & Time'),
-    t('Status'),
   );
+  $colcount = count($header);
+  $rows = array();
+  $list = '';
+  foreach ($activity_array as $activity) {
+    if ($list != $activity['list']) {
+      $list = $activity['list'];
+      $rows[] = array(
+        'no_striping' => TRUE,
+        'data' => array(
+          array(
+            'data' => $list,
+            'colspan' => $colcount,
+            'style' => 'text-align:center',
+          ),
+        ),
+      );
+    }
+    $rows[] = array(
+      array(
+        'data' => array(
+          '#type' => 'link',
+          '#title' => $activity['campaign_title'],
+          '#href' => 'https://us6.admin.mailchimp.com/campaigns/show?id=' . $activity['campaign_id'],
+        ),
+      ),
+      array(
+        'data' => $activity['action'],
+      ),
+      array(
+        'data' => $activity['timestamp'],
+      ),
+    );
+  }
   $display['mailchimp_activity'] =  array(
     '#theme' => 'table',
     '#header' => $header,
@@ -182,6 +212,7 @@ function mailchimp_activity_get_all_activity($email) {
   }
 
   // now we extract some campaign data into the array to save work in rendering
+  //TODO: this loop, and the sort operation should probably be in mailchimp_activity_page
   foreach ($all_activity as &$activity) {
     $campaign_data = mailchimp_get_campaign_data($activity['campaign_id']);
     $activity['campaign_title'] = $campaign_data['title'];
