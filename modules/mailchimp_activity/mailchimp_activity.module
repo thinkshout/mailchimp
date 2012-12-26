@@ -145,6 +145,14 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
   // TODO: Handle multiple cardinality, E.g., RedHen Contact can have more than one email.
   $email = $wrapper->{$mailchimp_activity_entity->email_property}->value();
   $activity_array = mailchimp_activity_get_all_activity($email);
+  //Now we flesh out the activity array with campaign data
+  foreach ($activity_array as &$activity_ref) {
+    $campaign_data = mailchimp_get_campaign_data($activity_ref['campaign_id']);
+    $activity_ref['campaign_title'] = $campaign_data['title'];
+    $activity_ref['campaign_id'] = $campaign_data['web_id'];
+  }
+  //We sort by list (alpha) and date (descending) before rendering
+  usort($activity_array, '_mailchimp_compare_activities_by_list_then_date');
   $header = array(
     t('Campaign'),
     t('Action'),
@@ -153,7 +161,9 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
   $colcount = count($header);
   $rows = array();
   $list = '';
+  //Loop through all activities, creating rows for each
   foreach ($activity_array as $activity) {
+    //if the List name has changed, insert a List Label row
     if ($list != $activity['list']) {
       $list = $activity['list'];
       $rows[] = array(
@@ -210,15 +220,6 @@ function mailchimp_activity_get_all_activity($email) {
     }
     $all_activity = array_merge($all_activity, $list_activity);
   }
-
-  // now we extract some campaign data into the array to save work in rendering
-  //TODO: this loop, and the sort operation should probably be in mailchimp_activity_page
-  foreach ($all_activity as &$activity) {
-    $campaign_data = mailchimp_get_campaign_data($activity['campaign_id']);
-    $activity['campaign_title'] = $campaign_data['title'];
-    $activity['campaign_id'] = $campaign_data['web_id'];
-  }
-  usort($all_activity, '_mailchimp_compare_activities_by_list_then_date');
 
   return $all_activity;
 }
