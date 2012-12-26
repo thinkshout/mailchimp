@@ -152,7 +152,7 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
     $activity_ref['campaign_id'] = $campaign_data['web_id'];
   }
   //We sort by list (alpha) and date (descending) before rendering
-  usort($activity_array, '_mailchimp_compare_activities_by_list_then_date');
+  usort($activity_array, '_mailchimp_activity_compare_activities_by_list_then_date');
   $header = array(
     t('Campaign'),
     t('Action'),
@@ -232,7 +232,7 @@ function mailchimp_activity_get_all_activity($email) {
  * @param $B
  * @return int (just the difference between the two timestamps)
  */
-function _mailchimp_compare_activities_by_date($A, $B) {
+function _mailchimp_activity_compare_activities_by_date($A, $B) {
   return strtotime($A['timestamp']) - strtotime($B['timestamp']);
 }
 
@@ -244,7 +244,7 @@ function _mailchimp_compare_activities_by_date($A, $B) {
  * @param $B
  * @return int
  */
-function _mailchimp_compare_activities_by_list_then_date($A, $B) {
+function _mailchimp_activity_compare_activities_by_list_then_date($A, $B) {
   $listsort = strcmp($A['list'],$B['list']);
   if ($listsort) return $listsort;
   return $datesort = strtotime($B['timestamp']) - strtotime($A['timestamp']);
