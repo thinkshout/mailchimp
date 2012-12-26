@@ -250,41 +250,6 @@ function _mailchimp_compare_activities_by_list_then_date($A, $B) {
 }
 
 /**
- * take a flat array of activities as supplied by the mailchimp API's listMemberActivity function
- * and returns an array of items formatted for human readability
- *
- * @param $activity_array
- * @return array
- */
-function _mailchimp_presentable_activity($activity_array) {
-  $presentable_array = array();
-  foreach ($activity_array as $activity) {
-    $presentable_array[] = array(
-      array(
-        'data' => $activity['list'],
-      ),
-      array(
-        'data' => array(
-          '#type' => 'link',
-          '#title' => $activity['campaign_title'],
-          '#href' => 'https://us6.admin.mailchimp.com/campaigns/show?id=' . $activity['campaign_id'],
-        ),
-      ),
-      array(
-        'data' => $activity['action'],
-      ),
-      array(
-        'data' => $activity['timestamp'],
-      ),
-      array(
-        'data' => $activity['status'],
-      ),
-    );
-  }
-  return $presentable_array;
-}
-
-/**
  * Implements hook_permission().
  */
 function mailchimp_activity_permission() {
