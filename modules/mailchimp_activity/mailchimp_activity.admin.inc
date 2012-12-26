@@ -36,32 +36,23 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
     '#weight' => -9,
   );
 
-
-  $form['entity_type'] = array(
-    '#title' => t('Drupal entity type'),
-    '#type' => 'textfield',
-//     '#type' => 'fieldset',
-//     '#attributes' => array(
-//       'id' => array('edit-drupal-entity'),
-//     ),
-    '#default_value' => $entitynotnull ? $mailchimp_activity_entity->entity_type : 'user',
-    '#description' => t('The entity with an email address to gather mailchimp history for'),
-    '#weight' => -8,
-  );
-
-  $form['bundle'] = array(
-    '#title' => t('Drupal Entity Bundle'),
+  $form['drupal_entity'] = array(
+    '#title' => t('Drupal Entity'),
     '#type' => 'select',
-    '#options' => array(
-      '' => t('-- Select --'),
-      'user' => t('User'),
-      'break' => t('Break everything'), // just testing out select
-    ),
+    '#options' => mailchimp_activity_drupal_entities(),
     '#default_value' => $entitynotnull ? $mailchimp_activity_entity->bundle : 'user',
     '#required' => TRUE,
     '#description' => t('The specific entity bundle with an email address to gather mailchimp history for'),
-    '#weight' => -7,
+    '#weight' => -8,
+  );
 
+  $form['drupal_entity']['drupal_entity_type'] = array(
+    '#title' => t('Drupal Entity Type'),
+    '#type' => 'select',
+
+    '#default_value' => $entitynotnull ? $mailchimp_activity_entity->entity_type : 'user',
+    '#description' => t('The entity with an email address to gather mailchimp history for'),
+    '#weight' => -7,
   );
 
   $form['email_property'] = array(
@@ -88,6 +79,18 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
 
   return $form;
 }
+
+function mailchimp_activity_drupal_entities() {
+  $types = array('' => t('-- Select --'));
+  $content_types = field_info_bundles();
+  foreach ($content_types as $type => $value) {
+    if ($info = entity_get_info($type)) {
+      $types[$type] = $info['label'];
+    }
+  }
+  return $types;
+}
+
 
 /**
  * Implements form_submit
