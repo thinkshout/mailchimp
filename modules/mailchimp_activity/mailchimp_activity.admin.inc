@@ -37,22 +37,30 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
     '#weight' => -9,
   );
 
-/*  $form['drupal_entity'] = array(
-    '#title' => t('Drupal entity'),
+  $form['drupal_entity'] = array(
+    '#title' => t('Drupal Entity Details'),
     '#type' => 'fieldset',
     '#attributes' => array(
       'id' => array('edit-drupal-entity'),
     ),
-  );*/
-
-  //$form['drupal_entity']['entity_type'] = array(
-  $form['entity_type'] = array(
-      '#title' => t('Drupal Entity Type'),
+    '#weight' => -8,
+  );
+  //prep the entity type list before creating the form item:
+  $entity_types = array('' => t('-- Select --'));
+  $content_types = field_info_bundles();
+  foreach ($content_types as $content_type => $value) {
+    if ($info = entity_get_info($content_type)) {
+      $entity_types[$content_type] = $info['label'];
+    }
+  }
+  asort($entity_types);
+  $form['drupal_entity']['entity_type'] = array(
+    '#title' => t('Drupal Entity'),
     '#type' => 'select',
-    '#options' => mailchimp_activity_drupal_entities(),
-    '#default_value' => $entitynotnull ? $mailchimp_activity_entity->entity_type : 'user',
+    '#options' => $entity_types,
+    '#default_value' => $entitynotnull ? $mailchimp_activity_entity->entity_type : 0,
     '#required' => TRUE,
-    '#description' => t('The specific entity type with an email address to gather mailchimp history for'),
+    '#description' => t('Select an entity type to enable mailchimp history on.'),
     '#ajax' => array(
       'callback' => 'mailchimp_activity_mapping_form_callback',
       'wrapper' => 'mailchimp_activity_entity_form'
@@ -65,14 +73,15 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
     $form_entity_type = $mailchimp_activity_entity->entity_type;
   }
   if ($form_entity_type) {
+    //prep the bundle list before creating the form item:
     $bundles = array('' => t('-- Select --'));
     $info  = entity_get_info($form_entity_type);
     foreach ($info['bundles'] as $key => $bundle) {
       $bundles[$key] = $bundle['label'];
     }
-    //$form['drupal_entity']['bundle'] = array(
-    $form['bundle'] = array(
-      '#title' => t('Drupal Entity Bundle'),
+    asort($bundles);
+    $form['drupal_entity']['bundle'] = array(
+      '#title' => t('Entity Bundle'),
       '#type' => 'select',
       '#required' => TRUE,
       '#description' => t('Select a Drupal entity bundle with an email address to report on.'),
@@ -85,23 +94,26 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
       ),
     );
   }
+
   $form_bundle = &$form_state['values']['bundle'];
   if (!$form_bundle && $entitynotnull) {
     $form_bundle = $mailchimp_activity_entity->bundle;
   }
   if ($form_bundle && $form_entity_type) {
+    //prep the field & properties list before creating the form item:
     $fields = array('' => t('-- Select --'));
-    $props = entity_get_all_property_info($form_entity_type);//$form_bundle); //('node')
+    $props = entity_get_all_property_info($form_entity_type);
     foreach ($props as $key => $prop) {
       $fields[$key] = $props[$key]['label'];
     }
-    $form['email_property'] = array(
+    asort($fields);
+    $form['drupal_entity']['email_property'] = array(
       '#title' => t('Email Property'),
       '#type' => 'select',
       '#required' => TRUE,
       '#description' => t('Select the field which contains the email address'),
       '#options' => $fields,
-      '#default_value' => $entitynotnull ? $mailchimp_activity_entity->email_property : '',
+      '#default_value' => $entitynotnull ? $mailchimp_activity_entity->email_property : 0,
       '#maxlength' => 127,
       '#weight' => -6,
     );
@@ -124,27 +136,11 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
 }
 
 /**
- * @return array
- */
-function mailchimp_activity_drupal_entities() {
-  $types = array('' => t('-- Select --'));
-  $content_types = field_info_bundles();
-  foreach ($content_types as $type => $value) {
-    if ($info = entity_get_info($type)) {
-      $types[$type] = $info['label'];
-    }
-  }
-  return $types;
-}
-
-/**
  * Ajax callback for mailchimp_activity_mapping_form().
  */
 function mailchimp_activity_mapping_form_callback($form, $form_state) {
   return $form;
 }
-
-
 
 /**
  * Implements form_submit

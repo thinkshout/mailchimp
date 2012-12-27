@@ -144,6 +144,7 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
   $wrapper = entity_metadata_wrapper($mailchimp_activity_entity->entity_type, $entity);
   // TODO: Handle multiple cardinality, E.g., RedHen Contact can have more than one email.
   $email = $wrapper->{$mailchimp_activity_entity->email_property}->value();
+  // TODO: check for valid email address and behave intelligently
   $activity_array = mailchimp_activity_get_all_activity($email);
   //Now we flesh out the activity array with campaign data
   foreach ($activity_array as &$activity_ref) {
@@ -170,7 +171,7 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
         'no_striping' => TRUE,
         'data' => array(
           array(
-            'data' => $list,
+            'data' => '<strong>' . $list . '</strong>',
             'colspan' => $colcount,
             'style' => 'text-align:center',
           ),
