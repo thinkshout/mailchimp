@@ -154,6 +154,9 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
   }
   //We sort by list (alpha) and date (descending) before rendering
   usort($activity_array, '_mailchimp_activity_compare_activities_by_list_then_date');
+  //Use the API object to figure out which mailchimp datacenter we are hosted at
+  $mcapi = mailchimp_get_api_object();
+  $datacenter = substr($mcapi->api_key, -3);
   $header = array(
     t('Campaign'),
     t('Action'),
@@ -183,7 +186,7 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
         'data' => array(
           '#type' => 'link',
           '#title' => $activity['campaign_title'],
-          '#href' => 'https://us6.admin.mailchimp.com/campaigns/show?id=' . $activity['campaign_id'],
+          '#href' => 'https://'. $datacenter .'.admin.mailchimp.com/campaigns/show?id=' . $activity['campaign_id'],
         ),
       ),
       array(
