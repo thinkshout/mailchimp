@@ -46,6 +46,7 @@ function mailchimp_activity_entity_access() {
  * Implements hook_menu().
  */
 function mailchimp_activity_menu() {
+  $items = array();
   $mailchimp_activity_entities = mailchimp_activity_load_entities();
   foreach ($mailchimp_activity_entities as $mailchimp_activity_entity) {
     $items[$mailchimp_activity_entity->entity_type . '/%entity_object/mailchimp_activity'] = array(
@@ -58,7 +59,15 @@ function mailchimp_activity_menu() {
       'type' => MENU_LOCAL_TASK,
     );
   }
-
+  $items['admin/config/services/mailchimp/activity/add'] = array(
+    'title' => 'Add an Activity Entity',
+    'description' => 'Add an Entity to track Mailchimp activity',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_activity_entity_form'),
+    'access arguments' => array('administer mailchimp activity'),
+    'file' => 'mailchimp_activity.admin.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
   return $items;
 }
 
@@ -264,6 +273,9 @@ function mailchimp_activity_permission() {
     'title' => t('Access MailChimp activity'),
     'description' => t('View MailChimp activity history'),
   );
-
+  $return['administer mailchimp activity'] = array(
+    'title' => t('Administer MailChimp activity entities'),
+    'description' => t('Add, Delete, and Configure MailChimp Activity entity settings'),
+  );
   return $return;
 }

@@ -35,7 +35,8 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
     '#disabled' => !empty($mailchimp_activity_entity->name),
     '#required' => TRUE,
     '#machine_name' => array(
-      'source' => array('label')
+      'exists' => 'mailchimp_activity_load_entities',
+      'source' => array('label'),
     ),
     '#weight' => -9,
   );
@@ -96,32 +97,30 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
         'wrapper' => 'mailchimp_activity_entity_form'
       ),
     );
-  }
-
-  $form_bundle = &$form_state['values']['bundle'];
-  if (!$form_bundle && $entitynotnull) {
-    $form_bundle = $mailchimp_activity_entity->bundle;
-  }
-  if ($form_bundle && $form_entity_type) {
-    //prep the field & properties list before creating the form item:
-    $fields = array('' => t('-- Select --'));
-    $props = entity_get_all_property_info($form_entity_type);
-    foreach ($props as $key => $prop) {
-      $fields[$key] = $props[$key]['label'];
+    $form_bundle = &$form_state['values']['bundle'];
+    if (!$form_bundle && $entitynotnull) {
+      $form_bundle = $mailchimp_activity_entity->bundle;
     }
-    asort($fields);
-    $form['drupal_entity']['email_property'] = array(
-      '#title' => t('Email Property'),
-      '#type' => 'select',
-      '#required' => TRUE,
-      '#description' => t('Select the field which contains the email address'),
-      '#options' => $fields,
-      '#default_value' => $entitynotnull ? $mailchimp_activity_entity->email_property : 0,
-      '#maxlength' => 127,
-      '#weight' => -6,
-    );
+    if ($form_bundle) {
+      //prep the field & properties list before creating the form item:
+      $fields = array('' => t('-- Select --'));
+      $props = entity_get_all_property_info($form_entity_type);
+      foreach ($props as $key => $prop) {
+        $fields[$key] = $props[$key]['label'];
+      }
+      asort($fields);
+      $form['drupal_entity']['email_property'] = array(
+        '#title' => t('Email Property'),
+        '#type' => 'select',
+        '#required' => TRUE,
+        '#description' => t('Select the field which contains the email address'),
+        '#options' => $fields,
+        '#default_value' => $entitynotnull ? $mailchimp_activity_entity->email_property : 0,
+        '#maxlength' => 127,
+        '#weight' => -6,
+      );
+    }
   }
-
   $form['enabled'] = array(
     '#title' => t('Enabled'),
     '#type' => 'checkbox',
@@ -142,7 +141,14 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
 /**
  * Ajax callback for mailchimp_activity_mapping_form().
  */
-function mailchimp_activity_mapping_form_callback($form, $form_state) {
+function mailchimp_activity_mapping_form_callback($form, &$form_state) {
+  if ($form_state['triggering_element']['#name'] == 'bundle') {
+    $form_state['values']['email_property'] = 0;
+  }
+  if ($form_state['triggering_element']['#name'] == 'entity_type') {
+    $form_state['values']['bundle'] = 0;
+    $form_state['values']['email_property'] = 0;
+  }
   return $form;
 }
 
@@ -159,7 +165,7 @@ function mailchimp_activity_entity_form_validate($form, &$form_state) {
     if ($form_bundle == $extant_ent->bundle &&
         $form_entity_id == $extant_ent->entity_type &&
         $form_id != $extant_ent->mailchimp_activity_entity_id) {
-      form_set_error('bundle', t('A MailChimp Activity Entity already exists for this bundle. Either select a different Bundle or edit the <a href = /admin/config/services/mailchimp/activity/manage/'
+      form_set_error('bundle', t('A MailChimp Activity Entity already exists for this Bundle. Either select a different Bundle or edit the <a href = /admin/config/services/mailchimp/activity/manage/'
         . $extant_ent->name . '>existing MailChimp Activity Entity</a> for this bundle.'));
     }
   }
@@ -188,5 +194,6 @@ function mailchimp_activity_entity_form_submit($form, &$form_state) {
     }
   }
   $activity_entity->save();
+  //menu_cache_clear_all(); <- does nothing?
   $form_state['redirect'] = 'admin/config/services/mailchimp/activity';
 }
