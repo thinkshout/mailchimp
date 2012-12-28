@@ -24,7 +24,6 @@ function mailchimp_activity_entity_info() {
         'path' => 'admin/config/services/mailchimp/activity',
         'file' => 'mailchimp_activity.admin.inc',
       ),
-      'access callback' => 'mailchimp_activity_admin_access',
       'label callback' => 'entity_class_label',
       'access callback' => 'mailchimp_activity_entity_access',
     ),
@@ -39,7 +38,7 @@ function mailchimp_activity_entity_info() {
  * @return bool
  */
 function mailchimp_activity_entity_access() {
-  return user_access('administer mailchimp');
+  return user_access('administer mailchimp activity');
 }
 
 /**
@@ -59,7 +58,7 @@ function mailchimp_activity_menu() {
       'type' => MENU_LOCAL_TASK,
     );
   }
-  $items['admin/config/services/mailchimp/activity/add'] = array(
+/*  $items['admin/config/services/mailchimp/activity/add'] = array(
     'title' => 'Add an Activity Entity',
     'description' => 'Add an Entity to track Mailchimp activity',
     'page callback' => 'drupal_get_form',
@@ -68,6 +67,7 @@ function mailchimp_activity_menu() {
     'file' => 'mailchimp_activity.admin.inc',
     'type' => MENU_LOCAL_ACTION,
   );
+  */
   return $items;
 }
 
@@ -142,7 +142,7 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
 }
 
 /**
- * Content for the mailchimp log tab on the user page.
+ * Content for the mailchimp log tab on entity instance pages.
  *
  * @param $entity
  * @param $mailchimp_activity_entity
@@ -153,7 +153,15 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
   $wrapper = entity_metadata_wrapper($mailchimp_activity_entity->entity_type, $entity);
   // TODO: Handle multiple cardinality, E.g., RedHen Contact can have more than one email.
   $email = $wrapper->{$mailchimp_activity_entity->email_property}->value();
-  // TODO: check for valid email address and behave intelligently
+  while (is_array($email)) {
+    $email = $email[0];
+  }
+  if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    return array('error_notice' => array(
+        '#markup' => t('"' . $email . '" is not a valid email address. Unable to lookup MailChimp activity history without a valid email.'),
+      ),
+    );
+  }
   $activity_array = mailchimp_activity_get_all_activity($email);
   //Now we flesh out the activity array with campaign data
   foreach ($activity_array as &$activity_ref) {
