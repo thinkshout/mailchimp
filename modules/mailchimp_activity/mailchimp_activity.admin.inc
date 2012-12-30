@@ -134,7 +134,6 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
     '#type' => 'submit',
   );
   $form['#validate'][] = 'mailchimp_activity_entity_form_validate';
-
   return $form;
 }
 
@@ -194,6 +193,6 @@ function mailchimp_activity_entity_form_submit($form, &$form_state) {
     }
   }
   $activity_entity->save();
-  //menu_cache_clear_all(); <- does nothing?
+  menu_rebuild(); //Otherwise user has to clear cache themselves to see newly created activity pages
   $form_state['redirect'] = 'admin/config/services/mailchimp/activity';
 }
