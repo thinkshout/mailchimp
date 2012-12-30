@@ -58,16 +58,7 @@ function mailchimp_activity_menu() {
       'type' => MENU_LOCAL_TASK,
     );
   }
-/*  $items['admin/config/services/mailchimp/activity/add'] = array(
-    'title' => 'Add an Activity Entity',
-    'description' => 'Add an Entity to track Mailchimp activity',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_activity_entity_form'),
-    'access arguments' => array('administer mailchimp activity'),
-    'file' => 'mailchimp_activity.admin.inc',
-    'type' => MENU_LOCAL_ACTION,
-  );
-  */
+
   return $items;
 }
 
