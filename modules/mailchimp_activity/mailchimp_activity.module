@@ -142,8 +142,9 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
  */
 function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_activity_entity) {
   $wrapper = entity_metadata_wrapper($mailchimp_activity_entity->entity_type, $entity);
-  // TODO: Handle multiple cardinality, E.g., RedHen Contact can have more than one email.
   $email = $wrapper->{$mailchimp_activity_entity->email_property}->value();
+  //If the email property is a multiple-value field, loop into it until we
+  //find a non-array value-- presumably an email address
   while (is_array($email)) {
     $email = $email[0];
   }
@@ -160,7 +161,7 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
     $activity_ref['campaign_title'] = $campaign_data['title'];
     $activity_ref['campaign_id'] = $campaign_data['web_id'];
   }
-  //We sort by list (alpha) and date (descending) before rendering
+  //We sort by list (alphabetical) and date (descending) before rendering
   usort($activity_array, '_mailchimp_activity_compare_activities_by_list_then_date');
   //Use the API object to figure out which mailchimp datacenter we are hosted at
   $mcapi = mailchimp_get_api_object();
@@ -238,18 +239,6 @@ function mailchimp_activity_get_all_activity($email) {
 
 /**
  * Implements the cmp_function callback for usort. Sorts an array of
- * mailchimp activity arrays by date.
- *
- * @param $A
- * @param $B
- * @return int (just the difference between the two timestamps)
- */
-function _mailchimp_activity_compare_activities_by_date($A, $B) {
-  return strtotime($A['timestamp']) - strtotime($B['timestamp']);
-}
-
-/**
- * Implements the cmp_function callback for usort. Sorts an array of
  * mailchimp activity arrays by list name (alpha) and then by date (newest first).
  *
  * @param $A
@@ -259,7 +248,7 @@ function _mailchimp_activity_compare_activities_by_date($A, $B) {
 function _mailchimp_activity_compare_activities_by_list_then_date($A, $B) {
   $listsort = strcmp($A['list'],$B['list']);
   if ($listsort) return $listsort;
-  return $datesort = strtotime($B['timestamp']) - strtotime($A['timestamp']);
+  return strtotime($B['timestamp']) - strtotime($A['timestamp']);
 }
 
 /**
