@@ -133,7 +133,7 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
     '#value' => t('Save Entity'),
     '#type' => 'submit',
   );
-  $form['#validate'][] = 'mailchimp_activity_entity_form_validate';
+
   return $form;
 }
 
