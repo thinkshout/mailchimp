@@ -118,6 +118,7 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
           $list_id . '-' . $email . '-activity',
           $memberactivity,
           'cache',
+          REQUEST_TIME + (60 * 60 * 24)
         );
       }
     }
