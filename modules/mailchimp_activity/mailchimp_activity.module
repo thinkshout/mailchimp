@@ -154,55 +154,47 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
     );
   }
 
-  $activity_array = mailchimp_activity_get_all_activity($email);
-  //Now we flesh out the activity array with campaign data
-  foreach ($activity_array as &$activity_ref) {
-    $campaign_data = mailchimp_get_campaign_data($activity_ref['campaign_id']);
-    $activity_ref['campaign_title'] = $campaign_data['title'];
-    $activity_ref['campaign_id'] = $campaign_data['web_id'];
-  }
-
-  //We sort by list (alphabetical) and date (descending) before rendering
-  usort($activity_array, '_mailchimp_activity_compare_activities_by_list_then_date');
-  //Use the API object to figure out which mailchimp datacenter we are hosted at
-  $mcapi = mailchimp_get_api_object();
-  $datacenter = substr($mcapi->api_key, -3);
   $header = array(
     t('Campaign'),
     t('Action'),
     t('Date & Time'),
   );
-  $colcount = count($header);
   $rows = array();
-  $list = '';
+  $campaigns = array();
   //Loop through all activities, creating rows for each
-  foreach ($activity_array as $activity) {
-    //if the List name has changed, insert a List Label row
-    if ($list != $activity['list']) {
-      $list = $activity['list'];
-      $rows[] = array(
-        'no_striping' => TRUE,
-        'data' => array(
-          array(
-            'data' => '<strong>' . $list . '</strong>',
-            'colspan' => $colcount,
-            'style' => 'text-align:center',
-          ),
-        ),
-      );
-    }
+  foreach (mailchimp_activity_get_all_activity($email) as $list_activity) {
     $rows[] = array(
-      array(
-        'data' => array(
-          '#type' => 'link',
-          '#title' => $activity['campaign_title'],
-          '#href' => 'https://'. $datacenter .'.admin.mailchimp.com/campaigns/show?id=' . $activity['campaign_id'],
+      'no_striping' => TRUE,
+      'data' => array(
+        array(
+          'data' => '<strong>List: ' . $list_activity['list']['name'] . '</strong>',
+          'colspan' => count($header),
+          'style' => 'text-align:center',
         ),
       ),
-      $activity['action'],
-      $activity['timestamp']
     );
+
+    foreach ($list_activity['activity'] as $activity) {
+      if (!isset($campaigns[$activity['campaign_id']])) {
+        // TODO: mailchimp_get_campaign_data() is already called from mailchimp_activity_get_all_activity().
+        // This is a type of static cache technique, might be sufficient.
+        $campaigns[$activity['campaign_id']] = mailchimp_get_campaign_data($activity['campaign_id']);
+      }
+
+      $rows[] = array(
+        array(
+          'data' => array(
+            '#type' => 'link',
+            '#title' => $campaigns[$activity['campaign_id']]['title'],
+            '#href' => $campaigns[$activity['campaign_id']]['archive_url'],
+          ),
+        ),
+        $activity['action'],
+        $activity['timestamp']
+      );
+    }
   }
+
   $display['mailchimp_activity'] =  array(
     '#theme' => 'table',
     '#header' => $header,
