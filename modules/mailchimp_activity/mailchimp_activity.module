@@ -224,11 +224,10 @@ function mailchimp_activity_get_all_activity($email) {
 
   $lists = mailchimp_get_lists_by_email($email);
   foreach ($lists as $list) {
-    $list_activity = mailchimp_activity_get_member_activity($list['id'], $email);
-    foreach ($list_activity as &$activity) {
-      $activity['list'] = $list['name'];
-    }
-    $all_activity = array_merge($all_activity, $list_activity);
+    $all_activity[$list['id']] = array(
+      'list' => $list,
+      'activity' => mailchimp_activity_get_member_activity($list['id'], $email)
+     );
   }
 
   return $all_activity;
