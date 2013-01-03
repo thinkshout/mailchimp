@@ -200,12 +200,8 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
           '#href' => 'https://'. $datacenter .'.admin.mailchimp.com/campaigns/show?id=' . $activity['campaign_id'],
         ),
       ),
-      array(
-        'data' => $activity['action'],
-      ),
-      array(
-        'data' => $activity['timestamp'],
-      ),
+      $activity['action'],
+      $activity['timestamp']
     );
   }
   $display['mailchimp_activity'] =  array(
