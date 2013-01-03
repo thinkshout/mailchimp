@@ -141,14 +141,7 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
  * Ajax callback for mailchimp_activity_mapping_form().
  */
 function mailchimp_activity_mapping_form_callback($form, &$form_state) {
-  if ($form_state['triggering_element']['#name'] == 'bundle') {
-    $form_state['values']['email_property'] = 0;
-  }
-  if ($form_state['triggering_element']['#name'] == 'entity_type') {
-    $form_state['values']['bundle'] = 0;
-    $form_state['values']['email_property'] = 0;
-  }
-  return $form;
+  return $form['drupal_entity'];
 }
 
 /**
