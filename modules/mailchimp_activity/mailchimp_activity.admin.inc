@@ -51,10 +51,10 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
   );
   //prep the entity type list before creating the form item:
   $entity_types = array('' => t('-- Select --'));
-  $content_types = field_info_bundles();
-  foreach ($content_types as $content_type => $value) {
-    if ($info = entity_get_info($content_type)) {
-      $entity_types[$content_type] = $info['label'];
+  foreach (entity_get_info() as $entity_type => $info) {
+    // ignore MailChimp entity types
+    if (strpos($entity_type, 'mailchimp') === FALSE) {
+      $entity_types[$entity_type] = $info['label'];
     }
   }
   asort($entity_types);
