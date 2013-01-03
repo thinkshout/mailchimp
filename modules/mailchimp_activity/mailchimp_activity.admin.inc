@@ -157,8 +157,13 @@ function mailchimp_activity_entity_form_validate($form, &$form_state) {
     if ($form_bundle == $extant_ent->bundle &&
         $form_entity_id == $extant_ent->entity_type &&
         $form_id != $extant_ent->mailchimp_activity_entity_id) {
-      form_set_error('bundle', t('A MailChimp Activity Entity already exists for this Bundle. Either select a different Bundle or edit the <a href = /admin/config/services/mailchimp/activity/manage/'
-        . $extant_ent->name . '>existing MailChimp Activity Entity</a> for this bundle.'));
+      form_set_error(
+        'bundle',
+        t('A MailChimp Activity Entity already exists for this Bundle. Either select a different Bundle or edit the !link for this bundle.',
+          array(
+            '!link' => l('existing MailChimp Activity Entity', "admin/config/services/mailchimp/activity/manage/{$extant_ent->name}")
+          )
+        ));
     }
   }
 }
