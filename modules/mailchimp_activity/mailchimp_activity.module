@@ -148,7 +148,9 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
   while (is_array($email)) {
     $email = $email[0];
   }
-  if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
+  // Validate email address.
+  if (!valid_email_address($email)) {
     return array('error_notice' => array(
         '#markup' => t('"' . $email . '" is not a valid email address. Unable to lookup MailChimp activity history without a valid email.'),
       ),
