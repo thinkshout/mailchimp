@@ -15,7 +15,6 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
     $mailchimp_activity_entity->name = '';
   }
   $entitynotnull = isset($mailchimp_activity_entity->mailchimp_activity_entity_id);
-  $form['#id'] = 'mailchimp_activity_entity_form'; // @todo not sure what's going on here
   $form_state['mailchimp_activity'] = $mailchimp_activity_entity;
 
   $form['label'] = array(
@@ -42,10 +41,10 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
   );
 
   $form['drupal_entity'] = array(
-    '#title' => t('Drupal Entity Details'),
+    '#title' => t('Drupal entity'),
     '#type' => 'fieldset',
     '#attributes' => array(
-      'id' => array('edit-drupal-entity'),
+      'id' => array('mailchimp-activity-drupal-entity'),
     ),
     '#weight' => -8,
   );
@@ -59,7 +58,7 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
   }
   asort($entity_types);
   $form['drupal_entity']['entity_type'] = array(
-    '#title' => t('Drupal Entity'),
+    '#title' => t('Entity type'),
     '#type' => 'select',
     '#options' => $entity_types,
     '#default_value' => $entitynotnull ? $mailchimp_activity_entity->entity_type : 0,
@@ -67,12 +66,12 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
     '#description' => t('Select an entity type to enable mailchimp history on.'),
     '#ajax' => array(
       'callback' => 'mailchimp_activity_mapping_form_callback',
-      'wrapper' => 'mailchimp_activity_entity_form'
+      'wrapper' => 'mailchimp-activity-drupal-entity'
     ),
     '#weight' => -8,
   );
 
-  $form_entity_type = &$form_state['values']['entity_type'];
+  $form_entity_type = & $form_state['values']['entity_type'];
   if (!$form_entity_type && $entitynotnull) {
     $form_entity_type = $mailchimp_activity_entity->entity_type;
   }
@@ -85,7 +84,7 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
     }
     asort($bundles);
     $form['drupal_entity']['bundle'] = array(
-      '#title' => t('Entity Bundle'),
+      '#title' => t('Entity bundle'),
       '#type' => 'select',
       '#required' => TRUE,
       '#description' => t('Select a Drupal entity bundle with an email address to report on.'),
@@ -94,10 +93,11 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
       '#weight' => -7,
       '#ajax' => array(
         'callback' => 'mailchimp_activity_mapping_form_callback',
-        'wrapper' => 'mailchimp_activity_entity_form'
+        'wrapper' => 'mailchimp-activity-drupal-entity'
       ),
     );
-    $form_bundle = &$form_state['values']['bundle'];
+
+    $form_bundle = & $form_state['values']['bundle'];
     if (!$form_bundle && $entitynotnull) {
       $form_bundle = $mailchimp_activity_entity->bundle;
     }
@@ -145,8 +145,7 @@ function mailchimp_activity_mapping_form_callback($form, &$form_state) {
 }
 
 /**
- * @param $form
- * @param $form_state
+ * Validation callback for mailchimp_activity_entity_form().
  */
 function mailchimp_activity_entity_form_validate($form, &$form_state) {
   $extant_mc_entities = entity_load('mailchimp_activity_entity');
@@ -169,21 +168,14 @@ function mailchimp_activity_entity_form_validate($form, &$form_state) {
 }
 
 /**
- * Implements form_submit
- *
- * @param $form
- * @param $form_state -- $form_state->op determines add vs edit behavior.
- *
+ * Submit handler for mailchimp_activity_entity_form().
  */
-
 function mailchimp_activity_entity_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $activity_entity = array();
   if ($form_state['op'] == 'add' || $form_state['op'] == 'clone') {
     $activity_entity = entity_create('mailchimp_activity_entity', $values);
   }
-  // the form currently only supports adding/cloning (above) and editing.
-  // other options necessary? Refreshing?
   else {
     $activity_entity = $form_state['mailchimp_activity_entity'];
     foreach ($values as $key => $val) {
