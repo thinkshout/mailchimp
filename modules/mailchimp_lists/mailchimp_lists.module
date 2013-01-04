@@ -297,7 +297,7 @@ function mailchimp_lists_user_delete($account) {
   if (!empty($lists)) {
     $mcapi = mailchimp_get_api_object();
     foreach ($lists as $list) {
-      mailchimp_unsubscribe_user($list, $account->mail, FALSE, $q, TRUE);
+      mailchimp_unsubscribe_user($list, $account->mail, FALSE, $mcapi, TRUE);
     }
   }
 }
