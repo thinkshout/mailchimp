@@ -279,7 +279,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
 
       if (!$ret) {
         drupal_set_message(t('There was a problem with your newsletter signup: @msg',
-          array('@msg' => $mcapi->errorMessage)));
+          array('@msg' => $mcapi->errorMessage)), 'warning');
       }
     }
   }
@@ -621,7 +621,8 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
     }
 
     if (!$ret) {
-      drupal_set_message(t('There was a problem with your newsletter signup: @msg', array('@msg' => $mcapi->errorMessage)));
+      drupal_set_message(t('There was a problem with your newsletter signup: @msg',
+        array('@msg' => $mcapi->errorMessage)), 'warning');
     }
   }
 }
