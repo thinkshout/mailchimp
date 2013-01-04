@@ -451,7 +451,6 @@ function mailchimp_get_campaigns_for_email($email, $reset = FALSE) {
  *
  * @param $email
  *
- * TODO: Explain structure of array.
  * @return array containing 2 arrays -- one ('lists') of all lists that have
  * made use of this email address (list_id -> list_data[]). One ('campaigns') of
  * all campaigns that have included this email (campaign_id -> campaign_data[])
