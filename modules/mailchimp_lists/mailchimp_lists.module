@@ -329,22 +329,28 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
       $is_subscribed = !empty($old_email) && mailchimp_is_subscribed($list->mc_list_id, $old_email);
 
       if ($is_subscribed) {
-        foreach ($removed_roles as $role_id => $role) {
+        // check if user still has a valid role for this list.
+        $valid_role = FALSE;
+        foreach ($account->roles as $role_id => $role_label) {
           if (array_key_exists($role_id, $list->settings['roles'])) {
-            // queue up for cron processing
-            if ($list->settings['cron']) {
-              $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
-              $queue->createQueue();
-              $queue->createItem(array(
-                'uid' => $account->uid,
-                'list_id' => $list->id,
-                'op' => 'remove',
-              ));
-            }
-            // process immediately
-            else {
-              mailchimp_unsubscribe_user($list, $old_email, FALSE, NULL, TRUE);
-            }
+            $valid_role = TRUE;
+          }
+        }
+        // remove the user if they do not have a valid role
+        if(!$valid_role) {
+          // queue up for cron processing
+          if ($list->settings['cron']) {
+            $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+            $queue->createQueue();
+            $queue->createItem(array(
+              'uid' => $account->uid,
+              'list_id' => $list->id,
+              'op' => 'remove',
+            ));
+          }
+          // process immediately
+          else {
+            mailchimp_unsubscribe_user($list, $old_email, FALSE, NULL, TRUE);
           }
         }
       }
