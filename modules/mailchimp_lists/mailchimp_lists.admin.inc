@@ -14,7 +14,7 @@ function mailchimp_lists_overview_page() {
       l(t('Edit'), 'admin/config/services/mailchimp/lists/' . $list->id . '/edit'),
       l(t('Delete'), 'admin/config/services/mailchimp/lists/' . $list->id . '/delete')
     );
-    if ($list->list_type === MAILCHIMP_LISTTYPE_REQUIRED && isset($list->settings['cron']) && $list->settings['cron']) {
+    if ($list->list_type !== MAILCHIMP_LISTTYPE_FREEFORM && isset($list->settings['cron']) && $list->settings['cron']) {
       $actions[] = l(t('Queue existing'), 'mailchimp/lists/' . $list->id . '/queue_existing');
     }
     $rows[] = array(
@@ -112,7 +112,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#type' => 'select',
     '#title' => t('Type of list'),
     '#multiple' => FALSE,
-    '#description' => t('Required lists are automatically syncronized with the
+    '#description' => t('Required and optional lists are automatically syncronized with the
       sites users. Optional lists provide a checkbox allowing users to
       subscribe during registration or when updating their account. Free form
       lists, the only type allowed for the Anonymous role, present a signup form
@@ -207,9 +207,9 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#description' => t('If this is set, users will be subscribed to the
       required list during cron runs. Otherwise subscription will take place when a user is added/edited.'),
     '#states' => array(
-      // Hide this option for required lists
-      'visible' => array(
-        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_REQUIRED),
+      // Hide this option for freeform lists.
+      'invisible' => array(
+        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_FREEFORM),
       ),
     ),
   );

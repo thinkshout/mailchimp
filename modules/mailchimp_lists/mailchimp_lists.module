@@ -110,7 +110,7 @@ function mailchimp_lists_user_subscribe_page_access($user) {
  */
 function mailchimp_lists_queue_existing_access($list) {
   $ret = FALSE;
-  if ($list->list_type === MAILCHIMP_LISTTYPE_REQUIRED && $list->settings['cron'] && user_access('administer mailchimp')) {
+  if ($list->list_type != MAILCHIMP_LISTTYPE_FREEFORM && $list->settings['cron'] && user_access('administer mailchimp')) {
     $ret = TRUE;
   }
   return $ret;
@@ -293,7 +293,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
  */
 function mailchimp_lists_user_delete($account) {
   // unsubscribe a user from all required lists
-  $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_REQUIRED);
+  $lists = mailchimp_lists_get_available_lists($account, array(MAILCHIMP_LISTTYPE_REQUIRED, MAILCHIMP_LISTTYPE_OPTIONAL));
   if (!empty($lists)) {
     $mcapi = mailchimp_get_api_object();
     foreach ($lists as $list) {
@@ -323,12 +323,10 @@ function mailchimp_lists_user_update(&$edit, $account, $category) {
  */
 function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $removed_roles = array()) {
   // Remove subscriptions if necessary
-  if (!empty($removed_roles)) {
+  if (!empty($old_email) && (!empty($removed_roles) || $old_email != $new_email)) {
     $all_lists = mailchimp_lists_load_multiple();
     foreach ($all_lists as $list) {
-      $is_subscribed = !empty($old_email) && mailchimp_is_subscribed($list->mc_list_id, $old_email);
-
-      if ($is_subscribed) {
+      if (mailchimp_is_subscribed($list->mc_list_id, $old_email)) {
         // check if user still has a valid role for this list.
         $valid_role = FALSE;
         foreach ($account->roles as $role_id => $role_label) {
@@ -358,11 +356,10 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
   }
 
   // Add subscriptions if necessary
-  $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_REQUIRED);
+  $lists = mailchimp_lists_get_available_lists($account, array(MAILCHIMP_LISTTYPE_REQUIRED, MAILCHIMP_LISTTYPE_OPTIONAL));
   if (!empty($lists)) {
     $mcapi = mailchimp_get_api_object();
     foreach ($lists as $list) {
-	  $is_subscribed = !empty($old_email) && mailchimp_is_subscribed($list->mc_list_id, $old_email);
       if ($account->status) {
         // queue up for cron processing
         if ($list->settings['cron']) {
@@ -382,8 +379,13 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
           if (!empty($new_email)) {
             $mergevars['EMAIL'] = $new_email;
           }
-          if ($is_subscribed) {
-			mailchimp_update_user($list, $old_email, $mergevars, FALSE, $mcapi);
+          // Include interest groups.
+          if (!empty($old_email) && !empty($list->settings['include_interest_groups'])) {
+            $memberinfo = mailchimp_get_memberinfo($list->mc_list_id, $old_email);
+            $mergevars['GROUPINGS'] = $memberinfo['merges']['GROUPINGS'];
+          }
+          if (!empty($old_email) && mailchimp_is_subscribed($list->mc_list_id, $old_email)) {
+            mailchimp_update_user($list, $old_email, $mergevars, FALSE, $mcapi);
           }
           else {
             mailchimp_subscribe_user($list, $account->mail, $mergevars, FALSE, $mcapi);
