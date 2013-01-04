@@ -162,7 +162,8 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
   $rows = array();
   $campaigns = array();
   //Loop through all activities, creating rows for each
-  foreach (mailchimp_activity_get_all_activity($email) as $list_activity) {
+  $user_activity = mailchimp_activity_get_all_activity($email);
+  foreach ($user_activity['lists'] as $list_activity) {
     $rows[] = array(
       'no_striping' => TRUE,
       'data' => array(
@@ -178,7 +179,7 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
       if (!isset($campaigns[$activity['campaign_id']])) {
         // TODO: mailchimp_get_campaign_data() is already called from mailchimp_activity_get_all_activity().
         // This is a type of static cache technique, might be sufficient.
-        $campaigns[$activity['campaign_id']] = mailchimp_get_campaign_data($activity['campaign_id']);
+        $campaigns[$activity['campaign_id']] = $user_activity['campaign_data'][$activity['campaign_id']];
       }
 
       $rows[] = array(
@@ -214,9 +215,10 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
 function mailchimp_activity_get_all_activity($email) {
   $all_activity = array();
 
-  $lists = mailchimp_get_lists_by_email($email);
-  foreach ($lists as $list) {
-    $all_activity[$list['id']] = array(
+  $listdata = mailchimp_get_lists_by_email($email);
+  $all_activity['campaign_data'] = $listdata['campaign_data'];
+  foreach ($listdata['lists'] as $list) {
+    $all_activity['lists'][$list['id']] = array(
       'list' => $list,
       'activity' => mailchimp_activity_get_member_activity($list['id'], $email)
      );
