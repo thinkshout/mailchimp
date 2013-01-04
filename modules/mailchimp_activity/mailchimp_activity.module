@@ -163,30 +163,32 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
   $campaigns = array();
   //Loop through all activities, creating rows for each
   $user_activity = mailchimp_activity_get_all_activity($email);
-  foreach ($user_activity['lists'] as $list_activity) {
-    $rows[] = array(
-      'no_striping' => TRUE,
-      'data' => array(
-        array(
-          'data' => '<strong>List: ' . $list_activity['list']['name'] . '</strong>',
-          'colspan' => count($header),
-          'style' => 'text-align:center',
-        ),
-      ),
-    );
-
-    foreach ($list_activity['activity'] as $activity) {
+  if (isset($user_activity['lists'])) {
+    foreach ($user_activity['lists'] as $list_activity) {
       $rows[] = array(
-        array(
-          'data' => array(
-            '#type' => 'link',
-            '#title' => $user_activity['campaigns'][$activity['campaign_id']]['title'],
-            '#href' => $user_activity['campaigns'][$activity['campaign_id']]['archive_url'],
+        'no_striping' => TRUE,
+        'data' => array(
+          array(
+            'data' => '<strong>List: ' . $list_activity['list']['name'] . '</strong>',
+            'colspan' => count($header),
+            'style' => 'text-align:center',
           ),
         ),
-        $activity['action'],
-        $activity['timestamp']
       );
+
+      foreach ($list_activity['activity'] as $activity) {
+        $rows[] = array(
+          array(
+            'data' => array(
+              '#type' => 'link',
+              '#title' => $user_activity['campaigns'][$activity['campaign_id']]['title'],
+              '#href' => $user_activity['campaigns'][$activity['campaign_id']]['archive_url'],
+            ),
+          ),
+          $activity['action'],
+          $activity['timestamp']
+        );
+      }
     }
   }
 
@@ -210,12 +212,16 @@ function mailchimp_activity_get_all_activity($email) {
   $all_activity = array();
 
   $listdata = mailchimp_get_lists_by_email($email);
-  $all_activity['campaigns'] = $listdata['campaigns'];
-  foreach ($listdata['lists'] as $list) {
-    $all_activity['lists'][$list['id']] = array(
-      'list' => $list,
-      'activity' => mailchimp_activity_get_member_activity($list['id'], $email)
-     );
+  if (isset($listdata['campaigns'])) {
+    $all_activity['campaigns'] = $listdata['campaigns'];
+  }
+  if (isset($listdata['lists'])) {
+    foreach ($listdata['lists'] as $list) {
+      $all_activity['lists'][$list['id']] = array(
+        'list' => $list,
+        'activity' => mailchimp_activity_get_member_activity($list['id'], $email)
+      );
+    }
   }
 
   return $all_activity;
