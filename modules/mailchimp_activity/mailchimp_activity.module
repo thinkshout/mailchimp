@@ -228,20 +228,6 @@ function mailchimp_activity_get_all_activity($email) {
 }
 
 /**
- * Implements the cmp_function callback for usort. Sorts an array of
- * mailchimp activity arrays by list name (alpha) and then by date (newest first).
- *
- * @param $A
- * @param $B
- * @return int
- */
-function _mailchimp_activity_compare_activities_by_list_then_date($A, $B) {
-  $listsort = strcmp($A['list'],$B['list']);
-  if ($listsort) return $listsort;
-  return strtotime($B['timestamp']) - strtotime($A['timestamp']);
-}
-
-/**
  * Implements hook_permission().
  */
 function mailchimp_activity_permission() {
