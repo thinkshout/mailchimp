@@ -101,7 +101,7 @@ function mailchimp_activity_load_entities($name = NULL) {
 */
 function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE) {
   // TODO: Consider caching with a list id and campaign id key so we can use webhooks to clear the cache.
-  $cache = $reset ? NULL : cache_get($list_id . '-' . $email . '-activity');
+  $cache = $reset ? NULL : cache_get("mailchimp_activity_{$list_id}_{$email}");
   $memberactivity = array();
 
   // return cached lists
@@ -115,7 +115,7 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
       if ($result['success']) {
         $memberactivity = reset($result['data']);
         cache_set(
-          $list_id . '-' . $email . '-activity',
+          "mailchimp_activity_{$list_id}_{$email}",
           $memberactivity,
           'cache',
           REQUEST_TIME + (60 * 60 * 24)
@@ -160,7 +160,6 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
     t('Date & Time'),
   );
   $rows = array();
-  $campaigns = array();
   //Loop through all activities, creating rows for each
   $user_activity = mailchimp_activity_get_all_activity($email);
   if (isset($user_activity['lists'])) {
