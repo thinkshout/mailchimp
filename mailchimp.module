@@ -176,7 +176,7 @@ function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NUL
  * Get a Mailchimp API object for communication with the mailchimp server.
  */
 function mailchimp_get_api_object() {
-  $q = new MCAPI(variable_get('mailchimp_api_key', ''));
+  $q = new Mailchimp(variable_get('mailchimp_api_key', ''));
 
   // set the timeout to something reasonsable to avoid taking down the Drupal site
   $q->setTimeout(60);
