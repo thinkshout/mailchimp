@@ -7,4 +7,5 @@ dependencies[] = mailchimp
 dependencies[] = entity
 
 files[] = mailchimp_activity.entity.inc
+files[] = mailchimp_activity.ui_controller.inc
 
