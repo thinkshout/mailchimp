@@ -6,11 +6,24 @@
  */
 
 /**
- * Implements hook_init().
+ * Implements hook_libraries_info().
  */
-function mailchimp_init() {
-  $path = libraries_get_path('mailchimp');
-  require_once($path . '/MCAPI.class.php');
+function mailchimp_libraries_info() {
+  $libraries['mailchimp'] = array(
+    'name' => 'MailChimp MCAPI',
+    'vendor url' => 'http://apidocs.mailchimp.com/api/1.3',
+    'download url' => 'http://apidocs.mailchimp.com/api/downloads/mailchimp-api-class.zip',
+    'version arguments' => array(
+      'file' => 'README',
+      // Version 1.3
+      'pattern' => '/API Version: (\d+)/',
+    ),
+    'files' => array(
+      'php' => array('MCAPI.class.php'),
+    ),
+  );
+
+  return $libraries;
 }
 
 /**
