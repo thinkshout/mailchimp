@@ -27,6 +27,7 @@ class MailChimp extends MCAPI {
         'headers' => array(
           'Content-type' => 'application/x-www-form-urlencoded',
           'Host' => $host,
+          'Accept-Language' => language_default()->language,
           'User-Agent' => 'MCAPI/' . $this->version
       ),
       'timeout' => $this->getTimeout()
