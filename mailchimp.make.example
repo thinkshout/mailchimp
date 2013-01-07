@@ -1,0 +1,7 @@
+api = 2
+core = 7.x
+projects[libraries] = 2
+
+libraries[salesforce][download][url] = "http://apidocs.mailchimp.com/api/downloads/mailchimp-api-class.zip"
+libraries[salesforce][directory_name] = "mailchimp"
+libraries[salesforce][destination] = "libraries"

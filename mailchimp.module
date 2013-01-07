@@ -6,6 +6,14 @@
  */
 
 /**
+ * Implements hook_init().
+ */
+function mailchimp_init() {
+  $path = libraries_get_path('mailchimp');
+  require_once($path . '/MCAPI.class.php');
+}
+
+/**
  * Implements hook_menu().
  */
 function mailchimp_menu() {
