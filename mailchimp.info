@@ -3,7 +3,8 @@ description = MailChimp email service integration.
 package = MailChimp
 core = 7.x
 
-files[] = MCAPI.class.php
-files[] = includes/mailchimp.drush.inc
+files[] = includes/mailchimp.inc
+
+dependencies[] = libraries (>=2)
 
 configure = admin/config/services/mailchimp
