@@ -120,7 +120,7 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
         }
         $newcache[$email] = $memberactivity;
         cache_set(
-          "mailchimp_activity_{$list_id}",
+          'mailchimp_activity_' . $list_id,
           $newcache,
           'cache',
           CACHE_TEMPORARY);
@@ -147,7 +147,6 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
   while (is_array($email)) {
     $email = $email[0];
   }
-
   // Validate email address.
   if (!valid_email_address($email)) {
     return array('error_notice' => array(

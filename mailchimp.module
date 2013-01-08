@@ -332,6 +332,24 @@ function mailchimp_cache_clear_user($list_id, $email) {
 }
 
 /**
+ * Clear a mailchimp activity cache
+ *
+ * @param  $list_id
+ */
+function mailchimp_activity_cache_clear_list($list_id) {
+  cache_clear_all('mailchimp_activity_' . $list_id, 'cache');
+}
+
+/**
+ * Clear a mailchimp activity cache
+ *
+ * @param  $list_id
+ */
+function mailchimp_cache_clear_campaign($campaign_id) {
+  cache_clear_all('mailchimp_campaign_' . $campaign_id, 'cache');
+}
+
+/**
  * Implements hook_flush_caches().
  */
 function mailchimp_flush_caches() {
@@ -365,6 +383,10 @@ function mailchimp_process_webhook() {
     case 'upemail':
       mailchimp_cache_clear_user($data['list_id'], $data['old_email']);
       mailchimp_set_memberinfo($data['list_id'], $data['new_email']);
+      break;
+    case 'campaign':
+      mailchimp_activity_cache_clear_list($data['list_id']);
+      mailchimp_cache_clear_campaign($data['id']);
       break;
   }
 
@@ -447,23 +469,12 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
  * that have included a given email address.
  *
  * @param $email
- * @param bool $reset
 
  * @return array of campaign IDs
  */
-function mailchimp_get_campaigns_for_email($email, $reset = FALSE) {
-  $cache = $reset ? NULL : cache_get('mailchimp_campaigns_for' . $email);
-  $campaign_list = array();
-  // return cached campaign list
-  if ($cache) {
-    $campaign_list = $cache->data;
-  }
-  else {
-    $q = mailchimp_get_api_object();
-    $args = array('verbose' => TRUE,);
-    $campaign_list = $q->campaignsForEmail($email, $args);
-    cache_set('mailchimp_campaigns_for' . $email, $campaign_list, 'cache', CACHE_TEMPORARY);
-  }
+function mailchimp_get_campaigns_for_email($email) {
+  $q = mailchimp_get_api_object();
+  $campaign_list = $q->campaignsForEmail($email);
 
   return $campaign_list;
 }
@@ -483,15 +494,15 @@ function mailchimp_get_campaigns_for_email($email, $reset = FALSE) {
  * excessive API calls.
  */
 function mailchimp_get_lists_by_email($email) {
-  $campaigns = mailchimp_get_campaigns_for_email($email);
+  $campaign_ids = mailchimp_get_campaigns_for_email($email);
   $lists = mailchimp_get_lists();
   $filtered_lists = array();
-  if ($campaigns) {
+  if ($campaign_ids) {
     // iterate through campaigns, add each campaign's list as an array index/value
-    foreach ($campaigns as $campaign) {
-      $campaign_data = mailchimp_get_campaign_data($campaign['id']);
+    foreach ($campaign_ids as $campaign_id) {
+      $campaign_data = mailchimp_get_campaign_data($campaign_id);
       $filtered_lists['lists'][$campaign_data['list_id']] = $lists[$campaign_data['list_id']];
-      $filtered_lists['campaigns'][$campaign['id']] = $campaign_data;
+      $filtered_lists['campaigns'][$campaign_id] = $campaign_data;
     }
   }
 
