@@ -101,13 +101,12 @@ function mailchimp_activity_load_entities($name = NULL) {
  * @return array memberactivity
 */
 function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE) {
-  // TODO: Consider caching with a list id and campaign id key so we can use webhooks to clear the cache.
-  $cache = $reset ? NULL : cache_get("mailchimp_activity_{$list_id}_{$email}");
+  $cache = $reset ? NULL : cache_get("mailchimp_activity_{$list_id}");
   $memberactivity = array();
 
   // return cached lists
-  if ($cache) {
-    $memberactivity = $cache->data;
+  if ($cache && isset($cache->data[$email])) {
+    $memberactivity = $cache->data[$email];
   }
   // Query lists from the MC API and store in cache
   else {
@@ -115,12 +114,16 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
       $result = $q->listMemberActivity($list_id, array($email));
       if ($result['success']) {
         $memberactivity = reset($result['data']);
+        $newcache = array();
+        if ($cache) {
+          $newcache = $cache;
+        }
+        $newcache[$email] = $memberactivity;
         cache_set(
-          "mailchimp_activity_{$list_id}_{$email}",
-          $memberactivity,
+          "mailchimp_activity_{$list_id}",
+          $newcache,
           'cache',
-          REQUEST_TIME + (60 * 60 * 24)
-        );
+          CACHE_TEMPORARY);
       }
     }
   }
