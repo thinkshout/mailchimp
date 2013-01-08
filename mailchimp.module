@@ -336,7 +336,7 @@ function mailchimp_cache_clear_user($list_id, $email) {
  *
  * @param  $list_id
  */
-function mailchimp_activity_cache_clear_list($list_id) {
+function mailchimp_cache_clear_list_activity($list_id) {
   cache_clear_all('mailchimp_activity_' . $list_id, 'cache');
 }
 
@@ -385,7 +385,7 @@ function mailchimp_process_webhook() {
       mailchimp_set_memberinfo($data['list_id'], $data['new_email']);
       break;
     case 'campaign':
-      mailchimp_activity_cache_clear_list($data['list_id']);
+      mailchimp_cache_clear_list_activity($data['list_id']);
       mailchimp_cache_clear_campaign($data['id']);
       break;
   }
