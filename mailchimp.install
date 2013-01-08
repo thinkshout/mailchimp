@@ -17,6 +17,29 @@ function mailchimp_schema() {
 }
 
 /**
+ * Implements hook_requirements().
+ */
+function mailchimp_requirements($phase) {
+  $requirements = array();
+  // Ensure translations don't break at install time
+  $t = get_t();
+
+  // Report Drupal version
+  if ($phase == 'runtime') {
+    if (libraries_detect('mailchimp')) {
+      $requirements['mailchimp'] = array(
+        'title' => $t('MailChimp'),
+        'value' => t('Not installed'),
+        'description' => $t('You are missing MailChimp PHP wrapper class required to use the MailChimp module. Please <a href="http://apidocs.mailchimp.com/api/downloads/mailchimp-api-class.zip">download</a> and install as a library.'),
+        'severity' => REQUIREMENT_ERROR
+      );
+    }
+  }
+
+  return $requirements;
+}
+
+/**
  * Implements hook_uninstall().
  */
 function mailchimp_uninstall() {
