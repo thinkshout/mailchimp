@@ -50,6 +50,8 @@ mailchimp.module. See their respective README's for more details.
     users to subscribe, unsubscribe, and update member information.
   * mailchimp_campaigns: Create newsletters with Drupal content, send the
     campaigns, and view statistics.
+  * mailchimp_activity: View campaign activity for any entity with an email
+    address.
 
 ## Related Modules
 ### Mandrill
