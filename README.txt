@@ -21,11 +21,20 @@ mailchimp.module. See their respective README's for more details.
   * Individual blocks for each newsletter
   * Create campaigns containing any Drupal entity as content, send them, and
     view statisitcs.
+  * Campaign activity for any entity with an email address.
 
 ## Installation Notes
   * You need to have a MailChimp API Key.
   * You need to have at least one list created in MailChimp to use the
     mailchimp_list module.
+  * For versions 7.x-2.8 and greater, the MCAPI library must be downloaded into
+    your libraries folder. IT's available at http://apidocs.mailchimp.com/api/downloads/mailchimp-api-class.zip
+    or by using the included example make file. Proper libraries structure:
+    - libraries
+      - mailchimp
+        - MCAPI.class.php
+        - README
+    The only required files are MCAPI.class.php and README.
 
 ## Configuration
   1. Direct your browser to http://example.com/admin/config/services/mailchimp 
