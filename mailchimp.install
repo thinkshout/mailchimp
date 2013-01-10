@@ -25,12 +25,23 @@ function mailchimp_requirements($phase) {
   $t = get_t();
 
   // Report Drupal version
-  if ($phase == 'runtime') {
-    if (libraries_detect('mailchimp')) {
-      $requirements['mailchimp'] = array(
-        'title' => $t('MailChimp'),
-        'value' => t('Not installed'),
-        'description' => $t('You are missing MailChimp PHP wrapper class required to use the MailChimp module. Please <a href="http://apidocs.mailchimp.com/api/downloads/mailchimp-api-class.zip">download</a> and install as a library.'),
+  if (in_array($phase, array('runtime', 'update'))) {
+    $library = libraries_detect('mailchimp');
+    $requirements['mailchimp'] = array(
+      'title' => $t('MailChimp'),
+    );
+
+    if ($library['installed']) {
+      $requirements['mailchimp'] += array(
+        'value' => $library['version'],
+        'description' => $t('The MailChimp MCAPI wrapper library is installed correctly.'),
+        'severity' => REQUIREMENT_OK
+      );
+    }
+    else {
+      $requirements['mailchimp'] += array(
+        'value' => $library['error'],
+        'description' => $library['error message'],
         'severity' => REQUIREMENT_ERROR
       );
     }
