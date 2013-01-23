@@ -54,7 +54,7 @@ class MailChimp extends MCAPI {
       return FALSE;
     }
 
-    if (!empty($return['error'])) {
+    if (isset($return['error']) && is_array($return)) {
       $this->errorMessage = $return['error'];
       $this->errorCode = $return['code'];
       return FALSE;
