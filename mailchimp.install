@@ -46,6 +46,14 @@ function mailchimp_requirements($phase) {
       );
     }
   }
+  else /* $phase == 'install' */ {
+    if (!function_exists(libraries_detect)){
+      $requirements['libraries'] = array(
+        'description' => $t('libraries 2.x is required for MailChimp.'),
+        'severity' => REQUIREMENT_ERROR
+      );
+    }
+  }
 
   return $requirements;
 }
@@ -56,7 +64,7 @@ function mailchimp_requirements($phase) {
 function mailchimp_uninstall() {
   variable_del('mailchimp_api_key');
   variable_del('mailchimp_batch_limit');
-  variable_del('mailchimp_use_secure');  
+  variable_del('mailchimp_use_secure');
 }
 
 /**
