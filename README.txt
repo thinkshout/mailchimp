@@ -29,12 +29,13 @@ mailchimp.module. See their respective README's for more details.
     mailchimp_list module.
   * For versions 7.x-2.8 and greater, the MCAPI library must be downloaded into
     your libraries folder. It's available at http://apidocs.mailchimp.com/api/downloads/mailchimp-api-class.zip
-    or by using the included example make file. Proper libraries structure:
+    or by using the included example drush make file. Proper libraries structure:
     - libraries
       - mailchimp
         - MCAPI.class.php
         - README
-    The only required files are MCAPI.class.php and README.
+    The only required files are MCAPI.class.php and README. (You can delete the 'examples' folder with impunity)
+
 
 ## Configuration
   1. Direct your browser to http://example.com/admin/config/services/mailchimp

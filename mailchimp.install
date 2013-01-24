@@ -46,7 +46,7 @@ function mailchimp_requirements($phase) {
       );
     }
   }
-  if ($phase == 'install') {
+  if ($phase == 'update') {
     $path = drupal_get_path('module', libraries) . '/libraries.info';
     $info = drupal_parse_info_file($path);
     if (version_compare($info['version'], '7.x-2.0', '<')) {
