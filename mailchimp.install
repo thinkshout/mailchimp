@@ -46,9 +46,13 @@ function mailchimp_requirements($phase) {
       );
     }
   }
-  else /* $phase == 'install' */ {
-    if (!function_exists(libraries_detect)){
+  if ($phase == 'install') {
+    $path = drupal_get_path('module', libraries) . '/libraries.info';
+    $info = drupal_parse_info_file($path);
+    if (version_compare($info['version'], '7.x-2.0', '<')) {
       $requirements['libraries'] = array(
+        'title' => $t('Libraries'),
+        'value' => '7.x-2.x',
         'description' => $t('libraries 2.x is required for MailChimp.'),
         'severity' => REQUIREMENT_ERROR
       );
