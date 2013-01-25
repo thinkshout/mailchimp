@@ -17,7 +17,7 @@ class MailChimp extends MCAPI {
 
     $this->errorMessage = "";
     $this->errorCode = "";
-    $post_vars = http_build_query($params);
+    $post_vars = http_build_query($params, NULL ,'&');
 
     $response = drupal_http_request(
       $protocol . $host . $this->apiUrl["path"] . '?method=' . $method,
