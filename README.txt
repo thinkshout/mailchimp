@@ -35,6 +35,7 @@ mailchimp.module. See their respective README's for more details.
         - MCAPI.class.php
         - README
     The only required files are MCAPI.class.php and README. (You can delete the 'examples' folder with impunity)
+  * For versions 7.x-2.8 and greater, you must have at least version 7.x-2.0 of the libraries module installed.
 
 
 ## Configuration
