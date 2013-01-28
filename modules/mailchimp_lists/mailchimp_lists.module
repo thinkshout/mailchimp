@@ -459,10 +459,13 @@ function mailchimp_lists_user_subscribe_form($form, &$form_state, $lists, $accou
 function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
   // determine if a user is subscribed to the list
   $is_subscribed = FALSE;
+  $default_subscribed = FALSE;
   if ($account && $account->uid > 0) {
     $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
   }
-
+  else {
+    $default_subscribed = $list->settings['default_register_form_optin'];
+  }
   // wrap in a div
   $wrapper_key = 'mailchimp_' . $list->name;
   $form[$wrapper_key] = array(
@@ -486,7 +489,7 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
     $form[$wrapper_key]['subscribe'] = array(
       '#type' => 'checkbox',
       '#title' => ($list->label) ? t($list->label) : t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->label)),
-      '#default_value' => $is_subscribed,
+      '#default_value' => $default_subscribed || $is_subscribed,
       '#description' => $list->description,
     );
   }

@@ -159,6 +159,18 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       ),
     ),
   );
+  $form['list_settings']['settings']['default_register_form_optin'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Default to opt-in on registration form.'),
+    '#description' => t('This will only apply for lists appearing on the register form.'),
+    '#default_value' => isset($list->settings['default_register_form_optin']) ? $list->settings['default_register_form_optin'] : FALSE,
+    '#states' => array(
+      // only show for optional lists
+      'visible' => array(
+        ':input[name="list_type"]' => array('value' => MAILCHIMP_LISTTYPE_OPTIONAL),
+      ),
+    ),
+  );
   $form['list_settings']['settings']['show_account_form'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show Subscription Options on User Edit Screen'),
@@ -442,6 +454,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
       $form_state['values']['mergefields'] : NULL,
     'doublein' => $form_state['values']['doublein'],
     'show_register_form' => $form_state['values']['show_register_form'],
+    'default_register_form_optin' => $form_state['values']['default_register_form_optin'],
     'show_account_form' => $form_state['values']['show_account_form'],
     'include_interest_groups' => $form_state['values']['include_interest_groups'],
     'interest_groups_label' => $form_state['values']['interest_groups_label'],
