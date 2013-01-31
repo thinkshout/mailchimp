@@ -463,8 +463,8 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
   if ($account && $account->uid > 0) {
     $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
   }
-  else {
-    $default_subscribed = $list->settings['default_register_form_optin'];
+  else if ($list->list_type == 'optional') {
+    $default_subscribed = !empty($list->settings['default_register_form_optin']);
   }
   // wrap in a div
   $wrapper_key = 'mailchimp_' . $list->name;
