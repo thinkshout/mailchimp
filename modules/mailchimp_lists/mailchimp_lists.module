@@ -387,7 +387,7 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
           if (!empty($old_email) && mailchimp_is_subscribed($list->mc_list_id, $old_email)) {
             mailchimp_update_user($list, $old_email, $mergevars, FALSE, $mcapi);
           }
-          else {
+          else if ($list->list_type == MAILCHIMP_LISTTYPE_REQUIRED) {
             mailchimp_subscribe_user($list, $account->mail, $mergevars, FALSE, $mcapi);
           }
         }
