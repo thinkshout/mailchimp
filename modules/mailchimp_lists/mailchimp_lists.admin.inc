@@ -33,8 +33,22 @@ function mailchimp_lists_overview_page() {
       t('Type'),
       t('Actions')
     ),
-    'rows' => $rows
+    'rows' => $rows,
   );
+  $mc_lists = mailchimp_get_lists();
+  if (empty($mc_lists)) {
+    drupal_set_message(t('You don\'t have any lists configured in your MailChimp account, (or you haven\'t configured your API key correctly on the Global Settings tab). Head over to !link and create some lists, then come back here and click "Refresh lists from MailChimp!"',
+      array('!link' => l('MailChimp', 'https://admin.mailchimp.com/lists/'))),'warning');
+  }
+  else {
+    $options = 'Currently Available MailChimp lists:<i>';
+    foreach ($mc_lists as $mc_list) {
+      $options .= ' ' . $mc_list['name'] . ',';
+    }
+    $options = rtrim($options,',');
+    $options .= ".</i>";
+    $table['caption'] = $options;
+  }
 
   return theme('table', $table);
 }
