@@ -355,9 +355,9 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
     }
   }
 
-  $lists = mailchimp_lists_get_available_lists($account, array(MAILCHIMP_LISTTYPE_REQUIRED, MAILCHIMP_LISTTYPE_OPTIONAL));
   if (!empty($lists)) {
   // Add/update subscriptions if necessary:
+  $lists = mailchimp_lists_get_available_lists($account, array(MAILCHIMP_LISTTYPE_REQUIRED, MAILCHIMP_LISTTYPE_OPTIONAL, MAILCHIMP_LISTTYPE_FREEFORM));
     $mcapi = mailchimp_get_api_object();
     foreach ($lists as $list) {
       if ($account->status) {
