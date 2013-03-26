@@ -246,7 +246,7 @@ function mailchimp_lists_form_user_register_form_alter(&$form, &$form_state, $fo
  *   Subscribe users to optional and required newsletters.
  */
 function mailchimp_lists_user_insert(&$edit, $account, $category) {
-  if (isset($edit['mailchimp_lists']) && count($edit['mailchimp_lists'] > 0)) {
+  if (isset($edit['mailchimp_lists']) && count($edit['mailchimp_lists']) > 0) {
     $mcapi = mailchimp_get_api_object();
     foreach ($edit['mailchimp_lists'] as $form_list) {
       $list = $form_list['list'];
