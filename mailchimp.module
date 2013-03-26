@@ -215,8 +215,7 @@ function mailchimp_get_api_object() {
 }
 
 /**
- * Return all MailChimp lists for a given key. Lists are stored in the
- * cache.
+ * Return all MailChimp lists for a given key. Lists are stored in the cache.
  *
  * @param array $list_ids
  *   An array of list IDs to filter the results by.
@@ -228,20 +227,20 @@ function mailchimp_get_api_object() {
 function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
   $cache = $reset ? NULL : cache_get('mailchimp_lists');
   $lists = array();
-  // return cached lists
+  // Return cached lists:
   if ($cache) {
     $lists = $cache->data;
   }
-  // Query lists from the MC API and store in cache
+  // Query lists from the MC API and store in cache:
   else {
     if ($q = mailchimp_get_api_object()) {
       $result = $q->lists(array(), 0, 100);
       if ($result['total'] > 0) {
         foreach ($result['data'] as $list) {
-          // append mergefields
+          // Append mergefields:
           $list['mergevars'] = $q->listMergeVars($list['id']);
 
-          // append interest groups
+          // Append interest groups:
           $list['intgroups'] = $q->listInterestGroupings($list['id']);
 
           $lists[$list['id']] = $list;
@@ -253,7 +252,7 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
     cache_set('mailchimp_lists', $lists, 'cache', CACHE_TEMPORARY);
   }
 
-  // filter by given ids
+  // Filter by given ids:
   if (!empty($list_ids)) {
     foreach ($lists as $key => $list) {
       if (!in_array($key, $list_ids)) {
@@ -292,11 +291,11 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get($list_id . '-' . $email, 'cache_mailchimp_user');
   $memberinfo = array();
 
-  // return cached lists
+  // Return cached lists:
   if ($cache) {
     $memberinfo = $cache->data;
   }
-  // Query lists from the MC API and store in cache
+  // Query lists from the MC API and store in cache:
   else {
     if ($q = mailchimp_get_api_object()) {
       $result = $q->listMemberInfo($list_id, array($email));

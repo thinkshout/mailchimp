@@ -1,13 +1,11 @@
 <?php
 /**
+ * @file
+ * Administration pages for mailchimp_campaign module.
+ */
+
+/**
  * Returns a form for a mailchimp_activity_entity.
- *
- * @param $form
- * @param $form_state
- * @param MailchimpActivityEntity $mailchimp_activity_entity
- * @param string $op
- *
- * @return mixed
  */
 function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEntity $mailchimp_activity_entity = NULL, $op = 'edit') {
   if ($op == 'clone') {

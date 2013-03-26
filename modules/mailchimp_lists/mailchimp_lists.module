@@ -168,7 +168,7 @@ function mailchimp_lists_cron() {
 
     $mcapi = mailchimp_get_api_object();
 
-    // Remove if necessary
+    // Remove if necessary:
     $rem_count = 0;
     $ret = array();
 
@@ -190,7 +190,7 @@ function mailchimp_lists_cron() {
     watchdog('mailchimp', 'Removed !rem_count records in MailChimp',
       array('!rem_count' => $rem_count), WATCHDOG_NOTICE);
 
-    // Add if necessary
+    // Add if necessary:
     $add_count = $update_count = 0;
     foreach ($batches_add as $listid => $batch) {
       if (count($batch)) {
@@ -209,7 +209,7 @@ function mailchimp_lists_cron() {
     watchdog('mailchimp', 'Added !add_count, updated !update_count records in MailChimp',
       array(
         '!add_count' => $add_count,
-        '!update_count' => $update_count
+        '!update_count' => $update_count,
       ), WATCHDOG_NOTICE);
   }
 }
@@ -252,14 +252,14 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
       $list = $form_list['list'];
       $ret = TRUE;
 
-      // unsubscribe a subscribed user who unchecked a list
+      // Unsubscribe a subscribed user who unchecked a list.
       if ($form_list['subscribe']) {
         $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
 
-        // grab merge values
+        // Grab merge values:
         $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
 
-        // include interest groups
+        // Include interest groups:
         if (!empty($form_list['interest_groups'])) {
           $groupings = array();
           foreach ($form_list['interest_groups'] as $key => $group) {
@@ -284,7 +284,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
     }
   }
 
-  // handle required lists
+  // Handle required lists:
   mailchimp_lists_user_sync($account);
 }
 
@@ -292,7 +292,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
  * Implements hook_user_delete().
  */
 function mailchimp_lists_user_delete($account) {
-  // unsubscribe a user from all required lists
+  // Unsubscribe a user from all required lists:
   $lists = mailchimp_lists_get_available_lists($account, array(MAILCHIMP_LISTTYPE_REQUIRED, MAILCHIMP_LISTTYPE_OPTIONAL));
   if (!empty($lists)) {
     $mcapi = mailchimp_get_api_object();
@@ -322,21 +322,21 @@ function mailchimp_lists_user_update(&$edit, $account, $category) {
  * @param string $new_email
  */
 function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $removed_roles = array()) {
-  // Remove subscriptions if necessary
+  // Remove subscriptions if necessary:
   if (!empty($old_email) && (!empty($removed_roles) || $old_email != $new_email)) {
     $all_lists = mailchimp_lists_load_multiple();
     foreach ($all_lists as $list) {
       if (mailchimp_is_subscribed($list->mc_list_id, $old_email)) {
-        // check if user still has a valid role for this list.
+        // Check if user still has a valid role for this list.
         $valid_role = FALSE;
         foreach ($account->roles as $role_id => $role_label) {
           if (array_key_exists($role_id, $list->settings['roles'])) {
             $valid_role = TRUE;
           }
         }
-        // remove the user if they do not have a valid role
-        if(!$valid_role) {
-          // queue up for cron processing
+        // Remove the user if they do not have a valid role:
+        if (!$valid_role) {
+          // Queue up for cron processing:
           if ($list->settings['cron']) {
             $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
             $queue->createQueue();
@@ -346,7 +346,7 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
               'op' => 'remove',
             ));
           }
-          // process immediately
+          // Process immediately:
           else {
             mailchimp_unsubscribe_user($list, $old_email, FALSE, NULL, TRUE);
           }
@@ -355,9 +355,9 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
     }
   }
 
-  // Add subscriptions if necessary
   $lists = mailchimp_lists_get_available_lists($account, array(MAILCHIMP_LISTTYPE_REQUIRED, MAILCHIMP_LISTTYPE_OPTIONAL));
   if (!empty($lists)) {
+  // Add/update subscriptions if necessary:
     $mcapi = mailchimp_get_api_object();
     foreach ($lists as $list) {
       if ($account->status) {
@@ -371,7 +371,6 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
             'op' => 'add',
           ));
         }
-        // process immediately
         else {
           // grab merge values
           $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
@@ -390,6 +389,7 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
           else if ($list->list_type == MAILCHIMP_LISTTYPE_REQUIRED) {
             mailchimp_subscribe_user($list, $account->mail, $mergevars, FALSE, $mcapi);
           }
+          // Process immediately:
         }
       }
     }
@@ -404,7 +404,7 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
  * @return array
  */
 function mailchimp_lists_user_subscribe_page($account) {
-  // get all available non-required lists
+  // Get all available non-required lists:
   $lists = mailchimp_lists_get_available_lists($account, MAILCHIMP_LISTTYPE_OPTIONAL, array('show_account_form' => 1));
 
   if (count($lists) == 0) {
@@ -414,8 +414,13 @@ function mailchimp_lists_user_subscribe_page($account) {
   return drupal_get_form('mailchimp_lists_user_subscribe_form', $lists, $account);
 }
 
+/**
+ * Page callback for a freeform newsletter subscription page.
+ *
+ * @return array
+ */
 function mailchimp_lists_freeform_subscribe_page() {
-  // get all available freeform lists
+  // Get all available freeform lists:
   global $user;
   $lists = mailchimp_lists_get_available_lists($user, MAILCHIMP_LISTTYPE_FREEFORM);
 
@@ -457,23 +462,23 @@ function mailchimp_lists_user_subscribe_form($form, &$form_state, $lists, $accou
  * Return a form element for a single newsletter.
  */
 function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
-  // determine if a user is subscribed to the list
+  // Determine if a user is subscribed to the list.
   $is_subscribed = FALSE;
   $default_subscribed = FALSE;
   if ($account && $account->uid > 0) {
     $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
   }
-  else if ($list->list_type == 'optional') {
+  elseif ($list->list_type == 'optional') {
     $default_subscribed = !empty($list->settings['default_register_form_optin']);
   }
-  // wrap in a div
+  // Wrap in a div:
   $wrapper_key = 'mailchimp_' . $list->name;
   $form[$wrapper_key] = array(
     '#prefix' => '<div id="mailchimp-newsletter-' . $list->name . '" class="mailchimp-newsletter-wrapper">',
     '#suffix' => '</div>',
   );
 
-  // add the title and description to freeform lists
+  // Add the title and description to freeform lists:
   if ($list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) {
     $label = html_entity_decode(check_plain($list->label), ENT_QUOTES, 'UTF-8');
     $form[$wrapper_key]['title'] = array(
@@ -809,11 +814,11 @@ function mailchimp_lists_insert_drupal_form_tag($mergevar) {
 
   switch ($mergevar['field_type']) {
     case 'dropdown':
-      // dropdown is mapped to <select> element in Drupal Form API
+      // Dropdown is mapped to <select> element in Drupal Form API.
       $input['#type'] = 'select';
 
-      // Creates options, we must delete array keys to have revealant information
-      // on MailChimp
+      // Creates options, we must delete array keys to have relevant information
+      // on MailChimp.
       foreach ($mergevar['choices'] as $choice) {
         $choices[$choice] = $choice;
       }
@@ -821,7 +826,8 @@ function mailchimp_lists_insert_drupal_form_tag($mergevar) {
       $input['#options'] = $choices;
       break;
     case 'radio':
-      // radio is mapped to <input type='radio' /> i.e. 'radios' element in Drupal Form API
+      // Radio is mapped to <input type='radio' /> i.e. 'radios' element in
+      // Drupal Form API.
       $input['#type'] = 'radios';
 
       // Creates options, we must delete array keys to have revealant information
