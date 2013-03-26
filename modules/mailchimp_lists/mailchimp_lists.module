@@ -355,14 +355,25 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
     }
   }
 
-  if (!empty($lists)) {
   // Add/update subscriptions if necessary:
   $lists = mailchimp_lists_get_available_lists($account, array(MAILCHIMP_LISTTYPE_REQUIRED, MAILCHIMP_LISTTYPE_OPTIONAL, MAILCHIMP_LISTTYPE_FREEFORM));
+  if (!empty($lists) && $account->status) {
     $mcapi = mailchimp_get_api_object();
+    $lookup_email = !empty($old_email) ? $old_email : $account->mail;
     foreach ($lists as $list) {
-      if ($account->status) {
-        // queue up for cron processing
+      // Now we are ready to update or add this subscription.
+      // Was this account already subscribed?
+      if (mailchimp_is_subscribed($list->mc_list_id, $lookup_email)) {
+        // If so, we call for an update.
+        // todo: equip cron to handle updates, not just add & delete.
+        $mergevars = _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email, $new_email);
+        mailchimp_update_user($list, $old_email, $mergevars, FALSE, $mcapi);
+      }
+      elseif ($list->list_type == MAILCHIMP_LISTTYPE_REQUIRED) {
+        // This is a new account or required list that the account isn't already
+        // subscribed to, so we add them...
         if ($list->settings['cron']) {
+          // By queueing up for cron if we're configured for that:
           $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
           $queue->createQueue();
           $queue->createItem(array(
@@ -372,28 +383,37 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
           ));
         }
         else {
-          // grab merge values
-          $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
-          // set the EMAIL merge var if an email address is being updated
-          if (!empty($new_email)) {
-            $mergevars['EMAIL'] = $new_email;
-          }
-          // Include interest groups.
-          if (!empty($old_email) && !empty($list->settings['include_interest_groups'])) {
-            $memberinfo = mailchimp_get_memberinfo($list->mc_list_id, $old_email);
-            $mergevars['GROUPINGS'] = $memberinfo['merges']['GROUPINGS'];
-          }
-          if (!empty($old_email) && mailchimp_is_subscribed($list->mc_list_id, $old_email)) {
-            mailchimp_update_user($list, $old_email, $mergevars, FALSE, $mcapi);
-          }
-          else if ($list->list_type == MAILCHIMP_LISTTYPE_REQUIRED) {
-            mailchimp_subscribe_user($list, $account->mail, $mergevars, FALSE, $mcapi);
-          }
           // Process immediately:
+          $mergevars = _mailchimp_lists_build_update_mergevars($account, $list, $new_email, $old_email);
+          mailchimp_subscribe_user($list, $account->mail, $mergevars, FALSE, $mcapi);
         }
       }
     }
   }
+}
+
+/**
+ * Helper function for mailchimp_lists_user_sync().
+ * 
+ * @param $account
+ * @param $list
+ * @param null $new_email
+ * @param null $old_email
+ * 
+ * @return array
+ */
+function _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email = NULL, $new_email = NULL) {
+  $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
+  // Set the EMAIL merge var if an email address is being updated:
+  if (!empty($new_email)) {
+    $mergevars['EMAIL'] = $new_email;
+  }
+  // Include interest groups:
+  if (!empty($lookup_email) && !empty($list->settings['include_interest_groups'])) {
+    $memberinfo = mailchimp_get_memberinfo($list->mc_list_id, $lookup_email);
+    $mergevars['GROUPINGS'] = $memberinfo['merges']['GROUPINGS'];
+  }
+  return $mergevars;
 }
 
 /**
