@@ -454,7 +454,19 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
       }
     }
   }
-
+  // Check for altered roles.
+  // @todo: act on this information to update subscriber list
+  $altered_roles = FALSE;
+  if (!$is_new) {
+    foreach ($form_state['values']['roles'] as $role_id => $role) {
+      $was_on = !empty($form_state['list']->settings['roles'][$role_id]);
+      $set_on = !empty($role);
+      if ($was_on != $set_on) {
+        $altered_roles = TRUE;
+        break;
+      }
+    }
+  }
   $list->label = $form_state['values']['label'];
   $list->name = $form_state['values']['name'];
   $list->description = $form_state['values']['description'];
