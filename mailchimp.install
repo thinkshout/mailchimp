@@ -91,3 +91,17 @@ function mailchimp_update_7201() {
   variable_del('mailchimp_unsubscribe_page_description');
   variable_del('mailchimp_unsubscribe_page_title');
 }
+
+
+/**
+ * Implements hook_update_N().
+ *   Create the entity path field in mailchimp activity entities.
+ */
+function mailchimp_update_7202() {
+  $schema = mailchimp_activity_schema();
+  // Add entity_path to the main table.
+  $field_name = 'entity_path';
+  $table_name = 'mailchimp_activity_entity';
+  $spec = $schema[$table_name]['fields'][$field_name];
+  db_add_field($table_name, $field_name, $spec);
+}

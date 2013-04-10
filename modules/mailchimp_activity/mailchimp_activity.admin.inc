@@ -117,6 +117,15 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
         '#maxlength' => 127,
         '#weight' => -6,
       );
+      $form['drupal_entity']['entity_path'] = array(
+        '#title' => t('Entity Path'),
+        '#type' => 'textfield',
+        '#required' => TRUE,
+        '#description' => t('Enter the Drupal path that preceeds an entity ID when viewing an entity of this type.'),
+        '#default_value' => $entitynotnull ? $mailchimp_activity_entity->entity_path : $form_state['values']['entity_type'],
+        '#maxlength' => 127,
+        '#weight' => -5,
+      );
     }
   }
   $form['enabled'] = array(

@@ -39,6 +39,13 @@ function mailchimp_activity_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'entity_path' => array(
+        'description' => 'The path to view individual entities of the selected type.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'email_property' => array(
         'description' => 'The property that contains the email address to track',
         'type' => 'varchar',
