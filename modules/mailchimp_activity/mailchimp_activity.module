@@ -49,7 +49,7 @@ function mailchimp_activity_menu() {
   $items = array();
   $mailchimp_activity_entities = mailchimp_activity_load_entities();
   foreach ($mailchimp_activity_entities as $mailchimp_activity_entity) {
-    $arg = 1 + substr_count('/', $mailchimp_activity_entity->entity_path);
+    $arg = 1 + substr_count($mailchimp_activity_entity->entity_path, '/');
     $items[$mailchimp_activity_entity->entity_path . '/%entity_object/mailchimp_activity'] = array(
       'title' => 'MailChimp Activity',
       'load arguments' => array($mailchimp_activity_entity->entity_type),
@@ -143,16 +143,28 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
 function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_activity_entity) {
   $wrapper = entity_metadata_wrapper($mailchimp_activity_entity->entity_type, $entity);
   $email = $wrapper->{$mailchimp_activity_entity->email_property}->value();
-  //If the email property is a multiple-value field, loop into it until we
-  //find a non-array value-- presumably an email address
-  while (is_array($email)) {
+  // If the email property is a multiple-value field, loop into it until we
+  // find a non-array value-- presumably an email address
+  // @todo: fix this so it recognizes.
+  while (!empty($email[0])) {
     $email = $email[0];
+  }
+  // If this field is complex, the email address may be a value in the field
+  // array, so we try to find a good email address:
+  if (is_array($email)) {
+    foreach ($email as $email_trait) {
+      if (valid_email_address($email_trait)) {
+        $email = $email_trait;
+        break;
+      }
+    }
   }
   // Validate email address.
   if (!valid_email_address($email)) {
-    return array('error_notice' => array(
-        '#markup' => t('%email is not a valid email address. Unable to lookup MailChimp activity history without a valid email.',
-          array('%email' => $email)
+    return array(
+      'error_notice' => array(
+        '#markup' => t('%email does not contain a valid email address. Unable to lookup MailChimp activity history without a valid email.',
+          array('%email' => $wrapper->{$mailchimp_activity_entity->email_property}->value())
         ),
       ),
     );
