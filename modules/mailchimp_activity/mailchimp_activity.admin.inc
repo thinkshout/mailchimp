@@ -112,15 +112,6 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
         '#maxlength' => 127,
         '#weight' => -6,
       );
-      $form['drupal_entity']['entity_path'] = array(
-        '#title' => t('Entity Path'),
-        '#type' => 'textfield',
-        '#required' => TRUE,
-        '#description' => t('Enter the Drupal path that preceeds an entity ID when viewing an entity of this type.'),
-        '#default_value' => $entitynotnull ? $mailchimp_activity_entity->entity_path : $form_state['values']['entity_type'],
-        '#maxlength' => 127,
-        '#weight' => -5,
-      );
     }
   }
   $form['enabled'] = array(
@@ -176,6 +167,9 @@ function mailchimp_activity_entity_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $activity_entity = array();
   if ($form_state['op'] == 'add' || $form_state['op'] == 'clone') {
+    $dummy = entity_create($form_state['values']['entity_type'], array('type' => $form_state['values']['bundle']));
+    $uri = entity_uri($form_state['values']['entity_type'], $dummy);
+    $values['entity_path'] = $uri['path'];
     $activity_entity = entity_create('mailchimp_activity_entity', $values);
   }
   else {

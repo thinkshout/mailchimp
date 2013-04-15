@@ -49,8 +49,8 @@ function mailchimp_activity_menu() {
   $items = array();
   $mailchimp_activity_entities = mailchimp_activity_load_entities();
   foreach ($mailchimp_activity_entities as $mailchimp_activity_entity) {
-    $arg = 1 + substr_count($mailchimp_activity_entity->entity_path, '/');
-    $items[$mailchimp_activity_entity->entity_path . '/%entity_object/mailchimp_activity'] = array(
+    $arg = substr_count($mailchimp_activity_entity->entity_path, '/');
+    $items[$mailchimp_activity_entity->entity_path . '%entity_object/mailchimp_activity'] = array(
       'title' => 'MailChimp Activity',
       'load arguments' => array($mailchimp_activity_entity->entity_type),
       'page callback' => 'mailchimp_activity_page',
