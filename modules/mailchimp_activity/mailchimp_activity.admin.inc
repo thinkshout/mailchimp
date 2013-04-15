@@ -101,12 +101,7 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
     }
     if ($form_bundle) {
       //prep the field & properties list before creating the form item:
-      $fields = array('' => t('-- Select --'));
-      $props = entity_get_all_property_info($form_entity_type);
-      foreach ($props as $key => $prop) {
-        $fields[$key] = $props[$key]['label'];
-      }
-      asort($fields);
+      $fields = mailchimp_activity_email_fieldmap_options($form_entity_type, $form_bundle);
       $form['drupal_entity']['email_property'] = array(
         '#title' => t('Email Property'),
         '#type' => 'select',
@@ -192,4 +187,47 @@ function mailchimp_activity_entity_form_submit($form, &$form_state) {
   $activity_entity->save();
   menu_rebuild(); //Otherwise user has to clear cache themselves to see newly created activity pages
   $form_state['redirect'] = 'admin/config/services/mailchimp/activity';
+}
+
+/**
+ * Return all possible Drupal properties for a given entity type.
+ *
+ * @param string $entity_type
+ *   Name of entity whose properties to list.
+ * @param bool $include_entities
+ *   Choose whether or not to include properties of the given entity type that
+ *   are themselves also entities.
+ *
+ * @return array
+ *   List of entities that can be used as an #options list.
+ */
+function mailchimp_activity_email_fieldmap_options($entity_type, $entity_bundle = NULL) {
+  $options = array('' => t('-- Select --'));
+
+  $properties = entity_get_all_property_info($entity_type);
+  if (isset($entity_bundle)) {
+    $info = entity_get_property_info($entity_type);
+    $properties = $info['properties'];
+    if (isset($info['bundles'][$entity_bundle])) {
+      $properties += $info['bundles'][$entity_bundle]['properties'];
+    }
+  }
+
+  foreach ($properties as $key => $property) {
+    $type = isset($property['type']) ? entity_property_extract_innermost_type($property['type']) : 'text';
+    $is_entity = ($type == 'entity') || (bool) entity_get_info($type);
+    // Leave entities out of this.
+    if (!$is_entity) {
+      if (isset($property['field']) && $property['field'] && !empty($property['property info'])) {
+        foreach ($property['property info'] as $sub_key => $sub_prop) {
+          $options[$property['label']][$key . ':' . $sub_key] = $sub_prop['label'];
+        }
+      }
+      else {
+        $options[$key] = $property['label'];
+      }
+    }
+  }
+
+  return $options;
 }
