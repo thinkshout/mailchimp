@@ -117,7 +117,7 @@ function mailchimp_lists_queue_existing_access($list) {
 }
 
 /**
- * Access callback for mailchimp_lists_user_subscribe_page().
+ * Access callback for mailchimp_lists_freeform_subscribe_page().
  *
  * @param  $user
  *
