@@ -710,15 +710,17 @@ function mailchimp_lists_mailchimp_lists_merge_tokens() {
 function mailchimp_lists_load_user_mergevars($account, $list) {
   $values = array();
 
-  // grab the saved list merge vars and filter out unset values
+  // Grab the saved list merge vars and filter out unset values:
   if (!empty($list->settings['mergefields'])) {
     $mergevars = array_filter($list->settings['mergefields']);
-    $mergevars = array_flip($mergevars);
-
-    // match with token values
-    $values = module_invoke_all('mailchimp_lists_merge_values', $mergevars, $account, $list);
-
-    // always add email
+    // We have to filter one-by-one, since an array_flip would munch any
+    // duplicate values.
+    foreach ($mergevars as $name => $token) {
+      // Match with token values:
+      $replaced = module_invoke_all('mailchimp_lists_merge_values', array($token => $name), $account, $list);
+      $values[$name] = $replaced[$name];
+    }
+    // Always add email:
     $values += array(
       'EMAIL' => $account->mail
     );
