@@ -261,11 +261,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
 
         // Include interest groups:
         if (!empty($form_list['interest_groups'])) {
-          $groupings = array();
-          foreach ($form_list['interest_groups'] as $key => $group) {
-            $groups = is_array($group) ? implode(',', array_filter($group)) : $group;
-            $groupings[] = array('id' => $key, 'groups' => $groups);
-          }
+          $mergevars['GROUPINGS'] = _mailchimp_lists_reformat_groupings($form_list['interest_groups']);
           $mergevars['GROUPINGS'] = $groupings;
         }
 
@@ -637,13 +633,7 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
     elseif (($selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) || $list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) {
       // include interest groups
       if (!empty($form_list['interest_groups'])) {
-        $groupings = array();
-        foreach ($form_list['interest_groups'] as $key => $group) {
-          $group = preg_replace('/,/', '\,', $group);
-          $groups = is_array($group) ? implode(',', array_filter($group)) : $group;
-          $groupings[] = array('id' => $key, 'groups' => $groups);
-        }
-        $mergevars['GROUPINGS'] = $groupings;
+        $mergevars['GROUPINGS'] = _mailchimp_lists_reformat_groupings($form_list['interest_groups']);
       }
 
       if ($is_subscribed) {
@@ -926,4 +916,19 @@ function mailchimp_lists_queue_existing($list) {
   }
 
   return $count;
+}
+
+/**
+ * Helper function to turn an arraying 
+ * 
+ * @param $interest_groups
+ */
+function _mailchimp_lists_reformat_groupings($interest_groups){
+  $groupings = array();
+  foreach ($interest_groups as $key => $group) {
+    $group = preg_replace('/,/', '\,', $group);
+    $groups = is_array($group) ? implode(',', array_filter($group)) : $group;
+    $groupings[] = array('id' => $key, 'groups' => $groups);
+  }
+  return $groupings;
 }
