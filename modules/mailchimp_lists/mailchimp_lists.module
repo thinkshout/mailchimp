@@ -154,11 +154,15 @@ function mailchimp_lists_cron() {
         $account = user_load($item->data['uid']);
         $list = mailchimp_lists_load($item->data['list_id']);
         $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
-        if ($item->data['op'] == 'add') {
-          $batches_add[$list->mc_list_id][] = $mergevars;
-        }
-        else {
-          $batches_rem[$list->mc_list_id][] = $account->mail;
+        switch ($item->data['op']) {
+          case 'add':
+          case 'update':
+            $batches_add[$list->mc_list_id][] = $mergevars;
+            break;
+
+          case 'remove':
+            $batches_rem[$list->mc_list_id][] = $account->mail;
+            break;
         }
 
         $queue->deleteItem($item);
