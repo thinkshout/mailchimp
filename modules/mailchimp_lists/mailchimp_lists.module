@@ -198,8 +198,7 @@ function mailchimp_lists_cron() {
     $add_count = $update_count = 0;
     foreach ($batches_add as $listid => $batch) {
       if (count($batch)) {
-        // @todo: consider if update existing flag should be true or false
-        $ret = $mcapi->listBatchSubscribe($listid, $batch, FALSE, TRUE);
+        $ret = $mcapi->listBatchSubscribe($listid, $batch, TRUE, TRUE);
         if ($ret['error_count'] > 0) {
           foreach ((array) $ret['errors'] as $error) {
             watchdog('mailchimp', 'MCAPI Error: %errmsg', array('%errmsg' => $error['message']), WATCHDOG_ERROR);
