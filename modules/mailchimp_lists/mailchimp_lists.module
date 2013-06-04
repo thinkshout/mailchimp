@@ -617,6 +617,8 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
     $list = $form_list['list'];
     $ret = TRUE;
     $selected = FALSE;
+    $mergevars = NULL;
+    $function = '';
     if ($list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
       $mail = $account->mail;
       $selected = $form_list['subscribe'];
@@ -631,21 +633,22 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
 
     // unsubscribe a subscribed user who unchecked a list
     if ($is_subscribed && !$selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
-      $ret = mailchimp_unsubscribe_user($list, $account->mail, TRUE, $mcapi);
+      $function = 'unsubscribe';
     }
     elseif (($selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) || $list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) {
-      // include interest groups
+      // Include interest groups if present:
       if (!empty($form_list['interest_groups'])) {
         $mergevars['GROUPINGS'] = _mailchimp_lists_reformat_groupings($form_list['interest_groups']);
       }
-
       if ($is_subscribed) {
-        $ret = mailchimp_update_user($list, $mail, $mergevars, TRUE, $mcapi);
+        $function = 'update';
       }
       else {
-        $ret = mailchimp_subscribe_user($list, $mail, $mergevars, TRUE, $mcapi);
+        $function = "add";
       }
     }
+
+    $ret = mailchimp_lists_execute_change($function, $list, $mail, $mergevars, $account, $mcapi);
 
     if (!$ret) {
       drupal_set_message(t('There was a problem with your newsletter signup: @msg',
