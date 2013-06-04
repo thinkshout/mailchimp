@@ -152,17 +152,29 @@ function mailchimp_lists_cron() {
     $batch_size = ($queue_count < $batch_limit) ? $queue_count : $batch_limit;
     while ($count < $batch_size) {
       if ($item = $queue->claimItem()) {
-        $account = user_load($item->data['uid']);
         $list = mailchimp_lists_load($item->data['list_id']);
-        $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
+        // If all we have is an anonymous email, load it:
+        $email = $item->data['email'];
+        $mergevars = NULL;
+        // If there is a valid account, load data from it:
+        if (!empty($item->data['uid'])) {
+          $account = user_load($item->data['uid']);
+          $email = $account->mail;
+          $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
+        }
         switch ($item->data['op']) {
           case 'add':
+            // Todo: test behavior of 'update' operations here
           case 'update':
-            $batches_add[$list->mc_list_id][] = $mergevars;
+            // $mergevars will only be empty here if the queue item was created
+            // incorrectly: if $account is empty, 'op' should always be "remove"
+            if (!empty($mergevars)) {
+              $batches_add[$list->mc_list_id][] = $mergevars;
+            }
             break;
 
           case 'remove':
-            $batches_rem[$list->mc_list_id][] = $account->mail;
+            $batches_rem[$list->mc_list_id][] = $email;
             break;
         }
 
