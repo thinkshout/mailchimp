@@ -143,6 +143,7 @@ function mailchimp_lists_cron() {
   $queue->createQueue();
   $queue_count = $queue->numberOfItems();
 
+  // Claim items off the queue and organize them into batches:
   if ($queue_count > 0) {
     $batches_add = array();
     $batches_rem = array();
@@ -169,13 +170,12 @@ function mailchimp_lists_cron() {
       }
       $count++;
     }
-
+    // Now we process our batches:
     $mcapi = mailchimp_get_api_object();
 
     // Remove if necessary:
     $rem_count = 0;
     $ret = array();
-
     foreach ($batches_rem as $listid => $batch) {
       if (count($batch)) {
         // @todo: consider if the delete flag should be true or false
@@ -245,8 +245,9 @@ function mailchimp_lists_form_user_register_form_alter(&$form, &$form_state, $fo
 }
 
 /**
- * Implements hook_user_insert().
- *   Subscribe users to optional and required newsletters.
+ *  Implements hook_user_insert().
+ * 
+ *  Subscribe new users to optional and required newsletters.
  */
 function mailchimp_lists_user_insert(&$edit, $account, $category) {
   if (isset($edit['mailchimp_lists']) && count($edit['mailchimp_lists']) > 0) {
@@ -255,7 +256,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
       $list = $form_list['list'];
       $ret = TRUE;
 
-      // Unsubscribe a subscribed user who unchecked a list.
+      // Subscribe a user who selected a list.
       if ($form_list['subscribe']) {
         $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
 
@@ -975,8 +976,8 @@ function mailchimp_lists_queue_existing($list) {
 }
 
 /**
- * Helper function to turn an arraying 
- * 
+ * Helper function to make an array from an interest group form API-ready
+ *
  * @param $interest_groups
  */
 function _mailchimp_lists_reformat_groupings($interest_groups){
