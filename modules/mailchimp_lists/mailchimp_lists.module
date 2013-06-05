@@ -679,12 +679,12 @@ function mailchimp_lists_process_subscribe_form_choices($list_forms, $account = 
 
 function mailchimp_lists_execute_change($function, $list, $mail, $mergevars = NULL, $account = NULL, &$mcapi = NULL) {
   // If cron is enabled for this list, and we have an account, queue the function.
-  // todo: cronify non-account functions
-  if ($list->settings['cron'] && !empty($account)) {
+  if ($list->settings['cron']) {
     $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
     $queue->createQueue();
     $queue->createItem(array(
-      'uid' => $account->uid,
+      'uid' => isset($account) ? $account->uid : NULL,
+      'email' => $mail,
       'list_id' => $list->id,
       'op' => $function,
     ));
@@ -701,7 +701,7 @@ function mailchimp_lists_execute_change($function, $list, $mail, $mergevars = NU
         break;
 
       case 'remove':
-        $ret = mailchimp_unsubscribe_user($list, $account->mail, TRUE, $mcapi);
+        $ret = mailchimp_unsubscribe_user($list, $mail, TRUE, $mcapi);
         break;
 
       case 'update':
