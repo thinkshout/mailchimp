@@ -304,12 +304,14 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
  * Implements hook_user_delete().
  */
 function mailchimp_lists_user_delete($account) {
-  // Unsubscribe a user from all required lists:
+  // Unsubscribe a user from all required & optional lists:
+  // Load any lists that they have access to by role:
   $lists = mailchimp_lists_get_available_lists($account, array(MAILCHIMP_LISTTYPE_REQUIRED, MAILCHIMP_LISTTYPE_OPTIONAL));
   if (!empty($lists)) {
-    $mcapi = mailchimp_get_api_object();
     foreach ($lists as $list) {
-      mailchimp_unsubscribe_user($list, $account->mail, FALSE, $mcapi, TRUE);
+      // TODO: after we have local preferance tracking, remove only lists
+      // that are required or opted in.
+      mailchimp_lists_execute_change('remove', $list, $account->mail);
     }
   }
 }
@@ -628,14 +630,12 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
   $mcapi = mailchimp_get_api_object();
   foreach ($form_state['values']['mailchimp_lists'] as $form_list) {
     $list = $form_list['list'];
-    $ret = TRUE;
     $selected = FALSE;
     $mergevars = NULL;
     $function = '';
     if ($list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
       $mail = $account->mail;
       $selected = $form_list['subscribe'];
-      $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
     }
     else {
       $mail = $form_list['mergevars']['EMAIL'];
@@ -644,7 +644,6 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
 
     $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $mail);
 
-    // unsubscribe a subscribed user who unchecked a list
     if ($is_subscribed && !$selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
       $function = 'unsubscribe';
     }
