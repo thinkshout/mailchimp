@@ -170,6 +170,10 @@ function mailchimp_lists_cron() {
             if (empty($mergevars)) {
               $mergevars = array('EMAIL' => $email);
             }
+            if (!empty($item->data['groupings'])) {
+              $mergevars['GROUPINGS'] = $item->data['groupings'];
+            }
+            $batches_add[$list->mc_list_id][] = $mergevars;
             break;
 
           case 'remove':
@@ -664,6 +668,7 @@ function mailchimp_lists_execute_change($function, $list, $mail, $mergevars = NU
       'email' => $mail,
       'list_id' => $list->id,
       'op' => $function,
+      'groupings' => isset($mergevars['GROUPINGS']) ? $mergevars['GROUPINGS'] : NULL,
     ));
     $ret = "queued";
   }
