@@ -309,10 +309,25 @@ function mailchimp_lists_user_update(&$edit, $account, $category) {
  */
 function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $removed_roles = array()) {
   // Remove subscriptions if necessary:
-  if (!empty($old_email) && (!empty($removed_roles) || $old_email != $new_email)) {
+  $subscribed_lists = NULL;
+  $address_changed = !empty($new_email) && !empty($old_email) && strcmp($old_email, $new_email);
+  $roles_removed = !empty($removed_roles) && !empty($old_email);
+  if ($address_changed || $roles_removed) {
+    // Get a list of existing subscriptions:
     $all_lists = mailchimp_lists_load_multiple();
     foreach ($all_lists as $list) {
       if (mailchimp_is_subscribed($list->mc_list_id, $old_email)) {
+        $subscribed_lists[] = $list;
+      }
+    }
+    if ($address_changed) {
+      foreach ($subscribed_lists as $list) {
+        mailchimp_lists_execute_change('remove', $list, $old_email);
+      }
+    }
+    else {
+      // This means $roles_removed is TRUE.
+      foreach ($subscribed_lists as $list) {
         // Check if user still has a valid role for this list.
         $valid_role = FALSE;
         foreach ($account->roles as $role_id => $role_label) {
@@ -322,57 +337,36 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
         }
         // Remove the user if they do not have a valid role:
         if (!$valid_role) {
-          // Queue up for cron processing:
-          if ($list->settings['cron']) {
-            $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
-            $queue->createQueue();
-            $queue->createItem(array(
-              'uid' => $account->uid,
-              'list_id' => $list->id,
-              'op' => 'remove',
-            ));
-          }
-          // Process immediately:
-          else {
-            mailchimp_unsubscribe_user($list, $old_email, FALSE, NULL, TRUE);
-          }
+          mailchimp_lists_execute_change('remove', $list, $account->mail);
         }
       }
     }
   }
 
   // Add/update subscriptions if necessary:
-  $lists = mailchimp_lists_get_available_lists($account, array(MAILCHIMP_LISTTYPE_REQUIRED, MAILCHIMP_LISTTYPE_OPTIONAL, MAILCHIMP_LISTTYPE_FREEFORM));
-  if (!empty($lists) && $account->status) {
+  $list_types = array(
+    MAILCHIMP_LISTTYPE_REQUIRED,
+    MAILCHIMP_LISTTYPE_OPTIONAL,
+    MAILCHIMP_LISTTYPE_FREEFORM,
+  );
+  $lists = mailchimp_lists_get_available_lists($account, $list_types);
+  if (!empty($lists) && $account->status) { // todo: what about inactive accounts that are still registering?
     $mcapi = mailchimp_get_api_object();
     $lookup_email = !empty($old_email) ? $old_email : $account->mail;
+    $proper_email = !empty($new_email) ? $new_email : $account->mail;
     foreach ($lists as $list) {
       // Now we are ready to update or add this subscription.
       // Was this account already subscribed?
       if (mailchimp_is_subscribed($list->mc_list_id, $lookup_email)) {
         // If so, we call for an update.
-        // todo: equip cron to handle updates, not just add & delete.
-        $mergevars = _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email, $new_email);
-        mailchimp_update_user($list, $old_email, $mergevars, FALSE, $mcapi);
+        $mergevars = _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email, $proper_email);
+        mailchimp_lists_execute_change('update', $list, $lookup_email, $mergevars, NULL, $mcapi);
       }
       elseif ($list->list_type == MAILCHIMP_LISTTYPE_REQUIRED) {
         // This is a new account or required list that the account isn't already
         // subscribed to, so we add them...
-        if ($list->settings['cron']) {
-          // By queueing up for cron if we're configured for that:
-          $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
-          $queue->createQueue();
-          $queue->createItem(array(
-            'uid' => $account->uid,
-            'list_id' => $list->id,
-            'op' => 'add',
-          ));
-        }
-        else {
-          // Process immediately:
-          $mergevars = _mailchimp_lists_build_update_mergevars($account, $list, $new_email, $old_email);
-          mailchimp_subscribe_user($list, $account->mail, $mergevars, FALSE, $mcapi);
-        }
+        $mergevars = _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email, $proper_email);
+        mailchimp_lists_execute_change('add', $list, $proper_email, $mergevars, NULL, $mcapi);
       }
     }
   }
@@ -395,6 +389,7 @@ function _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email 
     $mergevars['EMAIL'] = $new_email;
   }
   // Include interest groups: 
+  // todo: can we use the $interest_groups option in mailchimp_lists_load_user_mergevars?
   if (!empty($lookup_email) && !empty($list->settings['include_interest_groups'])) {
     $memberinfo = mailchimp_get_memberinfo($list->mc_list_id, $lookup_email);
     $mergevars['GROUPINGS'] = $memberinfo['merges']['GROUPINGS'];
