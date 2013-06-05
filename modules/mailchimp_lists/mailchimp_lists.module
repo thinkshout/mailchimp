@@ -764,8 +764,13 @@ function mailchimp_lists_mailchimp_lists_merge_tokens() {
 
 /**
  * Get the relevant merge vars for the given user for the given list
+ * 
+ * @account $account
+ * @mailchimp_list $list
+ * @array null $interest_groups
+ * @return mergevars array formatted for the MCAPI
  */
-function mailchimp_lists_load_user_mergevars($account, $list) {
+function mailchimp_lists_load_user_mergevars($account, $list, $interest_groups = NULL) {
   $values = array();
 
   // Grab the saved list merge vars and filter out unset values:
@@ -782,6 +787,10 @@ function mailchimp_lists_load_user_mergevars($account, $list) {
     $values += array(
       'EMAIL' => $account->mail
     );
+  }
+  // Format interest groups if present:
+  if (!empty($interest_groups)) {
+    $values['GROUPINGS'] = _mailchimp_lists_reformat_groupings($interest_groups);
   }
 
   return $values;
