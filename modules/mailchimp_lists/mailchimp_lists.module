@@ -280,7 +280,7 @@ function mailchimp_lists_user_delete($account) {
   $lists = mailchimp_lists_get_available_lists($account, array(MAILCHIMP_LISTTYPE_REQUIRED, MAILCHIMP_LISTTYPE_OPTIONAL));
   if (!empty($lists)) {
     foreach ($lists as $list) {
-      // TODO: after we have local preferance tracking, remove only lists
+      // TODO: after we have local preference tracking, remove only lists
       // that are required or opted in.
       mailchimp_lists_execute_change('remove', $list, $account->mail);
     }
@@ -294,40 +294,27 @@ function mailchimp_lists_user_update(&$edit, $account, $category) {
   if (isset($edit['roles'])) {
     if ($category == 'account') {
       $removed_roles = array_diff_key($edit['original']->roles, $edit['roles']);
-      mailchimp_lists_user_sync($account, isset($edit['original']) ? $edit['original']->mail : '', isset($edit['mail']) ? $edit['mail'] : '', $removed_roles);
+      mailchimp_lists_user_sync($account, isset($edit['original']) ? $edit['original']->mail : '', isset($edit['mail']) ? $edit['mail'] : '', !empty($removed_roles));
     }
   }
 }
 
 /**
- * Update a users setting in all required lists or add to cron queue.
+ * Update a user's setting in all required lists or add to cron queue.
  *
  * @account $account
  * @email string $old_email
  * @email string $new_email
  * @array $removed_roles
  */
-function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $removed_roles = array()) {
+function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $roles_removed = FALSE) {
   // Remove subscriptions if necessary:
-  $subscribed_lists = NULL;
-  $address_changed = !empty($new_email) && !empty($old_email) && strcmp($old_email, $new_email);
-  $roles_removed = !empty($removed_roles) && !empty($old_email);
-  if ($address_changed || $roles_removed) {
+  // todo: account for account status?;
+  if ($roles_removed && !empty($old_email)) {
     // Get a list of existing subscriptions:
     $all_lists = mailchimp_lists_load_multiple();
     foreach ($all_lists as $list) {
       if (mailchimp_is_subscribed($list->mc_list_id, $old_email)) {
-        $subscribed_lists[] = $list;
-      }
-    }
-    if ($address_changed) {
-      foreach ($subscribed_lists as $list) {
-        mailchimp_lists_execute_change('remove', $list, $old_email);
-      }
-    }
-    else {
-      // This means $roles_removed is TRUE.
-      foreach ($subscribed_lists as $list) {
         // Check if user still has a valid role for this list.
         $valid_role = FALSE;
         foreach ($account->roles as $role_id => $role_label) {
@@ -388,7 +375,7 @@ function _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email 
   if (!empty($new_email)) {
     $mergevars['EMAIL'] = $new_email;
   }
-  // Include interest groups: 
+  // Include interest groups:
   // todo: can we use the $interest_groups option in mailchimp_lists_load_user_mergevars?
   if (!empty($lookup_email) && !empty($list->settings['include_interest_groups'])) {
     $memberinfo = mailchimp_get_memberinfo($list->mc_list_id, $lookup_email);
