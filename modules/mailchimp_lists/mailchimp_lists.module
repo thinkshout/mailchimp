@@ -640,10 +640,6 @@ function mailchimp_lists_process_subscribe_form_choices($list_forms, $account = 
           array('@msg' => $mcapi->errorMessage)), 'warning');
       }
     }
-    else {
-      drupal_set_message(t('There was a problem with your newsletter signup. No changes were found in your form submission. @msg',
-        array('@msg' => $mcapi->errorMessage)), 'warning');
-    }
   }
 }
 
