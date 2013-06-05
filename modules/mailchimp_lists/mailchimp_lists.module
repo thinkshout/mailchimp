@@ -291,20 +291,21 @@ function mailchimp_lists_user_delete($account) {
  * Implements hook_user_update().
  */
 function mailchimp_lists_user_update(&$edit, $account, $category) {
-  if(isset($edit['roles'])) {
+  if (isset($edit['roles'])) {
     if ($category == 'account') {
       $removed_roles = array_diff_key($edit['original']->roles, $edit['roles']);
-
       mailchimp_lists_user_sync($account, isset($edit['original']) ? $edit['original']->mail : '', isset($edit['mail']) ? $edit['mail'] : '', $removed_roles);
     }
   }
 }
 
 /**
- * Update a users setting in all required list or add to cron queue.
+ * Update a users setting in all required lists or add to cron queue.
  *
- * @param string $account
- * @param string $new_email
+ * @account $account
+ * @email string $old_email
+ * @email string $new_email
+ * @array $removed_roles
  */
 function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $removed_roles = array()) {
   // Remove subscriptions if necessary:
@@ -393,7 +394,7 @@ function _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email 
   if (!empty($new_email)) {
     $mergevars['EMAIL'] = $new_email;
   }
-  // Include interest groups:
+  // Include interest groups: 
   if (!empty($lookup_email) && !empty($list->settings['include_interest_groups'])) {
     $memberinfo = mailchimp_get_memberinfo($list->mc_list_id, $lookup_email);
     $mergevars['GROUPINGS'] = $memberinfo['merges']['GROUPINGS'];
@@ -709,7 +710,7 @@ function mailchimp_lists_execute_change($function, $list, $mail, $mergevars = NU
 
     }
   }
-  
+
   return $ret;
 }
 
