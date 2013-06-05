@@ -166,10 +166,9 @@ function mailchimp_lists_cron() {
           case 'add':
             // Todo: test behavior of 'update' operations here
           case 'update':
-            // $mergevars will only be empty here if the queue item was created
-            // incorrectly: if $account is empty, 'op' should always be "remove"
-            if (!empty($mergevars)) {
-              $batches_add[$list->mc_list_id][] = $mergevars;
+            // if $mergevars are empty here, populate with the most basic element:
+            if (empty($mergevars)) {
+              $mergevars = array('EMAIL' => $email);
             }
             break;
 
@@ -353,7 +352,7 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
         // This is a new account or required list that the account isn't already
         // subscribed to, so we add them...
         $mergevars = _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email, $proper_email);
-        mailchimp_lists_execute_change('add', $list, $proper_email, $mergevars, NULL, $mcapi);
+        mailchimp_lists_execute_change('add', $list, $proper_email, $mergevars, $account, $mcapi);
       }
     }
   }
