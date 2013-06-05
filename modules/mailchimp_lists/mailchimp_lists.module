@@ -262,38 +262,9 @@ function mailchimp_lists_form_user_register_form_alter(&$form, &$form_state, $fo
  *  Subscribe new users to optional and required newsletters.
  */
 function mailchimp_lists_user_insert(&$edit, $account, $category) {
+  // Todo: pay attention to user status
   if (isset($edit['mailchimp_lists']) && count($edit['mailchimp_lists']) > 0) {
-    $mcapi = mailchimp_get_api_object();
-    foreach ($edit['mailchimp_lists'] as $form_list) {
-      $list = $form_list['list'];
-      $ret = TRUE;
-
-      // Subscribe a user who selected a list.
-      if ($form_list['subscribe']) {
-        $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $account->mail);
-
-        // Grab merge values:
-        $mergevars = mailchimp_lists_load_user_mergevars($account, $list);
-
-        // Include interest groups:
-        if (!empty($form_list['interest_groups'])) {
-          $mergevars['GROUPINGS'] = _mailchimp_lists_reformat_groupings($form_list['interest_groups']);
-          $mergevars['GROUPINGS'] = $groupings;
-        }
-
-        if ($is_subscribed) {
-          $ret = mailchimp_update_user($list, $account->mail, $mergevars, TRUE, $mcapi);
-        }
-        else {
-          $ret = mailchimp_subscribe_user($list, $account->mail, $mergevars, TRUE, $mcapi);
-        }
-      }
-
-      if (!$ret) {
-        drupal_set_message(t('There was a problem with your newsletter signup: @msg',
-          array('@msg' => $mcapi->errorMessage)), 'warning');
-      }
-    }
+    mailchimp_lists_process_subscribe_form_choices($edit['mailchimp_lists'], $account);
   }
 
   // Handle required lists:
@@ -627,31 +598,51 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
  */
 function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
   $account = $form_state['values']['account'];
+  mailchimp_lists_process_subscribe_form_choices($form_state['values']['mailchimp_lists'], $account);
+}
+
+/**
+ * Processor for various list form submissions:
+ * Subscription blocks, user settings, and new user creation.
+ * 
+ * @array $list_forms: an array of mailchimp_list form values, as generated
+ *   by mailchimp_lists_list_form() 
+ * @account null $account: the user account to subscribe, if available.
+ *   Otherwise, operations will be run with the ['mergevars']['EMAIL'] value.
+ */
+function mailchimp_lists_process_subscribe_form_choices($list_forms, $account = NULL) {
   $mcapi = mailchimp_get_api_object();
-  foreach ($form_state['values']['mailchimp_lists'] as $form_list) {
+  foreach ($list_forms as $form_list) {
     $list = $form_list['list'];
     $selected = FALSE;
     $mergevars = NULL;
     $function = '';
+    $ret = FALSE;
+    $interest_groups = !empty($form_list['interest_groups']) ? $form_list['interest_groups'] : NULL;
     if ($list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
       $mail = $account->mail;
       $selected = $form_list['subscribe'];
+      $mergevars = mailchimp_lists_load_user_mergevars($account, $list, $interest_groups);
     }
     else {
       $mail = $form_list['mergevars']['EMAIL'];
+      // Todo: determine if generating mergevars for anonymous users needs a function.
       $mergevars = $form_list['mergevars'];
+      // Include interest groups if present:
+      if (!empty($interest_groups)) {
+        $mergevars['GROUPINGS'] = _mailchimp_lists_reformat_groupings($interest_groups);
+      }
     }
 
     $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $mail);
 
+    // Determine what function is appropriate.
+    // Unsubscribe a subscribed user who unchecked an Optional list:
     if ($is_subscribed && !$selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
-      $function = 'unsubscribe';
+      $function = 'remove';
     }
+    // Otherwise we are doing an update or an add, based on $is_subscribed:
     elseif (($selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) || $list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) {
-      // Include interest groups if present:
-      if (!empty($form_list['interest_groups'])) {
-        $mergevars['GROUPINGS'] = _mailchimp_lists_reformat_groupings($form_list['interest_groups']);
-      }
       if ($is_subscribed) {
         $function = 'update';
       }
@@ -659,11 +650,15 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
         $function = "add";
       }
     }
-
-    $ret = mailchimp_lists_execute_change($function, $list, $mail, $mergevars, $account, $mcapi);
-
-    if (!$ret) {
-      drupal_set_message(t('There was a problem with your newsletter signup: @msg',
+    if (!empty($function)) {
+      $ret = mailchimp_lists_execute_change($function, $list, $mail, $mergevars, $account, $mcapi);
+      if (!$ret) {
+        drupal_set_message(t('There was a problem with your newsletter signup: @msg',
+          array('@msg' => $mcapi->errorMessage)), 'warning');
+      }
+    }
+    else {
+      drupal_set_message(t('There was a problem with your newsletter signup. No changes were found in your form submission. @msg',
         array('@msg' => $mcapi->errorMessage)), 'warning');
     }
   }
