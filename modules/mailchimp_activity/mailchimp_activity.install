@@ -98,8 +98,7 @@ function mailchimp_activity_schema() {
 }
 
 /**
- * Implements hook_update_N().
- *   Create the entity path field in mailchimp activity entities.
+ * Create the entity path field in mailchimp activity entities.
  */
 function mailchimp_activity_update_7000() {
   $schema = mailchimp_activity_schema();
