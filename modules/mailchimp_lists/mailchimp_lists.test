@@ -1,0 +1,57 @@
+<?php
+/**
+ * Tests the functionality of the Mailchimp Lists module.
+ */
+class MailchimpListsTestCase extends DrupalWebTestCase {
+  protected $privileged_user;
+
+  public static function getInfo() {
+    // Note: getInfo() strings are not translated with t().
+    return array(
+      'name' => 'Mailchimp Lists',
+      'description' => 'Test creation of Lists.',
+      'group' => 'Mailchimp',
+    );
+  }
+
+  /**
+   * @return bool|void
+   */
+  public function setUp() {
+    // Use a profile that contains required modules:
+    // todo: build this profile into mailchimp module
+    $this->profile = 'mailchimp_dev';
+    // Enable any modules required for the test. This should be an array of
+    // module names.
+    $enabled_modules = array(
+      'libraries',
+      'mailchimp',
+      'entity',
+      'entity_token',
+      'mailchimp_lists',
+    );
+    parent::setUp($enabled_modules);
+    variable_set('mailchimp_api_key', 'f85b43e8e85de5bea07ccd7fa6ca5ab0-us1');
+    // Create and log in our privileged user.
+    $this->staff_admin = $this->drupalCreateUser(array(
+      'administer mailchimp',
+    ));
+    $this->drupalLogin($this->staff_admin);
+  }
+
+  /**
+   * Tests creation of a mailchimp list.
+   */
+  public function testMailchimpListCreate() {
+    // Create node to edit.
+    $edit = array();
+    $edit['title'] = $edit['label'] = $this->randomName(8);
+    $edit['list_type'] = 'required';
+    $edit['mc_list_id'] = 'e6b08cb3fb';
+    $edit["roles[2]"] = '2';
+    //$edit["settings[mergefields][EMAIL]"] = "mail";
+    $this->drupalPost('admin/config/services/mailchimp/lists/add', $edit, t('Save'));
+    $this->assertText(t('Simpletest Example Node Type @title has been created.', array('@title' => $edit['title'])));
+  }
+
+}
