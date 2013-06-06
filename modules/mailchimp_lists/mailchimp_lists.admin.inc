@@ -455,7 +455,6 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
     }
   }
   // Check for altered roles.
-  // @todo: act on this information to update subscriber list
   $altered_roles = FALSE;
   if (!$is_new) {
     foreach ($form_state['values']['roles'] as $role_id => $role) {
@@ -463,6 +462,8 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
       $set_on = !empty($role);
       if ($was_on != $set_on) {
         $altered_roles = TRUE;
+        // todo: this only ADDs subscribers, doesn't REMOVE them if necessary:
+        mailchimp_lists_queue_existing($list);
         break;
       }
     }
