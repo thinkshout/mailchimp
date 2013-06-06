@@ -228,6 +228,14 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#maxlength' => 64,
     '#default_value' => isset($list->settings['form_label']) ? $list->settings['form_label'] : '',
   );
+  $form['list_settings']['settings']['submit_label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Submit Button Label'),
+    '#description' => t('The label for the Submit button that will appear on subscription forms that include only this list: generally blocks only.'),
+    '#size' => 20,
+    '#maxlength' => 20,
+    '#default_value' => isset($list->settings['submit_label']) ? $list->settings['submit_label'] : 'Submit',
+  );
   $form['list_settings']['settings']['default_register_form_optin'] = array(
     '#type' => 'checkbox',
     '#title' => t('Default to opt-in on registration form.'),
@@ -502,6 +510,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
     'default_register_form_optin' => $form_state['values']['default_register_form_optin'],
     'show_account_form' => $form_state['values']['show_account_form'],
     'form_label' => $form_state['values']['form_label'],
+    'submit_label' => $form_state['values']['submit_label'],
     'include_interest_groups' => $form_state['values']['include_interest_groups'],
     'interest_groups_label' => $form_state['values']['interest_groups_label'],
     'cron' => $form_state['values']['cron'],

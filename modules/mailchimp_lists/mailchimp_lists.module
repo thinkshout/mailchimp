@@ -401,8 +401,9 @@ function mailchimp_lists_user_subscribe_page($account) {
   if (count($lists) == 0) {
     return (t('There are no available newsletter subscriptions.'));
   }
-
-  return drupal_get_form('mailchimp_lists_user_subscribe_form', $lists, $account);
+  $form = drupal_get_form('mailchimp_lists_user_subscribe_form', $lists, $account);
+  $form['submit']['#value'] = 'Save';
+  return $form;
 }
 
 /**
@@ -440,10 +441,13 @@ function mailchimp_lists_user_subscribe_form($form, &$form_state, $lists, $accou
   foreach ($lists as $list) {
     mailchimp_lists_auth_newsletter_form($form['mailchimp_lists'], $list, $account);
   }
-
+  $submit_label = 'Subscribe';
+  if (count($lists) == 1 && isset($lists[0]->settings['submit_label'])) {
+    $submit_label = $lists[0]->settings['submit_label'];
+  }
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save'),
+    '#value' => t($submit_label),
   );
 
   return $form;
@@ -500,7 +504,7 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
 
     if (!empty($mc_list['mergevars'])) {
       foreach ($mc_list['mergevars'] as $mergevar) {
-        // set the default value for merge fields if we have it
+        // Set the default value for merge fields if we have it:
         if ($mergevalues && isset($mergevalues[$mergevar['tag']]) && $mergevalues[$mergevar['tag']]) {
           $mergevar['default'] = $mergevalues[$mergevar['tag']];
         }
