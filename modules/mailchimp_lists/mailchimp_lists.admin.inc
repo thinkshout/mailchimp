@@ -354,7 +354,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
         if ($mergevar['tag'] == 'EMAIL') {
           $default_value = 'mail';
           $disabled = TRUE;
-          $description = t('Email is required and must map to a Drupal user\'s email.');
+          $description = t("Email is required and must map to a Drupal user's email.");
         }
         $form['mc_list']['mergefields'][$mergevar['tag']] = array(
           '#type' => 'select',
@@ -363,13 +363,13 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
           '#default_value' => $default_value,
           '#disabled' => $disabled,
           '#required' => $mergevar['req'],
-          '#options' => mailchimp_lists_get_merge_tokens()
+          '#options' => mailchimp_lists_get_merge_tokens(),
         );
       }
     }
     else {
       $form['mc_list']['mergefields']['message'] = array(
-        '#markup' => t('There are no merge fields configured for this list.')
+        '#markup' => t('There are no merge fields configured for this list.'),
       );
     }
   }
@@ -401,7 +401,7 @@ function mailchimp_lists_mergefields_callback($form, $form_state) {
 }
 
 /**
- * mailchimp_lists_list_form() validation handler.
+ * Validation handler for mailchimp_lists_list_form().
  */
 function mailchimp_lists_list_form_validate($form, &$form_state) {
   // Anonymous role can only be applied to free form lists.
@@ -435,7 +435,7 @@ function mailchimp_lists_list_form_validate($form, &$form_state) {
 }
 
 /**
- * mailchimp_lists_list_form() submit handler.
+ * Submit handler for mailchimp_lists_list_form().
  */
 function mailchimp_lists_list_form_submit($form, &$form_state) {
   $list = new stdClass();
