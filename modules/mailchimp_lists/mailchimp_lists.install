@@ -321,3 +321,6 @@ function mailchimp_lists_update_7203() {
 
   return t('MailChimp list webhooks have been updated with the new, more secure endpoint URL.');
 }
+
+//todo: install update list->settings with ['form_label']
+// Notice: Undefined index: form_label in mailchimp_lists_auth_newsletter_form()
