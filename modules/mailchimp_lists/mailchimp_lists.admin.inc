@@ -111,8 +111,10 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#title' => 'Description',
     '#type' => 'textarea',
     '#default_value' => $list ? $list->description : '',
+    '#rows' => 2,
+    '#maxlength' => 255,
     // '#text_format'    => NULL, // @todo: should store this value
-    '#description' => t('This description will be shown to the user on the list signup and user account settings pages'),
+    '#description' => t('This description will be shown to the user on the list signup and user account settings pages. (255 characters or less)'),
   );
 
   $form['list_settings'] = array(
