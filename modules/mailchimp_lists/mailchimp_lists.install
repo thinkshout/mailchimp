@@ -322,5 +322,29 @@ function mailchimp_lists_update_7203() {
   return t('MailChimp list webhooks have been updated with the new, more secure endpoint URL.');
 }
 
-//todo: install update list->settings with ['form_label']
-// Notice: Undefined index: form_label in mailchimp_lists_auth_newsletter_form()
+/**
+ * Update list->settings with ['form_label'] index.
+ */
+function mailchimp_lists_update_7204() {
+  $efq = new EntityFieldQuery();
+  $all_list_types = array(
+    MAILCHIMP_LISTTYPE_OPTIONAL,
+    MAILCHIMP_LISTTYPE_REQUIRED,
+    MAILCHIMP_LISTTYPE_FREEFORM,
+  );
+  $results = $efq
+    ->entityCondition('entity_type', 'mailchimp_list')
+    ->propertyCondition('list_type', $all_list_types, 'IN')
+    ->execute();
+
+  if (empty($results)) {
+    return t('There are no lists to update.');
+  }
+  $lists = mailchimp_lists_load_multiple(array_keys($results['mailchimp_list']));
+  foreach ($lists as $list) {
+    if (!isset($list->settings['form_label'])) {
+      $list->settings['form_label'] = '';
+    }
+  }
+  return t('MailChimp lists have been given a default Form Label field.');
+}
