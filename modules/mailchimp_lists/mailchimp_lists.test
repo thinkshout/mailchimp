@@ -31,7 +31,7 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
       'mailchimp_lists',
     );
     parent::setUp($enabled_modules);
-    variable_set('mailchimp_api_key', 'f85b43e8e85de5bea07ccd7fa6ca5ab0-us1');
+    variable_set('mailchimp_api_key', 'mailchimp_testing_mode');
     // Create and log in our privileged user.
     $this->staff_admin = $this->drupalCreateUser(array(
       'administer mailchimp',

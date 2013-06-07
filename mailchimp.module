@@ -198,19 +198,18 @@ function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NUL
  */
 function mailchimp_get_api_object() {
   libraries_load('mailchimp');
-  $classname = 'MailChimp';
   $api_key = variable_get('mailchimp_api_key', '');
-  if (!str_cmp($api_key, "mailchimp_testing_mode")) {
+  if (!strcmp($api_key, "mailchimp_testing_mode")) {
     $q = new MailChimpTest();
   }
   else {
     $q = new MailChimp($api_key);
   }
 
-  // set the timeout to something reasonsable to avoid taking down the Drupal site
+  // Set the timeout to something that won't take down the Drupal site:
   $q->setTimeout(60);
 
-  // specify if a secure connection should be used wit the API
+  // Specify if a secure connection should be used with the API:
   $q->useSecure(variable_get('mailchimp_use_secure', TRUE));
 
   if ($q->errorCode) {
