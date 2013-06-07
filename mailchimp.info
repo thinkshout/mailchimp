@@ -4,6 +4,7 @@ package = MailChimp
 core = 7.x
 
 files[] = includes/mailchimp.inc
+files[] = tests/mailchimp_tests.inc
 
 dependencies[] = libraries (>=2)
 
