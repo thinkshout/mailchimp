@@ -7,6 +7,14 @@ class MailChimpTest extends MailChimp {
   public function __construct() {
   }
 
+  /**
+   * Get the details of an email address's settings in a particular list.
+   * 
+   * @return array
+   *   An array that counts the successes and failures, and contains
+   *   a Data index for the info. Only supports a single operation despite
+   *   the structure of the success and error indexes.
+   */
   public function listMemberInfo($id, $email_address) {
     $lists = $this->loadLists();
     $ret = array(
@@ -30,6 +38,12 @@ class MailChimpTest extends MailChimp {
     return $ret;
   }
 
+  /**
+   * Get the mergevars for a list.
+   * 
+   * @return array|bool
+   *   Returns an array of mergevars if they exist, otherwise false.
+   */
   public function listMergeVars($id) {
     $lists = $this->loadLists();
     if (isset($lists[$id]) && isset($lists[$id]['mergevars'])) {
@@ -38,7 +52,13 @@ class MailChimpTest extends MailChimp {
     return FALSE;
   }
 
-  public function listSubscribe($id, $email_address, $merge_vars = NULL, $email_type = 'html', $double_optin = true, $update_existing = false, $replace_interests = true, $send_welcome = false) {
+  /**
+   * Subscribe a user to a list.
+   * 
+   * @return bool
+   *   TRUE if user was added or subscribed, otherwise FALSE.
+   */
+  public function listSubscribe($id, $email_address, $merge_vars = NULL, $email_type = 'html', $double_optin = TRUE, $update_existing = FALSE, $replace_interests = TRUE, $send_welcome = FALSE) {
     $lists = $this->loadLists();
     if (isset($lists[$id])) {
       if (isset($lists[$id]['data'][$email_address])) {
@@ -61,7 +81,13 @@ class MailChimpTest extends MailChimp {
     }
   }
 
-  public function listUnsubscribe($id, $email_address, $delete_member = false, $send_goodbye = true, $send_notify = true) {
+  /**
+   * Unsubscribe a user from a list.
+   * 
+   * @return bool
+   *   True if the user was removed, false if unnecessary or no such list.
+   */
+  public function listUnsubscribe($id, $email_address, $delete_member = FALSE, $send_goodbye = TRUE, $send_notify = TRUE) {
     $lists = $this->loadLists();
     if (isset($lists[$id])) {
       if (isset($lists[$id]['data'][$email_address])) {
@@ -90,7 +116,13 @@ class MailChimpTest extends MailChimp {
     return FALSE;
   }
 
-  public function listUpdateMember($id, $email_address, $merge_vars, $email_type = '', $replace_interests = true) {
+  /**
+   * Update a list member.
+   * 
+   * @return bool
+   *   True if an update took place, otherwise False.
+   */
+  public function listUpdateMember($id, $email_address, $merge_vars, $email_type = '', $replace_interests = TRUE) {
     $lists = $this->loadLists();
     if (isset($lists[$id])) {
       if (isset($lists[$id]['data'][$email_address])) {
@@ -115,6 +147,12 @@ class MailChimpTest extends MailChimp {
     return FALSE;
   }
 
+  /**
+   * Load lists.
+   *
+   * @return array
+   *   Stored lists formatted as the actual MC API returns them.
+   */
   public function lists($filters = array(), $start = 0, $limit = 25, $sort_field = 'created', $sort_dir = 'DESC') {
     $lists = $this->loadLists();
     $ret = array(
@@ -131,12 +169,24 @@ class MailChimpTest extends MailChimp {
     return $ret;
   }
 
+  /**
+   * Loads list values, initializing if necessary.
+   *
+   * @return array
+   *   Stored lists.
+   */
   protected function loadLists() {
     $list_data = variable_get('mailchimp_test_list_data', $this->defaultLists());
 
     return $list_data;
   }
 
+  /**
+   * Creates initial list values.
+   *
+   * @return array
+   *   Basic lists.
+   */
   protected function defaultLists() {
     $default_mergevars = array();
     $default_mergevars[] = array(
@@ -191,7 +241,10 @@ class MailChimpTest extends MailChimp {
     );
     return $lists;
   }
-  
+
+  /**
+   * Saves list changes.
+   */
   protected function writeLists($lists) {
     variable_set('mailchimp_test_list_data', $lists);
   }
