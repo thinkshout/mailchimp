@@ -2,6 +2,11 @@
 /**
  * Tests the functionality of the Mailchimp Lists module.
  */
+
+define('MC_TEST_EMAIL_1', 'test1@example.com');
+define('MC_TEST_EMAIL_2', 'test2@example.com');
+define('MC_TEST_EMAIL_3', 'test3@example.com');
+
 class MailchimpListsBasicTestCase extends DrupalWebTestCase {
   protected $privileged_user;
 
@@ -92,18 +97,21 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Tests creation of a mailchimp list.
+   * Tests subscription to a mailchimp list from an anonymous user.
    */
-  public function testMailchimpListCreate() {
-    // Create node to edit.
-    $edit = array();
-    $edit['title'] = $edit['label'] = $this->randomName(8);
-    $edit['list_type'] = 'required';
-    $edit['mc_list_id'] = 'e6b08cb3fb';
-    $edit["roles[2]"] = '2';
-    // $edit["settings[mergefields][EMAIL]"] = "mail";
-    $this->drupalPost('admin/config/services/mailchimp/lists/add', $edit, t('Save'));
-    $this->assertText(t('Simpletest Example Node Type @title has been created.', array('@title' => $edit['title'])));
+  public function testMailchimpListSubscribeAnonymous() {
+    $form_edit = array();
+    $form_edit['mailchimp_lists[mailchimp_anonymous_test_list][mergevars][EMAIL]'] = MC_TEST_EMAIL_1;
+
+    $this->drupalPost('mailchimp/subscribe', $form_edit, t('Subscribe'));
+    $this->assertResponse(200, 'Anonymous subscription allowed.');
+
+    $successful_subscription = mailchimp_is_subscribed('test_list_A', MC_TEST_EMAIL_1);
+
+    $message = $successful_subscription ? "successful." : "failed.";
+    $this->assertTrue($successful_subscription, 'Anonymous subscription ' . $message, 'Subscriptions');
+
+    return TRUE;
   }
 
 }
