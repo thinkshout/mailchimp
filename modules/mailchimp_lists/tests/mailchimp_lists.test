@@ -2,7 +2,7 @@
 /**
  * Tests the functionality of the Mailchimp Lists module.
  */
-class MailchimpListsTestCase extends DrupalWebTestCase {
+class MailchimpListsBasicTestCase extends DrupalWebTestCase {
   protected $privileged_user;
 
   public static function getInfo() {
@@ -19,8 +19,7 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    */
   public function setUp() {
     // Use a profile that contains required modules:
-    // todo: build this profile into mailchimp module
-    $this->profile = 'mailchimp_dev';
+    $this->profile = 'mailchimp_test';
     // Enable any modules required for the test. This should be an array of
     // module names.
     $enabled_modules = array(
@@ -49,7 +48,7 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
     $edit['list_type'] = 'required';
     $edit['mc_list_id'] = 'e6b08cb3fb';
     $edit["roles[2]"] = '2';
-    //$edit["settings[mergefields][EMAIL]"] = "mail";
+    // $edit["settings[mergefields][EMAIL]"] = "mail";
     $this->drupalPost('admin/config/services/mailchimp/lists/add', $edit, t('Save'));
     $this->assertText(t('Simpletest Example Node Type @title has been created.', array('@title' => $edit['title'])));
   }
