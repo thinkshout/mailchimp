@@ -125,30 +125,67 @@ class MailChimpTest extends MailChimp {
   }
 
   protected function loadLists() {
-    $list_data = &$GLOBALS['mailchimp_list_data'];
-    if (!isset($list_data['lists'])) {
-      $lists = array(
-        'test_list_A' => array(
-          'name' => 'Test List A',
-          'data' => array(),
-        ),
-        'test_list_B' => array(
-          'name' => 'Test List B',
-          'data' => array(),
-        ),
-        'test_list_C' => array(
-          'name' => 'Test List C',
-          'data' => array(),
-        ),
-      );
-      $this->writeLists($lists);
-    }
+    $list_data = variable_get('mailchimp_test_list_data', $this->defaultLists());
 
-    return $list_data['lists'];
+    return $list_data;
   }
 
+  protected function defaultLists() {
+    $default_mergevars = array();
+    $default_mergevars[] = array(
+      'name' => 'Email',
+      'order' => 0,
+      'tag' => 'EMAIL',
+      'req' => TRUE,
+      'webid' => 'test',
+      'field_type' => 'text',
+      'size' => 40,
+      'default' => '',
+      'public' => TRUE,
+    );
+    $default_mergevars[] = array(
+      'name' => 'First Name',
+      'order' => 1,
+      'tag' => 'FIRSTNAME',
+      'req' => FALSE,
+      'webid' => 'test',
+      'field_type' => 'text',
+      'size' => 40,
+      'default' => '',
+      'public' => TRUE,
+    );
+    $default_mergevars[] = array(
+      'name' => 'Last Name',
+      'order' => 2,
+      'tag' => 'LASTNAME',
+      'req' => FALSE,
+      'web_id' => 'test',
+      'field_type' => 'text',
+      'size' => 40,
+      'default' => '',
+      'public' => TRUE,
+    );
+    $lists = array(
+      'test_list_A' => array(
+        'name' => 'Test List A',
+        'data' => array(),
+        'mergevars' => $default_mergevars,
+      ),
+      'test_list_B' => array(
+        'name' => 'Test List B',
+        'data' => array(),
+        'mergevars' => $default_mergevars,
+      ),
+      'test_list_C' => array(
+        'name' => 'Test List C',
+        'data' => array(),
+        'mergevars' => $default_mergevars,
+      ),
+    );
+    return $lists;
+  }
+  
   protected function writeLists($lists) {
-    $list_data = &$GLOBALS['mailchimp_list_data'];
-    $list_data['lists'] = $lists;
+    variable_set('mailchimp_test_list_data', $lists);
   }
 }
