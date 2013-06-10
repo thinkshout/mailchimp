@@ -1,0 +1,9 @@
+name = "Mailchimp Lists Test"
+description = "Support module for the Mailchimp Lists tests."
+core = 7.x
+hidden = TRUE
+package = Testing
+
+dependencies[] = libraries
+dependencies[] = entity
+dependencies[] = entity_token
