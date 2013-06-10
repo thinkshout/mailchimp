@@ -29,6 +29,13 @@ class MailChimpTest extends MailChimp {
     }
     return $ret;
   }
+
+  public function listMergeVars($id) {
+    $lists = $this->loadLists();
+    if (isset($lists[$id]) && isset($lists[$id]['mergevars'])) {
+      return $lists[$id]['mergevars'];
+    }
+    return FALSE;
   }
 
   public function listSubscribe($id, $email_address, $merge_vars = NULL, $email_type = 'html', $double_optin = true, $update_existing = false, $replace_interests = true, $send_welcome = false) {
