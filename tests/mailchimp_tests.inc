@@ -14,8 +14,8 @@ class MailChimpTest extends MailChimp {
       'errors' => 0,
       'data' => array(),
     );
-    if (isset($lists[$id][$email_address[0]])) {
-      $member = $lists[$id][$email_address[0]];
+    if (isset($lists[$id]['data'][$email_address[0]])) {
+      $member = $lists[$id]['data'][$email_address[0]];
       $ret['success'] = 1;
       $ret['data'][] = array(
         'email' => $email_address[0],
@@ -27,6 +27,8 @@ class MailChimpTest extends MailChimp {
     else {
       $ret['errors'] = 1;
     }
+    return $ret;
+  }
   }
 
   public function listSubscribe($id, $email_address, $merge_vars = NULL, $email_type = 'html', $double_optin = true, $update_existing = false, $replace_interests = true, $send_welcome = false) {
