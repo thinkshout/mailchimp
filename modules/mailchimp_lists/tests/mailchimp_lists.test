@@ -9,7 +9,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // Note: getInfo() strings are not translated with t().
     return array(
       'name' => 'Mailchimp Lists',
-      'description' => 'Test creation of Lists.',
+      'description' => 'Test List Subscription Logic.',
       'group' => 'Mailchimp',
     );
   }
@@ -36,7 +36,59 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     $this->staff_admin = $this->drupalCreateUser(array(
       'administer mailchimp',
     ));
-    $this->drupalLogin($this->staff_admin);
+    //$this->drupalLogin($this->staff_admin);
+
+    // Create some lists:
+    $lists = array();
+
+    $list = new stdClass();
+    $list->label = 'Anonymous Test List';
+    $list->name = 'anonymous_test_list';
+    $list->description = 'Anonymous list description';
+    $list->list_type = 'freeform';
+    $list->mc_list_id = 'test_list_A';
+    $list->settings = array(
+      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID, DRUPAL_ANONYMOUS_RID => DRUPAL_ANONYMOUS_RID),
+      'mergefields' => array('EMAIL'),
+      'cron' => FALSE,
+      'doublein' => FALSE,
+      'include_interest_groups' => FALSE,
+    );
+    $lists[] = $list;
+
+    $list = new stdClass();
+    $list->label = 'Optional Test List';
+    $list->name = 'optional_test_list';
+    $list->description = 'Optional list description';
+    $list->list_type = 'optional';
+    $list->mc_list_id = 'test_list_B';
+    $list->settings = array(
+      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID),
+      'mergefields' => array(''),
+      'cron' => FALSE,
+      'doublein' => FALSE,
+      'include_interest_groups' => FALSE,
+    );
+    $lists[] = $list;
+
+    $list = new stdClass();
+    $list->label = 'Required Test List';
+    $list->name = 'required_test_list';
+    $list->description = 'Required list description';
+    $list->list_type = 'required';
+    $list->mc_list_id = 'test_list_C';
+    $list->settings = array(
+      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID),
+      'mergefields' => array(),
+      'cron' => FALSE,
+      'doublein' => FALSE,
+      'include_interest_groups' => FALSE,
+    );
+    $lists[] = $list;
+
+    foreach ($lists as $list) {
+      mailchimp_lists_save($list);
+    }
   }
 
   /**
