@@ -37,12 +37,8 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     );
     parent::setUp($enabled_modules);
     variable_set('mailchimp_api_key', 'mailchimp_testing_mode');
-    // Create and log in our privileged user.
-    $this->staff_admin = $this->drupalCreateUser(array(
-      'administer mailchimp',
-    ));
-    //$this->drupalLogin($this->staff_admin);
-
+    // Create some users with different roles/permissions:
+    $this->authorized_user = $this->drupalCreateUser(array());
     // Create some lists:
     $lists = array();
 
@@ -71,6 +67,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
       'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID),
       'mergefields' => array(''),
       'cron' => FALSE,
+      'show_account_form' => TRUE,
       'doublein' => FALSE,
       'include_interest_groups' => FALSE,
     );
@@ -99,7 +96,10 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
   /**
    * Tests subscription to a mailchimp list from an anonymous user.
    */
-  public function testMailchimpListSubscribeAnonymous() {
+  public function testMailchimpListSubscriptionWorkflow() {
+    // *************************************************************************
+    // 1. Test submission of an anonymous signup form for a Freeform list.
+    // *************************************************************************
     $form_edit = array();
     $form_edit['mailchimp_lists[mailchimp_anonymous_test_list][mergevars][EMAIL]'] = MC_TEST_EMAIL_1;
 
@@ -109,9 +109,62 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     $successful_subscription = mailchimp_is_subscribed('test_list_A', MC_TEST_EMAIL_1);
 
     $message = $successful_subscription ? "successful." : "failed.";
-    $this->assertTrue($successful_subscription, 'Anonymous subscription ' . $message, 'Subscriptions');
+    $this->assertTrue($successful_subscription, 'Anonymous subscription ' . $message, 'Subscriptions: Anonymous');
+
+    // *************************************************************************
+    // 2. Test submission of a signup form from an Authenticated User
+    // to an Optional List.
+    // *************************************************************************
+    $this->drupalLogin($this->authorized_user);
+    $id = $this->authorized_user->uid;
+    $email = $this->authorized_user->mail;
+    $form_edit = array();
+    $form_edit['mailchimp_lists[mailchimp_optional_test_list][subscribe]'] = TRUE;
+    $this->drupalPost('user/' . $id . "/mailchimp", $form_edit, t('Save'));
+    $this->assertResponse(200, 'Authenticated subscription to optional list allowed.');
+    $successful_subscription = mailchimp_is_subscribed('test_list_B', $email);
+    $message = $successful_subscription ? "successful." : "failed.";
+    $this->assertTrue($successful_subscription, 'Authenticated user subscription ' . $message, 'Subscriptions: Optional');
+    // *************************************************************************
+    // 3. Test deletion of an Authenticated User removes the user from optional
+    // list.
+    // *************************************************************************
+    user_delete($id);
+    $is_subscribed = mailchimp_is_subscribed('test_list_B', $email);
+    $message = $is_subscribed ? "subscribed." : "not subscribed.";
+    $this->assertFalse($is_subscribed, "Authenticated user's email status after account deletion: " . $message, 'Subscriptions: Optional');
+    // *************************************************************************
+    // 4. Test if hooks for user creation are properly adding a new User to a
+    // Required list.
+    // *************************************************************************
+    $is_subscribed = mailchimp_is_subscribed('test_list_C', MC_TEST_EMAIL_2);
+    $message = $is_subscribed ? "subscribed." : "not subscribed.";
+    // Confirm this email address isn't already subscribed:
+    $this->assertFalse($is_subscribed, 'Email address initial status on Required List: ' . $message, 'Subscriptions: Required');
+    // Create a user with the authenticated role (required by required list).
+    $edit = array(
+      'name' => "Test Authenticated User",
+      'mail' => MC_TEST_EMAIL_2,
+      'pass' => "test",
+      'status' => 1,
+      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID),
+    );
+    // This should trigger the hook that subscribes this user:
+    $account = user_save(drupal_anonymous_user(), $edit);
+    $is_subscribed = mailchimp_is_subscribed('test_list_C', $account->mail);
+    $message = $is_subscribed ? "subscribed." : "not subscribed.";
+    $this->assertTrue($is_subscribed, 'Email address status on Required List after user creation: ' . $message, 'Subscriptions: Required');
+    // *************************************************************************
+    // 5. Test deletion of an Authenticated User removes the user from required
+    // list.
+    // *************************************************************************
+    $email = $account->mail;
+    $id = $account->id;
+    user_delete($id);
+    $is_subscribed = mailchimp_is_subscribed('test_list_C', $email);
+    $message = $is_subscribed ? "subscribed." : "not subscribed.";
+    $this->assertFalse($is_subscribed, "Authenticated user's email status after account deletion: " . $message, 'Subscriptions: Required');
 
     return TRUE;
   }
-
 }
