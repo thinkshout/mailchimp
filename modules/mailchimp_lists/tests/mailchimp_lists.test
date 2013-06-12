@@ -1,11 +1,16 @@
 <?php
 /**
- * Tests the functionality of the Mailchimp Lists module.
+ * @file
  */
 
 class MailchimpListsBasicTestCase extends DrupalWebTestCase {
-  protected $privileged_user;
 
+  /**
+   * Returns info displayed in the test interface.
+   * 
+   * @return array
+   *   Formatted as specified by simpletest.
+   */
   public static function getInfo() {
     // Note: getInfo() strings are not translated with t().
     return array(
@@ -16,7 +21,16 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * @return bool|void
+   * Pre-test setup function.
+   * 
+   * Enables dependencies, sets the mailchimp_api_key to the test-mode key, and
+   * sets up the 3 mailchimp_lists entities used in our tests:
+   *
+   * anonymous_test_list entity attaches to the Mailchimp List test_list_A
+   * 
+   * optional_test_list entity attaches to the Mailchimp List test_list_B
+   * 
+   * required_test_list entity attaches to the Mailchimp List test_list_C
    */
   public function setUp() {
     // Use a profile that contains required modules:
@@ -90,7 +104,14 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Tests subscription and deletions from mailchimp lists of various types
+   * Tests subscription workflows.
+   * 
+   * The core test function runs through a series of subscription requests and
+   * with different settings enabled and verifies that users are subscribed,
+   * or not, correctly.
+   * 
+   * @return bool
+   *   Returns TRUE on completion.
    */
   public function testMailchimpListSubscriptionWorkflow() {
     // *************************************************************************
@@ -167,6 +188,21 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     return TRUE;
   }
 
+  /**
+   * Subscribes a given number of users to each test list.
+   * 
+   * @int $anon
+   *   Number of anonymous email to add to Freeform list.
+   * @int $auth
+   *   Number of authenticated users to create & add to optional list. (note
+   * that these users will also be added to the required lists in many cases)
+   * @int $req
+   *   Number of authenticated users to create, triggering user hooks that
+   * should add them to required lists.
+   * @return array
+   *   An array of success & failure arrays for each type, containing email
+   * addresses for the 'anon' lists and UID's for the user lists.
+   */
   protected function subscribeUsers($anon = 1, $auth = 1, $req = 1) {
     $ret = array();
     $offset = $this->randomString(4);
@@ -239,13 +275,33 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     return $ret;
   }
 
+  /**
+   * An assertion wrapper for the common task of check a subscription status.
+   * 
+   * @string $email
+   *   Email address to check the status of.
+   * @string $mc_list_id
+   *   ID of the mc list to check against (test_list_X where X = A, B or C)
+   * @string $category
+   *   Populates the column category on the test output page for this assertion.
+   * @boolean $expected_outcome
+   *   Whether we expect the email to be subscribed to the list or not.
+   * @string $details
+   *   Text to drop into the output message to distinguish this test.
+   */
   protected function confirmSubscriptionStatus($email, $mc_list_id, $category, $expected_outcome, $details = ' ') {
     $result = mailchimp_is_subscribed($mc_list_id, $email);
     $message = ($result === $expected_outcome) ? "successful." : "failed.";
     $method = $expected_outcome ? "assertTrue" : "assertFalse";
     $this->$method($result, 'Subscription for ' . $email . $details . $message, $category);
   }
-  
+
+  /**
+   * Helper function to set the Cron setting on the test lists.
+   * 
+   * @boolean $flag
+   *   Whatever value you want to set the Cron settigs to.
+   */
   protected function setListsCron($flag) {
     $lists = mailchimp_lists_load_multiple();
     foreach ($lists as $list) {
@@ -253,7 +309,13 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
       mailchimp_lists_save($list);
     }
   }
-  
+
+  /**
+   * Helper function to generate a random email address.
+   * 
+   * @return string
+   *   approximate email format
+   */
   protected function randomEmail() {
     return $this->randomName() . "@" . $this->randomName() . ".net";
   }
