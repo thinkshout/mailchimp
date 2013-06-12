@@ -1,6 +1,7 @@
 <?php
 /**
  * @file
+ * Test class and methods for the Mailchimp Lists module.
  */
 
 class MailchimpListsBasicTestCase extends DrupalWebTestCase {
@@ -130,7 +131,6 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
       $user = user_load($uid);
       $this->confirmSubscriptionStatus($user->mail, 'test_list_C', 'Subscriptions: Required', TRUE);
     }
-    drupal_flush_all_caches();
     // *************************************************************************
     // 2. Test deletion of an Authenticated User removes the user from optional
     // list.
@@ -171,8 +171,6 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     }
     // Now we run cron, and confirm that subscriptions have become active:
     $this->cronRun();
-    // Flush caches, or we'll get the same results we just got no matter what!
-    drupal_flush_all_caches();
     foreach ($cron_test_subs['anon']['success'] as $email) {
       $this->confirmSubscriptionStatus($email, 'test_list_A', 'Cron Subs: Anonymous', TRUE, " AFTER cron is run ");
     }
@@ -290,7 +288,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
    *   Text to drop into the output message to distinguish this test.
    */
   protected function confirmSubscriptionStatus($email, $mc_list_id, $category, $expected_outcome, $details = ' ') {
-    $result = mailchimp_is_subscribed($mc_list_id, $email);
+    $result = mailchimp_is_subscribed($mc_list_id, $email, TRUE);
     $message = ($result === $expected_outcome) ? "successful." : "failed.";
     $method = $expected_outcome ? "assertTrue" : "assertFalse";
     $this->$method($result, 'Subscription for ' . $email . $details . $message, $category);
