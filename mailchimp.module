@@ -70,17 +70,23 @@ function mailchimp_permission() {
 }
 
 /**
- * Check if the given email is subscribed to the given list. Simple
- *   wrapper around mailchimp_get_memberinfo().
+ * Check if the given email is subscribed to the given list.
  *
- * @param  $list_id
- * @param  $email
+ * Simple wrapper around mailchimp_get_memberinfo().
+ *
+ * @string  $list_id
+ *   Unique string identifier for the list on your MailChimp account.
+ * @string  $email
+ *   Email address to check for on the identified Mailchimp List
+ * @bool $reset
+ *   Set to TRUE to ignore the cache. (Used heaving in testing functions)
  *
  * @return bool
+ *   Indicates subscription status.
  */
-function mailchimp_is_subscribed($list_id, $email) {
+function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
   $subscribed = FALSE;
-  $memberinfo = mailchimp_get_memberinfo($list_id, $email);
+  $memberinfo = mailchimp_get_memberinfo($list_id, $email, $reset);
   if (isset($memberinfo['status']) && $memberinfo['status'] == 'subscribed') {
     $subscribed = TRUE;
   }
