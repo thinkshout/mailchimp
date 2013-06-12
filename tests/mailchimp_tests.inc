@@ -81,6 +81,12 @@ class MailChimpTest extends MailChimp {
     }
   }
 
+  public function listBatchSubscribe($id, $batch, $double_optin=true, $update_existing=false, $replace_interests=true) {
+    foreach ($batch as $sub) {
+      $this->listSubscribe($id, $sub['EMAIL'], $merge_vars = $sub, 'html', TRUE, TRUE);
+    }
+  }
+  
   /**
    * Unsubscribe a user from a list.
    * 
@@ -114,6 +120,12 @@ class MailChimpTest extends MailChimp {
       $this->errorMessage = "Could not unsubscribe " . $email_address . " from non-existant list: " . $id;
     }
     return FALSE;
+  }
+
+  public function listBatchUnsubscribe($id, $emails, $delete_member = FALSE, $send_goodbye = TRUE, $send_notify = TRUE) {
+    foreach ($emails as $email) {
+      $this->listUnsubscribe($id, $email_address, $delete_member, $send_goodbye, $send_notify);
+    }
   }
 
   /**
