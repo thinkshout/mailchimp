@@ -176,7 +176,59 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     $this->confirmSubscriptionStatus(TRUE, $anon_email, 'test_list_A', 'Cron Subs: Anonymous', " AFTER cron is run");
     $this->confirmSubscriptionStatus(TRUE, $auth_email, 'test_list_B', 'Cron Subs: Optional', " AFTER cron is run");
     $this->confirmSubscriptionStatus(TRUE, $req_email, 'test_list_C', 'Cron Subs: Required', " AFTER cron is run");
+
+    // *************************************************************************
+    // 5. Test basic subscription deletes for each user type and list type with
+    // cron enabled for the lists.
+    // *************************************************************************
+    user_delete($auth_user->uid);
+    $this->confirmSubscriptionStatus(TRUE, $auth_email, 'test_list_B', 'Cron Subs: Optional', " after account deletion, BEFORE cron");
+    user_delete($req_user->uid);
+    // Work in a test for cron being disabled with items in the queue:
+    $this->setListsCron(FALSE);
+    $this->confirmSubscriptionStatus(TRUE, $req_email, 'test_list_C', 'Cron Subs: Required', " after account deletion & queuing disabled, BEFORE cron");
+    // Now we run cron, and confirm that subscriptions have been cancelled:
+    $this->cronRun();
+    $this->confirmSubscriptionStatus(FALSE, $auth_email, 'test_list_B', 'Cron Subs: Optional', " after account deletion, AFTER cron");
+    $this->confirmSubscriptionStatus(FALSE, $req_email, 'test_list_C', 'Cron Subs: Required', " after account deletion, AFTER cron");
+
+    // *************************************************************************
+    // 6. Test for appropriate attention to role changes on required and
+    // optional lists.
+    // *************************************************************************
+    $roles_subs = $this->subscribeUsers(0, 1, 0);
+    // We should now have one user added to the required and the optional list:
+    $roles_test_user = user_load($roles_subs['auth']['success'][0]);
+    $this->confirmSubscriptionStatus(TRUE, $roles_test_user->mail, 'test_list_B', 'Roles Subs: Optional', " user with correct roles opted in");
+    $this->confirmSubscriptionStatus(TRUE, $roles_test_user->mail, 'test_list_C', 'Roles Subs: Required', " user with correct roles created");
+    // Create our exclusive role:
+    $role = new stdClass();
+    $role->name = 'exclusive';
+    user_role_save($role);
+    $exclusive_role = user_role_load_by_name('exclusive');
+    $exclusive_role_id = $exclusive_role->rid;
+    $lists = array();
+    $lists['optional'] = mailchimp_lists_load_multiple_by_name('optional_test_list');
+    $lists['required'] = mailchimp_lists_load_multiple_by_name('required_test_list');
+    foreach ($lists as $list) {
+      $list->settings['roles'] = array($exclusive_role_id => $exclusive_role_id);
+      mailchimp_lists_save($list);
     }
+
+    // The user no longer has the appropriate roles. Check that they have been
+    // removed from the now-exclusive lists:
+    $this->confirmSubscriptionStatus(FALSE, $roles_test_user->mail, 'test_list_B', 'Roles Subs: Optional', " after list role changed to be exclusive");
+    $this->confirmSubscriptionStatus(FALSE, $roles_test_user->mail, 'test_list_C', 'Roles Subs: Required', " after list role changed to be exclusive");
+    // @todo: remove this call to user_sync, which is here to work around a bug.
+    // @todo: solution is to add feature (& trigger) suggested in #2018377
+    mailchimp_lists_user_sync($roles_test_user, $roles_test_user->mail, $roles_test_user->mail, TRUE);
+    // Now let's give the user the appropriate role (and trigger subscription.)
+    $new_roles = $roles_test_user->roles;
+    $new_roles[$exclusive_role_id] = $exclusive_role->name;
+    $roles_test_user = user_save($roles_test_user, array('roles' => $new_roles));
+    // We should now be subscribed to the required list, but not the optional:
+    $this->confirmSubscriptionStatus(FALSE, $roles_test_user->mail, 'test_list_B', 'Roles Subs: Optional', " after adding exclusive role");
+    $this->confirmSubscriptionStatus(TRUE, $roles_test_user->mail, 'test_list_C', 'Roles Subs: Required', " after adding exclusive role");
 
     return TRUE;
   }
