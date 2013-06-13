@@ -158,29 +158,24 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     $this->setListsCron(TRUE);
     $cron_test_subs = $this->subscribeUsers();
     // Since cron is enabled, no new subscriptions should be active:
-    foreach ($cron_test_subs['anon']['success'] as $email) {
-      $this->confirmSubscriptionStatus($email, 'test_list_A', 'Cron Subs: Anonymous', FALSE, " BEFORE cron is run ");
-    }
-    foreach ($cron_test_subs['auth']['success'] as $uid) {
-      $user = user_load($uid);
-      $this->confirmSubscriptionStatus($user->mail, 'test_list_B', 'Cron Subs: Optional', FALSE, " BEFORE cron is run ");
-    }
-    foreach ($cron_test_subs['req']['success'] as $uid) {
-      $user = user_load($uid);
-      $this->confirmSubscriptionStatus($user->mail, 'test_list_C', 'Cron Subs: Required', FALSE, " BEFORE cron is run ");
-    }
-    // Now we run cron, and confirm that subscriptions have become active:
+    $anon_email = $cron_test_subs['anon']['success'][0];
+    $this->confirmSubscriptionStatus(FALSE, $anon_email, 'test_list_A', 'Cron Subs: Anonymous', " BEFORE cron is run");
+
+    $uid = $cron_test_subs['auth']['success'][0];
+    $auth_user = user_load($uid);
+    $auth_email = $auth_user->mail;
+    $this->confirmSubscriptionStatus(FALSE, $auth_email, 'test_list_B', 'Cron Subs: Optional', " BEFORE cron is run");
+
+    $uid = $cron_test_subs['req']['success'][0];
+    $req_user = user_load($uid);
+    $req_email = $req_user->mail;
+    $this->confirmSubscriptionStatus(FALSE, $req_email, 'test_list_C', 'Cron Subs: Required', " BEFORE cron is run");
+
+    // Now we run cron and confirm that subscriptions have become active:
     $this->cronRun();
-    foreach ($cron_test_subs['anon']['success'] as $email) {
-      $this->confirmSubscriptionStatus($email, 'test_list_A', 'Cron Subs: Anonymous', TRUE, " AFTER cron is run ");
-    }
-    foreach ($cron_test_subs['auth']['success'] as $uid) {
-      $user = user_load($uid);
-      $this->confirmSubscriptionStatus($user->mail, 'test_list_B', 'Cron Subs: Optional', TRUE, " AFTER cron is run ");
-    }
-    foreach ($cron_test_subs['req']['success'] as $uid) {
-      $user = user_load($uid);
-      $this->confirmSubscriptionStatus($user->mail, 'test_list_C', 'Cron Subs: Required', TRUE, " AFTER cron is run ");
+    $this->confirmSubscriptionStatus(TRUE, $anon_email, 'test_list_A', 'Cron Subs: Anonymous', " AFTER cron is run");
+    $this->confirmSubscriptionStatus(TRUE, $auth_email, 'test_list_B', 'Cron Subs: Optional', " AFTER cron is run");
+    $this->confirmSubscriptionStatus(TRUE, $req_email, 'test_list_C', 'Cron Subs: Required', " AFTER cron is run");
     }
 
     return TRUE;
