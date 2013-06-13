@@ -249,10 +249,6 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
         $email = $this->randomEmail();
         $edit['name'] = "Test Authenticated User " . $offset . " " . $r;
         $edit['mail'] = $email;
-        $is_subscribed = mailchimp_is_subscribed('test_list_C', $email);
-        $message = $is_subscribed ? "subscribed." : "not subscribed.";
-        // Confirm this email address isn't already subscribed:
-        $this->assertFalse($is_subscribed, 'Email address ' . $email . ' initial status on Required List: ' . $message, 'Subscriptions: Required');
         // Create a user with the authenticated role (req'd by required list).
         // This should trigger the hook that subscribes this user:
         $account = user_save(drupal_anonymous_user(), $edit);
