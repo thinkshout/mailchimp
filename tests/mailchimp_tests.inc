@@ -124,7 +124,7 @@ class MailChimpTest extends MailChimp {
 
   public function listBatchUnsubscribe($id, $emails, $delete_member = FALSE, $send_goodbye = TRUE, $send_notify = TRUE) {
     foreach ($emails as $email) {
-      $this->listUnsubscribe($id, $email_address, $delete_member, $send_goodbye, $send_notify);
+      $this->listUnsubscribe($id, $email, $delete_member, $send_goodbye, $send_notify);
     }
   }
 
