@@ -191,7 +191,6 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     $this->cronRun();
     $this->confirmSubscriptionStatus(FALSE, $auth_email, 'test_list_B', 'Cron Subs: Optional', " after account deletion, AFTER cron");
     $this->confirmSubscriptionStatus(FALSE, $req_email, 'test_list_C', 'Cron Subs: Required', " after account deletion, AFTER cron");
-
     // *************************************************************************
     // 6. Test for appropriate attention to role changes on required and
     // optional lists.
@@ -229,6 +228,41 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // We should now be subscribed to the required list, but not the optional:
     $this->confirmSubscriptionStatus(FALSE, $roles_test_user->mail, 'test_list_B', 'Roles Subs: Optional', " after adding exclusive role");
     $this->confirmSubscriptionStatus(TRUE, $roles_test_user->mail, 'test_list_C', 'Roles Subs: Required', " after adding exclusive role");
+    // Reset the optional list role permissions:
+    $authenticated_role = user_role_load_by_name('authenticated user');
+    $authenticated_role_id = $authenticated_role->rid;
+    $list_optional = mailchimp_lists_load_multiple_by_name('optional_test_list');
+    $list_optional->settings['roles'] = array($authenticated_role_id => $authenticated_role_id);
+    mailchimp_lists_save($list_optional);
+    // *************************************************************************
+    // 7. Test the "queue existing" function for new required lists in cron mode
+    // *************************************************************************
+    $this->setListsCron(TRUE);
+    $role = new stdClass();
+    $role->name = 'queued';
+    user_role_save($role);
+    $queued_role = user_role_load_by_name('queued');
+    $queued_role_id = $queued_role->rid;
+    $req_list = mailchimp_lists_load_multiple_by_name('required_test_list');
+    $req_list->settings['roles'] = array($exclusive_role_id => $exclusive_role_id);
+    mailchimp_lists_save($req_list);
+    $queue_users = $this->subscribeUsers(0, 1, 0);
+    $queued_user = user_load($queue_users['auth']['success'][0]);
+    // Add the role to the user:
+    $new_roles = $queued_user->roles;
+    $new_roles[$queued_role_id] = $queued_role->name;
+    $queued_user = user_save($queued_user, array('roles' => $new_roles));
+    // Add role to the MC list:
+    $req_list = mailchimp_lists_load_multiple_by_name('required_test_list');
+    $req_list->settings['roles'] = array($queued_role_id => $queued_role_id);
+    // Confirm that the user is not currently on the list:
+    $this->confirmSubscriptionStatus(FALSE, $queued_user->mail, 'test_list_C', 'Queue Existing Subscriptions', " after roles match, before 'queue existing'");
+    // Run the queue existing function, then trigger cron:
+    mailchimp_lists_queue_existing($req_list);
+    $this->cronRun();
+    // Confirm that the user has been added:
+    $this->confirmSubscriptionStatus(TRUE, $queued_user->mail, 'test_list_C', 'Queue Existing Subscriptions', " after 'queue existing' and cron run");
+    mailchimp_lists_save($req_list);
 
     return TRUE;
   }
