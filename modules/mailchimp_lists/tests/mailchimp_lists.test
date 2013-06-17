@@ -118,6 +118,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // *************************************************************************
     // 1. Test basic subscription adds for each user type and list type
     // *************************************************************************
+    $this->pass('--== Commencing Basic Subscription Adds ==--', 'Subscriptions');
     $test_subs = $this->subscribeUsers();
     drupal_flush_all_caches();
     foreach ($test_subs['anon']['success'] as $email) {
@@ -135,6 +136,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // 2. Test deletion of an Authenticated User removes the user from optional
     // list.
     // *************************************************************************
+    $this->pass('--== Commencing Basic User Deletion Triggers ==--', 'Subscriptions');
     foreach ($test_subs['auth']['success'] as $uid) {
       $user = user_load($uid);
       $email = $user->mail;
@@ -155,6 +157,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // 4. Test basic subscription adds for each user type and list type with
     // cron enabled for the lists.
     // *************************************************************************
+    $this->pass('--== Commencing Cron Subscription Adds ==--', 'Cron Subs');
     $this->setListsCron(TRUE);
     $cron_test_subs = $this->subscribeUsers();
     // Since cron is enabled, no new subscriptions should be active:
@@ -181,6 +184,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // 5. Test basic subscription deletes for each user type and list type with
     // cron enabled for the lists.
     // *************************************************************************
+    $this->pass($message = '--== Commencing Cron Subscription Deletes ==--', $group = 'Cron Subs');
     user_delete($auth_user->uid);
     $this->confirmSubscriptionStatus(TRUE, $auth_email, 'test_list_B', 'Cron Subs: Optional', " after account deletion, BEFORE cron");
     user_delete($req_user->uid);
@@ -195,6 +199,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // 6. Test for appropriate attention to role changes on required and
     // optional lists.
     // *************************************************************************
+    $this->pass('--== Commencing Role-based Subscription Behavior ==--','Roles Subs');
     $roles_subs = $this->subscribeUsers(0, 1, 0);
     // We should now have one user added to the required and the optional list:
     $roles_test_user = user_load($roles_subs['auth']['success'][0]);
@@ -237,6 +242,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // *************************************************************************
     // 7. Test the "queue existing" function for new required lists in cron mode
     // *************************************************************************
+    $this->pass('--== Commencing Queue-Existing Subscription Adds ==--', 'Queue Existing Subscriptions');
     $this->setListsCron(TRUE);
     $role = new stdClass();
     $role->name = 'queued';
@@ -255,6 +261,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // Add role to the MC list:
     $req_list = mailchimp_lists_load_multiple_by_name('required_test_list');
     $req_list->settings['roles'] = array($queued_role_id => $queued_role_id);
+    mailchimp_lists_save($req_list);
     // Confirm that the user is not currently on the list:
     $this->confirmSubscriptionStatus(FALSE, $queued_user->mail, 'test_list_C', 'Queue Existing Subscriptions', " after roles match, before 'queue existing'");
     // Run the queue existing function, then trigger cron:
