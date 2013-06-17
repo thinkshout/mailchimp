@@ -269,8 +269,25 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     $this->cronRun();
     // Confirm that the user has been added:
     $this->confirmSubscriptionStatus(TRUE, $queued_user->mail, 'test_list_C', 'Queue Existing Subscriptions', " after 'queue existing' and cron run");
+    // Reset list settings to normal:
+    $req_list->settings['roles'] = array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID);
     mailchimp_lists_save($req_list);
+    // *************************************************************************
+    // 8. Test new users aren't inappropriately added to optional lists on cron
+    // runs.
+    // *************************************************************************
+    $this->pass('--== Commencing User-creation Tests for Proper Default Subscriptions ==--', 'New User Subs');
+    $this->setListsCron(TRUE);
+    $req_only_array = $this->subscribeUsers(0, 0, 1);
+    $req_only_user = user_load($req_only_array['req']['success'][0]);
+    $this->cronRun();
+    // User should now be subscribed to the required list, but not the optional:
+    $this->confirmSubscriptionStatus(TRUE, $req_only_user->mail, 'test_list_C', 'New Users Subs: Required', " to Required after 'user creation' and cron run");
+    $this->confirmSubscriptionStatus(FALSE, $req_only_user->mail, 'test_list_B', 'New Users Subs: Optional', " to Optional without Opt-in after 'user creation' and cron run");
 
+    // Debugging lines follow: uncomment to display the test subscription table.
+    // $subtable = variable_get('mailchimp_test_list_data');
+    // $this->pass(print_r($subtable, TRUE), "Final Sub Pattern");
     return TRUE;
   }
 
