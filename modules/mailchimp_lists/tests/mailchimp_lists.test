@@ -373,10 +373,10 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
    */
   protected function confirmSubscriptionStatus($expected_outcome, $email, $mc_list_id, $category, $details = '') {
     $result = mailchimp_is_subscribed($mc_list_id, $email, TRUE);
-    $message = ($result === $expected_outcome) ? ": confirmed." : ": NOT confirmed.";
+    $message = ($result === $expected_outcome) ? ": confirmed." : ": FAILED.";
     $method = $expected_outcome ? "assertTrue" : "assertFalse";
     $outcome = $expected_outcome ? " subscribed" : " NOT subscribed";
-    $this->$method($result, 'Confirming ' . $email . $outcome . $details . $message, $category);
+    $this->$method($result, $email . $outcome . $details . $message, $category);
   }
 
   /**
