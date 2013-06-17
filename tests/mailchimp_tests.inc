@@ -83,10 +83,11 @@ class MailChimpTest extends MailChimp {
 
   public function listBatchSubscribe($id, $batch, $double_optin=true, $update_existing=false, $replace_interests=true) {
     foreach ($batch as $sub) {
-      $this->listSubscribe($id, $sub['EMAIL'], $merge_vars = $sub, 'html', TRUE, TRUE);
+      $email = isset($sub['EMAIL']) ? $sub['EMAIL'] : NULL;
+      $this->listSubscribe($id, $email, $merge_vars = $sub, 'html', TRUE, TRUE);
     }
   }
-  
+
   /**
    * Unsubscribe a user from a list.
    * 
