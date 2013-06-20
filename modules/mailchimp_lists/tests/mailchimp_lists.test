@@ -58,6 +58,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     $list->name = 'anonymous_test_list';
     $list->description = 'Anonymous list description';
     $list->list_type = 'freeform';
+    // TODO: Use public properties on class rather than relying on string matching.
     $list->mc_list_id = 'test_list_A';
     $list->settings = array(
       'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID, DRUPAL_ANONYMOUS_RID => DRUPAL_ANONYMOUS_RID),
@@ -120,7 +121,6 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // *************************************************************************
     $this->pass('--== Commencing Basic Subscription Adds ==--', 'Subscriptions');
     $test_subs = $this->subscribeUsers();
-    drupal_flush_all_caches();
     foreach ($test_subs['anon']['success'] as $email) {
       $this->confirmSubscriptionStatus(TRUE, $email, 'test_list_A', 'Subscriptions: Anonymous');
     }
@@ -132,6 +132,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
       $user = user_load($uid);
       $this->confirmSubscriptionStatus(TRUE, $user->mail, 'test_list_C', 'Subscriptions: Required');
     }
+
     // *************************************************************************
     // 2. Test deletion of an Authenticated User removes the user from optional
     // list.
@@ -143,6 +144,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
       user_delete($uid);
       $this->confirmSubscriptionStatus(FALSE, $email, 'test_list_B', 'Subscriptions: Optional', " after account deletion");
     }
+
     // *************************************************************************
     // 3. Test deletion of an Authenticated User removes the user from required
     // list.
@@ -153,6 +155,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
       user_delete($uid);
       $this->confirmSubscriptionStatus(FALSE, $email, 'test_list_C', 'Subscriptions: Required', " after account deletion");
     }
+
     // *************************************************************************
     // 4. Test basic subscription adds for each user type and list type with
     // cron enabled for the lists.
@@ -195,11 +198,12 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     $this->cronRun();
     $this->confirmSubscriptionStatus(FALSE, $auth_email, 'test_list_B', 'Cron Subs: Optional', " after account deletion, AFTER cron");
     $this->confirmSubscriptionStatus(FALSE, $req_email, 'test_list_C', 'Cron Subs: Required', " after account deletion, AFTER cron");
+
     // *************************************************************************
     // 6. Test for appropriate attention to role changes on required and
     // optional lists.
     // *************************************************************************
-    $this->pass('--== Commencing Role-based Subscription Behavior ==--','Roles Subs');
+    $this->pass('--== Commencing Role-based Subscription Behavior ==--', 'Roles Subs');
     $roles_subs = $this->subscribeUsers(0, 1, 0);
     // We should now have one user added to the required and the optional list:
     $roles_test_user = user_load($roles_subs['auth']['success'][0]);
@@ -226,19 +230,23 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // @todo: remove this call to user_sync, which is here to work around a bug.
     // @todo: solution is to add feature (& trigger) suggested in #2018377
     mailchimp_lists_user_sync($roles_test_user, $roles_test_user->mail, $roles_test_user->mail, TRUE);
+
     // Now let's give the user the appropriate role (and trigger subscription.)
     $new_roles = $roles_test_user->roles;
     $new_roles[$exclusive_role_id] = $exclusive_role->name;
     $roles_test_user = user_save($roles_test_user, array('roles' => $new_roles));
+
     // We should now be subscribed to the required list, but not the optional:
     $this->confirmSubscriptionStatus(FALSE, $roles_test_user->mail, 'test_list_B', 'Roles Subs: Optional', " after adding exclusive role");
     $this->confirmSubscriptionStatus(TRUE, $roles_test_user->mail, 'test_list_C', 'Roles Subs: Required', " after adding exclusive role");
+
     // Reset the optional list role permissions:
     $authenticated_role = user_role_load_by_name('authenticated user');
     $authenticated_role_id = $authenticated_role->rid;
     $list_optional = mailchimp_lists_load_multiple_by_name('optional_test_list');
     $list_optional->settings['roles'] = array($authenticated_role_id => $authenticated_role_id);
     mailchimp_lists_save($list_optional);
+
     // *************************************************************************
     // 7. Test the "queue existing" function for new required lists in cron mode
     // *************************************************************************
@@ -254,24 +262,31 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     mailchimp_lists_save($req_list);
     $queue_users = $this->subscribeUsers(0, 1, 0);
     $queued_user = user_load($queue_users['auth']['success'][0]);
+
     // Add the role to the user:
     $new_roles = $queued_user->roles;
     $new_roles[$queued_role_id] = $queued_role->name;
     $queued_user = user_save($queued_user, array('roles' => $new_roles));
+
     // Add role to the MC list:
     $req_list = mailchimp_lists_load_multiple_by_name('required_test_list');
     $req_list->settings['roles'] = array($queued_role_id => $queued_role_id);
     mailchimp_lists_save($req_list);
+
     // Confirm that the user is not currently on the list:
     $this->confirmSubscriptionStatus(FALSE, $queued_user->mail, 'test_list_C', 'Queue Existing Subscriptions', " after roles match, before 'queue existing'");
+
     // Run the queue existing function, then trigger cron:
     mailchimp_lists_queue_existing($req_list);
     $this->cronRun();
+
     // Confirm that the user has been added:
     $this->confirmSubscriptionStatus(TRUE, $queued_user->mail, 'test_list_C', 'Queue Existing Subscriptions', " after 'queue existing' and cron run");
+
     // Reset list settings to normal:
     $req_list->settings['roles'] = array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID);
     mailchimp_lists_save($req_list);
+
     // *************************************************************************
     // 8. Test new users aren't inappropriately added to optional lists on cron
     // runs.
@@ -281,6 +296,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     $req_only_array = $this->subscribeUsers(0, 0, 1);
     $req_only_user = user_load($req_only_array['req']['success'][0]);
     $this->cronRun();
+
     // User should now be subscribed to the required list, but not the optional:
     $this->confirmSubscriptionStatus(TRUE, $req_only_user->mail, 'test_list_C', 'New Users Subs: Required', " to Required after 'user creation' and cron run");
     $this->confirmSubscriptionStatus(FALSE, $req_only_user->mail, 'test_list_B', 'New Users Subs: Optional', " to Optional without Opt-in after 'user creation' and cron run");
@@ -292,23 +308,26 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
   }
 
   /**
+   * // TODO: Consider a refactor taking a list type param and running a switch statement.
    * Subscribes a given number of users to each test list.
-   * 
+   *
    * @int $anon
    *   Number of anonymous email to add to Freeform list.
    * @int $auth
    *   Number of authenticated users to create & add to optional list. (note
-   * that these users will also be added to the required lists in many cases)
+   *  that these users will also be added to the required lists in many cases)
    * @int $req
    *   Number of authenticated users to create, triggering user hooks that
-   * should add them to required lists.
+   *   should add them to required lists.
+   *
    * @return array
    *   An array of success & failure arrays for each type, containing email
-   * addresses for the 'anon' lists and UID's for the user lists.
+   *   addresses for the 'anon' lists and UID's for the user lists.
    */
   protected function subscribeUsers($anon = 1, $auth = 1, $req = 1) {
     $ret = array();
     $offset = $this->randomString(4);
+
     // *************************************************************************
     // 1. Submit anonymous signup forms for the test Freeform list.
     // *************************************************************************
@@ -327,6 +346,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
         $ret['anon'][$result][] = $email;
       }
     }
+
     if ($auth) {
       $ret['auth'] = array(
         'success' => array(),
@@ -345,6 +365,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
         $ret['auth'][$result][] = $this->$username->uid;
       }
     }
+
     if ($req) {
       $ret['req'] = array(
         'success' => array(),

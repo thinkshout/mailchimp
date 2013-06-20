@@ -576,7 +576,7 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
           '#title' => $group['name'],
           '#options' => $options,
           '#default_value' => $is_subscribed ? $default_merge_values : array(),
-          '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $list->id))
+          '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $list->id)),
         );
       }
     }
@@ -586,7 +586,7 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
 }
 
 /**
- * Submit handler to add users to lists when editing/creating a user
+ * Submit handler to add users to lists when editing/creating a user.
  */
 function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
   $account = $form_state['values']['account'];
@@ -594,7 +594,8 @@ function mailchimp_lists_user_subscribe_form_submit($form, &$form_state) {
 }
 
 /**
- * Processor for various list form submissions:
+ * Processor for various list form submissions.
+ *
  * Subscription blocks, user settings, and new user creation.
  * 
  * @array $list_forms: an array of mailchimp_list form values, as generated

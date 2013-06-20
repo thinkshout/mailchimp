@@ -1,11 +1,7 @@
 <?php
-
-global $mailchimp_list_data;
+// TODO: Define file.
 
 class MailChimpTest extends MailChimp {
-
-  public function __construct() {
-  }
 
   /**
    * Get the details of an email address's settings in a particular list.
@@ -81,7 +77,10 @@ class MailChimpTest extends MailChimp {
     }
   }
 
-  public function listBatchSubscribe($id, $batch, $double_optin=true, $update_existing=false, $replace_interests=true) {
+  /**
+   * Batch subscribe method.
+   */
+  public function listBatchSubscribe($id, $batch, $double_optin = TRUE, $update_existing = FALSE, $replace_interests = TRUE) {
     foreach ($batch as $sub) {
       $email = isset($sub['EMAIL']) ? $sub['EMAIL'] : NULL;
       $this->listSubscribe($id, $email, $merge_vars = $sub, 'html', TRUE, TRUE);
@@ -123,6 +122,9 @@ class MailChimpTest extends MailChimp {
     return FALSE;
   }
 
+  /**
+   * Emulates batch unsubscribe.
+   */
   public function listBatchUnsubscribe($id, $emails, $delete_member = FALSE, $send_goodbye = TRUE, $send_notify = TRUE) {
     foreach ($emails as $email) {
       $this->listUnsubscribe($id, $email, $delete_member, $send_goodbye, $send_notify);
@@ -261,4 +263,5 @@ class MailChimpTest extends MailChimp {
   protected function writeLists($lists) {
     variable_set('mailchimp_test_list_data', $lists);
   }
+
 }
