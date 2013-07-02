@@ -972,11 +972,8 @@ function mailchimp_lists_queue_existing($list) {
     $intersect = array_intersect(array_keys($user->roles), $list->settings['roles']);
     if (!empty($intersect)) {
       $count++;
-      $queue->createItem(array(
-        'uid' => $user->uid,
-        'list_id' => $list->id,
-        'op' => 'add'
-      ));
+      $merge_vars = mailchimp_lists_load_user_mergevars($user, $list);
+      mailchimp_lists_execute_change('add', $list, $user->mail, $merge_vars, $user, NULL, $queue);
     }
   }
 
