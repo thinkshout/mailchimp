@@ -662,14 +662,17 @@ function mailchimp_lists_process_subscribe_form_choices($list_forms, $account = 
  * @array $mergevars - merge variables array formatted for mailchimp API
  * @account null $account - account that $mail came from, if non-anonymous call
  * @mcapi_entity null &$mcapi - api object if loaded, to avoid extra API calls
+ * @queue null &$queue - the cron queue. If passed, this will force use of cron.
  * @return bool/string
  */
 
-function mailchimp_lists_execute_change($function, $list, $mail, $mergevars = NULL, $account = NULL, &$mcapi = NULL) {
+function mailchimp_lists_execute_change($function, $list, $mail, $mergevars = NULL, $account = NULL, $mcapi = NULL, &$queue = NULL) {
   // If cron is enabled for this list, and we have an account, queue the function.
-  if ($list->settings['cron']) {
-    $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
-    $queue->createQueue();
+  if ($list->settings['cron'] || isset($queue)) {
+    if (!isset($queue)) {
+      $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+      $queue->createQueue();
+    }
     $queue->createItem(array(
       'uid' => isset($account) ? $account->uid : NULL,
       'email' => $mail,
