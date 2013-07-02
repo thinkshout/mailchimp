@@ -489,7 +489,7 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
   if ($list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
     $form[$wrapper_key]['subscribe'] = array(
       '#type' => 'checkbox',
-      '#title' => ($list->settings['form_label']) ? t($list->settings['form_label']) : t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->label)),
+      '#title' => isset($list->settings['form_label']) ? t($list->settings['form_label']) : t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->label)),
       // todo: only default to "on" during user creation
       '#default_value' => ($default_subscribed && !$account->uid) || $is_subscribed,
       '#description' => $list->description,
