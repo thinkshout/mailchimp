@@ -25,7 +25,7 @@ function mailchimp_lists_menu() {
     'access arguments' => array('administer mailchimp'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'mailchimp_lists.admin.inc',
-    'weight' => -10
+    'weight' => -10,
   );
   $items['admin/config/services/mailchimp/lists/add'] = array(
     'title' => 'Add a list',
@@ -153,8 +153,12 @@ function mailchimp_lists_cron() {
     while ($count < $batch_size) {
       if ($item = $queue->claimItem()) {
         $list = mailchimp_lists_load($item->data['list_id']);
-        // If all we have is an anonymous email, load it:
-        $email = $item->data['email'];
+        // If all we have is an anonymous email, load it. We check for a value
+        // first to be backwards-compatible with versions that didn't pass the
+        // raw email into the queue item.
+        if (isset($item->data['email'])) {
+          $email = $item->data['email'];
+        }
         $mergevars = NULL;
         // If there is a valid account, load data from it:
         if (!empty($item->data['uid'])) {
@@ -164,9 +168,9 @@ function mailchimp_lists_cron() {
         }
         switch ($item->data['op']) {
           case 'add':
-            // Todo: test behavior of 'update' operations here
+            // @todo: test behavior of 'update' operations here
           case 'update':
-            // if $mergevars are empty here, populate with the most basic element:
+            // If $mergevars are empty here, populate with the basic element:
             if (empty($mergevars)) {
               $mergevars = array('EMAIL' => $email);
             }
@@ -234,24 +238,25 @@ function mailchimp_lists_cron() {
 
 /**
  * Implements hook_form_FORM_ID_alter().
+ *
  *   Add newsletter fields to registration form.
  */
 function mailchimp_lists_form_user_register_form_alter(&$form, &$form_state, $form_id) {
   $account = $form['#user'];
 
-  // need to force feed the authenticated role to this account object so the
-  // right newsletters are available
+  // Need to force feed the authenticated role to this account object so the
+  // right newsletters are available:
   $account->roles[DRUPAL_AUTHENTICATED_RID] = 'authenticated user';
 
   $lists = mailchimp_lists_get_available_lists($account,
     MAILCHIMP_LISTTYPE_OPTIONAL, array('show_register_form' => 1));
 
   if (!empty($lists)) {
-    // wrap in a fieldset
+    // Wrap in a fieldset.
     $form['mailchimp_lists'] = array(
       '#type' => 'fieldset',
       '#title' => t('Newsletters'),
-      '#tree' => TRUE
+      '#tree' => TRUE,
     );
     foreach ($lists as $list) {
       mailchimp_lists_auth_newsletter_form($form['mailchimp_lists'], $list, $account);
@@ -490,7 +495,6 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
     $form[$wrapper_key]['subscribe'] = array(
       '#type' => 'checkbox',
       '#title' => isset($list->settings['form_label']) ? t($list->settings['form_label']) : t('Subscribe to the @newsletter newsletter', array('@newsletter' => $list->label)),
-      // todo: only default to "on" during user creation
       '#default_value' => ($default_subscribed && !$account->uid) || $is_subscribed,
       '#description' => $list->description,
     );
@@ -513,32 +517,31 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
     }
   }
 
-  // present interest groups
+  // Present interest groups:
   if ($list->settings['include_interest_groups']) {
     $mc_list = mailchimp_get_list($list->mc_list_id);
 
-    // perform test in case error comes back from MCAPI when getting groups
+    // Perform test in case error comes back from MCAPI when getting groups:
     if (is_array($mc_list['intgroups'])) {
       $form[$wrapper_key]['interest_groups'] = array(
         '#type' => 'fieldset',
-        '#title' => isset($list->settings['interest_groups_label']) ?
-          t($list->settings['interest_groups_label']) : t('Interest Groups'),
+        '#title' => isset($list->settings['interest_groups_label']) ? t($list->settings['interest_groups_label']) : t('Interest Groups'),
         '#weight' => 100,
         '#states' => array(
           'collapsed' => array(
             ':input[name="mailchimp_lists[mailchimp_' . $list->name . '][subscribe]"]' => array('checked' => FALSE),
-          )
-        )
+          ),
+        ),
       );
 
       foreach ($mc_list['intgroups'] as $group) {
-        // ignore hidden fields
+        // Ignore hidden fields:
         // @todo: consider merging to hidden values
         if ($group['form_field'] == 'hidden') {
           continue;
         }
 
-        // grab the default values for this group
+        // Grab the default values for this group:
         // @todo: find a better way
         $default_merge_values = array();
         if ($account->uid) {
