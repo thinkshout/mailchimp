@@ -1,5 +1,8 @@
 <?php
-// TODO: Define file.
+/**
+ * @file
+ * A virtual MailChimp API implementation for use in testing.
+ */
 
 class MailChimpTest extends MailChimp {
 

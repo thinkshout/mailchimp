@@ -37,8 +37,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // Use a profile that contains required modules:
     $prof = drupal_get_profile();
     $this->profile = $prof;
-    // Enable any modules required for the test. This should be an array of
-    // module names.
+    // Enable modules required for the test.
     $enabled_modules = array(
       'libraries',
       'mailchimp',
