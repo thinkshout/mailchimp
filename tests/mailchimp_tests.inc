@@ -241,17 +241,17 @@ class MailChimpTest extends MailChimp {
       'public' => TRUE,
     );
     $lists = array(
-      'test_list_A' => array(
+      MAILCHIMP_LISTTYPE_FREEFORM => array(
         'name' => 'Test List A',
         'data' => array(),
         'mergevars' => $default_mergevars,
       ),
-      'test_list_B' => array(
+      MAILCHIMP_LISTTYPE_OPTIONAL => array(
         'name' => 'Test List B',
         'data' => array(),
         'mergevars' => $default_mergevars,
       ),
-      'test_list_C' => array(
+      MAILCHIMP_LISTTYPE_REQUIRED => array(
         'name' => 'Test List C',
         'data' => array(),
         'mergevars' => $default_mergevars,
