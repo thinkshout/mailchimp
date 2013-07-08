@@ -344,8 +344,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
         $email = $this->randomEmail();
         $form_edit['mailchimp_lists[mailchimp_anonymous_test_list][mergevars][EMAIL]'] = $email;
         $this->drupalPost('mailchimp/subscribe', $form_edit, t('Subscribe'));
-        // If we test with large values of $n we'll want to remove this:
-        $result = $this->assertResponse(200, 'Anonymous subscription ') ? 'success' : 'failure';
+        $this->assertResponse(200, 'Anonymous subscription ') ? 'success' : 'failure';
         return $email;
 
       case "authenticated":
@@ -360,7 +359,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
         $id = $this->$username->uid;
         $this->drupalLogin($this->$username);
         $this->drupalPost('user/' . $id . "/mailchimp", $form_edit, t('Save'));
-        $result = $this->assertResponse(200, 'Authenticated subscription to optional list allowed.') ? 'success' : 'failure';
+        $this->assertResponse(200, 'Authenticated subscription to optional list allowed.') ? 'success' : 'failure';
         return $this->$username->uid;
 
       case "required":
