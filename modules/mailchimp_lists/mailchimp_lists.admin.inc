@@ -5,6 +5,9 @@
  * mailchimp_lists module admin settings.
  */
 
+/**
+ * Administrative display showing existing lists and allowing edits/adds.
+ */
 function mailchimp_lists_overview_page() {
   $lists = mailchimp_lists_load_multiple();
   $rows = array();
@@ -61,19 +64,15 @@ function mailchimp_lists_overview_page() {
 function mailchimp_lists_refresh_page() {
   cache_clear_all('mailchimp_lists', 'cache');
   drupal_set_message(t('Mailchimp Lists refreshed'), 'status');
-  // return render array.
+  // Return render array.
   return array(
     '#markup' => t('Back to !link.',
-      array('!link' => l('my lists', 'admin/config/services/mailchimp/lists')))
+      array('!link' => l('my lists', 'admin/config/services/mailchimp/lists'))),
   );
 }
 
 /**
  * Return a form for adding/editing a mailchimp list.
- *
- * @param array $form
- * @param array $form_state
- * @param object $list
  */
 function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
   $form = array();
@@ -337,7 +336,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
 
   $form['mc_list']['mergefields'] = array(
     '#prefix' => '<div id="mergefields-wrapper">',
-    '#suffix' => '</div>'
+    '#suffix' => '</div>',
   );
 
   // Show merge fields if changing list field or editing existing list.
@@ -346,7 +345,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       '#type' => 'fieldset',
       '#title' => t('Merge Fields'),
       '#id' => 'mergefields-wrapper',
-      '#tree' => TRUE
+      '#tree' => TRUE,
     );
 
     $mc_list_id = !empty($form_state['values']['mc_list_id']) ?
@@ -458,7 +457,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
 
   $mcapi = mailchimp_get_api_object();
   $webhook_ret = FALSE;
-  // Remove the webhook from this list if unchecked or list type changed to freeform:
+  // Remove the webhook from this list if unchecked or type changed to freeform:
   if (!$is_new && isset($list->settings['webhooks']) &&
     (!$form_state['values']['webhooks'] ||
       $form_state['values']['list_type'] == MAILCHIMP_LISTTYPE_FREEFORM)

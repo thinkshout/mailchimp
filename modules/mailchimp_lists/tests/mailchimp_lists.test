@@ -212,7 +212,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     user_role_save($role);
     $exclusive_role = user_role_load_by_name('exclusive');
     $exclusive_role_id = $exclusive_role->rid;
-    
+
     // Now we configure our lists to allow only users with this role:
     $lists = array();
     $lists['optional'] = mailchimp_lists_load_multiple_by_name('optional_test_list');

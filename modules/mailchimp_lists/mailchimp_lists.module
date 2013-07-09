@@ -949,9 +949,12 @@ function mailchimp_lists_forms($form_id, $args) {
 }
 
 /**
- * Queue existing users in a list.
+ * Queue existing users in a list. Optionally, queue users to remove.
  *
  * @param object $list
+ * 
+ * @boolean $queue_removals
+ *   If set to TRUE, will queue anyone who should be removed from the list.
  *
  * @return $count Number of users queued
  */
