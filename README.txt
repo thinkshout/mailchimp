@@ -64,6 +64,18 @@ mailchimp.module. See their respective README's for more details.
   * mailchimp_activity: View campaign activity for any entity with an email
     address.
 
+## Testing
+The subscription workflow for mailchimp_lists gets pretty hairy between list
+settings, role assignments, user permissions, automated opt-ins, queueing, etc.
+There are automated tests built-in to confirm that this workflow is behaving as
+expected. To run these tastes, enable the testing module and visit
+admin/config/development/testing. You can run the Mailchimp Lists test from
+there.
+
+The tests run against a virtual implementation of the Mailchimp API, so they
+won't have any effect on your Mailchimp account. If you have tests you would
+like to see run, contributions to the testing suite are welcome.
+
 ## Related Modules
 ### Mandrill
   * IMPORTANT: The STS submodule has been removed as it's being deprecated by
