@@ -220,15 +220,14 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     foreach ($lists as $list) {
       $list->settings['roles'] = array($exclusive_role_id => $exclusive_role_id);
       mailchimp_lists_save($list);
+      // Queue the updates to the list (normally triggered in the form):
+      mailchimp_lists_queue_existing($list, TRUE);
     }
-
     // The user no longer has the appropriate roles. Check that they have been
-    // removed from the now-exclusive lists:
+    // removed from the now-exclusive lists once Cron is run:
+    $this->cronRun();
     $this->confirmSubscriptionStatus(FALSE, $roles_test_user->mail, MAILCHIMP_LISTTYPE_OPTIONAL, 'Roles Subs: Optional', " after list role changed to be exclusive");
     $this->confirmSubscriptionStatus(FALSE, $roles_test_user->mail, MAILCHIMP_LISTTYPE_REQUIRED, 'Roles Subs: Required', " after list role changed to be exclusive");
-    // @todo: remove this call to user_sync, which is here to work around a bug.
-    // @todo: solution is to add feature (& trigger) suggested in #2018377
-    mailchimp_lists_user_sync($roles_test_user, $roles_test_user->mail, $roles_test_user->mail, TRUE);
 
     // Now let's give the user the appropriate role (and trigger subscription.)
     $new_roles = $roles_test_user->roles;
