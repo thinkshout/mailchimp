@@ -124,7 +124,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
   $form['list_settings']['allow_anonymous'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow anonymous registrations. <em>(Formerly "Freeform List")</em>'),
-    '#description' => t('This allows site visitors who do not have an account on your site to register for this list using a form block which requests their Email address (and other information).'),
+    '#description' => t('This allows site visitors who do not have an account on your site to register for this list using a form block.'),
     '#default_value' => isset($list->list_type) ? ($list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) : FALSE,
   );
 
@@ -135,8 +135,34 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#default_value' => isset($list->list_type) ? ($list->list_type == MAILCHIMP_LISTTYPE_REQUIRED) : FALSE,
   );
 
+  $form['list_settings']['roles'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Roles'),
+    '#tree' => TRUE,
+    '#description' => t('<p>Choose which roles may subscribe to this list. All
+      users will see the lists they\'re eligible for at the !subscribe and in
+      the subscription block. Lists assigned to the Authenticated role may
+      also apear in the registration form if that option is selected below.
+      Authenticated user may also manage their list settings from their profile.
+      The Anonymous role may <em>only</em> be set for free form lists.</p>',
+      array(
+        '!subscribe' => l(t('newsletter subscription page'),
+          'mailchimp/subscribe'),
+      )),
   );
-*/
+  $roles = user_roles();
+  foreach ($roles as $rid => $role) {
+    $form['list_settings']['roles'][$rid] = array(
+      '#type' => 'checkbox',
+      '#tree' => TRUE,
+      '#title' => $role,
+      '#return_value' => $rid,
+      '#default_value' => ($list && !empty($list->settings['roles'][$rid])) ? $list->settings['roles'][$rid] : FALSE,
+    );
+  }
+  // We don't show the anonymous role: instead we use the "allow anonymous"
+  // setting:
+  unset($form['list_settings']['roles'][DRUPAL_ANONYMOUS_RID]);
   $form['list_settings']['settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Settings'),
@@ -234,26 +260,6 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
         ':input[name="include_interest_groups"]' => array('checked' => TRUE),
       ),
     ),
-  );
-  
-  $form['list_settings']['roles_fieldset'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Roles'),
-  );
-  $form['list_settings']['roles_fieldset']['roles'] = array(
-    '#type' => 'checkboxes',
-    '#options' => user_roles(),
-    '#description' => t('Choose which roles may subscribe to this list. All
-      users will see the lists they\'re eligible for at the !subscribe and in
-      the subscription block. Lists assigned to the Authenticated role may
-      also apear in the registration form if that option is selected below.
-      Authenticated user may also manage their list settings from their profile.
-      The Anonymous role may <em>only</em> be set for free form lists.',
-      array(
-        '!subscribe' => l(t('newsletter subscription page'),
-          'mailchimp/subscribe'),
-      )),
-    '#default_value' => ($list && !empty($list->settings['roles'])) ? $list->settings['roles'] : array(),
   );
 
   $form['mc_list'] = array(
