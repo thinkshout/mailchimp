@@ -837,13 +837,10 @@ function mailchimp_lists_block_info() {
   $blocks = array();
   $lists = mailchimp_lists_load_multiple_by_name();
   foreach ($lists as $name => $list) {
-    // exclude required lists
-    if ($list->list_type !== MAILCHIMP_LISTTYPE_REQUIRED) {
-      $blocks[$name] = array(
-        'info' => t('Mailchimp Subscription Form: @name', array('@name' => $list->label)),
-        'cache' => DRUPAL_CACHE_PER_USER,
-      );
-    }
+    $blocks[$name] = array(
+      'info' => t('Mailchimp Subscription Form: @name', array('@name' => $list->label)),
+      'cache' => DRUPAL_CACHE_PER_USER,
+    );
   }
 
   return $blocks;
@@ -860,7 +857,7 @@ function mailchimp_lists_block_view($delta = '') {
 
   foreach ($user->roles as $rid => $role) {
     if (isset($list->settings['roles'][$rid]) && $list->settings['roles'][$rid]) {
-      $block['subject'] = t('Subscribe to @title', array('@title' => $list->label));
+      $block['subject'] = $list->settings['required'] ? t('@title Subscription Settings', array('@title' => $list->label)) : t('Subscribe to @title', array('@title' => $list->label));
       $block['content'] = drupal_get_form('mailchimp_lists_user_subscribe_form_' . $list->name, array($list), $user);
       break;
     }
