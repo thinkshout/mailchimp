@@ -163,6 +163,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
   // We don't show the anonymous role: instead we use the "allow anonymous"
   // setting:
   unset($form['list_settings']['roles'][DRUPAL_ANONYMOUS_RID]);
+
   $form['list_settings']['settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Settings'),
