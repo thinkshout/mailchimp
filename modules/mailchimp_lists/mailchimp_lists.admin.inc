@@ -147,25 +147,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       ),
     ),
   );
-/*
-  $form['list_settings']['list_type'] = array(
-    '#type' => 'select',
-    '#title' => t('Type of list'),
-    '#multiple' => FALSE,
-    '#description' => t('Required and optional lists are automatically syncronized with the
-      sites users. Optional lists provide a checkbox allowing users to
-      subscribe during registration or when updating their account. Free form
-      lists, the only type allowed for the Anonymous role, present a signup form
-      with all MailChimp merge fields displayed. Default values are allowed for
-      authenticated users based on token mappings.'),
-    '#options' => array(
-      '' => t('-- Select --'),
-      MAILCHIMP_LISTTYPE_REQUIRED => t('Required'),
-      MAILCHIMP_LISTTYPE_OPTIONAL => t('Optional'),
-      MAILCHIMP_LISTTYPE_FREEFORM => t('Free form'),
-    ),
-    '#default_value' => $list ? $list->list_type : -1,
-    '#required' => TRUE,
+
   );
 */
   $form['list_settings']['settings'] = array(
@@ -422,24 +404,13 @@ function mailchimp_lists_mergefields_callback($form, $form_state) {
  * Validation handler for mailchimp_lists_list_form().
  */
 function mailchimp_lists_list_form_validate($form, &$form_state) {
-  // Anonymous role can only be applied to free form lists.
-  if ($form_state['values']['list_type'] != MAILCHIMP_LISTTYPE_FREEFORM &&
-    $form_state['values']['roles'][DRUPAL_ANONYMOUS_RID]
-  ) {
-    form_set_error('list_type',
-      t('The anonymous role can only be set for free form lists.'));
-  }
-
   // Required lists must have a role selected (other than anon).
-  if ($form_state['values']['list_type'] == MAILCHIMP_LISTTYPE_REQUIRED) {
-    $roles = $form_state['values']['roles'];
-    // Unset anonymous role:
-    unset($roles[DRUPAL_ANONYMOUS_RID]);
+  if ($form_state['values']['required']) {
     // Check if there was a role selected:
-    $roles = array_filter($roles);
+    $roles = array_filter($form_state['values']['roles']);
     if (empty($roles)) {
       form_set_error('roles',
-        t('Required lists must have a role (other than Anonymous) selected.'));
+        t('Required lists must have a role selected.'));
     }
   }
 
@@ -468,20 +439,15 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
 
   $mcapi = mailchimp_get_api_object();
   $webhook_ret = FALSE;
-  // Remove the webhook from this list if unchecked or type changed to freeform:
-  if (!$is_new && isset($list->settings['webhooks']) &&
-    (!$form_state['values']['webhooks'] ||
-      $form_state['values']['list_type'] == MAILCHIMP_LISTTYPE_FREEFORM)
-  ) {
-    $webhook_ret = $mcapi->listWebhookDel($list->mc_list_id,
-      mailchimp_webhook_url());
+  // If the webhook was enabled before, check to see if it should be disabled:
+  if (!empty($list->settings['webhooks'])) {
+    if (!$is_new && !$form_state['values']['webhooks']) {
+      $webhook_ret = $mcapi->listWebhookDel($list->mc_list_id, mailchimp_webhook_url());
+    }
   }
-  // Enable the web hook:
+  // If it wasn't enabled, check to see if it should be:
   else {
-    if (
-      (!isset($list->settings['webhooks']) || !$list->settings['webhooks']) &&
-      $form_state['values']['webhooks']
-    ) {
+    if ($form_state['values']['webhooks']) {
       $webhook_ret = $mcapi->listWebhookAdd($list->mc_list_id,
         mailchimp_webhook_url(),
         array('unsubscribe', 'profile', 'cleaned', 'upemail')
@@ -519,7 +485,6 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
   $list->label = $form_state['values']['label'];
   $list->name = $form_state['values']['name'];
   $list->description = $form_state['values']['description'];
-  $list->list_type = $form_state['values']['list_type'];
   $list->settings = array(
     'roles' => array_filter($form_state['values']['roles']),
     'mergefields' => isset($form_state['values']['mergefields']) ? $form_state['values']['mergefields'] : NULL,
