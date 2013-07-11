@@ -277,7 +277,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
 function mailchimp_lists_user_delete($account) {
   // Unsubscribe a user from all required & optional lists:
   // Load any lists that they have access to by role:
-  $lists = mailchimp_lists_get_available_lists($account, array(MAILCHIMP_LISTTYPE_REQUIRED, MAILCHIMP_LISTTYPE_OPTIONAL));
+  $lists = mailchimp_lists_get_available_lists($account, TRUE);
   if (!empty($lists)) {
     foreach ($lists as $list) {
       // TODO: after we have local preference tracking, remove only lists
@@ -331,12 +331,7 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
   }
 
   // Add/update subscriptions if necessary:
-  $list_types = array(
-    MAILCHIMP_LISTTYPE_REQUIRED,
-    MAILCHIMP_LISTTYPE_OPTIONAL,
-    MAILCHIMP_LISTTYPE_FREEFORM,
-  );
-  $lists = mailchimp_lists_get_available_lists($account, $list_types);
+  $lists = mailchimp_lists_get_available_lists($account, TRUE);
   if (!empty($lists) && $account->status) { // todo: what about inactive accounts that are still registering?
     $mcapi = mailchimp_get_api_object();
     $lookup_email = !empty($old_email) ? $old_email : $account->mail;
@@ -349,7 +344,7 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
         $mergevars = _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email, $proper_email);
         mailchimp_lists_execute_change('update', $list, $lookup_email, $mergevars, NULL, $mcapi);
       }
-      elseif ($list->list_type == MAILCHIMP_LISTTYPE_REQUIRED) {
+      elseif ($list->settings['required']) {
         // This is a new account or required list that the account isn't already
         // subscribed to, so we add them...
         $mergevars = _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email, $proper_email);
@@ -622,11 +617,11 @@ function mailchimp_lists_process_subscribe_form_choices($list_forms, $account = 
 
     // Determine what function is appropriate.
     // Unsubscribe a subscribed user who unchecked an Optional list:
-    if ($is_subscribed && !$selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) {
+    if ($is_subscribed && !$selected && !$list->settings['required']) {
       $function = 'remove';
     }
     // Otherwise we are doing an update or an add, based on $is_subscribed:
-    elseif (($selected && $list->list_type == MAILCHIMP_LISTTYPE_OPTIONAL) || $list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) {
+    elseif ($selected || $list->settings['required']) {
       if ($is_subscribed) {
         $function = 'update';
       }
