@@ -130,8 +130,20 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#type' => 'fieldset',
     '#title' => t('MailChimp List & Merge Fields'),
     '#collapsible' => TRUE,
+    '#collapsed' => isset($list),
   );
 
+  $form['list_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Settings'),
+    '#collapsible' => TRUE,
+  );
+
+  $form['form_option_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Form & Subscribe Block Options'),
+  );
+  
   $lists = mailchimp_get_lists();
   $options = array('' => t('-- Select --'));
   foreach ($lists as $mc_list) {
@@ -178,8 +190,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
 
     if (isset($mc_list['mergevars']) && !empty($mc_list['mergevars'])) {
       foreach ($mc_list['mergevars'] as $mergevar) {
-        $default_value = isset($list->settings['mergefields'][$mergevar['tag']]) ?
-          $list->settings['mergefields'][$mergevar['tag']] : -1;
+        $default_value = isset($list->settings['mergefields'][$mergevar['tag']]) ? $list->settings['mergefields'][$mergevar['tag']] : -1;
         $disabled = FALSE;
         $description = '';
         if ($mergevar['tag'] == 'EMAIL') {
@@ -205,11 +216,6 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     }
   }
 
-  $form['list_settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Settings'),
-    '#collapsible' => TRUE,
-  );
   $form['list_settings']['allow_anonymous'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow anonymous registrations. <em>(Formerly "Freeform List")</em>'),
@@ -294,11 +300,8 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       update the user's cached MailChimp member information. This will
       <em>not</em> update any of their Drupal user information."),
   );
-  $form['list_settings']['form_option_settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Form & Subscribe Block Options'),
-  );
-  $form['list_settings']['form_option_settings']['form_label'] = array(
+
+  $form['form_option_settings']['form_label'] = array(
     '#type' => 'textfield',
     '#title' => t('List Label'),
     '#description' => t('The label for this list that will appear on forms, either next to a checkbox or above the list merge fields, depending on the type of list.'),
@@ -306,7 +309,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#maxlength' => 64,
     '#default_value' => isset($list->settings['form_label']) ? $list->settings['form_label'] : '',
   );
-  $form['list_settings']['form_option_settings']['submit_label'] = array(
+  $form['form_option_settings']['submit_label'] = array(
     '#type' => 'textfield',
     '#title' => t('Submit Button Label'),
     '#description' => t('The label for the Submit button that will appear on subscription forms that include only this list: generally blocks only.'),
@@ -314,7 +317,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#maxlength' => 20,
     '#default_value' => isset($list->settings['submit_label']) ? $list->settings['submit_label'] : 'Submit',
   );
-  $form['list_settings']['form_option_settings']['default_register_form_optin'] = array(
+  $form['form_option_settings']['default_register_form_optin'] = array(
     '#type' => 'checkbox',
     '#title' => t('Default to opt-in on registration form.'),
     '#description' => t('This will only apply for lists appearing on the register form.'),
@@ -329,14 +332,14 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       ),
     ),
   );
-  $form['list_settings']['form_option_settings']['include_interest_groups'] = array(
+  $form['form_option_settings']['include_interest_groups'] = array(
     '#type' => 'checkbox',
     '#title' => t('Include interest groups on subscription form.'),
     '#default_value' => isset($list->settings['include_interest_groups']) ? $list->settings['include_interest_groups'] : FALSE,
     '#description' => t('If set, users will be able to select applicable
       interest groups when registering or editing their accounts.'),
   );
-  $form['list_settings']['form_option_settings']['interest_groups_label'] = array(
+  $form['form_option_settings']['interest_groups_label'] = array(
     '#type' => 'textfield',
     '#title' => t('Interest groups label'),
     '#default_value' => isset($list->settings['interest_groups_label']) ? $list->settings['interest_groups_label'] : t('Interest Groups'),
