@@ -131,7 +131,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
   $form['list_settings']['required'] = array(
     '#type' => 'checkbox',
     '#title' => t('Automatically add all eligible users. <em>(Formerly "Required List")</em>'),
-    '#description' => t('Adds all registered users with the appropriate Roles to the list automatically and does not allow them to control this setting through Drupal. Email confirmation from Mailchimp may still be required.'),
+    '#description' => t('Adds all registered users with appropriate Roles to the list automatically. This will block them from controlling their subscription status through Drupal. (Email confirmation from Mailchimp may still be required.)'),
     '#default_value' => isset($list->list_type) ? ($list->list_type == MAILCHIMP_LISTTYPE_REQUIRED) : FALSE,
   );
 
@@ -179,14 +179,13 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
   $form['list_settings']['settings']['show_register_form'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show subscription options on the user registration form.'),
-    '#description' => t('This will only apply for lists granted to an authenticated role.'),
+    '#description' => t('This will only apply for lists granted to an authenticated role. <em>(If the list is "Required", only Interest Group options will appear.)</em>'),
     '#default_value' => isset($list->settings['show_register_form']) ? $list->settings['show_register_form'] : FALSE,
   );
   $form['list_settings']['settings']['show_account_form'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show subscription options on user edit screen'),
-    '#description' => t('If set, a tab will be presented for managing
-      newsletter subscriptions when editing an account.'),
+    '#description' => t('If set, a tab will be presented for managing newsletter subscriptions when editing an account. <em>(If the list is "Required", the option to unsubscribe will be disabled, but users can configure their Interest Groups.)</em>'),
     '#default_value' => isset($list->settings['show_account_form']) ? $list->settings['show_account_form'] : FALSE,
   );
   $form['list_settings']['settings']['cron'] = array(
@@ -205,12 +204,11 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       update the user's cached MailChimp member information. This will
       <em>not</em> update any of their Drupal user information."),
   );
-  $form['list_settings']['settings']['form_option_section'] = array(
-    '#markup' => t('Form & Subscribe Block Options'),
-    '#prefix' => '<strong>',
-    '#suffix' => '</strong>',
+  $form['list_settings']['form_option_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Form & Subscribe Block Options'),
   );
-  $form['list_settings']['settings']['form_label'] = array(
+  $form['list_settings']['form_option_settings']['form_label'] = array(
     '#type' => 'textfield',
     '#title' => t('List Label'),
     '#description' => t('The label for this list that will appear on forms, either next to a checkbox or above the list merge fields, depending on the type of list.'),
@@ -218,7 +216,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#maxlength' => 64,
     '#default_value' => isset($list->settings['form_label']) ? $list->settings['form_label'] : '',
   );
-  $form['list_settings']['settings']['submit_label'] = array(
+  $form['list_settings']['form_option_settings']['submit_label'] = array(
     '#type' => 'textfield',
     '#title' => t('Submit Button Label'),
     '#description' => t('The label for the Submit button that will appear on subscription forms that include only this list: generally blocks only.'),
@@ -226,7 +224,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#maxlength' => 20,
     '#default_value' => isset($list->settings['submit_label']) ? $list->settings['submit_label'] : 'Submit',
   );
-  $form['list_settings']['settings']['default_register_form_optin'] = array(
+  $form['list_settings']['form_option_settings']['default_register_form_optin'] = array(
     '#type' => 'checkbox',
     '#title' => t('Default to opt-in on registration form.'),
     '#description' => t('This will only apply for lists appearing on the register form.'),
@@ -241,14 +239,14 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       ),
     ),
   );
-  $form['list_settings']['settings']['include_interest_groups'] = array(
+  $form['list_settings']['form_option_settings']['include_interest_groups'] = array(
     '#type' => 'checkbox',
     '#title' => t('Include interest groups on subscription form.'),
     '#default_value' => isset($list->settings['include_interest_groups']) ? $list->settings['include_interest_groups'] : FALSE,
     '#description' => t('If set, users will be able to select applicable
       interest groups when registering or editing their accounts.'),
   );
-  $form['list_settings']['settings']['interest_groups_label'] = array(
+  $form['list_settings']['form_option_settings']['interest_groups_label'] = array(
     '#type' => 'textfield',
     '#title' => t('Interest groups label'),
     '#default_value' => isset($list->settings['interest_groups_label']) ? $list->settings['interest_groups_label'] : t('Interest Groups'),
