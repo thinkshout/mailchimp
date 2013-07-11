@@ -126,9 +126,88 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#description' => t('This description will be shown to the user on the list signup and user account settings pages. (255 characters or less)'),
   );
 
+  $form['mc_list'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('MailChimp List & Merge Fields'),
+    '#collapsible' => TRUE,
+  );
+
+  $lists = mailchimp_get_lists();
+  $options = array('' => t('-- Select --'));
+  foreach ($lists as $mc_list) {
+    $options[$mc_list['id']] = $mc_list['name'];
+  }
+  $form['mc_list']['mc_list_id'] = array(
+    '#type' => 'select',
+    '#title' => t('MailChimp List'),
+    '#multiple' => FALSE,
+    '#description' => t('Available MailChimp lists. If this field is empty,
+      create a list at !MailChimp first.',
+      array('!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'))),
+    '#options' => $options,
+    '#default_value' => $list ? $list->mc_list_id : -1,
+    '#required' => TRUE,
+    '#ajax' => array(
+      'callback' => 'mailchimp_lists_mergefields_callback',
+      'wrapper' => 'mergefields-wrapper',
+      'method' => 'replace',
+      'effect' => 'fade',
+      'progress' => array(
+        'type' => 'throbber',
+        'message' => t('Retrieving merge fields for this list.'),
+      ),
+    ),
+  );
+
+  $form['mc_list']['mergefields'] = array(
+    '#prefix' => '<div id="mergefields-wrapper">',
+    '#suffix' => '</div>',
+  );
+
+  // Show merge fields if changing list field or editing existing list.
+  if (!empty($form_state['values']['mc_list_id']) || isset($list)) {
+    $form['mc_list']['mergefields'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Merge Fields'),
+      '#id' => 'mergefields-wrapper',
+      '#tree' => TRUE,
+    );
+
+    $mc_list_id = !empty($form_state['values']['mc_list_id']) ? $form_state['values']['mc_list_id'] : $list->mc_list_id;
+    $mc_list = mailchimp_get_list($mc_list_id);
+
+    if (isset($mc_list['mergevars']) && !empty($mc_list['mergevars'])) {
+      foreach ($mc_list['mergevars'] as $mergevar) {
+        $default_value = isset($list->settings['mergefields'][$mergevar['tag']]) ?
+          $list->settings['mergefields'][$mergevar['tag']] : -1;
+        $disabled = FALSE;
+        $description = '';
+        if ($mergevar['tag'] == 'EMAIL') {
+          $default_value = 'mail';
+          $disabled = TRUE;
+          $description = t("Email is required and must map to a Drupal user's email.");
+        }
+        $form['mc_list']['mergefields'][$mergevar['tag']] = array(
+          '#type' => 'select',
+          '#title' => $mergevar['name'],
+          '#description' => $description,
+          '#default_value' => $default_value,
+          '#disabled' => $disabled,
+          '#required' => $mergevar['req'],
+          '#options' => mailchimp_lists_get_merge_tokens(),
+        );
+      }
+    }
+    else {
+      $form['mc_list']['mergefields']['message'] = array(
+        '#markup' => t('There are no merge fields configured for this list.'),
+      );
+    }
+  }
+
   $form['list_settings'] = array(
     '#type' => 'fieldset',
-    '#title' => t('List Settings'),
+    '#title' => t('Settings'),
     '#collapsible' => TRUE,
   );
   $form['list_settings']['allow_anonymous'] = array(
@@ -270,86 +349,6 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       ),
     ),
   );
-
-  $form['mc_list'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('MailChimp List Settings'),
-    '#collapsible' => TRUE,
-  );
-
-  $lists = mailchimp_get_lists();
-  $options = array('' => t('-- Select --'));
-  foreach ($lists as $mc_list) {
-    $options[$mc_list['id']] = $mc_list['name'];
-  }
-  $form['mc_list']['mc_list_id'] = array(
-    '#type' => 'select',
-    '#title' => t('MailChimp List'),
-    '#multiple' => FALSE,
-    '#description' => t('Available MailChimp lists. If this field is empty,
-      create a list at !MailChimp first.',
-      array('!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'))),
-    '#options' => $options,
-    '#default_value' => $list ? $list->mc_list_id : -1,
-    '#required' => TRUE,
-    '#ajax' => array(
-      'callback' => 'mailchimp_lists_mergefields_callback',
-      'wrapper' => 'mergefields-wrapper',
-      'method' => 'replace',
-      'effect' => 'fade',
-      'progress' => array(
-        'type' => 'throbber',
-        'message' => t('Retrieving merge fields for this list.'),
-      ),
-    ),
-  );
-
-  $form['mc_list']['mergefields'] = array(
-    '#prefix' => '<div id="mergefields-wrapper">',
-    '#suffix' => '</div>',
-  );
-
-  // Show merge fields if changing list field or editing existing list.
-  if (!empty($form_state['values']['mc_list_id']) || isset($list)) {
-    $form['mc_list']['mergefields'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Merge Fields'),
-      '#id' => 'mergefields-wrapper',
-      '#tree' => TRUE,
-    );
-
-    $mc_list_id = !empty($form_state['values']['mc_list_id']) ?
-      $form_state['values']['mc_list_id'] : $list->mc_list_id;
-    $mc_list = mailchimp_get_list($mc_list_id);
-
-    if (isset($mc_list['mergevars']) && !empty($mc_list['mergevars'])) {
-      foreach ($mc_list['mergevars'] as $mergevar) {
-        $default_value = isset($list->settings['mergefields'][$mergevar['tag']]) ?
-          $list->settings['mergefields'][$mergevar['tag']] : -1;
-        $disabled = FALSE;
-        $description = '';
-        if ($mergevar['tag'] == 'EMAIL') {
-          $default_value = 'mail';
-          $disabled = TRUE;
-          $description = t("Email is required and must map to a Drupal user's email.");
-        }
-        $form['mc_list']['mergefields'][$mergevar['tag']] = array(
-          '#type' => 'select',
-          '#title' => $mergevar['name'],
-          '#description' => $description,
-          '#default_value' => $default_value,
-          '#disabled' => $disabled,
-          '#required' => $mergevar['req'],
-          '#options' => mailchimp_lists_get_merge_tokens(),
-        );
-      }
-    }
-    else {
-      $form['mc_list']['mergefields']['message'] = array(
-        '#markup' => t('There are no merge fields configured for this list.'),
-      );
-    }
-  }
 
   $form['save'] = array(
     '#type' => 'submit',
