@@ -479,8 +479,9 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account) {
     $mc_list = mailchimp_get_list($list->mc_list_id);
     if (!empty($mc_list['mergevars'])) {
       foreach ($mc_list['mergevars'] as $mergevar) {
-        // @todo: provide a setting to only display selected mergevars
-        $form[$wrapper_key]['mergevars'][$mergevar['tag']] = mailchimp_lists_insert_drupal_form_tag($mergevar);
+        if (!empty($list->settings['mergefields_display'][$mergevar['tag']])) {
+          $form[$wrapper_key]['mergevars'][$mergevar['tag']] = mailchimp_lists_insert_drupal_form_tag($mergevar);
+        }
       }
     }
   }

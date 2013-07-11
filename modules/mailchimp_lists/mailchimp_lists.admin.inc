@@ -184,7 +184,19 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
       '#id' => 'mergefields-wrapper',
       '#tree' => TRUE,
     );
-
+    $form['form_option_settings']['mergefields_display'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Merge Field Form Display Settings'),
+      '#description' => t('Select the merge fields to show on anonymous registration forms. Required fields are automatically displayed.'),
+      '#id' => 'mergefields-display-wrapper',
+      '#tree' => TRUE,
+      '#weight' => 20,
+      '#states' => array(
+        'visible' => array(
+          ':input[name="allow_anonymous"]' => array('checked' => TRUE),
+        ),
+      ),
+    );
     $mc_list_id = !empty($form_state['values']['mc_list_id']) ? $form_state['values']['mc_list_id'] : $list->mc_list_id;
     $mc_list = mailchimp_get_list($mc_list_id);
 
@@ -207,6 +219,20 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
           '#required' => $mergevar['req'],
           '#options' => mailchimp_lists_get_merge_tokens(),
         );
+        if (!$mergevar['req']) {
+          $form['form_option_settings']['mergefields_display'][$mergevar['tag']] = array(
+            '#type' => 'checkbox',
+            '#title' => $mergevar['name'],
+            '#default_value' => isset($list->settings['mergefields_display'][$mergevar['tag']]) ? $list->settings['mergefields_display'][$mergevar['tag']] : TRUE,
+            '#required' => $mergevar['req'],
+          );
+        }
+        else {
+          $form['form_option_settings']['mergefields_display'][$mergevar['tag']] = array(
+            '#type' => 'hidden',
+            '#value' => TRUE,
+          );
+        }
       }
     }
     else {
@@ -472,6 +498,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
   $list->settings = array(
     'roles' => array_filter($form_state['values']['roles']),
     'mergefields' => isset($form_state['values']['mergefields']) ? $form_state['values']['mergefields'] : NULL,
+    'mergefields_display' => isset($form_state['values']['mergefields_display']) ? $form_state['values']['mergefields_display'] : NULL,
     'doublein' => $form_state['values']['doublein'],
     'show_register_form' => $form_state['values']['show_register_form'],
     'default_register_form_optin' => $form_state['values']['default_register_form_optin'],
