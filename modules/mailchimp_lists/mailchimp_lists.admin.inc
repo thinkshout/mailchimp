@@ -11,20 +11,29 @@
 function mailchimp_lists_overview_page() {
   $lists = mailchimp_lists_load_multiple();
   $rows = array();
+  $roles = user_roles();
   foreach ($lists as $list) {
     $mc_list = mailchimp_get_list($list->mc_list_id);
     $actions = array(
       l(t('Edit'), 'admin/config/services/mailchimp/lists/' . $list->id . '/edit'),
       l(t('Delete'), 'admin/config/services/mailchimp/lists/' . $list->id . '/delete'),
     );
-    if ($list->list_type !== MAILCHIMP_LISTTYPE_FREEFORM && isset($list->settings['cron']) && $list->settings['cron']) {
+    if (isset($list->settings['cron']) && $list->settings['cron']) {
       $actions[] = l(t('Queue existing'), 'mailchimp/lists/' . $list->id . '/queue_existing');
     }
+    $rolelist = $list->settings['roles'];
+    unset($rolelist[DRUPAL_ANONYMOUS_RID]);
+    $role_display = array();
+    foreach ($rolelist as $role_id) {
+      $role_display[] = $roles[$role_id];
+    }
+    $role_display = implode(', ', $role_display);
     $rows[] = array(
       l($list->label, 'admin/config/services/mailchimp/lists/' . $list->id . '/edit'),
       l($mc_list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id']),
       $list->description,
-      $list->list_type,
+      $list->settings['required'] ? $role_display : '-No-',
+      $list->settings['allow_anonymous'] ? '-Yes-' : '-No-',
       implode(' | ', $actions),
     );
   }
@@ -33,7 +42,8 @@ function mailchimp_lists_overview_page() {
       t('Name'),
       t('MailChimp List'),
       t('Description'),
-      t('Type'),
+      t('Required'),
+      t('Anonymous Allowed'),
       t('Actions'),
     ),
     'rows' => $rows,
@@ -125,14 +135,14 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#type' => 'checkbox',
     '#title' => t('Allow anonymous registrations. <em>(Formerly "Freeform List")</em>'),
     '#description' => t('This allows site visitors who do not have an account on your site to register for this list using a form block.'),
-    '#default_value' => isset($list->list_type) ? ($list->list_type == MAILCHIMP_LISTTYPE_FREEFORM) : FALSE,
+    '#default_value' => ($list && !empty($list->settings['allow_anonymous'])) ? $list->settings['allow_anonymous'] : FALSE,
   );
 
   $form['list_settings']['required'] = array(
     '#type' => 'checkbox',
     '#title' => t('Automatically add all eligible users. <em>(Formerly "Required List")</em>'),
     '#description' => t('Adds all registered users with appropriate Roles to the list automatically. This will block them from controlling their subscription status through Drupal. (Email confirmation from Mailchimp may still be required.)'),
-    '#default_value' => isset($list->list_type) ? ($list->list_type == MAILCHIMP_LISTTYPE_REQUIRED) : FALSE,
+    '#default_value' => ($list && !empty($list->settings['required'])) ? $list->settings['required'] : FALSE,
   );
 
   $form['list_settings']['roles'] = array(
