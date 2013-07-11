@@ -429,6 +429,8 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
   // Check for altered roles.
   $added_roles = FALSE;
   $removed_roles = FALSE;
+  // We intuit the anonymous RID based on the Allow Anonymous setting:
+  $form_state['values']['roles'][DRUPAL_ANONYMOUS_RID] = $form_state['values']['allow_anonymous'];
   if (!$is_new) {
     foreach ($form_state['values']['roles'] as $role_id => $role) {
       $was_on = !empty($form_state['list']->settings['roles'][$role_id]);
@@ -467,6 +469,8 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
     'interest_groups_label' => $form_state['values']['interest_groups_label'],
     'cron' => $form_state['values']['cron'],
     'webhooks' => $webhook_ret & $form_state['values']['webhooks'],
+    'allow_anonymous' => $form_state['values']['allow_anonymous'],
+    'required' => $form_state['values']['required'],
   );
 
   if ($ret = mailchimp_lists_save($list)) {
