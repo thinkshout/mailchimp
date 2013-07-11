@@ -786,18 +786,28 @@ function mailchimp_lists_mailchimp_lists_merge_values($mergevars, $account, $lis
  * Return all available lists for a given user.
  *
  * @param string $account
- * @param string $list_type list type constant
+ * @param boolean $include_required whether to include required lists.
  * @param array $conditions list settings to filter the results by.
  *
  * @return array lists
  */
-function mailchimp_lists_get_available_lists($account = NULL, $list_type = MAILCHIMP_LISTTYPE_OPTIONAL, $conditions = array()) {
+function mailchimp_lists_get_available_lists($account = NULL, $include_required = TRUE, $conditions = array()) {
   if (empty($account)) {
     global $user;
     $account = $user;
   }
 
-  $lists = mailchimp_lists_load_multiple(array(), array('list_type' => $list_type));
+  // Warn if trying to use an old implementation of this function:
+  if (is_string($include_required)) {
+    watchdog('mailchimp_lists', t("Deprecated call to mailchimp_lists_get_available_lists: list types no longer exist."), NULL, WATCHDOG_WARNING);
+    $include_required = !strcmp($include_required, MAILCHIMP_LISTTYPE_REQUIRED);
+  }
+  
+  if (!$include_required) {
+    $conditions['required'] = FALSE;
+  }
+  
+  $lists = mailchimp_lists_load_multiple(array());
   $user_lists = array();
   foreach ($lists as $list) {
     foreach ($account->roles as $rid => $role) {
