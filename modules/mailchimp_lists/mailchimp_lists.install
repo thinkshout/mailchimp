@@ -359,7 +359,7 @@ function mailchimp_lists_update_7205() {
   foreach ($lists as $list) {
     $settings = unserialize($list->settings);
     if (isset($list->list_type)) {
-      switch ($list_type) {
+      switch ($list->list_type) {
         case (MAILCHIMP_LISTTYPE_FREEFORM):
           $settings['required'] = FALSE;
           $settings['allow_anonymous'] = TRUE;
