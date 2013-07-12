@@ -320,7 +320,7 @@ function mailchimp_lists_update_7203() {
  */
 function mailchimp_lists_update_7204() {
   $lists = db_select('mailchimp_lists', 'm')
-    ->fields('m', array('id', 'settings'))
+    ->fields('m', array('id', 'label', 'settings'))
     ->execute()
     ->fetchAll();
 
@@ -331,7 +331,7 @@ function mailchimp_lists_update_7204() {
   foreach ($lists as $list) {
     $settings = unserialize($list->settings);
     if (!array_key_exists('form_label', $settings)) {
-      $settings['form_label'] = $list->name;
+      $settings['form_label'] = $list->label;
       $settings = serialize($settings);
       $result = db_update('mailchimp_lists')
         ->fields(array('settings' => $settings))
