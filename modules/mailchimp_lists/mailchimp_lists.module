@@ -379,9 +379,10 @@ function _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email 
  * Page callback for a user newsletter subscription page.
  */
 function mailchimp_lists_user_subscribe_page($account) {
-  // Get all available lists:
-  $lists = mailchimp_lists_get_available_lists($account, TRUE, array('show_account_form' => 1));
-
+  // Get all available non-required lists:
+  $non_required_lists = mailchimp_lists_get_available_lists($account, FALSE, array('show_account_form' => 1));
+  $require_lists_with_interest_groups = mailchimp_lists_get_available_lists($account, TRUE, array('required' => 1, 'include_interest_groups' => 1));
+  $lists = array_merge($non_required_lists, $require_lists_with_interest_groups);
   if (count($lists) == 0) {
     return (t('There are no available newsletter subscriptions.'));
   }
