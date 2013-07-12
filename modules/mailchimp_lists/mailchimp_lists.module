@@ -803,18 +803,19 @@ function mailchimp_lists_get_available_lists($account = NULL, $include_required 
   
   $lists = mailchimp_lists_load_multiple(array());
   $user_lists = array();
-  foreach ($lists as $list) {
+  foreach ($lists as $lid => $list) {
     foreach ($account->roles as $rid => $role) {
       if (isset($list->settings['roles'][$rid]) && $list->settings['roles'][$rid]) {
+        $pass = TRUE;
         if (!empty($conditions)) {
           foreach ($conditions as $key => $condition) {
-            if (isset($list->settings[$key]) && $list->settings[$key] == $condition) {
-              $user_lists[] = $list;
+            if (!isset($list->settings[$key]) || $list->settings[$key] != $condition) {
+              $pass = FALSE;
             }
           }
         }
-        else {
-          $user_lists[] = $list;
+        if ($pass) {
+          $user_lists[$lid] = $list;
         }
         break;
       }
