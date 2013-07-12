@@ -43,13 +43,6 @@ function mailchimp_lists_schema() {
         'not null' => FALSE,
         'default' => '',
       ),
-      'list_type' => array(
-        'type' => 'varchar',
-        'length' => 32,
-        'description' => 'The {mailchimp_lists}.type of this mailchimp_list.',
-        'not null' => TRUE,
-        'default' => '',
-      ),
       'settings' => array(
         'type' => 'blob',
         'not null' => FALSE,
@@ -323,28 +316,84 @@ function mailchimp_lists_update_7203() {
 }
 
 /**
- * Update list->settings with new values and remove list_type data.
+ * Update list->settings with ['form_label'] index.
  */
 function mailchimp_lists_update_7204() {
-  $efq = new EntityFieldQuery();
-  $all_list_types = array(
-    MAILCHIMP_LISTTYPE_OPTIONAL,
-    MAILCHIMP_LISTTYPE_REQUIRED,
-    MAILCHIMP_LISTTYPE_FREEFORM,
-  );
-  $results = $efq
-    ->entityCondition('entity_type', 'mailchimp_list')
-    ->propertyCondition('list_type', $all_list_types, 'IN')
-    ->execute();
+  $lists = db_select('mailchimp_lists', 'm')
+    ->fields('m', array('id', 'settings'))
+    ->execute()
+    ->fetchAll();
 
-  if (empty($results)) {
+  if (empty($lists)) {
     return t('There are no lists to update.');
   }
-  $lists = mailchimp_lists_load_multiple(array_keys($results['mailchimp_list']));
+  $success = TRUE;
   foreach ($lists as $list) {
-    if (!isset($list->settings['form_label'])) {
-      $list->settings['form_label'] = '';
+    $settings = unserialize($list->settings);
+    if (!array_key_exists('form_label', $settings)) {
+      $settings['form_label'] = '';
+      $settings = serialize($settings);
+      $result = db_update('mailchimp_lists')
+        ->fields(array('settings' => $settings))
+        ->condition('id', $list->id)
+        ->execute();
+      // todo: more intelligent failure/success reporting
+      $success = $result && $success;
     }
   }
   return t('MailChimp lists have been given a default Form Label field.');
+}
+
+/**
+ * Update list->settings with new values and remove list_type data.
+ */
+function mailchimp_lists_update_7205() {
+  $lists = db_select('mailchimp_lists', 'm')
+    ->fields('m', array('id', 'list_type', 'settings'))
+    ->execute()
+    ->fetchAll();
+
+  if (empty($lists)) {
+    return t('There are no lists to update.');
+  }
+  foreach ($lists as $list) {
+    $settings = unserialize($list->settings);
+    if (isset($list->list_type)) {
+      switch ($list_type) {
+        case (MAILCHIMP_LISTTYPE_FREEFORM):
+          $settings['required'] = FALSE;
+          $settings['allow_anonymous'] = TRUE;
+          $settings['roles'][DRUPAL_ANONYMOUS_RID] = TRUE;
+          if (isset($settings['mergefields'])) {
+            $settings['mergefields_display'] = array();
+            foreach ($settings['mergefields'] as $id => $field) {
+              $settings['mergefields_display'][$id] = 'TRUE';
+            }
+          }
+          break;
+
+        case (MAILCHIMP_LISTTYPE_OPTIONAL):
+          $settings['required'] = FALSE;
+          $settings['allow_anonymous'] = FALSE;
+          break;
+
+        case (MAILCHIMP_LISTTYPE_REQUIRED):
+          $settings['required'] = TRUE;
+          $settings['allow_anonymous'] = FALSE;
+          break;
+
+      }
+      // This is where we would delete the list_type variable if we deemed it a
+      // good idea. It is minimal cruft, however, and allows for back-revving
+      // one's Mailchimp install more easily.
+      $settings = serialize($settings);
+      db_update('mailchimp_lists')
+        ->fields(array('settings' => $settings))
+        ->condition('id', $list->id)
+        ->execute();
+    }
+  }
+  $t = get_t();
+
+  return $t('MailChimp lists have been updated with new settings.');
 }
