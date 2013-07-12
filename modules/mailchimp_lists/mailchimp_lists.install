@@ -331,7 +331,7 @@ function mailchimp_lists_update_7204() {
   foreach ($lists as $list) {
     $settings = unserialize($list->settings);
     if (!array_key_exists('form_label', $settings)) {
-      $settings['form_label'] = '';
+      $settings['form_label'] = $list->name;
       $settings = serialize($settings);
       $result = db_update('mailchimp_lists')
         ->fields(array('settings' => $settings))
@@ -356,6 +356,7 @@ function mailchimp_lists_update_7205() {
   if (empty($lists)) {
     return t('There are no lists to update.');
   }
+  $success = TRUE;
   foreach ($lists as $list) {
     $settings = unserialize($list->settings);
     if (isset($list->list_type)) {
@@ -387,13 +388,18 @@ function mailchimp_lists_update_7205() {
       // good idea. It is minimal cruft, however, and allows for back-revving
       // one's Mailchimp install more easily.
       $settings = serialize($settings);
-      db_update('mailchimp_lists')
+      $result = db_update('mailchimp_lists')
         ->fields(array('settings' => $settings))
         ->condition('id', $list->id)
         ->execute();
     }
+    $success = $result && $success;
   }
   $t = get_t();
-
-  return $t('MailChimp lists have been updated with new settings.');
+  if ($success) {
+    return $t('MailChimp lists have been updated with new settings.');
+  }
+  else {
+    throw new DrupalUpdateException('There was a problem updating your Mailchimp Lists configuration. Either roll back your database or go to the Mailchimp Lists configuration page and re-configure each list individually.');
+  }
 }
