@@ -86,7 +86,7 @@ function mailchimp_lists_schema() {
       ),
     ),
     'primary key' => array('id'),
-    'unique key' => array('name')
+    'unique key' => array('name'),
   );
 
   return $schema;
@@ -96,7 +96,7 @@ function mailchimp_lists_schema() {
  * Implements hook_install().
  */
 function mailchimp_lists_install() {
-  // convert old lists if they exist
+  // Convert old lists if they exist:
   $old_lists = variable_get('mailchimp_lists', array());
   if (!empty($old_lists)) {
     $cron = variable_get('mailchimp_cron', FALSE);
@@ -120,19 +120,19 @@ function mailchimp_lists_install() {
         'cron' => $cron,
         'webhooks' => FALSE,
       );
-
+      $t = get_t();
       if ($ret = mailchimp_lists_save($list)) {
-        drupal_set_message(t('List @name has been converted.',
+        drupal_set_message($t('List @name has been converted.',
           array('@name' => $list->label)));
       }
       else {
-        drupal_set_message(t('There has been an error converting list @name.',
+        drupal_set_message($t('There has been an error converting list @name.',
           array('@name' => $list->label)), 'error');
       }
     }
   }
 
-  // now delete old variables
+  // Now delete old variables:
   variable_del('mailchimp_cron');
   variable_del('mailchimp_interest_groups_user_forms');
   variable_del('mailchimp_lists');
@@ -323,7 +323,7 @@ function mailchimp_lists_update_7203() {
 }
 
 /**
- * Update list->settings with ['form_label'] index.
+ * Update list->settings with new values and remove list_type data.
  */
 function mailchimp_lists_update_7204() {
   $efq = new EntityFieldQuery();
