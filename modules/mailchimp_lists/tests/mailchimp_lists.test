@@ -64,6 +64,8 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
       'cron' => FALSE,
       'doublein' => FALSE,
       'include_interest_groups' => FALSE,
+      'required' => FALSE,
+      'allow_anonymous' => TRUE,
     );
     $lists[] = $list;
 
@@ -80,6 +82,8 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
       'show_account_form' => TRUE,
       'doublein' => FALSE,
       'include_interest_groups' => FALSE,
+      'required' => FALSE,
+      'allow_anonymous' => FALSE,
     );
     $lists[] = $list;
 
@@ -95,6 +99,8 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
       'cron' => FALSE,
       'doublein' => FALSE,
       'include_interest_groups' => FALSE,
+      'required' => TRUE,
+      'allow_anonymous' => FALSE,
     );
     $lists[] = $list;
 
