@@ -301,13 +301,13 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
   $form['list_settings']['settings']['show_register_form'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show subscription options on the user registration form.'),
-    '#description' => t('This will only apply for lists granted to an authenticated role. <em>(If the list is "Required", only Interest Group options will appear.)</em>'),
+    '#description' => t('This will only apply for lists granted to an authenticated role. <em>(If the list is set to "Automatically add", only Interest Group options will appear, and nothing will appear if Interest Groups are not enabled.)</em>'),
     '#default_value' => isset($list->settings['show_register_form']) ? $list->settings['show_register_form'] : FALSE,
   );
   $form['list_settings']['settings']['show_account_form'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show subscription options on user edit screen'),
-    '#description' => t('If set, a tab will be presented for managing newsletter subscriptions when editing an account. <em>(If the list is "Required", the option to unsubscribe will be disabled, but users can configure their Interest Groups.)</em>'),
+    '#description' => t('If set, a tab will be presented for managing newsletter subscriptions when editing an account. <em>(If the list is set to "Automatically add", the option to unsubscribe will be disabled, but users can configure their Interest Groups.)</em>'),
     '#default_value' => isset($list->settings['show_account_form']) ? $list->settings['show_account_form'] : FALSE,
   );
   $form['list_settings']['settings']['cron'] = array(
