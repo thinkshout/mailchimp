@@ -422,12 +422,17 @@ function mailchimp_lists_user_subscribe_form($form, &$form_state, $lists, $accou
   $form['#attributes'] = array('class' => array('mailchimp-lists-user-subscribe-form'));
   $form['account'] = array('#type' => 'value', '#value' => $account);
   $form['mailchimp_lists'] = array('#tree' => TRUE);
+  $multiple_lists = (count($lists) != 1);
 
   foreach ($lists as $list) {
-    mailchimp_lists_auth_newsletter_form($form['mailchimp_lists'], $list, $account);
+    $include_header = FALSE;
+    if ($list->settings['required'] && $multiple_lists) {
+      $include_header = TRUE;
+    }
+    mailchimp_lists_auth_newsletter_form($form['mailchimp_lists'], $list, $account, $include_header);
   }
   $submit_label = 'Subscribe';
-  if (count($lists) == 1 && isset($lists[0]->settings['submit_label'])) {
+  if (!$multiple_lists && isset($lists[0]->settings['submit_label'])) {
     $submit_label = $lists[0]->settings['submit_label'];
   }
   $form['submit'] = array(
