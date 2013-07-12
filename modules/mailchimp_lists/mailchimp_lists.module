@@ -849,9 +849,12 @@ function mailchimp_lists_block_view($delta = '') {
   $block = array();
   global $user;
   $list = mailchimp_lists_load($delta);
-
+  $useful = ($list->settings['allow_anonymous'] && !empty($user->roles[DRUPAL_ANONYMOUS_RID]))
+    || $list->settings['include_interest_groups']
+    || !$list->settings['required'];
   foreach ($user->roles as $rid => $role) {
-    if (isset($list->settings['roles'][$rid]) && $list->settings['roles'][$rid]) {
+    $accessable = isset($list->settings['roles'][$rid]) && $list->settings['roles'][$rid];
+    if ($accessable && $useful) {
       $block['subject'] = $list->settings['required'] ? t('@title Subscription Settings', array('@title' => $list->label)) : t('Subscribe to @title', array('@title' => $list->label));
       $block['content'] = drupal_get_form('mailchimp_lists_user_subscribe_form_' . $list->name, array($list), $user);
       break;
