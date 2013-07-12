@@ -377,10 +377,6 @@ function _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email 
 
 /**
  * Page callback for a user newsletter subscription page.
- *
- * @param  $account
- *
- * @return array
  */
 function mailchimp_lists_user_subscribe_page($account) {
   // Get all available lists:
@@ -799,7 +795,7 @@ function mailchimp_lists_get_available_lists($account = NULL, $include_required 
     watchdog('mailchimp_lists', t("Deprecated call to mailchimp_lists_get_available_lists: list types no longer exist."), NULL, WATCHDOG_WARNING);
     $include_required = !strcmp($include_required, "required");
   }
-  
+
   if (!$include_required) {
     $conditions['required'] = FALSE;
   }
