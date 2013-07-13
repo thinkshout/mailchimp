@@ -61,6 +61,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     $list->settings = array(
       'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID, DRUPAL_ANONYMOUS_RID => DRUPAL_ANONYMOUS_RID),
       'mergefields' => array('EMAIL'),
+      'mergefields_display' => array('EMAIL' => TRUE),
       'cron' => FALSE,
       'doublein' => FALSE,
       'include_interest_groups' => FALSE,

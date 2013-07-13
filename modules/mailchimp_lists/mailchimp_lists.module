@@ -810,7 +810,7 @@ function mailchimp_lists_get_available_lists($account = NULL, $include_required 
   if (!$include_required) {
     $conditions['required'] = FALSE;
   }
-  
+
   $lists = mailchimp_lists_load_multiple(array());
   $user_lists = array();
   foreach ($lists as $lid => $list) {
