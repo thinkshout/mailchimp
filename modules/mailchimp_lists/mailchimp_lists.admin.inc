@@ -298,7 +298,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
   $form['list_settings']['settings']['show_register_form'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show subscription options on the user registration form.'),
-    '#description' => t('This will only apply for lists granted to an authenticated role. <em>(If the list is set to "Automatically add", only Interest Group options will appear, and nothing will appear if Interest Groups are not enabled.)</em>'),
+    '#description' => t('This will only apply for lists granted to an authenticated role. <em>(If the list is set to "Automatically add", only the title and Interest Group options will appear.)</em>'),
     '#default_value' => isset($list->settings['show_register_form']) ? $list->settings['show_register_form'] : FALSE,
   );
   $form['list_settings']['settings']['show_account_form'] = array(
