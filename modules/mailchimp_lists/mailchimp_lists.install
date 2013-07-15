@@ -337,11 +337,15 @@ function mailchimp_lists_update_7204() {
         ->fields(array('settings' => $settings))
         ->condition('id', $list->id)
         ->execute();
-      // todo: more intelligent failure/success reporting
       $success = $result && $success;
     }
-  }
-  return t('MailChimp lists have been given a default Form Label field.');
+    $t = get_t();
+    if ($success) {
+      return $t('MailChimp lists have been given a default Form Label field value.');
+    }
+    else {
+      throw new DrupalUpdateException('There was a problem updating your Mailchimp Lists configuration. Either roll back your database or go to the Mailchimp Lists configuration page and re-configure each list individually.');
+    }
 }
 
 /**
