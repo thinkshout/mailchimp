@@ -329,6 +329,7 @@ function mailchimp_lists_update_7204() {
   }
   $success = TRUE;
   foreach ($lists as $list) {
+    $result = TRUE;
     $settings = unserialize($list->settings);
     if (!array_key_exists('form_label', $settings)) {
       $settings['form_label'] = $list->label;
@@ -337,15 +338,16 @@ function mailchimp_lists_update_7204() {
         ->fields(array('settings' => $settings))
         ->condition('id', $list->id)
         ->execute();
-      $success = $result && $success;
     }
-    $t = get_t();
-    if ($success) {
-      return $t('MailChimp lists have been given a default Form Label field value.');
-    }
-    else {
-      throw new DrupalUpdateException('There was a problem updating your Mailchimp Lists configuration. Either roll back your database or go to the Mailchimp Lists configuration page and re-configure each list individually.');
-    }
+    $success = $result && $success;
+  }
+  $t = get_t();
+  if ($success) {
+    return $t('MailChimp lists have been given a default Form Label field value.');
+  }
+  else {
+    throw new DrupalUpdateException('There was a problem updating your Mailchimp Lists configuration. Either roll back your database or go to the Mailchimp Lists configuration page and re-configure each list individually.');
+  }
 }
 
 /**
@@ -363,6 +365,7 @@ function mailchimp_lists_update_7205() {
   $success = TRUE;
   foreach ($lists as $list) {
     $settings = unserialize($list->settings);
+    $result = TRUE;
     if (isset($list->list_type)) {
       switch ($list->list_type) {
         case (MAILCHIMP_LISTTYPE_FREEFORM):
