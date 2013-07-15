@@ -672,7 +672,7 @@ function mailchimp_lists_execute_change($function, $list, $mail, $mergevars = NU
       'op' => $function,
       'groupings' => isset($mergevars['GROUPINGS']) ? $mergevars['GROUPINGS'] : NULL,
     ));
-    $ret = "queued";
+    $ret = TRUE;
   }
   // If we aren't queueing, we run the operation immediately.
   else {
