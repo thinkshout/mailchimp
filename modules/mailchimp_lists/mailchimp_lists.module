@@ -836,7 +836,7 @@ function mailchimp_lists_get_available_lists($account = NULL, $include_required 
 }
 
 /**
- * Implements hook_block_info.
+ * Implements hook_block_info().
  */
 function mailchimp_lists_block_info() {
   $blocks = array();
@@ -853,6 +853,7 @@ function mailchimp_lists_block_info() {
 
 /**
  * Implements hook_block_view().
+ *
  * Provides a block for each available list for a given user
  */
 function mailchimp_lists_block_view($delta = '') {
