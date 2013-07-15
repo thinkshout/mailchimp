@@ -67,17 +67,15 @@ function mailchimp_lists_overview_page() {
 }
 
 /**
- * @file
- * mailchimp_lists refresh page.
+ * Page for the refresh mailchimp_lists function.
  */
-
 function mailchimp_lists_refresh_page() {
   cache_clear_all('mailchimp_lists', 'cache');
   drupal_set_message(t('Mailchimp Lists refreshed'), 'status');
   // Return render array.
   return array(
     '#markup' => t('Back to !link.',
-      array('!link' => l('my lists', 'admin/config/services/mailchimp/lists'))),
+      array('!link' => l(t('my lists'), 'admin/config/services/mailchimp/lists'))),
   );
 }
 
@@ -122,7 +120,6 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#default_value' => $list ? $list->description : '',
     '#rows' => 2,
     '#maxlength' => 255,
-    // '#text_format'    => NULL, // @todo: should store this value
     '#description' => t('This description will be shown to the user on the list signup and user account settings pages. (255 characters or less)'),
   );
 
@@ -143,7 +140,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#type' => 'fieldset',
     '#title' => t('Form & Subscribe Block Options'),
   );
-  
+ 
   $lists = mailchimp_get_lists();
   $options = array('' => t('-- Select --'));
   foreach ($lists as $mc_list) {
@@ -492,9 +489,6 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
   $list->label = $form_state['values']['label'];
   $list->name = $form_state['values']['name'];
   $list->description = $form_state['values']['description'];
-  // @todo: lots of logic changes with no list type.
-  // @todo: write hook_update_N function for this change.
-  // $list->list_type = $form_state['values']['list_type'];
   $list->settings = array(
     'roles' => array_filter($form_state['values']['roles']),
     'mergefields' => isset($form_state['values']['mergefields']) ? $form_state['values']['mergefields'] : NULL,
@@ -532,10 +526,6 @@ function mailchimp_lists_list_delete_submit($form, &$form_state) {
 
 /**
  * List deletion form.
- *
- * @param string $form
- * @param string $form_state
- * @param object $list
  */
 function mailchimp_lists_delete_list_form($form, &$form_state, $list) {
   $form_state['list'] = $list;
@@ -547,10 +537,7 @@ function mailchimp_lists_delete_list_form($form, &$form_state, $list) {
 }
 
 /**
- * Submit hanler for mailchimp_lists_delete_list_form();
- *
- * @param string $form
- * @param string $form_state
+ * Submit handler for mailchimp_lists_delete_list_form().
  */
 function mailchimp_lists_delete_list_form_submit($form, &$form_state) {
   $list = $form_state['list'];
@@ -561,10 +548,6 @@ function mailchimp_lists_delete_list_form_submit($form, &$form_state) {
 
 /**
  * Confirmation form for queing existing users.
- *
- * @param string $form
- * @param string $form_state
- * @param object $list
  */
 function mailchimp_lists_queue_existing_form($form, &$form_state, $list) {
   $form_state['list'] = $list;
@@ -578,17 +561,14 @@ function mailchimp_lists_queue_existing_form($form, &$form_state, $list) {
 }
 
 /**
- * Submit handler for mailchimp_lists_queue_existing_form();
- *
- * @param string $form
- * @param string $form_state
+ * Submit handler for mailchimp_lists_queue_existing_form().
  */
 function mailchimp_lists_queue_existing_form_submit($form, &$form_state) {
   $list = $form_state['list'];
   $count = mailchimp_lists_queue_existing($list);
   drupal_set_message(t('@count users have been queued for update in %list.', array(
     '@count' => $count,
-    '%list' => $list->label
+    '%list' => $list->label,
   )));
   $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
 }
