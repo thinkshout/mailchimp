@@ -598,11 +598,12 @@ function mailchimp_lists_process_subscribe_form_choices($list_forms, $account = 
   foreach ($list_forms as $form_list) {
     $list = $form_list['list'];
     $selected = FALSE;
+    $is_anonymous = (!$account || !$account->uid);
     $mergevars = NULL;
     $function = '';
     $ret = FALSE;
     $interest_groups = !empty($form_list['interest_groups']) ? $form_list['interest_groups'] : NULL;
-    if ($account) {
+    if (!$is_anonymous) {
       $mail = $account->mail;
       $selected = !empty($form_list['subscribe']);
       $mergevars = mailchimp_lists_load_user_mergevars($account, $list, $interest_groups);
@@ -625,7 +626,7 @@ function mailchimp_lists_process_subscribe_form_choices($list_forms, $account = 
       $function = 'remove';
     }
     // Otherwise we are doing an update or an add, based on $is_subscribed:
-    elseif ($selected || $list->settings['required']) {
+    elseif ($selected || $list->settings['required'] || $is_anonymous) {
       if ($is_subscribed) {
         $function = 'update';
       }
