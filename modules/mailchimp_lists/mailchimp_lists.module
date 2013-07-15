@@ -860,9 +860,14 @@ function mailchimp_lists_block_view($delta = '') {
   $block = array();
   global $user;
   $list = mailchimp_lists_load($delta);
-  $useful = ($list->settings['allow_anonymous'] && !empty($user->roles[DRUPAL_ANONYMOUS_RID]))
-    || $list->settings['include_interest_groups']
-    || !$list->settings['required'];
+  $useful = FALSE;
+  // @todo: figure out why were getting a block with the delta "freeform" here
+  // and once we know, eliminate this 'if' clause.
+  if (!empty($list)) {
+    $useful = ($list->settings['allow_anonymous'] && !empty($user->roles[DRUPAL_ANONYMOUS_RID]))
+      || $list->settings['include_interest_groups']
+      || !$list->settings['required'];
+  }
   foreach ($user->roles as $rid => $role) {
     $accessable = isset($list->settings['roles'][$rid]) && $list->settings['roles'][$rid];
     if ($accessable && $useful) {
