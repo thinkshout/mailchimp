@@ -647,16 +647,17 @@ function mailchimp_lists_process_subscribe_form_choices($list_forms, $account = 
 /**
  * Calls the appropriate API function, or adds to the queue, as appropriate.
  * 
- * @string $function - 'add', 'remove', or 'update' only. Matches Queue operations.
+ * @string $function - 'add', 'remove', or 'update'. Matches Queue operations.
  * @mailchimp_lists $list - the list to update 
  * @string $mail - email address to update on the list
  * @array $mergevars - merge variables array formatted for mailchimp API
  * @account null $account - account that $mail came from, if non-anonymous call
  * @mcapi_entity null &$mcapi - api object if loaded, to avoid extra API calls
  * @queue null &$queue - the cron queue. If passed, this will force use of cron.
- * @return bool/string
+ * 
+ * @return <boolean>
+ *   Indicates whether the operation was successful.
  */
-
 function mailchimp_lists_execute_change($function, $list, $mail, $mergevars = NULL, $account = NULL, $mcapi = NULL, &$queue = NULL) {
   // If cron is enabled for this list, and we have an account, queue the function.
   if ($list->settings['cron'] || isset($queue)) {
@@ -716,8 +717,6 @@ function mailchimp_lists_get_merge_tokens() {
 
 /**
  * Implement hook_mailchimp_lists_merge_tokens().
- *
- * @return array
  */
 function mailchimp_lists_mailchimp_lists_merge_tokens() {
   $tokens = array();
@@ -742,12 +741,14 @@ function mailchimp_lists_mailchimp_lists_merge_tokens() {
 }
 
 /**
- * Get the relevant merge vars for the given user for the given list
+ * Get the relevant merge vars for the given user for the given list.
  * 
  * @account $account
  * @mailchimp_list $list
  * @array null $interest_groups
- * @return mergevars array formatted for the MCAPI
+ *
+ * @return <array>
+ *   mergevars array formatted for the MCAPI
  */
 function mailchimp_lists_load_user_mergevars($account, $list, $interest_groups = NULL) {
   $values = array();
@@ -777,11 +778,6 @@ function mailchimp_lists_load_user_mergevars($account, $list, $interest_groups =
 
 /**
  * Implements hook_mailchimp_lists_merge_values().
- *
- * @param array $mergevars
- * @param object $account
- *
- * @return array
  */
 function mailchimp_lists_mailchimp_lists_merge_values($mergevars, $account, $list) {
   return token_generate('user', $mergevars, array('user' => $account));
@@ -790,11 +786,9 @@ function mailchimp_lists_mailchimp_lists_merge_values($mergevars, $account, $lis
 /**
  * Return all available lists for a given user.
  *
- * @param string $account
- * @param boolean $include_required whether to include required lists.
- * @param array $conditions list settings to filter the results by.
  *
- * @return array lists
+ * @return <array>
+ *   An array of appropriate mailchimp_list objects.
  */
 function mailchimp_lists_get_available_lists($account = NULL, $include_required = TRUE, $conditions = array()) {
   if (empty($account)) {
@@ -804,7 +798,7 @@ function mailchimp_lists_get_available_lists($account = NULL, $include_required 
 
   // Warn if trying to use an old implementation of this function:
   if (is_string($include_required)) {
-    watchdog('mailchimp_lists', t("Deprecated call to mailchimp_lists_get_available_lists: list types no longer exist."), NULL, WATCHDOG_WARNING);
+    watchdog('mailchimp_lists', "Deprecated call to mailchimp_lists_get_available_lists: list types no longer exist.", NULL, WATCHDOG_WARNING);
     $include_required = !strcmp($include_required, "required");
   }
 
@@ -882,11 +876,13 @@ function mailchimp_lists_block_view($delta = '') {
 }
 
 /**
- * Convert mailchimp form elements to Drupal Form API
+ * Convert mailchimp form elements to Drupal Form API.
  *
- * @param <type> $mergevar
+ * @param <mailchimp_form_element> $mergevar
+ *   The mailchimp-formatted form element to convert.
  *
- * @return <type>
+ * @return <drupal_form_element>
+ *   A properly formatted drupal form element.
  */
 function mailchimp_lists_insert_drupal_form_tag($mergevar) {
   // Insert common FormAPI properties
