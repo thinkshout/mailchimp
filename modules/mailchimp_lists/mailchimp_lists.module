@@ -246,7 +246,7 @@ function mailchimp_lists_form_user_register_form_alter(&$form, &$form_state, $fo
       '#tree' => TRUE,
     );
     foreach ($lists as $list) {
-      mailchimp_lists_auth_newsletter_form($form['mailchimp_lists'], $list, $account);
+      mailchimp_lists_auth_newsletter_form($form['mailchimp_lists'], $list, $account, $list->settings['required']);
     }
   }
 }
