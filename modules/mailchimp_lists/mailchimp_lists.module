@@ -794,9 +794,6 @@ function mailchimp_lists_mailchimp_lists_merge_values($mergevars, $account, $lis
  *     'show_register_form' => boolean
  *     'default_register_form_optin' => boolean
  *     'include_interest_groups' => boolean
- *     'roles' => array(RID1, RID2) (passing an account is preferred)
- *     'mergefields' => array()
- *     'mergefields_display' => array()
  *     'form_label' => string
  *     'submit_label' => string
  *     'interest_groups_label' => string
