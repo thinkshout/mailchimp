@@ -15,18 +15,17 @@ mailchimp.module. See their respective README's for more details.
   * Editing of user list subscriptions on the user's edit page
   * Allow users to subscribe during registration
   * Map token and profile values to your MailChimp merge fields
-  * Required, optional, and free form list types.
   * Standalone subscribe and unsubscribe forms
   * Subscriptions can be maintained via cron or in real time
-  * Individual blocks for each newsletter
+  * Individual subscription blocks for each newsletter
   * Create campaigns containing any Drupal entity as content, send them, and
-    view statisitcs.
+    view statistics.
   * Campaign activity for any entity with an email address.
 
 ## Installation Notes
   * You need to have a MailChimp API Key.
   * You need to have at least one list created in MailChimp to use the
-    mailchimp_list module.
+    mailchimp_lists module.
   * For versions 7.x-2.8 and greater, the MCAPI library must be downloaded into
     your libraries folder. It's available at http://apidocs.mailchimp.com/api/downloads/mailchimp-api-class.zip
     or by using the included example drush make file. Proper libraries structure:
