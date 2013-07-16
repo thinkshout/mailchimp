@@ -93,7 +93,7 @@ function mailchimp_lists_menu() {
  * Access callback for mailchimp_lists_user_subscribe_page().
  */
 function mailchimp_lists_user_subscribe_page_access($user) {
-  $lists = mailchimp_lists_get_available_lists($user, TRUE, array('show_account_form' => 1));
+  $lists = mailchimp_lists_get_available_lists($user, array('show_account_form' => 1));
   return (count($lists) > 0) & user_edit_access($user);
 }
 
@@ -273,7 +273,7 @@ function mailchimp_lists_user_insert(&$edit, $account, $category) {
 function mailchimp_lists_user_delete($account) {
   // Unsubscribe a user from all required & optional lists:
   // Load any lists that they have access to by role:
-  $lists = mailchimp_lists_get_available_lists($account, TRUE);
+  $lists = mailchimp_lists_get_available_lists($account);
   if (!empty($lists)) {
     foreach ($lists as $list) {
       // @todo: after we have local preference tracking, remove only lists
@@ -327,7 +327,7 @@ function mailchimp_lists_user_sync($account, $old_email = '', $new_email = '', $
   }
 
   // Add/update subscriptions if necessary:
-  $lists = mailchimp_lists_get_available_lists($account, TRUE);
+  $lists = mailchimp_lists_get_available_lists($account);
   if (!empty($lists) && $account->status) {
     // @todo: what about inactive accounts that are still registering?
     $mcapi = mailchimp_get_api_object();
@@ -383,9 +383,9 @@ function _mailchimp_lists_build_update_mergevars($account, $list, $lookup_email 
  */
 function mailchimp_lists_user_subscribe_page($account) {
   // Get all available non-required lists:
-  $non_required_lists = mailchimp_lists_get_available_lists($account, FALSE, array('show_account_form' => 1));
-  $require_lists_with_interest_groups = mailchimp_lists_get_available_lists($account, TRUE, array('required' => 1, 'include_interest_groups' => 1));
-  $lists = array_merge($non_required_lists, $require_lists_with_interest_groups);
+  $non_required_lists = mailchimp_lists_get_available_lists($account, array('show_account_form' => 1, 'required' => FALSE));
+  $required_lists_with_interest_groups = mailchimp_lists_get_available_lists($account, array('required' => 1, 'include_interest_groups' => 1));
+  $lists = array_merge($non_required_lists, $required_lists_with_interest_groups);
   if (count($lists) == 0) {
     return (t('There are no available newsletter subscriptions.'));
   }
@@ -400,7 +400,7 @@ function mailchimp_lists_user_subscribe_page($account) {
 function mailchimp_lists_freeform_subscribe_page() {
   // Get all available freeform lists:
   global $user;
-  $lists = mailchimp_lists_get_available_lists($user, TRUE, array('allow_anonymous' => TRUE));
+  $lists = mailchimp_lists_get_available_lists($user, array('allow_anonymous' => TRUE));
 
   if (count($lists) == 0) {
     return (t('There are no available newsletter subscriptions.'));
@@ -782,29 +782,32 @@ function mailchimp_lists_mailchimp_lists_merge_values($mergevars, $account, $lis
  * @param <drupal_user> $account
  *   Optional account to get available lists for. Otherwise returns a general
  *   list.
- * @param <boolean> $include_required
- *   Whether to include required lists or not. In implementations prior to
- *   7.x-2.11, this was a string specifying specific list types.
  * @param <array> $conditions
  *   List settings to filter the results by (uses logical "AND").
+ *   Options include the following (see mailchimp_lists_list_form_submit()):
+ *     'allow_anonymous' => boolean
+ *     'required' => boolean
+ *     'doublein' => boolean
+ *     'cron' => boolean
+ *     'webhooks' => boolean
+ *     'show_account_form' => boolean
+ *     'show_register_form' => boolean
+ *     'default_register_form_optin' => boolean
+ *     'include_interest_groups' => boolean
+ *     'roles' => array(RID1, RID2) (passing an account is preferred)
+ *     'mergefields' => array()
+ *     'mergefields_display' => array()
+ *     'form_label' => string
+ *     'submit_label' => string
+ *     'interest_groups_label' => string
  *
  * @return <array>
  *   An array of appropriate mailchimp_list objects.
  */
-function mailchimp_lists_get_available_lists($account = NULL, $include_required = TRUE, $conditions = array()) {
+function mailchimp_lists_get_available_lists($account = NULL, $conditions = array()) {
   if (empty($account)) {
     global $user;
     $account = $user;
-  }
-
-  // Warn if trying to use an old implementation of this function:
-  if (is_string($include_required)) {
-    watchdog('mailchimp_lists', "Deprecated call to mailchimp_lists_get_available_lists: list types no longer exist.", NULL, WATCHDOG_WARNING);
-    $include_required = !strcmp($include_required, "required");
-  }
-
-  if (!$include_required) {
-    $conditions['required'] = FALSE;
   }
 
   $lists = mailchimp_lists_load_multiple(array());
