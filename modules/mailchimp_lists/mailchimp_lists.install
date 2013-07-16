@@ -305,7 +305,13 @@ function mailchimp_lists_update_7203() {
       }
 
       // Now add the new one.
-      $ret = $mcapi->listWebhookAdd($list->mc_list_id, mailchimp_webhook_url(), array('unsubscribe', 'profile', 'cleaned', 'upemail'));
+      $ret = $mcapi->listWebhookAdd($list->mc_list_id, mailchimp_webhook_url(),
+        array('unsubscribe',
+          'profile',
+          'cleaned',
+          'upemail',
+        )
+      );
       if (!$ret) {
         return t('Failed to create new web hook for @list', array('@list' => $list->label));
       }
