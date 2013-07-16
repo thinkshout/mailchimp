@@ -5,9 +5,9 @@
  * Mailchimp lists module.
  */
 
-define('MAILCHIMP_LISTTYPE_REQUIRED', 'required');
-define('MAILCHIMP_LISTTYPE_OPTIONAL', 'optional');
-define('MAILCHIMP_LISTTYPE_FREEFORM', 'freeform');
+define('MAILCHIMP_TESTLIST_REQUIRED', 'required');
+define('MAILCHIMP_TESTLIST_OPTIONAL', 'optional');
+define('MAILCHIMP_TESTLIST_ANONYMOUS', 'anonymous');
 define('MAILCHIMP_QUEUE_CRON', 'mailchimp_cron');
 
 module_load_include('inc', 'mailchimp_lists', 'mailchimp_lists.entity');
