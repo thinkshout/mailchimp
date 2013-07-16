@@ -219,7 +219,7 @@ function mailchimp_lists_update_7201() {
 function mailchimp_lists_update_7202() {
   $num_updated = 0;
   $num_deleted = 0;
-  
+
   $query = db_select('block', 'b')
     ->fields('b', array('bid', 'delta', 'module', 'theme'))
     ->condition('module', 'mailchimp_lists', '=')
@@ -402,8 +402,10 @@ function mailchimp_lists_update_7205() {
     }
     $success = $result && $success;
   }
-  $t = get_t();
+  unset($lists);
   if ($success) {
+    db_drop_field('mailchimp_lists', 'list_type');
+    $t = get_t();
     return $t('MailChimp lists have been updated with new settings.');
   }
   else {
