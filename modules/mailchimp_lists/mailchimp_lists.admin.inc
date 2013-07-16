@@ -93,7 +93,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
   $form['label'] = array(
     '#type' => 'textfield',
     '#title' => t('Label'),
-    '#description' => t('The label for this list that will appear on forms.'),
+    '#description' => t('The label for this list that appears in the admin UI.'),
     '#size' => 35,
     '#maxlength' => 32,
     '#default_value' => $list ? $list->label : '',
@@ -348,7 +348,7 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#states' => array(
       // Hide for required lists.
       'disabled' => array(
-        ':input[name="required"]' => array('checked' => TRUE),
+        ':input[name="show_register_form"]' => array('checked' => FALSE),
       ),
       'checked' => array(
         ':input[name="required"]' => array('checked' => TRUE),
