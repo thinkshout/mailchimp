@@ -405,6 +405,7 @@ function mailchimp_lists_update_7205() {
   unset($lists);
   if ($success) {
     db_drop_field('mailchimp_lists', 'list_type');
+    drupal_get_schema('mailchimp_lists', TRUE);
     $t = get_t();
     return $t('MailChimp lists have been updated with new settings.');
   }
