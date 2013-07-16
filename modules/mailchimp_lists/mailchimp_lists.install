@@ -6,6 +6,11 @@
  *
  */
 
+// These are deprecated globals, but we need them here for update functions.
+define('MAILCHIMP_LISTTYPE_REQUIRED', 'required');
+define('MAILCHIMP_LISTTYPE_OPTIONAL', 'optional');
+define('MAILCHIMP_LISTTYPE_FREEFORM', 'freeform');
+
 /**
  * Implements hook_schema().
  */
