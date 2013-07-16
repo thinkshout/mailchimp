@@ -210,6 +210,10 @@ function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NUL
 function mailchimp_get_api_object() {
   libraries_load('mailchimp');
   $api_key = variable_get('mailchimp_api_key', '');
+
+  // We allow the class name to be overridden, following the example of core's
+  // mailsystem, in order to use alternate MailChimp classes. The bundled tests
+  // use this approach to extend the MailChimp class with a test server.
   $classname = variable_get('mailchimp_api_classname', 'MailChimp');
   $q = new $classname($api_key);
 
