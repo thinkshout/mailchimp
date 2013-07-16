@@ -236,8 +236,7 @@ function mailchimp_lists_form_user_register_form_alter(&$form, &$form_state, $fo
   // right newsletters are available:
   $account->roles[DRUPAL_AUTHENTICATED_RID] = 'authenticated user';
 
-  $lists = mailchimp_lists_get_available_lists($account,
-    TRUE, array('show_register_form' => 1));
+  $lists = mailchimp_lists_get_available_lists($account, array('show_register_form' => 1));
 
   if (!empty($lists)) {
     // Wrap in a fieldset.
