@@ -521,23 +521,6 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account, $add_head
         if ($group['form_field'] == 'hidden') {
           continue;
         }
-
-        // Grab the default values for this group:
-        // @todo: find a better way.
-        $default_merge_values = array();
-        if ($account->uid) {
-          $memberinfo = mailchimp_get_memberinfo($list->mc_list_id, $account->mail);
-          if (isset($memberinfo['merges']['GROUPINGS'])) {
-            foreach ($memberinfo['merges']['GROUPINGS'] as $membergroup) {
-              if ($membergroup['id'] == $group['id']) {
-                $default_merge_values = preg_split('#(?<!\\\)\,#', str_replace(', ', ',', $membergroup['groups']));
-                $default_merge_values = str_replace('\\,', ', ', $default_merge_values);
-                break;
-              }
-            }
-          }
-        }
-
         // Set the form field type:
         switch ($group['form_field']) {
           case 'radio':
@@ -557,11 +540,32 @@ function mailchimp_lists_auth_newsletter_form(&$form, $list, $account, $add_head
         foreach ((array) $group['groups'] as $option) {
           $options[$option['name']] = $option['name'];
         }
+
+        // Grab the default values for this group:
+        // @todo: find a better way.
+        $default_merge_values = array();
+        $default_opt_in = FALSE;
+        if ($account->uid) {
+          $memberinfo = mailchimp_get_memberinfo($list->mc_list_id, $account->mail);
+          if (isset($memberinfo['merges']['GROUPINGS'])) {
+            foreach ($memberinfo['merges']['GROUPINGS'] as $membergroup) {
+              if ($membergroup['id'] == $group['id']) {
+                $default_merge_values = preg_split('#(?<!\\\)\,#', str_replace(', ', ',', $membergroup['groups']));
+                $default_merge_values = str_replace('\\,', ', ', $default_merge_values);
+                break;
+              }
+            }
+          }
+        }
+        elseif (isset($list->settings['opt_in_interest_groups']) && $list->settings['opt_in_interest_groups']) {
+          $default_opt_in = TRUE;
+          $default_merge_values = $options;
+        }
         $form[$wrapper_key]['interest_groups'][$group['id']] = array(
           '#type' => $field_type,
           '#title' => $group['name'],
           '#options' => $options,
-          '#default_value' => $is_subscribed ? $default_merge_values : array(),
+          '#default_value' => ($is_subscribed || $default_opt_in) ? $default_merge_values : array(),
           '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $list->id)),
         );
       }

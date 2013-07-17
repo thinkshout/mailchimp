@@ -359,8 +359,18 @@ function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
     '#type' => 'checkbox',
     '#title' => t('Include interest groups on subscription form.'),
     '#default_value' => isset($list->settings['include_interest_groups']) ? $list->settings['include_interest_groups'] : FALSE,
-    '#description' => t('If set, users will be able to select applicable
-      interest groups when registering or editing their accounts.'),
+    '#description' => t('If set, users will be able to select applicable interest groups when registering or editing their accounts.'),
+  );
+  $form['form_option_settings']['opt_in_interest_groups'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Default all groups to opt-in.'),
+    '#default_value' => isset($list->settings['opt_in_interest_groups']) ? $list->settings['opt_in_interest_groups'] : FALSE,
+    '#description' => t('If set, the registration form will check all interest groups by default.'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="include_interest_groups"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['form_option_settings']['interest_groups_label'] = array(
     '#type' => 'textfield',
@@ -500,6 +510,7 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
     'form_label' => $form_state['values']['form_label'],
     'submit_label' => $form_state['values']['submit_label'],
     'include_interest_groups' => $form_state['values']['include_interest_groups'],
+    'opt_in_interest_groups' => $form_state['values']['opt_in_interest_groups'],
     'interest_groups_label' => $form_state['values']['interest_groups_label'],
     'cron' => $form_state['values']['cron'],
     'webhooks' => $webhook_ret & $form_state['values']['webhooks'],
