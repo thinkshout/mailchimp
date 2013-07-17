@@ -276,10 +276,10 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
    *   Returns TRUE on completion.
    */
   public function testMailchimpListCRUD() {
-    $tests_lists = $this->testLists();
-    $saved_lists = mailchimp_lists_load_multiple_by_name(array_keys($tests_lists));
+    $test_lists = $this->testLists();
+    $saved_lists = entity_load_multiple_by_name('mailchimp_list', array_keys($test_lists));
     foreach ($saved_lists as $saved_list) {
-      $test_list = $tests_lists[$saved_list->name];
+      $test_list = $test_lists[$saved_list->name];
       $this->assertEqual($saved_list->mc_list_id, $test_list->mc_list_id, 'MC List ids was saved correctly.');
       $this->assertEqual($saved_list->label, $test_list->label, 'Label was saved correctly.');
       $this->assertEqual($saved_list->description, $test_list->description, 'MC List ids were saved correctly.');
