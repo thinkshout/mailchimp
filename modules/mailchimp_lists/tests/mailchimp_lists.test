@@ -50,57 +50,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     // Create some users with different roles/permissions:
     $this->authorized_user = $this->drupalCreateUser(array());
     // Create some lists:
-    $lists = array();
-
-    $list = new stdClass();
-    $list->label = 'Anonymous Test List';
-    $list->name = 'anonymous_test_list';
-    $list->description = 'Anonymous list description';
-    $list->mc_list_id = MAILCHIMP_TESTLIST_ANONYMOUS;
-    $list->settings = array(
-      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID, DRUPAL_ANONYMOUS_RID => DRUPAL_ANONYMOUS_RID),
-      'mergefields' => array('EMAIL'),
-      'mergefields_display' => array('EMAIL' => TRUE),
-      'cron' => FALSE,
-      'doublein' => FALSE,
-      'include_interest_groups' => FALSE,
-      'required' => FALSE,
-      'allow_anonymous' => TRUE,
-    );
-    $lists[] = $list;
-
-    $list = new stdClass();
-    $list->label = 'Optional Test List';
-    $list->name = 'optional_test_list';
-    $list->description = 'Optional list description';
-    $list->mc_list_id = MAILCHIMP_TESTLIST_OPTIONAL;
-    $list->settings = array(
-      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID),
-      'mergefields' => array(''),
-      'cron' => FALSE,
-      'show_account_form' => TRUE,
-      'doublein' => FALSE,
-      'include_interest_groups' => FALSE,
-      'required' => FALSE,
-      'allow_anonymous' => FALSE,
-    );
-    $lists[] = $list;
-
-    $list = new stdClass();
-    $list->label = 'Required Test List';
-    $list->name = 'required_test_list';
-    $list->description = 'Required list description';
-    $list->mc_list_id = MAILCHIMP_TESTLIST_REQUIRED;
-    $list->settings = array(
-      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID),
-      'mergefields' => array(),
-      'cron' => FALSE,
-      'doublein' => FALSE,
-      'include_interest_groups' => FALSE,
-      'required' => TRUE,
-      'allow_anonymous' => FALSE,
-    );
-    $lists[] = $list;
+    $lists = $this->testLists();
 
     foreach ($lists as $list) {
       mailchimp_lists_save($list);
@@ -316,6 +266,32 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
   }
 
   /**
+   * Tests subscription workflows.
+   *
+   * The core test function runs through a series of subscription requests and
+   * with different settings enabled and verifies that users are subscribed,
+   * or not, correctly.
+   *
+   * @return bool
+   *   Returns TRUE on completion.
+   */
+  public function testMailchimpListCRUD() {
+    $test_lists = $this->testLists();
+    $saved_lists = entity_load_multiple_by_name('mailchimp_list', array_keys($test_lists));
+    foreach ($saved_lists as $saved_list) {
+      $test_list = $test_lists[$saved_list->name];
+      $this->assertEqual($saved_list->mc_list_id, $test_list->mc_list_id, 'MC List ids was saved correctly.');
+      $this->assertEqual($saved_list->label, $test_list->label, 'Label was saved correctly.');
+      $this->assertEqual($saved_list->description, $test_list->description, 'MC List ids were saved correctly.');
+      foreach ($saved_list->settings as $key => $value) {
+        $this->assertEqual($value, $test_list->settings[$key], 'Setting ' . $key . ' matches.');
+      }
+
+      $this->assertEqual($saved_list->mc_list_id, $test_list->mc_list_id, 'MC List ids were saved correctly.');
+    }
+  }
+
+  /**
    * Subscribes a given number of users to each test list.
    *
    * @int $anon
@@ -427,4 +403,66 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
   protected function randomEmail() {
     return $this->randomName() . "@" . $this->randomName() . ".net";
   }
+
+  /**
+   * Return an array of lists keyed by machine name to use in testing.
+   *
+   * @return array
+   */
+  protected function testLists() {
+    $lists = array();
+
+    $list = new stdClass();
+    $list->label = 'Anonymous Test List';
+    $list->name = 'anonymous_test_list';
+    $list->description = 'Anonymous list description';
+    $list->mc_list_id = MAILCHIMP_TESTLIST_ANONYMOUS;
+    $list->settings = array(
+      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID, DRUPAL_ANONYMOUS_RID => DRUPAL_ANONYMOUS_RID),
+      'mergefields' => array('EMAIL'),
+      'mergefields_display' => array('EMAIL' => TRUE),
+      'cron' => FALSE,
+      'doublein' => FALSE,
+      'include_interest_groups' => FALSE,
+      'required' => FALSE,
+      'allow_anonymous' => TRUE,
+    );
+    $lists[$list->name] = $list;
+
+    $list = new stdClass();
+    $list->label = 'Optional Test List';
+    $list->name = 'optional_test_list';
+    $list->description = 'Optional list description';
+    $list->mc_list_id = MAILCHIMP_TESTLIST_OPTIONAL;
+    $list->settings = array(
+      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID),
+      'mergefields' => array(''),
+      'cron' => FALSE,
+      'show_account_form' => TRUE,
+      'doublein' => FALSE,
+      'include_interest_groups' => FALSE,
+      'required' => FALSE,
+      'allow_anonymous' => FALSE,
+    );
+    $lists[$list->name] = $list;
+
+    $list = new stdClass();
+    $list->label = 'Required Test List';
+    $list->name = 'required_test_list';
+    $list->description = 'Required list description';
+    $list->mc_list_id = MAILCHIMP_TESTLIST_REQUIRED;
+    $list->settings = array(
+      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID),
+      'mergefields' => array(),
+      'cron' => FALSE,
+      'doublein' => FALSE,
+      'include_interest_groups' => FALSE,
+      'required' => TRUE,
+      'allow_anonymous' => FALSE,
+    );
+    $lists[$list->name] = $list;
+
+    return $lists;
+  }
+
 }
