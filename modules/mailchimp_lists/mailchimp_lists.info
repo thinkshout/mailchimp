@@ -8,6 +8,5 @@ dependencies[] = entity_token
 
 configure = admin/config/services/mailchimp/lists
 
-files[] = mailchimp_lists.entity.inc
-files[] = mailchimp_lists.admin.inc
+files[] = lib/mailchimp_lists.entity.inc
 files[] = tests/mailchimp_lists.test
