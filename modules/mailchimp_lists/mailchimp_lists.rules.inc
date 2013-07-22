@@ -1,6 +1,7 @@
 <?php
 /**
- * @file Rules integration for the mailchimp module.
+ * @file
+ * Rules integration for the mailchimp module.
  */
 
 /**
