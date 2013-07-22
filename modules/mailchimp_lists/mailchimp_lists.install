@@ -362,7 +362,7 @@ function mailchimp_lists_update_7204() {
 }
 
 /**
- * Update list->settings with new values and remove list_type data.
+ * Update list->settings with new values, remove list_type data and rebuild the registry.
  */
 function mailchimp_lists_update_7205() {
   $lists = db_select('mailchimp_lists', 'm')
@@ -423,4 +423,7 @@ function mailchimp_lists_update_7205() {
   else {
     throw new DrupalUpdateException('There was a problem updating your Mailchimp Lists configuration. Either roll back your database or go to the Mailchimp Lists configuration page and re-configure each list individually.');
   }
+
+  // Rebuild the registry to reflect the updated module structure.
+  registry_rebuild();
 }
