@@ -926,6 +926,18 @@ function mailchimp_lists_insert_drupal_form_tag($mergevar) {
       $input['#options'] = $choices;
       break;
 
+    case 'email':
+      if (element_info_property('emailfield', '#type')) {
+        // Set to an HTML5 email type if 'emailfield' is supported:
+        $input['#type'] = 'emailfield';
+      }
+      else {
+        // Set to standard text type if 'emailfield' isn't defined:
+        $input['#type'] = 'textfield';
+      };
+      $input['#size'] = $mergevar['size'];
+      break;
+
     default:
       // This is a standard input[type=text] or something we can't handle with
       // Drupal FormAPI.
