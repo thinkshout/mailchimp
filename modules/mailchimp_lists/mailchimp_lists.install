@@ -362,9 +362,12 @@ function mailchimp_lists_update_7204() {
 }
 
 /**
- * Update list->settings with new values and remove list_type data.
+ * Update list->settings with new values, remove list_type data and rebuild the registry.
  */
 function mailchimp_lists_update_7205() {
+  // Rebuild the registry to reflect the updated module structure.
+  registry_rebuild();
+
   $lists = db_select('mailchimp_lists', 'm')
     ->fields('m', array('id', 'list_type', 'settings'))
     ->execute()

@@ -10,8 +10,6 @@ define('MAILCHIMP_TESTLIST_OPTIONAL', 'optional');
 define('MAILCHIMP_TESTLIST_ANONYMOUS', 'anonymous');
 define('MAILCHIMP_QUEUE_CRON', 'mailchimp_cron');
 
-module_load_include('inc', 'mailchimp_lists', 'mailchimp_lists.entity');
-
 /**
  * Implements hook_menu().
  */
@@ -24,7 +22,7 @@ function mailchimp_lists_menu() {
     'page callback' => 'mailchimp_lists_overview_page',
     'access arguments' => array('administer mailchimp'),
     'type' => MENU_LOCAL_TASK,
-    'file' => 'mailchimp_lists.admin.inc',
+    'file' => 'includes/mailchimp_lists.admin.inc',
     'weight' => -10,
   );
   $items['admin/config/services/mailchimp/lists/add'] = array(
@@ -33,7 +31,7 @@ function mailchimp_lists_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_lists_list_form'),
     'access arguments' => array('administer mailchimp'),
-    'file' => 'mailchimp_lists.admin.inc',
+    'file' => 'includes/mailchimp_lists.admin.inc',
     'type' => MENU_LOCAL_ACTION,
   );
   $items['admin/config/services/mailchimp/lists/refresh'] = array(
@@ -42,7 +40,7 @@ function mailchimp_lists_menu() {
     'page callback' => 'mailchimp_lists_refresh_page',
     'access arguments' => array('administer mailchimp'),
     'type' => MENU_LOCAL_ACTION,
-    'file' => 'mailchimp_lists.admin.inc',
+    'file' => 'includes/mailchimp_lists.admin.inc',
   );
   $items['admin/config/services/mailchimp/lists/%mailchimp_lists/edit'] = array(
     'title' => 'Edit a list',
@@ -51,7 +49,7 @@ function mailchimp_lists_menu() {
     'page arguments' => array('mailchimp_lists_list_form', 5),
     'load arguments' => array(5),
     'access arguments' => array('administer mailchimp'),
-    'file' => 'mailchimp_lists.admin.inc',
+    'file' => 'includes/mailchimp_lists.admin.inc',
     'type' => MENU_CALLBACK,
   );
   $items['admin/config/services/mailchimp/lists/%mailchimp_lists/delete'] = array(
@@ -59,7 +57,7 @@ function mailchimp_lists_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_lists_delete_list_form', 5),
     'access arguments' => array('administer mailchimp'),
-    'file' => 'mailchimp_lists.admin.inc',
+    'file' => 'includes/mailchimp_lists.admin.inc',
   );
   $items['user/%user/mailchimp'] = array(
     'page callback' => 'mailchimp_lists_user_subscribe_page',
@@ -83,7 +81,7 @@ function mailchimp_lists_menu() {
     'page arguments' => array('mailchimp_lists_queue_existing_form', 2),
     'access callback' => 'mailchimp_lists_queue_existing_access',
     'access arguments' => array(2),
-    'file' => 'mailchimp_lists.admin.inc',
+    'file' => 'includes/mailchimp_lists.admin.inc',
   );
 
   return $items;
@@ -1025,3 +1023,113 @@ function _mailchimp_lists_reformat_groupings($interest_groups) {
   }
   return $groupings;
 }
+
+/**
+ * Implements hook_entity_info().
+ */
+function mailchimp_lists_entity_info() {
+  $return = array(
+    'mailchimp_list' => array(
+      'label' => t('MailChimp List'),
+      'plural label' => t('MailChimp Lists'),
+      'entity class' => 'MailchimpList',
+      'controller class' => 'EntityAPIControllerExportable',
+      'base table' => 'mailchimp_lists',
+      'uri callback' => 'mailchimp_list_uri',
+      'fieldable' => FALSE,
+      'exportable' => TRUE,
+      'label callback' => 'entity_class_label',
+      'module' => 'mailchimp_lists',
+      'entity keys' => array(
+        'id' => 'id',
+        'name' => 'name',
+      ),
+      'bundles' => array(
+        'mailchimp_list' => array(
+          'label' => t('MailChimp List'),
+        ),
+      ),
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Complete List'),
+          'custom settings' => FALSE,
+        ),
+      ),
+    ),
+  );
+
+  return $return;
+}
+
+/**
+ * Loads a list by ID.
+ */
+function mailchimp_lists_load($list_id) {
+  $lists = mailchimp_lists_load_multiple(array($list_id), array());
+  return $lists ? reset($lists) : FALSE;
+}
+
+/**
+ * Loads multiple registrations by ID or based on a set of matching conditions.
+ *
+ * @see entity_load()
+ *
+ * @array $list_ids
+ *   Array of list IDS to load.
+ * @array $conditions
+ *   An array of conditions on the {mailchimp_list} table in the form
+ *     'field' => $value.
+ * @bool $reset
+ *   Whether to reset the internal contact loading cache.
+ *
+ * @return array
+ *   An array of contact objects indexed by registration_id.
+ */
+function mailchimp_lists_load_multiple($list_ids = array(), $conditions = array(), $reset = FALSE) {
+  if (empty($list_ids)) {
+    $list_ids = FALSE;
+  }
+
+  return entity_load('mailchimp_list', $list_ids, $conditions, $reset);
+}
+
+/**
+ * Gets an array of all lists, keyed by the list name.
+ *
+ * @string $name
+ *   If set, the list with the given name is returned.
+ *
+ * @return MailchimpList[]
+ *   Depending whether $name isset, an array of lists or a single one.
+ */
+function mailchimp_lists_load_multiple_by_name($name = NULL) {
+  $lists = entity_load_multiple_by_name('mailchimp_list', isset($name) ? array($name) : FALSE);
+  return isset($name) ? reset($lists) : $lists;
+}
+
+/**
+ * Deletes multiple lists by ID.
+ *
+ * @array $list_ids
+ *   An array of contact IDs to delete.
+ *
+ * @return bool
+ *   TRUE on success, FALSE otherwise.
+ */
+function mailchimp_lists_delete_multiple($list_ids) {
+  return entity_get_controller('mailchimp_list')->delete($list_ids);
+}
+
+/**
+ * Saves a list.
+ *
+ * @MailchimpList $list
+ *   The full list object to save.
+ *
+ * @return MailchimpList
+ *   The saved list object.
+ */
+function mailchimp_lists_save(MailchimpList $list) {
+  return $list->save();
+}
+
