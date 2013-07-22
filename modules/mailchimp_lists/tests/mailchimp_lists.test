@@ -266,11 +266,9 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Tests subscription workflows.
+   * Tests Create, Read, Update, and Delete entity operations.
    *
-   * The core test function runs through a series of subscription requests and
-   * with different settings enabled and verifies that users are subscribed,
-   * or not, correctly.
+   * Current version tests everything but Delete operations.
    *
    * @return bool
    *   Returns TRUE on completion.
