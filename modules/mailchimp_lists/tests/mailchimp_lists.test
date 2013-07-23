@@ -410,7 +410,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
   protected function testLists() {
     $lists = array();
 
-    $list = new MailchimpList();
+    $list = mailchimp_list_create();
     $list->label = 'Anonymous Test List';
     $list->name = 'anonymous_test_list';
     $list->description = 'Anonymous list description';
@@ -427,7 +427,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     );
     $lists[$list->name] = $list;
 
-    $list = new MailchimpList();
+    $list = mailchimp_list_create();
     $list->label = 'Optional Test List';
     $list->name = 'optional_test_list';
     $list->description = 'Optional list description';
@@ -444,7 +444,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     );
     $lists[$list->name] = $list;
 
-    $list = new MailchimpList();
+    $list = mailchimp_list_create();
     $list->label = 'Required Test List';
     $list->name = 'required_test_list';
     $list->description = 'Required list description';
