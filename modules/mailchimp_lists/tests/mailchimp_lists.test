@@ -287,6 +287,10 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
 
       $this->assertEqual($saved_list->mc_list_id, $test_list->mc_list_id, 'MC List ids were saved correctly.');
     }
+
+    // Test list deletion.
+    mailchimp_lists_delete_multiple(array_keys($test_lists));
+    $this->assertIdentical(mailchimp_lists_load_multiple(), array(), 'Lists have been deleted.');
   }
 
   /**
