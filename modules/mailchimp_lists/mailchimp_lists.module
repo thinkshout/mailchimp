@@ -1133,3 +1133,15 @@ function mailchimp_lists_save(MailchimpList $list) {
   return $list->save();
 }
 
+/**
+ * Create a new Mailchimp List object.
+ *
+ * @param array $values
+ *   Associative array of values. At least include array('type' => $type)
+ *
+ * @return MailchimpList
+ *   New MailchimpList entity.
+ */
+function mailchimp_list_create(array $values = array()) {
+  return entity_get_controller('mailchimp_list')->create($values);
+}
