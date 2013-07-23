@@ -82,7 +82,7 @@ function mailchimp_lists_refresh_page() {
 /**
  * Return a form for adding/editing a mailchimp list.
  */
-function mailchimp_lists_list_form($form, &$form_state, $list = NULL) {
+function mailchimp_lists_list_form($form, &$form_state, MailchimpList $list = NULL) {
   $form = array();
 
   // Store the existing list for updating on submit.
@@ -439,12 +439,8 @@ function mailchimp_lists_list_form_validate($form, &$form_state) {
  * Submit handler for mailchimp_lists_list_form().
  */
 function mailchimp_lists_list_form_submit($form, &$form_state) {
-  $list = new stdClass();
-  $is_new = TRUE;
-  if (isset($form_state['list'])) {
-    $list = $form_state['list'];
-    $is_new = FALSE;
-  }
+  $list = isset($form_state['list']) ? $form_state['list'] : mailchimp_list_create();
+  $is_new = isset($list->is_new) && $list->is_new;
 
   // Set this value here for use in webhook call below:
   $list->mc_list_id = $form_state['values']['mc_list_id'];
