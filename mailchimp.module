@@ -208,7 +208,14 @@ function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NUL
  * Get a Mailchimp API object for communication with the mailchimp server.
  */
 function mailchimp_get_api_object() {
-  libraries_load('mailchimp');
+  $library = libraries_load('mailchimp');
+  if (!$library['installed']) {
+    $msg = 'Failed to load MailChimp PHP library. Please refer to the installation requirements.';
+    watchdog('mailchimp', $msg, WATCHDOG_ERROR);
+    drupal_set_message(t($msg), 'error');
+    return NULL;
+  }
+
   $api_key = variable_get('mailchimp_api_key', '');
 
   // We allow the class name to be overridden, following the example of core's
