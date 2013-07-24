@@ -70,18 +70,6 @@ function mailchimp_lists_schema() {
         'length' => 255,
         'not null' => FALSE,
       ),
-      'created' => array(
-        'description' => 'The Unix timestamp when the mailchimp_list was created.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'updated' => array(
-        'description' => 'The Unix timestamp when the mailchimp_list was most recently saved.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
     ),
     'primary key' => array('id'),
     'unique key' => array('name'),
@@ -426,4 +414,13 @@ function mailchimp_lists_update_7205() {
   else {
     throw new DrupalUpdateException('There was a problem updating your Mailchimp Lists configuration. Either roll back your database or go to the Mailchimp Lists configuration page and re-configure each list individually.');
   }
+}
+
+/**
+ * Drop the created and updated fields from the {mailchimp_lists} schema.
+ */
+function mailchimp_lists_update_7206() {
+  db_drop_field('mailchimp_lists', 'created');
+  db_drop_field('mailchimp_lists', 'updated');
+  drupal_get_schema('mailchimp_lists', TRUE);
 }
