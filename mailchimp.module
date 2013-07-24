@@ -398,7 +398,8 @@ function mailchimp_process_webhook_access($key) {
  */
 function mailchimp_process_webhook() {
   $data = $_POST['data'];
-  switch ($_POST['type']) {
+  $type = $_POST['type'];
+  switch ($type) {
     case 'unsubscribe':
     case 'profile':
     case 'cleaned':
@@ -417,9 +418,12 @@ function mailchimp_process_webhook() {
       break;
   }
 
+  // Allow other modules to act on a webhook.
+  module_invoke_all('mailchimp_process_webhook', $type, $data);
+
   // Log event:
   watchdog('mailchimp', 'Webhook type @type has been processed.',
-    array('@type' => $_POST['type']), WATCHDOG_INFO
+    array('@type' => $type), WATCHDOG_INFO
   );
 }
 
