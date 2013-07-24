@@ -29,7 +29,7 @@ function mailchimp_lists_overview_page() {
     }
     $role_display = implode(', ', $role_display);
     $rows[] = array(
-      l($list->label, 'admin/config/services/mailchimp/lists/' . $list->id . '/edit'),
+      l($list->label(), 'admin/config/services/mailchimp/lists/' . $list->id . '/edit'),
       l($mc_list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id']),
       $list->description,
       $list->settings['required'] ? $role_display : '-No-',
@@ -537,7 +537,7 @@ function mailchimp_lists_list_delete_submit($form, &$form_state) {
 function mailchimp_lists_delete_list_form($form, &$form_state, $list) {
   $form_state['list'] = $list;
   return confirm_form($form,
-    t('Are you sure you want to delete %name?', array('%name' => $list->label)),
+    t('Are you sure you want to delete %name?', array('%name' => $list->label())),
     'admin/config/services/mailchimp/lists/' . $list->id . '/edit',
     t('This action cannot be undone, although it will not have any effect on the MailChimp list.'),
     t('Delete list'));
@@ -549,7 +549,7 @@ function mailchimp_lists_delete_list_form($form, &$form_state, $list) {
 function mailchimp_lists_delete_list_form_submit($form, &$form_state) {
   $list = $form_state['list'];
   mailchimp_lists_delete_multiple(array($list->id));
-  drupal_set_message(t('%name has been deleted.', array('%name' => $list->label)));
+  drupal_set_message(t('%name has been deleted.', array('%name' => $list->label())));
   $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
 }
 
@@ -559,7 +559,7 @@ function mailchimp_lists_delete_list_form_submit($form, &$form_state) {
 function mailchimp_lists_queue_existing_form($form, &$form_state, $list) {
   $form_state['list'] = $list;
   return confirm_form($form,
-    t('Are you sure you want to queue existing users in %name?', array('%name' => $list->label)),
+    t('Are you sure you want to queue existing users in %name?', array('%name' => $list->label())),
     'admin/config/services/mailchimp/lists',
     t('This action will queue all users who belong in this list based on roles
        for processing and cannot be undone. If you have lots of users, it could
@@ -575,7 +575,7 @@ function mailchimp_lists_queue_existing_form_submit($form, &$form_state) {
   $count = mailchimp_lists_queue_existing($list);
   drupal_set_message(t('@count users have been queued for update in %list.', array(
     '@count' => $count,
-    '%list' => $list->label,
+    '%list' => $list->label(),
   )));
   $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
 }

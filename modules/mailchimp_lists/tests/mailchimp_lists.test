@@ -279,7 +279,7 @@ class MailchimpListsBasicTestCase extends DrupalWebTestCase {
     foreach ($saved_lists as $saved_list) {
       $test_list = $test_lists[$saved_list->name];
       $this->assertEqual($saved_list->mc_list_id, $test_list->mc_list_id, 'MC List ids was saved correctly.');
-      $this->assertEqual($saved_list->label, $test_list->label, 'Label was saved correctly.');
+      $this->assertEqual($saved_list->label(), $test_list->label, 'Label was saved correctly.');
       $this->assertEqual($saved_list->description, $test_list->description, 'MC List ids were saved correctly.');
       foreach ($saved_list->settings as $key => $value) {
         $this->assertEqual($value, $test_list->settings[$key], 'Setting ' . $key . ' matches.');

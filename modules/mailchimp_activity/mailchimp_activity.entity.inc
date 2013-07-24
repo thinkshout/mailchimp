@@ -11,8 +11,15 @@ class MailchimpActivityEntity extends Entity {
     $entity_path,
     $enabled;
 
+  /**
+   * Override constructor to set entity type.
+   */
   public function __construct(array $values = array()) {
     parent::__construct($values, 'mailchimp_activity_entity');
+  }
+
+  public function label() {
+    return $this->label;
   }
 
 }

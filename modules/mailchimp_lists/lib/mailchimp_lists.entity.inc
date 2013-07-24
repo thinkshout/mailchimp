@@ -35,7 +35,7 @@ class MailchimpList extends Entity {
    * Return a label for a list.
    */
   public function label() {
-    return $this->label();
+    return $this->label;
   }
 
 }
