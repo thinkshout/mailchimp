@@ -1145,3 +1145,30 @@ function mailchimp_lists_save(MailchimpList $list) {
 function mailchimp_list_create(array $values = array()) {
   return entity_get_controller('mailchimp_list')->create($values);
 }
+
+/**
+ * Implements hook_mollom_form_list().
+ *
+ * Enable Mollom integration for user subscription forms.
+ */
+function mailchimp_lists_mollom_form_list() {
+  $forms = array();
+  $forms['mailchimp_lists_user_subscribe_form'] = array(
+    'title' => t('User newsletter subscription'),
+  );
+
+  return $forms;
+}
+
+/**
+ * Implements hook_mollom_form_info().
+ */
+function mailchimp_lists_mollom_form_info($form_id) {
+  // Set mollom form info.
+  $form_info = array(
+    'bypass access' => array('administer mailchimp'),
+    'mode' => MOLLOM_MODE_CAPTCHA,
+  );
+
+  return $form_info;
+}
