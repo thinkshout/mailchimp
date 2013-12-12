@@ -74,11 +74,11 @@ function mailchimp_permission() {
  *
  * Simple wrapper around mailchimp_get_memberinfo().
  *
- * @string  $list_id
+ * @param string $list_id
  *   Unique string identifier for the list on your MailChimp account.
- * @string  $email
+ * @param string $email
  *   Email address to check for on the identified Mailchimp List
- * @bool $reset
+ * @param bool $reset
  *   Set to TRUE to ignore the cache. (Used heavily in testing functions.)
  *
  * @return bool
@@ -105,8 +105,12 @@ function mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $
     $success = $mcapi->listSubscribe($list->mc_list_id, $email, $merge_vars, 'html', $double_optin, TRUE);
 
     if ($message && $success && $double_optin) {
-      drupal_set_message(t('You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription.',
-        array('%list' => $list->label)));
+      drupal_set_message(
+        t(
+          'You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription.',
+          array('%list' => $list->label)
+        )
+      );
     }
     elseif ($message && $success) {
       drupal_set_message(t('You have subscribed to %list.', array('%list' => $list->label)));
@@ -117,16 +121,24 @@ function mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $
 
     if ($success) {
       module_invoke_all('mailchimp_subscribe_user', $list, $email, $merge_vars);
-      watchdog('mailchimp', '@email was subscribed to list @list.',
-        array('@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE
+      watchdog(
+        'mailchimp',
+        '@email was subscribed to list @list.',
+        array('@email' => $merge_vars['EMAIL'], '@list' => $list->label),
+        WATCHDOG_NOTICE
       );
     }
     else {
-      watchdog('mailchimp', 'A problem occurred subscribing @email to list @list. Message: @msg', array(
+      watchdog(
+        'mailchimp',
+        'A problem occurred subscribing @email to list @list. Message: @msg',
+        array(
           '@email' => $merge_vars['EMAIL'],
           '@list' => $list->label,
           '@msg' => $mcapi->errorMessage,
-        ), WATCHDOG_WARNING);
+        ),
+        WATCHDOG_WARNING
+      );
     }
   }
 
@@ -150,16 +162,24 @@ function mailchimp_update_user($list, $email, $merge_vars, $message = TRUE, $mca
     mailchimp_cache_clear_user($list->mc_list_id, $email);
 
     if ($success) {
-      watchdog('mailchimp', '@email was updated in list @list.',
-        array('@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE
+      watchdog(
+        'mailchimp',
+        '@email was updated in list @list.',
+        array('@email' => $merge_vars['EMAIL'], '@list' => $list->label),
+        WATCHDOG_NOTICE
       );
     }
     else {
-      watchdog('mailchimp', 'A problem occurred subscribing @email to list @list. Message: @msg', array(
+      watchdog(
+        'mailchimp',
+        'A problem occurred subscribing @email to list @list. Message: @msg',
+        array(
           '@email' => $merge_vars['EMAIL'],
           '@list' => $list->label,
           '@msg' => $mcapi->errorMessage,
-        ), WATCHDOG_WARNING);
+        ),
+        WATCHDOG_WARNING
+      );
     }
   }
 
@@ -169,15 +189,15 @@ function mailchimp_update_user($list, $email, $merge_vars, $message = TRUE, $mca
 /**
  * Unsubscribe a user from the given list.
  *
- * @mailchimp_lists $list
+ * @param stdclass $list
  *   A mailchimp lists entity.
- * @string $email
+ * @param string $email
  *   Email address to be unsubscribed.
- * @bool $message
+ * @param bool $message
  *   Whether or not to display a message in the web interface.
- * @object $mcapi
+ * @param object $mcapi
  *   Mailchimp API object if one is already loaded.
- * @bool $delete
+ * @param bool $delete
  *   Indicates whether an email should be deleted or just unsubscribed.
  *
  * @return bool
@@ -213,6 +233,7 @@ function mailchimp_get_api_object() {
     $msg = 'Failed to load MailChimp PHP library. Please refer to the installation requirements.';
     watchdog('mailchimp', $msg, WATCHDOG_ERROR);
     drupal_set_message(t($msg), 'error');
+
     return NULL;
   }
 
@@ -232,6 +253,7 @@ function mailchimp_get_api_object() {
 
   if ($q->errorCode) {
     watchdog('mailchimp', 'MCAPI Error: %errmsg', array('%errmsg' => $q->errorMessage), WATCHDOG_ERROR);
+
     return NULL;
   }
 
@@ -300,18 +322,19 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
  */
 function mailchimp_get_list($list_id) {
   $lists = mailchimp_get_lists(array($list_id));
+
   return reset($lists);
 }
 
 /**
  * Get the MailChimp memberinfo for a given email address and list.
- * 
+ *
  * Results are cached in the cache_mailchimp_user bin which is cleared by the MC
  * web hooks system when needed.
  *
- * @string $list_id
- * @string $email
- * @bool $reset
+ * @param string $list_id
+ * @param string $email
+ * @param bool $reset
  *
  * @return array
  *   memberinfo array.
@@ -342,8 +365,8 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
 /**
  * Sets the member info in the cache.
  *
- * @string $list_id
- * @string $email
+ * @param string $list_id
+ * @param string $email
  */
 function mailchimp_set_memberinfo($list_id, $email) {
   mailchimp_get_memberinfo($list_id, $email, TRUE);
@@ -352,8 +375,8 @@ function mailchimp_set_memberinfo($list_id, $email) {
 /**
  * Clear a mailchimp user memberinfo cache.
  *
- * @string $list_id
- * @string $email
+ * @param string $list_id
+ * @param  $email
  */
 function mailchimp_cache_clear_user($list_id, $email) {
   cache_clear_all($list_id . '-' . $email, 'cache_mailchimp_user');
@@ -361,8 +384,6 @@ function mailchimp_cache_clear_user($list_id, $email) {
 
 /**
  * Clear a mailchimp activity cache.
- *
- * @string $list_id
  */
 function mailchimp_cache_clear_list_activity($list_id) {
   cache_clear_all('mailchimp_activity_' . $list_id, 'cache');
@@ -370,8 +391,6 @@ function mailchimp_cache_clear_list_activity($list_id) {
 
 /**
  * Clear a mailchimp activity cache.
- *
- * @string $list_id
  */
 function mailchimp_cache_clear_campaign($campaign_id) {
   cache_clear_all('mailchimp_campaign_' . $campaign_id, 'cache');
@@ -386,8 +405,6 @@ function mailchimp_flush_caches() {
 
 /**
  * Access callback for mailchimp_process_webhook().
- *
- * @string $key
  */
 function mailchimp_process_webhook_access($key) {
   return $key == mailchimp_webhook_key();
@@ -422,15 +439,16 @@ function mailchimp_process_webhook() {
   module_invoke_all('mailchimp_process_webhook', $type, $data);
 
   // Log event:
-  watchdog('mailchimp', 'Webhook type @type has been processed.',
-    array('@type' => $type), WATCHDOG_INFO
+  watchdog(
+    'mailchimp',
+    'Webhook type @type has been processed.',
+    array('@type' => $type),
+    WATCHDOG_INFO
   );
 }
 
 /**
  * Generate a key to include in the webhook url based on a hash.
- *
- * @string $list_id
  *
  * @return string
  *   The key.
@@ -441,8 +459,6 @@ function mailchimp_webhook_key() {
 
 /**
  * Generate the webhook endpoint URL.
- *
- * @string $list_id
  *
  * @return string
  *   The endpoint URL.
@@ -466,6 +482,7 @@ function _mailchimp_list_cmp($a, $b) {
   if ($a['name'] == $b['name']) {
     return 0;
   }
+
   return ($a['name'] < $b['name']) ? -1 : 1;
 }
 
@@ -474,7 +491,8 @@ function _mailchimp_list_cmp($a, $b) {
  *
  * Data is stored in the temporary cache.
  *
- * @string $campaign_id
+ * @param string $campaign_id
+ * @param bool $reset
  *
  * @return mixed
  *   Array of campaign data or NULL if not found.
@@ -500,10 +518,10 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
 
 /**
  * Wrapper around MCAPI::campaignsForEmail().
- * 
+ *
  * Returns all IDs of campaigns that have included a given email address.
  *
- * @string $email
+ * @param string $email
  *
  * @return array
  *   campaign IDs.
@@ -520,7 +538,7 @@ function mailchimp_get_campaigns_for_email($email) {
  *
  * Includes a value indicating whether they are currently a subscribed or not.
  *
- * @string $email
+ * @param string $email
  *
  * @return array
  *   Containing 2 arrays -- one ('lists') of all lists that have made use of
