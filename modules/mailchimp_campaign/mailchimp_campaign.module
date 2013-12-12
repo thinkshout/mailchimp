@@ -484,7 +484,7 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
     if (is_array($stat)) {
       break;
     }
-    $rows[] = array($key, drupal_ucfirst(str_replace('_', ' ', $stat)));
+    $rows[] = array(drupal_ucfirst(str_replace('_', ' ', $key)), $stat);
   }
 
   // time series chart data
