@@ -226,6 +226,9 @@ function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NUL
 
 /**
  * Get a Mailchimp API object for communication with the mailchimp server.
+ *
+ * @return MCAPI|NULL
+ *   A valid MCAPI implementation or NULL if no one found.
  */
 function mailchimp_get_api_object() {
   $library = libraries_load('mailchimp');
