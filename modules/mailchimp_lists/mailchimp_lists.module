@@ -387,7 +387,7 @@ function mailchimp_lists_user_subscribe_page($account) {
     return (t('There are no available newsletter subscriptions.'));
   }
   $form = drupal_get_form('mailchimp_lists_user_subscribe_form', $lists, $account);
-  $form['submit']['#value'] = 'Save';
+  $form['submit']['#value'] = t('Save');
   return $form;
 }
 
