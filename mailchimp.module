@@ -65,9 +65,44 @@ function mailchimp_permission() {
   return array(
     'administer mailchimp' => array(
       'title' => t('administer mailchimp'),
-      'description' => t('TODO Add a description for administer mailchimp'),
+      'description' => t('Access the mailchimp configuration options.'),
     ),
   );
+}
+
+/**
+ * Get a Mailchimp API object for communication with the mailchimp server.
+ */
+function mailchimp_get_api_object() {
+  $library = libraries_load('mailchimp');
+  if (!$library['installed']) {
+    $msg = 'Failed to load MailChimp PHP library. Please refer to the installation requirements.';
+    watchdog('mailchimp', $msg, WATCHDOG_ERROR);
+    drupal_set_message(t($msg), 'error');
+    return NULL;
+  }
+
+  $api_key = variable_get('mailchimp_api_key', '');
+  if (!strlen($api_key)) {
+    watchdog('mailchimp', t('Mailchimp Error: API Key cannot be blank.'), WATCHDOG_ERROR);
+    return NULL;
+  }
+  // Set the timeout to something that won't take down the Drupal site:
+  $options = array('timeout' => 60);
+  
+  // We allow the class name to be overridden, following the example of core's
+  // mailsystem, in order to use alternate MailChimp classes. The bundled tests
+  // use this approach to extend the MailChimp class with a test server.
+  // @ todo switch over to DrupalMailchimp (and override http sends)
+  $classname = variable_get('mailchimp_api_classname', 'Mailchimp');
+  $mailchimp = new $classname($api_key, $options);
+
+  if ($mailchimp->errorCode) {
+    watchdog('mailchimp', 'MCAPI Error: %errmsg', array('%errmsg' => $mailchimp->errorMessage), WATCHDOG_ERROR);
+    return NULL;
+  }
+
+  return $mailchimp;
 }
 
 /**
@@ -203,40 +238,6 @@ function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NUL
   }
 
   return $success;
-}
-
-/**
- * Get a Mailchimp API object for communication with the mailchimp server.
- */
-function mailchimp_get_api_object() {
-  $library = libraries_load('mailchimp');
-  if (!$library['installed']) {
-    $msg = 'Failed to load MailChimp PHP library. Please refer to the installation requirements.';
-    watchdog('mailchimp', $msg, WATCHDOG_ERROR);
-    drupal_set_message(t($msg), 'error');
-    return NULL;
-  }
-
-  $api_key = variable_get('mailchimp_api_key', '');
-
-  // We allow the class name to be overridden, following the example of core's
-  // mailsystem, in order to use alternate MailChimp classes. The bundled tests
-  // use this approach to extend the MailChimp class with a test server.
-  $classname = variable_get('mailchimp_api_classname', 'MailChimp');
-  $q = new $classname($api_key);
-
-  // Set the timeout to something that won't take down the Drupal site:
-  $q->setTimeout(60);
-
-  // Specify if a secure connection should be used with the API:
-  $q->useSecure(variable_get('mailchimp_use_secure', TRUE));
-
-  if ($q->errorCode) {
-    watchdog('mailchimp', 'MCAPI Error: %errmsg', array('%errmsg' => $q->errorMessage), WATCHDOG_ERROR);
-    return NULL;
-  }
-
-  return $q;
 }
 
 /**
