@@ -96,13 +96,71 @@ function mailchimp_get_api_object() {
   // @ todo switch over to DrupalMailchimp (and override http sends)
   $classname = variable_get('mailchimp_api_classname', 'Mailchimp');
   $mailchimp = new $classname($api_key, $options);
+  // @todo catch creation error and do something sensible.
+  return $mailchimp;
+}
 
-  if ($mailchimp->errorCode) {
-    watchdog('mailchimp', 'MCAPI Error: %errmsg', array('%errmsg' => $mailchimp->errorMessage), WATCHDOG_ERROR);
-    return NULL;
+/**
+ * Return all MailChimp lists for a given key. Lists are stored in the cache.
+ *
+ * @param array $list_ids
+ *   An array of list IDs to filter the results by.
+ * @param bool $reset
+ *   Force a cache reset.
+ *
+ * @return array
+ *   An array of list arrays.
+ */
+function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
+  $cache = $reset ? NULL : cache_get('mailchimp_lists');
+  $lists = array();
+  // Return cached lists:
+  if ($cache) {
+    $lists = $cache->data;
+  }
+  // Query lists from the MCAPI and store in cache:
+  else {
+    if ($q = mailchimp_get_api_object()) {
+      $result = $q->lists->getList(array(), 0, 100);
+      if ($result['total'] > 0) {
+        foreach ($result['data'] as $list) {
+          if ($list['stats']['group_count']) {
+            // Append interest groups:
+            $list['intgroups'] = $q->lists->interestGroupings($list['id']);
+          }
+          $lists[$list['id']] = $list;
+        }
+        // Append mergefields:
+        $mergevar_settings = $q->lists->mergeVars($list_ids);
+        foreach($mergevar_settings['data'] as $mergevars) {
+          $lists[$mergevars['id']]['mergevars'] = $mergevars['merge_vars'];
+        }
+      }
+    }
+    uasort($lists, '_mailchimp_list_cmp');
+
+    cache_set('mailchimp_lists', $lists, 'cache', CACHE_TEMPORARY);
   }
 
-  return $mailchimp;
+  return $lists;
+}
+
+/**
+ * Helper function used by uasort() to sort lists alphabetically by name.
+ *
+ * @param array $a
+ *   An array representing the first list.
+ * @param array $b
+ *   An array representing the second list.
+ *
+ * @return int
+ *   One of the values -1, 0, 1
+ */
+function _mailchimp_list_cmp($a, $b) {
+  if ($a['name'] == $b['name']) {
+    return 0;
+  }
+  return ($a['name'] < $b['name']) ? -1 : 1;
 }
 
 /**
@@ -238,57 +296,6 @@ function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NUL
   }
 
   return $success;
-}
-
-/**
- * Return all MailChimp lists for a given key. Lists are stored in the cache.
- *
- * @param array $list_ids
- *   An array of list IDs to filter the results by.
- * @param bool $reset
- *   Force a cache reset.
- *
- * @return array
- *   An array of list arrays.
- */
-function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
-  $cache = $reset ? NULL : cache_get('mailchimp_lists');
-  $lists = array();
-  // Return cached lists:
-  if ($cache) {
-    $lists = $cache->data;
-  }
-  // Query lists from the MC API and store in cache:
-  else {
-    if ($q = mailchimp_get_api_object()) {
-      $result = $q->lists(array(), 0, 100);
-      if ($result['total'] > 0) {
-        foreach ($result['data'] as $list) {
-          // Append mergefields:
-          $list['mergevars'] = $q->listMergeVars($list['id']);
-
-          // Append interest groups:
-          $list['intgroups'] = $q->listInterestGroupings($list['id']);
-
-          $lists[$list['id']] = $list;
-        }
-      }
-    }
-    uasort($lists, '_mailchimp_list_cmp');
-
-    cache_set('mailchimp_lists', $lists, 'cache', CACHE_TEMPORARY);
-  }
-
-  // Filter by given ids:
-  if (!empty($list_ids)) {
-    foreach ($lists as $key => $list) {
-      if (!in_array($key, $list_ids)) {
-        unset($lists[$key]);
-      }
-    }
-  }
-
-  return $lists;
 }
 
 /**
@@ -451,24 +458,6 @@ function mailchimp_webhook_key() {
  */
 function mailchimp_webhook_url() {
   return $GLOBALS['base_url'] . '/mailchimp/webhook/' . mailchimp_webhook_key();
-}
-
-/**
- * Helper function used by uasort() to sort lists alphabetically by name.
- *
- * @param array $a
- *   An array representing the first list.
- * @param array $b
- *   An array representing the second list.
- *
- * @return int
- *   One of the values -1, 0, 1
- */
-function _mailchimp_list_cmp($a, $b) {
-  if ($a['name'] == $b['name']) {
-    return 0;
-  }
-  return ($a['name'] < $b['name']) ? -1 : 1;
 }
 
 /**
