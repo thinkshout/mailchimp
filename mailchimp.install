@@ -70,7 +70,6 @@ function mailchimp_requirements($phase) {
 function mailchimp_uninstall() {
   variable_del('mailchimp_api_key');
   variable_del('mailchimp_batch_limit');
-  variable_del('mailchimp_use_secure');
 }
 
 /**

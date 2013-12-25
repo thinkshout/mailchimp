@@ -38,12 +38,6 @@ function mailchimp_admin_settings() {
     '#description' => t('Maximum number of users to process in a single cron run. Mailchimp suggest keeping this below 5000-10000. Ignored if updates take place on user add / edit.'),
     '#default_value' => variable_get('mailchimp_batch_limit', 100),
   );
-  $form['mailchimp_use_secure'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Use Secure Connection'),
-    '#default_value' => variable_get('mailchimp_use_secure', TRUE),
-    "#description" => t('Communicate with the MailChimp API over a secure connection.'),
-  );
 
   return system_settings_form($form);
 }
