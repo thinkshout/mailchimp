@@ -189,6 +189,42 @@ function _mailchimp_list_cmp($a, $b) {
 }
 
 /**
+ * Get the MailChimp memberinfo for a given email address and list.
+ *
+ * Results are cached in the cache_mailchimp_user bin which is cleared by the MC
+ * web hooks system when needed.
+ *
+ * @string $list_id
+ * @string $email
+ * @bool $reset
+ *
+ * @return array
+ *   memberinfo array.
+ */
+function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
+  $cache = $reset ? NULL : cache_get($list_id . '-' . $email, 'cache_mailchimp_user');
+  $memberinfo = array();
+
+  // Return cached lists:
+  if ($cache) {
+    $memberinfo = $cache->data;
+  }
+  // Query lists from the MCAPI and store in cache:
+  else {
+    if ($q = mailchimp_get_api_object()) {
+      $result = $q->lists->memberInfo($list_id, array(array('email' => $email)));
+      if ($result['success_count']) {
+        $memberinfo = reset($result['data']);
+      }
+    }
+
+    cache_set($list_id . '-' . $email, $memberinfo, 'cache_mailchimp_user', CACHE_PERMANENT);
+  }
+
+  return $memberinfo;
+}
+
+/**
  * Check if the given email is subscribed to the given list.
  *
  * Simple wrapper around mailchimp_get_memberinfo().
@@ -321,42 +357,6 @@ function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NUL
   }
 
   return $success;
-}
-
-/**
- * Get the MailChimp memberinfo for a given email address and list.
- * 
- * Results are cached in the cache_mailchimp_user bin which is cleared by the MC
- * web hooks system when needed.
- *
- * @string $list_id
- * @string $email
- * @bool $reset
- *
- * @return array
- *   memberinfo array.
- */
-function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
-  $cache = $reset ? NULL : cache_get($list_id . '-' . $email, 'cache_mailchimp_user');
-  $memberinfo = array();
-
-  // Return cached lists:
-  if ($cache) {
-    $memberinfo = $cache->data;
-  }
-  // Query lists from the MC API and store in cache:
-  else {
-    if ($q = mailchimp_get_api_object()) {
-      $result = $q->listMemberInfo($list_id, array($email));
-      if ($result['success']) {
-        $memberinfo = reset($result['data']);
-      }
-    }
-
-    cache_set($list_id . '-' . $email, $memberinfo, 'cache_mailchimp_user', CACHE_PERMANENT);
-  }
-
-  return $memberinfo;
 }
 
 /**
