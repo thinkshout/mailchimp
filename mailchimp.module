@@ -101,6 +101,20 @@ function mailchimp_get_api_object() {
 }
 
 /**
+ * Wrapper around mailchimp_get_lists() to return a single list.
+ *
+ * @param string $list_id
+ *   The unique ID of the list provided by MailChimp.
+ *
+ * @return array
+ *   A list array formatted as indicated in the MailChimp API documentation.
+ */
+function mailchimp_get_list($list_id) {
+  $lists = mailchimp_get_lists(array($list_id));
+  return reset($lists);
+}
+
+/**
  * Return all MailChimp lists for a given key. Lists are stored in the cache.
  *
  * @param array $list_ids
@@ -307,20 +321,6 @@ function mailchimp_unsubscribe_user($list, $email, $message = TRUE, $mcapi = NUL
   }
 
   return $success;
-}
-
-/**
- * Wrapper around mailchimp_get_lists() to return a single list.
- *
- * @param string $list_id
- *   The unique ID of the list provided by MailChimp.
- *
- * @return array
- *   A list array formatted as indicated in the MailChimp API documentation.
- */
-function mailchimp_get_list($list_id) {
-  $lists = mailchimp_get_lists(array($list_id));
-  return reset($lists);
 }
 
 /**
