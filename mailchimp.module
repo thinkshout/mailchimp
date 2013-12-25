@@ -141,8 +141,19 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
 
     cache_set('mailchimp_lists', $lists, 'cache', CACHE_TEMPORARY);
   }
-
-  return $lists;
+  // Filter by given ids:
+  if (!empty($list_ids)) {
+    $filtered_lists = array();
+    foreach ($list_ids as $id) {
+      if (array_key_exists($id, $lists)) {
+        $filtered_lists[$id] = $lists[$id];
+      }
+    }
+    return $filtered_lists;
+  }
+  else {
+    return $lists;
+  }
 }
 
 /**
