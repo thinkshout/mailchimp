@@ -134,26 +134,32 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
   }
   // Query lists from the MCAPI and store in cache:
   else {
-    if ($q = mailchimp_get_api_object()) {
-      $result = $q->lists->getList(array(), 0, 100);
-      if ($result['total'] > 0) {
-        foreach ($result['data'] as $list) {
-          if ($list['stats']['group_count']) {
-            // Append interest groups:
-            $list['intgroups'] = $q->lists->interestGroupings($list['id']);
+    try {
+      if ($q = mailchimp_get_api_object()) {
+        $result = $q->lists->getList(array(), 0, 100);
+        if ($result['total'] > 0) {
+          foreach ($result['data'] as $list) {
+            if ($list['stats']['group_count']) {
+              // Append interest groups:
+              $list['intgroups'] = $q->lists->interestGroupings($list['id']);
+            }
+            $lists[$list['id']] = $list;
           }
-          $lists[$list['id']] = $list;
-        }
-        // Append mergefields:
-        $mergevar_settings = $q->lists->mergeVars($list_ids);
-        foreach($mergevar_settings['data'] as $mergevars) {
-          $lists[$mergevars['id']]['mergevars'] = $mergevars['merge_vars'];
+          // Append mergefields:
+          $mergevar_settings = $q->lists->mergeVars($list_ids);
+          foreach($mergevar_settings['data'] as $mergevars) {
+            $lists[$mergevars['id']]['mergevars'] = $mergevars['merge_vars'];
+          }
         }
       }
+      uasort($lists, '_mailchimp_list_cmp');
+      cache_set('mailchimp_lists', $lists, 'cache', CACHE_TEMPORARY);
     }
-    uasort($lists, '_mailchimp_list_cmp');
-
-    cache_set('mailchimp_lists', $lists, 'cache', CACHE_TEMPORARY);
+    catch (Exception $e) {
+      watchdog('mailchimp', 'An error occurred requesting list information from Mailchimp. "%message"', array(
+        '%message' => $e->getMessage(),
+      ), WATCHDOG_ERROR);
+    }
   }
   // Filter by given ids:
   if (!empty($list_ids)) {
@@ -199,7 +205,7 @@ function _mailchimp_list_cmp($a, $b) {
  * @bool $reset
  *
  * @return array
- *   memberinfo array.
+ *   memberinfo array, empty if there is no valid info.
  */
 function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get($list_id . '-' . $email, 'cache_mailchimp_user');
@@ -212,12 +218,20 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
   // Query lists from the MCAPI and store in cache:
   else {
     if ($q = mailchimp_get_api_object()) {
-      $result = $q->lists->memberInfo($list_id, array(array('email' => $email)));
-      if ($result['success_count']) {
-        $memberinfo = reset($result['data']);
+      try {
+        $result = $q->lists->memberInfo($list_id, array(array('email' => $email)));
+        if ($result['success_count']) {
+          $memberinfo = reset($result['data']);
+        }
+      }
+      catch (Exception $e) {
+        watchdog('mailchimp', 'An error occurred requesting memberinfo for @email in list @list. "%message"', array(
+          '@email' => $email,
+          '@list' => $list_id,
+          '%message' => $e->getMessage(),
+        ), WATCHDOG_ERROR);        
       }
     }
-
     cache_set($list_id . '-' . $email, $memberinfo, 'cache_mailchimp_user', CACHE_PERMANENT);
   }
 
