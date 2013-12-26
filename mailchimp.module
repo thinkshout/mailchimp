@@ -252,39 +252,35 @@ function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
 /**
  * Subscribe a user to a given list.
  */
-function mailchimp_subscribe_user($list, $email, $merge_vars, $message = TRUE, $mcapi = NULL) {
+function mailchimp_subscribe_user($list_id, $email, $merge_vars = NULL, $format = 'html', $double_optin = FALSE, $update_existing = FALSE, $replace_interests = FALSE, $confirm = TRUE, $mcapi = NULL) {
   $success = FALSE;
   if ($mcapi || $mcapi = mailchimp_get_api_object()) {
-    $double_optin = $list->settings['doublein'];
-
-    $success = $mcapi->listSubscribe($list->mc_list_id, $email, $merge_vars, 'html', $double_optin, TRUE);
-
-    if ($message && $success && $double_optin) {
-      drupal_set_message(t('You have chosen to subscribe to %list. An email will be sent to your address. Click the link in the email to confirm the subscription.',
-        array('%list' => $list->label)));
-    }
-    elseif ($message && $success) {
-      drupal_set_message(t('You have subscribed to %list.', array('%list' => $list->label)));
-    }
-
-    // Clear user cache, just in case there's some cruft leftover:
-    mailchimp_cache_clear_user($list->mc_list_id, $email);
-
-    if ($success) {
-      module_invoke_all('mailchimp_subscribe_user', $list, $email, $merge_vars);
-      watchdog('mailchimp', '@email was subscribed to list @list.',
-        array('@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE
-      );
-    }
-    else {
-      watchdog('mailchimp', 'A problem occurred subscribing @email to list @list. Message: @msg', array(
-          '@email' => $merge_vars['EMAIL'],
-          '@list' => $list->label,
-          '@msg' => $mcapi->errorMessage,
+    try {
+      $result = $mcapi->lists->subscribe($list_id, array('email' => $email), $merge_vars, $format, $double_optin, $update_existing, $replace_interests, $confirm);
+      if (isset($result['email'])) {
+        $success = $result;
+        module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
+        watchdog('mailchimp', '@email was subscribed to list @list.',
+          array('@email' => $merge_vars['EMAIL'], '@list' => $list_id), WATCHDOG_NOTICE
+        );
+      }
+      else {
+        watchdog('mailchimp', 'A problem occurred subscribing @email to list @list.', array(
+          '@email' => $email,
+          '@list' => $list_id,
         ), WATCHDOG_WARNING);
+      }
+    }
+    catch (Exception $e) {
+      watchdog('mailchimp', 'An error occurred subscribing @email to list @list. "%message"', array(
+        '@email' => $email,
+        '@list' => $list_id,
+        '%message' => $e->getMessage(),
+      ), WATCHDOG_ERROR);
     }
   }
-
+  // Clear user cache, just in case there's some cruft leftover:
+  mailchimp_cache_clear_user($list_id, $email);
   return $success;
 }
 
