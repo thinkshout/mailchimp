@@ -301,7 +301,7 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $format = 'ht
 /**
  * Update a user in a given list.
  */
-function mailchimp_update_user($list, $email, $merge_vars, $message = TRUE, $mcapi = NULL) {
+function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE,  $mcapi = NULL) {
   $success = FALSE;
   if ($mcapi || $mcapi = mailchimp_get_api_object()) {
 
