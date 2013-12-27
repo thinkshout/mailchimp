@@ -381,9 +381,9 @@ function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FAL
 }
 
 /**
- * Wrapper around MCAPI::campaigns() to return data for a given campaign.
+ * Wrapper around MCAPI->campaigns->getList to return data for a given campaign.
  *
- * Data is stored in the temporary cache.
+ * Data is stored in the mailchimp cache.
  *
  * @string $campaign_id
  *
@@ -420,6 +420,31 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
   }
 
   return $campaign_data;
+}
+
+/**
+ * Wrapper around MCAPI->helper->campaignsForEmail().
+ *
+ * Returns all IDs of campaigns that have included a given email address.
+ *
+ * @string $email
+ *
+ * @return array
+ *   Campaign structs containing id, title, subject, send_time, type.
+ */
+function mailchimp_get_campaigns_for_email($email) {
+  $q = mailchimp_get_api_object();
+  try {
+    $campaign_list = $q->helper->campaignsForEmail(array('email' => $email));
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred retreiving campaign data for @email. "%message"', array(
+      '@email' => $email,
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+    $campaign_list = array();
+  }
+  return $campaign_list;
 }
 
 /**
@@ -521,23 +546,6 @@ function mailchimp_webhook_key() {
  */
 function mailchimp_webhook_url() {
   return $GLOBALS['base_url'] . '/mailchimp/webhook/' . mailchimp_webhook_key();
-}
-
-/**
- * Wrapper around MCAPI::campaignsForEmail().
- * 
- * Returns all IDs of campaigns that have included a given email address.
- *
- * @string $email
- *
- * @return array
- *   campaign IDs.
- */
-function mailchimp_get_campaigns_for_email($email) {
-  $q = mailchimp_get_api_object();
-  $campaign_list = $q->campaignsForEmail($email);
-
-  return $campaign_list;
 }
 
 /**
