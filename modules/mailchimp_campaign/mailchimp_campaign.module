@@ -305,7 +305,7 @@ function mailchimp_campaign_delete_campaign($cid) {
  * @return array().
  */
 function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
-  $cache = $reset ? NULL : cache_get('mailchimp_templates');
+  $cache = $reset ? NULL : cache_get('mailchimp_templates', 'cache_mailchimp');
   $templates = array();
   // return cached lists
   if ($cache) {
@@ -329,7 +329,7 @@ function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
       }
     }
 
-    cache_set('mailchimp_templates', $templates, 'cache', CACHE_TEMPORARY);
+    cache_set('mailchimp_templates', $templates, 'cache_mailchimp', CACHE_TEMPORARY);
   }
 
   if (isset($template_id)) {
@@ -556,7 +556,7 @@ function mailchimp_campaign_render_template($template) {
  */
 function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
   $mc_campaigns = array();
-  $cached_campaigns = cache_get('mailchimp_campaigns');
+  $cached_campaigns = cache_get('mailchimp_campaigns', 'cache_mailchimp');
   foreach ($mc_campaign_ids as $id) {
     if (!isset($cached_campaigns->data[$id]) || $reset) {
       $to_refresh[] = $id;
@@ -575,7 +575,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
       }
     }
 
-    cache_set('mailchimp_campaigns', $mc_campaigns);
+    cache_set('mailchimp_campaigns', $mc_campaigns, 'cache_mailchimp');
   }
 
   return $mc_campaigns;

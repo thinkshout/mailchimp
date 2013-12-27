@@ -92,7 +92,7 @@ function mailchimp_activity_load_entities($name = NULL) {
 
 /**
  * Get the MailChimp memberactivity for a given email address and list. Results
- * are cached in the cache_mailchimp_user bin which is cleared by the MC web
+ * are cached in the cache_mailchimp bin which is cleared by the MC web
  * hooks system when needed.
  *
  * @param string $list_id
@@ -102,7 +102,7 @@ function mailchimp_activity_load_entities($name = NULL) {
  * @return array memberactivity
 */
 function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE) {
-  $cache = $reset ? NULL : cache_get("mailchimp_activity_{$list_id}");
+  $cache = $reset ? NULL : cache_get("mailchimp_activity_{$list_id}", 'cache_mailchimp');
   $memberactivity = array();
 
   // return cached lists
@@ -123,7 +123,7 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
         cache_set(
           'mailchimp_activity_' . $list_id,
           $newcache,
-          'cache',
+          'cache_mailchimp',
           CACHE_TEMPORARY);
       }
     }
