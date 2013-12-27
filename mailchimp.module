@@ -381,16 +381,6 @@ function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FAL
 }
 
 /**
- * Sets the member info in the cache.
- *
- * @string $list_id
- * @string $email
- */
-function mailchimp_set_memberinfo($list_id, $email) {
-  mailchimp_get_memberinfo($list_id, $email, TRUE);
-}
-
-/**
  * Clear a mailchimp user memberinfo cache.
  *
  * @string $list_id
@@ -444,13 +434,12 @@ function mailchimp_process_webhook() {
     case 'unsubscribe':
     case 'profile':
     case 'cleaned':
-      mailchimp_cache_clear_user($data['list_id'], $data['email']);
-      mailchimp_set_memberinfo($data['list_id'], $data['email']);
+      mailchimp_get_memberinfo($data['list_id'], $data['email'], TRUE);
       break;
 
     case 'upemail':
       mailchimp_cache_clear_user($data['list_id'], $data['old_email']);
-      mailchimp_set_memberinfo($data['list_id'], $data['new_email']);
+      mailchimp_get_memberinfo($data['list_id'], $data['new_email'], TRUE);
       break;
 
     case 'campaign':
