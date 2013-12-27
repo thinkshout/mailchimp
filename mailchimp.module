@@ -304,29 +304,32 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $format = 'ht
 function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE,  $mcapi = NULL) {
   $success = FALSE;
   if ($mcapi || $mcapi = mailchimp_get_api_object()) {
-
-    $success = $mcapi->listUpdateMember($list->mc_list_id, $email, $merge_vars);
-
-    if ($success && $message) {
-      drupal_set_message(t('You have updated your settings in %list.', array('%list' => $list->label)));
-    }
-
-    // Clear user cache:
-    mailchimp_cache_clear_user($list->mc_list_id, $email);
-
-    if ($success) {
-      watchdog('mailchimp', '@email was updated in list @list.',
-        array('@email' => $merge_vars['EMAIL'], '@list' => $list->label), WATCHDOG_NOTICE
-      );
-    }
-    else {
-      watchdog('mailchimp', 'A problem occurred subscribing @email to list @list. Message: @msg', array(
-          '@email' => $merge_vars['EMAIL'],
-          '@list' => $list->label,
-          '@msg' => $mcapi->errorMessage,
+    try {
+      $result = $mcapi->lists->updateMember($list_id, array('email' => $email), $merge_vars, $format, $replace_interests);
+      if (isset($result['email'])) {
+        $success = $result;
+        watchdog('mailchimp', '@email was updated in list @list_id.', array(
+            '@email' => $email,
+            '@list' => $list_id,
+        ), WATCHDOG_NOTICE);
+      }
+      else {
+        watchdog('mailchimp', 'A problem occurred updating @email on list @list.', array(
+          '@email' => $email,
+          '@list' => $list_id,
         ), WATCHDOG_WARNING);
+      }
+    }
+    catch (Exception $e) {
+      watchdog('mailchimp', 'An error occurred updating @email on list @list. "%message"', array(
+        '@email' => $email,
+        '@list' => $list_id,
+        '%message' => $e->getMessage(),
+      ), WATCHDOG_ERROR);
     }
   }
+  // Clear user cache:
+  mailchimp_cache_clear_user($list_id, $email);
 
   return $success;
 }
