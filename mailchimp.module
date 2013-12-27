@@ -274,6 +274,8 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $format = 'ht
       if (isset($result['email'])) {
         $success = $result;
         module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
+        // Clear user cache, just in case there's some cruft leftover:
+        mailchimp_cache_clear_user($list_id, $email);
         watchdog('mailchimp', '@email was subscribed to list @list.',
           array('@email' => $merge_vars['EMAIL'], '@list' => $list_id), WATCHDOG_NOTICE
         );
@@ -293,8 +295,7 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $format = 'ht
       ), WATCHDOG_ERROR);
     }
   }
-  // Clear user cache, just in case there's some cruft leftover:
-  mailchimp_cache_clear_user($list_id, $email);
+
   return $success;
 }
 
@@ -312,6 +313,8 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
             '@email' => $email,
             '@list' => $list_id,
         ), WATCHDOG_NOTICE);
+        // Clear user cache:
+        mailchimp_cache_clear_user($list_id, $email);
       }
       else {
         watchdog('mailchimp', 'A problem occurred updating @email on list @list.', array(
@@ -328,8 +331,6 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
       ), WATCHDOG_ERROR);
     }
   }
-  // Clear user cache:
-  mailchimp_cache_clear_user($list_id, $email);
 
   return $success;
 }
