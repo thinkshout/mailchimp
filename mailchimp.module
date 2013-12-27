@@ -264,7 +264,7 @@ function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
 }
 
 /**
- * Subscribe a user to a given list.
+ * Wrapper around MCAPI->lists->subscribe.
  */
 function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $format = 'html', $double_optin = FALSE, $update_existing = FALSE, $replace_interests = TRUE, $confirm = TRUE, $mcapi = NULL) {
   $success = FALSE;
@@ -300,7 +300,7 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $format = 'ht
 }
 
 /**
- * Update a user in a given list.
+ * Wrapper around MCAPI->lists->updateMember.
  */
 function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE,  $mcapi = NULL) {
   $success = FALSE;
@@ -336,7 +336,7 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
 }
 
 /**
- * Unsubscribe a user from the given list.
+ * Wrapper around MCAPI->lists->unsubscribe.
  *
  * @string $list_id
  *   A mailchimp list id.
