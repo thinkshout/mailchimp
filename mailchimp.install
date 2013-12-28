@@ -10,8 +10,8 @@
  * Implements hook_schema().
  */
 function mailchimp_schema() {
-  $schema['cache_mailchimp_user'] = drupal_get_schema_unprocessed('system', 'cache');
-  $schema['cache_mailchimp_user']['description'] = 'Cache table for the MailChimp module to store a list subscribers member info.';
+  $schema['cache_mailchimp'] = drupal_get_schema_unprocessed('system', 'cache');
+  $schema['cache_mailchimp']['description'] = 'Cache table for the MailChimp module to store a list subscribers member info.';
 
   return $schema;
 }
