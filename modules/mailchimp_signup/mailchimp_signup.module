@@ -25,6 +25,15 @@ function mailchimp_signup_menu() {
     'file' => 'includes/mailchimp_signup.admin.inc',
     'weight' => 10,
   );
+  $items['admin/config/services/mailchimp/signup/add'] = array(
+    'title' => 'Add a Signup Form',
+    'description' => 'Add a new MailChimp Signup Block/Page.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_signup_signup_form'),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'includes/mailchimp_signup.admin.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
 
   return $items;
 }
@@ -38,6 +47,20 @@ function mailchimp_signup_load_multiple($signup_ids = array(), $conditions = arr
   }
 
   return entity_load('mailchimp_signup', $signup_ids, $conditions, $reset);
+}
+
+/**
+ * Gets an array of all Signups, keyed by the list name.
+ *
+ * @string $name
+ *   If set, the signup with the given name is returned.
+ *
+ * @return MailchimpSignup[]
+ *   Depending whether $name isset, an array of signups or a single one.
+ */
+function mailchimp_signup_load_multiple_by_name($name = NULL) {
+  $signups = entity_load_multiple_by_name('mailchimp_signup', isset($name) ? array($name) : FALSE);
+  return isset($name) ? reset($signups) : $signups;
 }
 
 /**
