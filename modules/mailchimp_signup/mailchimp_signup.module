@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * @file
+ * Mailchimp Signup module. Allows creation of signup forms integrated with
+ * Mailchimp.
+ */
+
+define('MAILCHIMP_SIGNUP_BLOCK', 1);
+define('MAILCHIMP_SIGNUP_PAGE', 2);
+define('MAILCHIMP_SIGNUP_BOTH', 3);
+
+/**
+ * Implements hook_menu().
+ */
+function mailchimp_signup_menu() {
+  $items = array();
+
+  $items['admin/config/services/mailchimp/signup'] = array(
+    'title' => 'Signup',
+    'description' => 'Manage MailChimp Signup blocks and pages.',
+    'page callback' => 'mailchimp_signup_overview_page',
+    'access arguments' => array('administer mailchimp'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/mailchimp_signup.admin.inc',
+    'weight' => 10,
+  );
+
+  return $items;
+}
+
+/**
+ * Loads multiple signup forms.
+ */
+function mailchimp_signup_load_multiple($signup_ids = array(), $conditions = array(), $reset = FALSE) {
+  if (empty($signup_ids)) {
+    $signup_ids = FALSE;
+  }
+
+  return entity_load('mailchimp_signup', $signup_ids, $conditions, $reset);
+}
+
+/**
+ * Implements hook_entity_info().
+ */
+function mailchimp_signup_entity_info() {
+  $entities = array(
+    'mailchimp_signup' => array(
+      'label' => t('MailChimp Signup'),
+      'plural label' => t('MailChimp Signups'),
+      'entity class' => 'MailchimpSignup',
+      'controller class' => 'EntityAPIControllerExportable',
+      'base table' => 'mailchimp_signup',
+      'uri callback' => 'mailchimp_signup_uri',
+      'fieldable' => FALSE,
+      'exportable' => TRUE,
+      'label callback' => 'entity_class_label',
+      'module' => 'mailchimp_signup',
+      'entity keys' => array(
+        'id' => 'mcs_id',
+        'name' => 'name',
+      ),
+      'bundles' => array(
+        'mailchimp_signup' => array(
+          'label' => t('MailChimp Signup'),
+        ),
+      ),
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full'),
+          'custom settings' => FALSE,
+        ),
+      ),
+    ),
+  );
+
+  return $entities;
+}

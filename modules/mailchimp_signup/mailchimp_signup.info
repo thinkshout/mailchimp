@@ -1,0 +1,10 @@
+name = MailChimp Signup
+description = Manage MailChimp signup blocks and pages.
+package = MailChimp
+core = 7.x
+dependencies[] = mailchimp
+dependencies[] = entity
+
+configure = admin/config/services/mailchimp/signup
+
+files[] = lib/mailchimp_signup.entity.inc
