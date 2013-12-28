@@ -275,7 +275,7 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $format = 'ht
         $success = $result;
         module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
         // Clear user cache, just in case there's some cruft leftover:
-        mailchimp_cache_clear_user($list_id, $email);
+        mailchimp_cache_clear_member($list_id, $email);
         watchdog('mailchimp', '@email was subscribed to list @list.',
           array('@email' => $merge_vars['EMAIL'], '@list' => $list_id), WATCHDOG_NOTICE
         );
@@ -314,7 +314,7 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
             '@list' => $list_id,
         ), WATCHDOG_NOTICE);
         // Clear user cache:
-        mailchimp_cache_clear_user($list_id, $email);
+        mailchimp_cache_clear_member($list_id, $email);
       }
       else {
         watchdog('mailchimp', 'A problem occurred updating @email on list @list.', array(
@@ -365,7 +365,7 @@ function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FAL
           module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
         }
         // Clear user cache:
-        mailchimp_cache_clear_user($list_id, $email);
+        mailchimp_cache_clear_member($list_id, $email);
       }
       catch (Exception $e) {
         watchdog('mailchimp', 'An error occurred unsubscribing @email from list @list. "%message"', array(
@@ -453,7 +453,7 @@ function mailchimp_get_campaigns_for_email($email) {
  * @string $list_id
  * @string $email
  */
-function mailchimp_cache_clear_user($list_id, $email) {
+function mailchimp_cache_clear_member($list_id, $email) {
   cache_clear_all($list_id . '-' . $email, 'cache_mailchimp');
 }
 
@@ -505,7 +505,7 @@ function mailchimp_process_webhook() {
       break;
 
     case 'upemail':
-      mailchimp_cache_clear_user($data['list_id'], $data['old_email']);
+      mailchimp_cache_clear_member($data['list_id'], $data['old_email']);
       mailchimp_get_memberinfo($data['list_id'], $data['new_email'], TRUE);
       break;
 
