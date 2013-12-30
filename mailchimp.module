@@ -310,7 +310,7 @@ function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
 /**
  * Wrapper around MCAPI->lists->subscribe.
  */
-function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $format = 'html', $double_optin = FALSE, $update_existing = FALSE, $replace_interests = TRUE, $confirm = TRUE, $mcapi = NULL) {
+function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $format = 'html', $double_optin = FALSE, $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE, $mcapi = NULL) {
   $success = FALSE;
   if ($mcapi || $mcapi = mailchimp_get_api_object()) {
     try {
