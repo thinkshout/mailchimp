@@ -87,6 +87,13 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     ),
     '#description' => t('A unique machine-readable name for this list. It must only contain lowercase letters, numbers, and underscores.'),
   );
+  $form['description'] = array(
+    '#type' => 'textarea',
+    '#default_value' => $signup ? $signup->settings['description'] : '',
+    '#rows' => 2,
+    '#maxlength' => 500,
+    '#description' => t('This description will be shown on the signup form below the title. (500 characters or less)'),
+  );
   $mode_defaults = array(
     MAILCHIMP_SIGNUP_BLOCK => array(MAILCHIMP_SIGNUP_BLOCK),
     MAILCHIMP_SIGNUP_PAGE => array(MAILCHIMP_SIGNUP_PAGE),
@@ -388,15 +395,15 @@ function mailchimp_signup_signup_form_submit($form, &$form_state) {
   $signup->mc_lists = array_filter($form_state['values']['mc_lists']);
   $signup->settings = $form_state['values']['settings'];
   $signup->settings['mergefields'] = $mergefields;
-  $signup->save();
-//  if ($ret = mailchimp_lists_save($list)) {
-//    drupal_set_message(t('List @name has been saved.',
-//      array('@name' => $list->label)));
-//    $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
-//  }
-//  else {
-//    drupal_set_message(t('There has been an error saving your list.'), 'error');
-//  }
+  $signup->settings['description'] = $form_state['values']['description'];
+  if ($signup->save()) {
+    drupal_set_message(t('Signup form @name has been saved.',
+      array('@name' => $signup->name)));
+    $form_state['redirect'] = 'admin/config/services/mailchimp/signup';
+  }
+  else {
+    drupal_set_message(t('There has been an error saving your list.'), 'error');
+  }
 }
 
 /**
