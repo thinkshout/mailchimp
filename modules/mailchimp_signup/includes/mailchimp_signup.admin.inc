@@ -57,8 +57,6 @@ function mailchimp_signup_overview_page() {
  * Return a form for adding/editing a mailchimp list.
  */
 function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $signup = NULL) {
-  $form = array();
-
   // Store the existing list for updating on submit.
   if (isset($signup)) {
     $form_state['signup'] = $signup;
@@ -139,6 +137,13 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     '#title' => 'Submit Button Label',
     '#required' => 'TRUE',
     '#default_value' => isset($signup) ? $signup->settings['submit_button'] : 'Submit',
+  );
+
+  $form['settings']['destination'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Form destination page',
+    '#description' => 'Leave blank to stay on the form page.',
+    '#default_value' => isset($signup) ? $signup->settings['destination'] : NULL,
   );
 
   $form['mc_lists_config'] = array(
@@ -397,7 +402,7 @@ function mailchimp_signup_signup_form_submit($form, &$form_state) {
   $signup->settings['mergefields'] = $mergefields;
   $signup->settings['description'] = $form_state['values']['description'];
   if ($signup->save()) {
-    drupal_set_message(t('Signup form @name has been saved.',
+    drupal_set_message(t('Signup form @name has been saved. If you have added or removed blocks or pages, you may need to clear caches.',
       array('@name' => $signup->name)));
     $form_state['redirect'] = 'admin/config/services/mailchimp/signup';
   }
