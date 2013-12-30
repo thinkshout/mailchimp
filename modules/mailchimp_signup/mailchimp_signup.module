@@ -145,6 +145,10 @@ function mailchimp_signup_entity_info() {
 function mailchimp_signup_page_access() {
   return TRUE;
 }
+
+/**
+ * Menu callback for Signup pages.
+ */
 function mailchimp_signup_page($signup_id) {
   $signup = mailchimp_signup_load($signup_id);
   return drupal_get_form('mailchimp_signup_subscribe_form', $signup);
@@ -164,9 +168,9 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
   if ($multiple_lists) {
     foreach ($lists as $list) {
       // Wrap in a div:
-      $wrapper_key = 'mailchimp_' . $list['name'];
+      $wrapper_key = 'mailchimp_' . $list['web_id'];
       $form['mailchimp_lists'][$wrapper_key] = array(
-        '#prefix' => '<div id="mailchimp-newsletter-' . $list['name'] . '" class="mailchimp-newsletter-wrapper">',
+        '#prefix' => '<div id="mailchimp-newsletter-' . $list['web_id'] . '" class="mailchimp-newsletter-wrapper">',
         '#suffix' => '</div>',
       );
       // @todo add interest groups (will require a setting)
@@ -177,6 +181,15 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
       );
     }
   }
+  else {
+    // just list the listname
+  }
+
+  foreach ($signup->settings['mergefields'] as $tag => $mergevar) {
+    if (!empty($mergevar)) {
+      $form['mergevars'][$tag] = mailchimp_signup_insert_drupal_form_tag($mergevar);
+    }
+  }
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -184,4 +197,78 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
   );
 
   return $form;
+}
+
+/**
+ * Convert mailchimp form elements to Drupal Form API.
+ *
+ * @param <mailchimp_form_element> $mergevar
+ *   The mailchimp-formatted form element to convert.
+ *
+ * @return <drupal_form_element>
+ *   A properly formatted drupal form element.
+ */
+function mailchimp_signup_insert_drupal_form_tag($mergevar) {
+  // Insert common FormAPI properties:
+  $input = array(
+    '#title' => t('@mergevar', array('@mergevar' => $mergevar['name'])),
+    '#weight' => $mergevar['order'],
+    '#required' => $mergevar['req'],
+    '#default_value' => $mergevar['default'],
+  );
+
+  switch ($mergevar['field_type']) {
+    case 'dropdown':
+      // Dropdown is mapped to <select> element in Drupal Form API.
+      $input['#type'] = 'select';
+
+      // Creates options, we must delete array keys to have relevant information
+      // on MailChimp.
+      foreach ($mergevar['choices'] as $choice) {
+        $choices[$choice] = $choice;
+      }
+
+      $input['#options'] = $choices;
+      break;
+
+    case 'radio':
+      // Radio is mapped to <input type='radio' /> i.e. 'radios' element in
+      // Drupal Form API.
+      $input['#type'] = 'radios';
+
+      // Creates options, we must delete array keys to have relevant information
+      // on MailChimp.
+      foreach ($mergevar['choices'] as $choice) {
+        $choices[$choice] = $choice;
+      }
+
+      $input['#options'] = $choices;
+      break;
+
+    case 'email':
+      if (element_info_property('emailfield', '#type')) {
+        // Set to an HTML5 email type if 'emailfield' is supported:
+        $input['#type'] = 'emailfield';
+      }
+      else {
+        // Set to standard text type if 'emailfield' isn't defined:
+        $input['#type'] = 'textfield';
+      };
+      $input['#size'] = $mergevar['size'];
+      break;
+
+    default:
+      // This is a standard input[type=text] or something we can't handle with
+      // Drupal FormAPI.
+      $input['#type'] = 'textfield';
+      $input['#size'] = $mergevar['size'];
+      break;
+  }
+
+  // Special cases for MailChimp hidden defined fields:
+  if ($mergevar['public'] == FALSE) {
+    $input['#type'] = 'hidden';
+  }
+
+  return $input;
 }
