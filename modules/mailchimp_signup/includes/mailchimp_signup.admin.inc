@@ -95,6 +95,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
   $form['mode'] = array(
     '#type' => 'checkboxes',
     '#title' => 'Display Mode',
+    '#required' => TRUE,
     '#options' => array(
       MAILCHIMP_SIGNUP_BLOCK => 'Block',
       MAILCHIMP_SIGNUP_PAGE => 'Page',
@@ -167,16 +168,16 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     ),
   );
 
-  $form['mc_list']['mergefields'] = array(
+  $form['mc_lists_config']['mergefields'] = array(
     '#prefix' => '<div id="mergefields-wrapper">',
     '#suffix' => '</div>',
   );
 
   // Show merge fields if changing list field or editing existing list.
   if (!empty($form_state['values']['mc_lists']) || isset($signup)) {
-    $form['mc_list']['mergefields_display'] = array(
+    $form['mc_lists_config']['mergefields'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Merge Field Form Display Settings'),
+      '#title' => t('Merge Field Display'),
       '#description' => t('Select the merge fields to show on registration forms. Required fields are automatically displayed.'),
       '#id' => 'mergefields-wrapper',
       '#tree' => TRUE,
@@ -184,19 +185,19 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     );
     $mc_lists = !empty($form_state['values']['mc_lists']) ? $form_state['values']['mc_lists'] : $signup->mc_lists;
     $mergevar_settings = mailchimp_get_mergevars(array_filter($mc_lists));
-    $mergevar_options = array();
+    $form_state['mergevar_options'] = array();
     foreach ($mergevar_settings as $list_mergevars) {
       foreach ($list_mergevars['merge_vars'] as $mergevar) {
         if ($mergevar['public']) {
-          $mergevar_options[$mergevar['tag']] = $mergevar;
+          $form_state['mergevar_options'][$mergevar['tag']] = $mergevar;
         }
       }
     }
-    foreach ($mergevar_options as $mergevar){
-      $form['mc_list']['mergefields_display'][$mergevar['tag']] = array(
+    foreach ($form_state['mergevar_options'] as $mergevar){
+      $form['mc_lists_config']['mergefields'][$mergevar['tag']] = array(
         '#type' => 'checkbox',
         '#title' => $mergevar['name'],
-        '#default_value' => isset($signup->settings['mergefields_display'][$mergevar['tag']]) ? $signup->settings['mergefields_display'][$mergevar['tag']] : TRUE,
+        '#default_value' => isset($signup->settings['mergefields'][$mergevar['tag']]) ? !empty($signup->settings['mergefields'][$mergevar['tag']]) : TRUE,
         '#required' => $mergevar['req'],
         '#disabled' => $mergevar['req'],
       );
@@ -366,7 +367,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
  * AJAX callback to return fields for a given type.
  */
 function mailchimp_signup_mergefields_callback($form, $form_state) {
-  return $form['mc_list']['mergefields_display'];
+  return $form['mc_lists_config']['mergefields'];
 }
 
 /**
@@ -374,14 +375,19 @@ function mailchimp_signup_mergefields_callback($form, $form_state) {
  */
 function mailchimp_signup_signup_form_submit($form, &$form_state) {
   $signup = isset($form_state['signup']) ? $form_state['signup'] : mailchimp_signup_create();
-  $is_new = isset($signup->is_new) && $signup->is_new;
-
+//  $is_new = isset($signup->is_new) && $signup->is_new;
+  $mergefields = $form_state['values']['mergefields'];
+  foreach ($mergefields as $id => $val) {
+    if ($val) {
+      $mergefields[$id] = $form_state['mergevar_options'][$id];
+    }
+  }
   $signup->title = $form_state['values']['title'];
   $signup->name = $form_state['values']['name'];
   $signup->mode = array_sum($form_state['values']['mode']);
   $signup->mc_lists = array_filter($form_state['values']['mc_lists']);
   $signup->settings = $form_state['values']['settings'];
-  $signup->settings['mergefields'] = array_filter($form_state['values']['mergefields_display']);
+  $signup->settings['mergefields'] = $mergefields;
   $signup->save();
 //  if ($ret = mailchimp_lists_save($list)) {
 //    drupal_set_message(t('List @name has been saved.',
