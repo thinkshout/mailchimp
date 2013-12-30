@@ -34,8 +34,38 @@ function mailchimp_signup_menu() {
     'file' => 'includes/mailchimp_signup.admin.inc',
     'type' => MENU_LOCAL_ACTION,
   );
+  $items['admin/config/services/mailchimp/signup/%mailchimp_signup/edit'] = array(
+    'title' => 'Edit a signup form',
+    'description' => 'Edit a Signup form.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_signup_signup_form', 5),
+    'load arguments' => array(5),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'includes/mailchimp_signup.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/config/services/mailchimp/signup/%mailchimp_signup/delete'] = array(
+    'title' => 'Delete Signup form',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_signup_signup_delete_form', 5),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'includes/mailchimp_signup.admin.inc',
+  );
 
   return $items;
+}
+
+/**
+ * Wrapper around mailchimp_signup_load_multiple to load a single signup entity.
+ */
+function mailchimp_signup_load($signup_id) {
+  $signups = mailchimp_signup_load_multiple(array($signup_id));
+  if ($signups) {
+    return reset($signups);
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**
