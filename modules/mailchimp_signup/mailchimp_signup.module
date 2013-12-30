@@ -185,7 +185,14 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
     }
   }
   else {
-    // just list the listname
+    $list = reset($lists);
+    $wrapper_key = 'mailchimp_' . $list['web_id'];
+    $form['mailchimp_lists'][$wrapper_key] = array(
+      '#type' => 'markup',
+      '#markup' => $list['name'],
+      '#prefix' => '<div id="mailchimp-newsletter-' . $list['web_id'] . '" class="mailchimp-newsletter-wrapper">',
+      '#suffix' => '</div>',
+    );
   }
 
   foreach ($signup->settings['mergefields'] as $tag => $mergevar) {
