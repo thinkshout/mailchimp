@@ -9,6 +9,7 @@
 define('MAILCHIMP_SIGNUP_BLOCK', 1);
 define('MAILCHIMP_SIGNUP_PAGE', 2);
 define('MAILCHIMP_SIGNUP_BOTH', 3);
+define('MAILCHIMP_SIGNUP_BLOCK_LABEL', 'mailchimp_signup_');
 
 /**
  * Implements hook_menu().
@@ -54,7 +55,7 @@ function mailchimp_signup_menu() {
 
   $signups = mailchimp_signup_load_multiple();
   foreach($signups as $signup) {
-    if (intval($signup->mode) > 1) {
+    if (intval($signup->mode) == MAILCHIMP_SIGNUP_PAGE || intval($signup->mode) == MAILCHIMP_SIGNUP_BOTH) {
       $items[$signup->settings['path']] = array(
         'title' => $signup->title,
         'page callback' => 'mailchimp_signup_page',
@@ -65,6 +66,39 @@ function mailchimp_signup_menu() {
     }
   }
   return $items;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function mailchimp_signup_block_info() {
+  $blocks = array();
+  $signups = mailchimp_signup_load_multiple();
+  foreach($signups as $signup) {
+    if (intval($signup->mode) == MAILCHIMP_SIGNUP_BLOCK || intval($signup->mode) == MAILCHIMP_SIGNUP_BOTH) {
+      $blocks[MAILCHIMP_SIGNUP_BLOCK_LABEL . $signup->mcs_id] = array(
+        'info' => t('Mailchimp Subscription Form: @name', array('@name' => $signup->label())),
+        'cache' => DRUPAL_CACHE_PER_USER,
+      );
+    }
+  }
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ *
+ * Provides a block for each signup configured to add a block.
+ */
+function mailchimp_signup_block_view($delta = '') {
+  $len = strlen(MAILCHIMP_SIGNUP_BLOCK_LABEL);
+  $mcs_id = substr($delta, $len);
+  $signup = mailchimp_signup_load($mcs_id);
+  $block = array(
+    'subject' => $signup->title,
+    'content' => drupal_get_form('mailchimp_signup_subscribe_form', $signup),
+  );
+  return $block;
 }
 
 /**
