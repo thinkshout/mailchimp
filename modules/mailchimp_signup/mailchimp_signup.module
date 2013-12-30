@@ -201,7 +201,7 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
   $form['mailchimp_lists'] = array('#tree' => TRUE);
   $lists = mailchimp_get_lists($signup->mc_lists);
   $multiple_lists = (count($lists) != 1);
-  
+
   if ($multiple_lists) {
     foreach ($lists as $list) {
       // Wrap in a div:
@@ -211,10 +211,11 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
         '#suffix' => '</div>',
       );
       // @todo add interest groups (will require a setting)
-      $form['mailchimp_lists'][$wrapper_key][$list['id']] = array(
+      $form['mailchimp_lists'][$wrapper_key]['subscribe'] = array(
         '#type' => 'checkbox',
         '#title' => $list['name'],
-        '#default_value' => FALSE,
+        '#return_value' => $list['id'],
+        '#default_value' => 0,
       );
     }
   }
@@ -228,7 +229,11 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
       '#suffix' => '</div>',
     );
   }
-
+  $form['mergevars'] = array(
+    '#prefix' => '<div id="mailchimp-newsletter-' . $list['web_id'] . '-mergefields" class="mailchimp-newsletter-mergefields">',
+    '#suffix' => '</div>',
+    '#tree' => TRUE,
+  );
   foreach ($signup->settings['mergefields'] as $tag => $mergevar) {
     if (!empty($mergevar)) {
       $form['mergevars'][$tag] = mailchimp_insert_drupal_form_tag($mergevar);
