@@ -195,6 +195,50 @@ function _mailchimp_list_cmp($a, $b) {
 }
 
 /**
+ * Wrapper around MCAPI->Lists->mergeVars.
+ * 
+ * @string $list_ids
+ * @boolean $reset
+ * 
+ * @return struct
+ *   Struct describing mergevars for the specified lists.
+ */
+function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
+  $mergevars = array();
+  if (!$reset) {
+    foreach ($list_ids as $index => $list_id) {
+      $cache = $reset ? NULL : cache_get($list_id . '-mergevars', 'cache_mailchimp');
+      // Return cached lists:
+      if ($cache) {
+        $mergevars[$list_id] = $cache->data;
+      }
+    }
+  }
+  
+  if (count($list_ids)) {
+    if ($q = mailchimp_get_api_object()) {
+      try {
+        $result = $q->lists->mergeVars($list_ids);
+        if ($result['success_count']) {
+          foreach ($result['data'] as $list_mergevars) {
+            $mergevars[$list_mergevars['id']] = $list_mergevars;
+            cache_set($list_id . '-mergevars', $list_mergevars, 'cache_mailchimp', CACHE_PERMANENT);
+          }
+        }
+      }
+      catch (Exception $e) {
+        watchdog('mailchimp', 'An error occurred requesting mergevars for list @list. "%message"', array(
+          '@list' => $list_id,
+          '%message' => $e->getMessage(),
+        ), WATCHDOG_ERROR);
+      }
+    }
+  }
+
+  return $mergevars;
+}
+
+/**
  * Get the MailChimp memberinfo for a given email address and list.
  *
  * Results are cached in the cache_mailchimp bin which is cleared by the MC
