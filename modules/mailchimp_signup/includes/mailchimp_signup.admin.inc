@@ -98,47 +98,260 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     ),
     '#description' => t('A unique machine-readable name for this list. It must only contain lowercase letters, numbers, and underscores.'),
   );
+  $mode_defaults = array(
+    MAILCHIMP_SIGNUP_BLOCK => array(MAILCHIMP_SIGNUP_BLOCK),
+    MAILCHIMP_SIGNUP_PAGE => array(MAILCHIMP_SIGNUP_PAGE),
+    MAILCHIMP_SIGNUP_BOTH => array(MAILCHIMP_SIGNUP_BLOCK, MAILCHIMP_SIGNUP_PAGE),
+  );
+  $form['mode'] = array(
+    '#type' => 'checkboxes',
+    '#title' => 'Display Mode',
+    '#options' => array(
+      MAILCHIMP_SIGNUP_BLOCK => 'Block',
+      MAILCHIMP_SIGNUP_PAGE => 'Page',
+    ),
+    '#default_value' => isset($signup) ? $mode_defaults[$signup->mode] : NULL,
+  );
+
+  $form['settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Settings',
+    '#tree' => TRUE,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['settings']['path'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Page URL',
+    '#description' => t('Path to the signup page. ie "newsletter/signup".'),
+    //'#element_validate' => array('path_form_element_validate'),
+    '#states' => array(
+      // Hide unless needed.
+      'visible' => array(
+        ':input[name="mode[' . MAILCHIMP_SIGNUP_PAGE . ']"]' => array('checked' => TRUE),
+      ),
+      'required' => array(
+        ':input[name="mode[' . MAILCHIMP_SIGNUP_PAGE . ']"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+
+  $form['settings']['submit_button'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Submit Button Label',
+    '#required' => 'TRUE',
+    '#default_value' => isset($signup) ? $signup->settings->submit_button : 'Submit',
+  );
 
   $form['mc_lists_config'] = array(
     '#type' => 'fieldset',
     '#title' => t('MailChimp List Selection & Configuration'),
     '#collapsible' => TRUE,
-    '#collapsed' => isset($signup),
+    '#collapsed' => FALSE,
   );
   $form['mc_lists_config']['instructions'] = array(
     '#markup' => "Select the lists to display on this form:<br /><br />",
+  );  
+  $lists = mailchimp_get_lists();
+  $options = array();
+  foreach ($lists as $mc_list) {
+    $options[$mc_list['id']] = $mc_list['name'];
+  }
+  $form['mc_lists_config']['mc_lists'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('MailChimp Lists'),
+    '#description' => t('Which lists to show on your signup form. You can create additional lists at !MailChimp.',
+      array('!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'))),
+    '#options' => $options,
+    '#default_value' => $signup ? $signup->mc_lists : NULL,
+    '#required' => TRUE,
+    '#ajax' => array(
+      'callback' => 'mailchimp_signup_mergefields_callback',
+      'wrapper' => 'mergefields-wrapper',
+      'method' => 'replace',
+      'effect' => 'fade',
+      'progress' => array(
+        'type' => 'throbber',
+        'message' => t('Retrieving merge fields for this list.'),
+      ),
+    ),
   );
 
-  $lists = mailchimp_get_lists();
-  foreach ($lists as $mc_list) {
-    $default = FALSE;
-    if (isset($signup)) {
-      if (isset($signup->mc_lists[$mc_list['id']])){
-        $default = TRUE;
+  $form['mc_list']['mergefields'] = array(
+    '#prefix' => '<div id="mergefields-wrapper">',
+    '#suffix' => '</div>',
+  );
+
+  // Show merge fields if changing list field or editing existing list.
+  if (!empty($form_state['values']['mc_lists']) || isset($signup)) {
+    $form['mc_list']['mergefields_display'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Merge Field Form Display Settings'),
+      '#description' => t('Select the merge fields to show on registration forms. Required fields are automatically displayed.'),
+      '#id' => 'mergefields-wrapper',
+      '#tree' => TRUE,
+      '#weight' => 20,
+    );
+    $mc_lists = !empty($form_state['values']['mc_lists']) ? $form_state['values']['mc_lists'] : $signup->mc_lists;
+    $mergevar_settings = mailchimp_get_mergevars(array_filter($mc_lists));
+    $mergevar_options = array();
+    foreach ($mergevar_settings as $list_mergevars) {
+      foreach ($list_mergevars['merge_vars'] as $mergevar) {
+        if ($mergevar['public']) {
+          $mergevar_options[$mergevar['tag']] = $mergevar;
+        }
       }
     }
-    $form['mc_lists_config'][$mc_list['id']] = array(
-      '#type' => 'checkbox',
-      '#title' => $mc_list['name'],
-      '#return_value' => $mc_list['id'],
-      '#default_value' => $default,
-      '#tree' => TRUE,
-    );
+    foreach ($mergevar_options as $mergevar){
+      $form['mc_list']['mergefields_display'][$mergevar['tag']] = array(
+        '#type' => 'checkbox',
+        '#title' => $mergevar['name'],
+        '#default_value' => isset($signup->settings['mergefields_display'][$mergevar['tag']]) ? $signup->settings['mergefields_display'][$mergevar['tag']] : TRUE,
+        '#required' => $mergevar['req'],
+        '#disabled' => $mergevar['req'],
+      );
+    }
+  }
+/*
+  $form['list_settings']['required'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Automatically add all eligible users. <em>(Formerly "Required List")</em>'),
+    '#description' => t('Adds all registered users with appropriate Roles to the list automatically. This will block them from controlling their subscription status through Drupal. (Email confirmation from Mailchimp may still be required.)'),
+    '#default_value' => ($signup && !empty($signup->settings['required'])) ? $signup->settings['required'] : FALSE,
+  );
 
-    $form['mc_lists_config'][$mc_list['id'].'label'] = array(
-      '#type' => 'textfield',
-      '#title' => 'Label',
-      '#description' => t('The label for this list that will appear on forms, either next to a checkbox or above the list merge fields, depending on the type of list.'),
-      '#size' => 40,
-      '#maxlength' => 64,
-      '#default_value' => $default ? $signup->mc_lists[$mc_list['id']]['label'] : $mc_list['name'],
-      '#states'=> array(
-        'visible' => array(
-          ':input[name="' . $mc_list['id'] . '"]' => array('checked' => TRUE),
-        ),
-      ),
+  $form['list_settings']['roles'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Roles'),
+    '#tree' => TRUE,
+    '#description' => t('<p>Choose which roles may subscribe to this list. All
+      users will see the lists they\'re eligible for at the !subscribe and in
+      the subscription block. Lists assigned to the Authenticated role may
+      also apear in the registration form if that option is selected below.
+      Authenticated user may also manage their list settings from their profile.
+      The Anonymous role may <em>only</em> be set for free form lists.</p>',
+      array(
+        '!subscribe' => l(t('newsletter subscription page'),
+          'mailchimp/subscribe'),
+      )),
+  );
+  $roles = user_roles();
+  foreach ($roles as $rid => $role) {
+    $form['list_settings']['roles'][$rid] = array(
+      '#type' => 'checkbox',
+      '#tree' => TRUE,
+      '#title' => $role,
+      '#return_value' => $rid,
+      '#default_value' => ($signup && !empty($signup->settings['roles'][$rid])) ? $signup->settings['roles'][$rid] : FALSE,
     );
   }
+  // We don't show the anonymous role: instead we use the "allow anonymous"
+  // setting:
+  unset($form['list_settings']['roles'][DRUPAL_ANONYMOUS_RID]);
+
+  $form['list_settings']['settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Settings'),
+  );
+
+  $form['list_settings']['settings']['doublein'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Require subscribers to Double Opt-in'),
+    '#description' => t('New subscribers will be sent a link with an email
+      they must follow to confirm their subscription.'),
+    '#default_value' => isset($signup->settings['doublein']) ? $signup->settings['doublein'] : FALSE,
+  );
+
+  $form['list_settings']['settings']['show_register_form'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show subscription options on the user registration form.'),
+    '#description' => t('This will only apply for lists granted to an authenticated role. <em>(If the list is set to "Automatically add", only the title and Interest Group options will appear.)</em>'),
+    '#default_value' => isset($signup->settings['show_register_form']) ? $signup->settings['show_register_form'] : FALSE,
+  );
+  $form['list_settings']['settings']['show_account_form'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show subscription options on user edit screen'),
+    '#description' => t('If set, a tab will be presented for managing newsletter subscriptions when editing an account. <em>(If the list is set to "Automatically add", the option to unsubscribe will be disabled, but users can configure their Interest Groups.)</em>'),
+    '#default_value' => isset($signup->settings['show_account_form']) ? $signup->settings['show_account_form'] : FALSE,
+  );
+  $form['list_settings']['settings']['cron'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Sync List During Cron'),
+    '#default_value' => isset($signup->settings['cron']) ? $signup->settings['cron'] : FALSE,
+    '#description' => t('If this is set, users will be subscribed to the
+      required list during cron runs. Otherwise subscription will take place when a user is added/edited.'),
+  );
+  $form['list_settings']['settings']['webhooks'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable MailChimp webhooks for this list'),
+    '#default_value' => isset($signup->settings['webhooks']) ? $signup->settings['webhooks'] : FALSE,
+    '#description' => t("When a user unsubscribes from a list or updates
+      their profile outside of Drupal, MailChimp will trigger an event to
+      update the user's cached MailChimp member information. This will
+      <em>not</em> update any of their Drupal user information."),
+  );
+
+  $form['form_option_settings']['form_label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('List Label'),
+    '#description' => t('The label for this list that will appear on forms, either next to a checkbox or above the list merge fields, depending on the type of list.'),
+    '#size' => 40,
+    '#maxlength' => 64,
+    '#default_value' => isset($signup->settings['form_label']) ? $signup->settings['form_label'] : '',
+  );
+  $form['form_option_settings']['submit_label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Submit Button Label'),
+    '#description' => t('The label for the Submit button that will appear on subscription forms that include only this list: generally blocks only.'),
+    '#size' => 20,
+    '#maxlength' => 20,
+    '#default_value' => isset($signup->settings['submit_label']) ? $signup->settings['submit_label'] : 'Submit',
+  );
+  $form['form_option_settings']['default_register_form_optin'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Default to opt-in on registration form.'),
+    '#description' => t('This will only apply for lists appearing on the register form.'),
+    '#default_value' => isset($signup->settings['default_register_form_optin']) ? $signup->settings['default_register_form_optin'] : FALSE,
+    '#states' => array(
+      // Hide for required lists.
+      'disabled' => array(
+        ':input[name="show_register_form"]' => array('checked' => FALSE),
+      ),
+      'checked' => array(
+        ':input[name="required"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+  $form['form_option_settings']['include_interest_groups'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include interest groups on subscription form.'),
+    '#default_value' => isset($signup->settings['include_interest_groups']) ? $signup->settings['include_interest_groups'] : FALSE,
+    '#description' => t('If set, users will be able to select applicable interest groups when registering or editing their accounts.'),
+  );
+  $form['form_option_settings']['opt_in_interest_groups'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Default all groups to opt-in.'),
+    '#default_value' => isset($signup->settings['opt_in_interest_groups']) ? $signup->settings['opt_in_interest_groups'] : FALSE,
+    '#description' => t('If set, the registration form will check all interest groups by default.'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="include_interest_groups"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+  $form['form_option_settings']['interest_groups_label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Interest groups label'),
+    '#default_value' => isset($signup->settings['interest_groups_label']) ? $signup->settings['interest_groups_label'] : t('Interest Groups'),
+    '#description' => t('Label to appear above the interest group options.'),
+    '#size' => 40,
+    '#maxlength' => 255,
+    '#states' => array(
+      'enabled' => array(
+        ':input[name="include_interest_groups"]' => array('checked' => TRUE),
+      ),
+    ),
+  );*/
 
   $form['save'] = array(
     '#type' => 'submit',
@@ -157,4 +370,49 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
   );
 
   return $form;
+}
+
+/**
+ * AJAX callback to return fields for a given type.
+ */
+function mailchimp_signup_mergefields_callback($form, $form_state) {
+  return $form['mc_list']['mergefields_display'];
+}
+
+/**
+ * Submit handler for mailchimp_lists_list_form().
+ */
+function mailchimp_signup_signup_form_submit($form, &$form_state) {
+  $signup = isset($form_state['signup']) ? $form_state['signup'] : mailchimp_signup_create();
+  $is_new = isset($signup->is_new) && $signup->is_new;
+
+  $signup->title = $form_state['values']['title'];
+  $signup->name = $form_state['values']['name'];
+  $signup->mode = array_sum($form_state['values']['mode']);
+  $signup->mc_lists = array_filter($form_state['values']['mc_lists']);
+  $signup->settings = $form_state['values']['settings'];
+  $signup->settings['mergefields'] = array_filter($form_state['values']['mergefields_display']);
+  $signup->save();
+//  if ($ret = mailchimp_lists_save($list)) {
+//    drupal_set_message(t('List @name has been saved.',
+//      array('@name' => $list->label)));
+//    $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
+//  }
+//  else {
+//    drupal_set_message(t('There has been an error saving your list.'), 'error');
+//  }
+}
+
+
+/**
+ * Create a new Mailchimp Signup object.
+ *
+ * @param array $values
+ *   Associative array of values.
+ *
+ * @return MailchimpSignup
+ *   New MailchimpSignup entity.
+ */
+function mailchimp_signup_create(array $values = array()) {
+  return entity_get_controller('mailchimp_signup')->create($values);
 }
