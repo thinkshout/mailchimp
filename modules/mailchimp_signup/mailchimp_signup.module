@@ -244,18 +244,46 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
 }
 
 /**
- * Convert mailchimp form elements to Drupal Form API.
- *
- * @param <mailchimp_form_element> $mergevar
- *   The mailchimp-formatted form element to convert.
- *
- * @return <drupal_form_element>
- *   A properly formatted drupal form element.
+ * Submit handler to add users to lists on subscription form submission.
  */
+function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
+  $signup = reset($form_state['build_info']['args']);
+  $list_details = mailchimp_get_lists($signup->mc_lists);
+  $list_ids = array();
+  // Filter out blank fields so we don't erase values on the Mailchimp side.
+  $merge_values = array_filter($form_state['values']['mergevars']);
+  $email = $merge_values['EMAIL'];
+  // If we only have one list we won't have checkbox values to investigate:
+  if (count($signup->mc_lists) == 1) {
+    $list_ids[] = reset($signup->mc_lists);
+  }
+  else {
+    // We can look at the checkbox values now:
+    foreach ($form_state['values']['mailchimp_lists'] as $list) {
+      if($list['subscribe']) {
+        $list_ids[] = $list['subscribe'];
       }
-
-
-      }
-      else {
+    }
+  }
+  $successes = array();
+  // Loop through the selected lists and try to subscribe:
+  foreach($list_ids as $list_id) {
+    $result = mailchimp_subscribe($list_id, $email, $merge_values);
+    if (empty($result)) {
+      drupal_set_message(t('There was a problem with your newsletter signup to %list.', array(
+        '%list' => $list_details[$list_id]['name'],
+      )), 'warning');
+    }
+    else {
+      $successes[] = $list_details[$list_id]['name'];
+    }
+  }
+  if (count($successes)) {
+    drupal_set_message(t('You have been successfully subscribed to: %lists.', array(
+      '%lists' => implode('; ', $successes),
+    )), 'status');
+  }
+  if (!empty($signup->settings['destination'])) {
+    $form_state['redirect'] = $signup->settings['destination'];
   }
 }
