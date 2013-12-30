@@ -187,7 +187,7 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
 
   foreach ($signup->settings['mergefields'] as $tag => $mergevar) {
     if (!empty($mergevar)) {
-      $form['mergevars'][$tag] = mailchimp_signup_insert_drupal_form_tag($mergevar);
+      $form['mergevars'][$tag] = mailchimp_insert_drupal_form_tag($mergevar);
     }
   }
 
@@ -208,67 +208,10 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
  * @return <drupal_form_element>
  *   A properly formatted drupal form element.
  */
-function mailchimp_signup_insert_drupal_form_tag($mergevar) {
-  // Insert common FormAPI properties:
-  $input = array(
-    '#title' => t('@mergevar', array('@mergevar' => $mergevar['name'])),
-    '#weight' => $mergevar['order'],
-    '#required' => $mergevar['req'],
-    '#default_value' => $mergevar['default'],
-  );
-
-  switch ($mergevar['field_type']) {
-    case 'dropdown':
-      // Dropdown is mapped to <select> element in Drupal Form API.
-      $input['#type'] = 'select';
-
-      // Creates options, we must delete array keys to have relevant information
-      // on MailChimp.
-      foreach ($mergevar['choices'] as $choice) {
-        $choices[$choice] = $choice;
       }
 
-      $input['#options'] = $choices;
-      break;
 
-    case 'radio':
-      // Radio is mapped to <input type='radio' /> i.e. 'radios' element in
-      // Drupal Form API.
-      $input['#type'] = 'radios';
-
-      // Creates options, we must delete array keys to have relevant information
-      // on MailChimp.
-      foreach ($mergevar['choices'] as $choice) {
-        $choices[$choice] = $choice;
-      }
-
-      $input['#options'] = $choices;
-      break;
-
-    case 'email':
-      if (element_info_property('emailfield', '#type')) {
-        // Set to an HTML5 email type if 'emailfield' is supported:
-        $input['#type'] = 'emailfield';
       }
       else {
-        // Set to standard text type if 'emailfield' isn't defined:
-        $input['#type'] = 'textfield';
-      };
-      $input['#size'] = $mergevar['size'];
-      break;
-
-    default:
-      // This is a standard input[type=text] or something we can't handle with
-      // Drupal FormAPI.
-      $input['#type'] = 'textfield';
-      $input['#size'] = $mergevar['size'];
-      break;
   }
-
-  // Special cases for MailChimp hidden defined fields:
-  if ($mergevar['public'] == FALSE) {
-    $input['#type'] = 'hidden';
-  }
-
-  return $input;
 }
