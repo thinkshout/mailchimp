@@ -18,7 +18,7 @@ function mailchimp_signup_menu() {
   $items = array();
 
   $items['admin/config/services/mailchimp/signup'] = array(
-    'title' => 'Signup',
+    'title' => 'Signup Forms',
     'description' => 'Manage MailChimp Signup blocks and pages.',
     'page callback' => 'mailchimp_signup_overview_page',
     'access arguments' => array('administer mailchimp'),
