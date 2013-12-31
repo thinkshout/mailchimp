@@ -17,20 +17,32 @@ function mailchimp_signup_overview_page() {
       l(t('Edit'), 'admin/config/services/mailchimp/signup/' . $signup->mcs_id . '/edit'),
       l(t('Delete'), 'admin/config/services/mailchimp/signup/' . $signup->mcs_id . '/delete'),
     );
+    switch ($signup->mode) {
+      case MAILCHIMP_SIGNUP_BLOCK:
+        $modes = l('Block', 'admin/structure/block');
+        break;
+      case MAILCHIMP_SIGNUP_PAGE:
+        $modes = l('Page', $signup->settings['path']);
+        break;
+      case MAILCHIMP_SIGNUP_BOTH:
+        $modes = l('Block', 'admin/structure/block') . ' and ' . l('Page', $signup->settings['path']);
+        break;
+    }
     $list_labels = array();
     foreach ($signup->mc_lists as $list_id) {
       $list_labels[] = l($mc_lists[$list_id]['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_lists[$list_id]['web_id']);
     }
-    $list_labels = implode(', ', $list_labels);
     $rows[] = array(
       l($signup->label(), 'admin/config/services/mailchimp/signup/' . $signup->mcs_id . '/edit'),
-      $list_labels,
+      $modes,
+      implode(', ', $list_labels),
       implode(' | ', $actions),
     );
   }
   $table = array(
     'header' => array(
       t('Name'),
+      t('Display Mode(s)'),
       t('MailChimp Lists'),
       t('Actions'),
     ),
