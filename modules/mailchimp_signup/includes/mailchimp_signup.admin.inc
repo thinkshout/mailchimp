@@ -41,13 +41,14 @@ function mailchimp_signup_overview_page() {
       array('!link' => l(t('MailChimp'), 'https://admin.mailchimp.com/lists/'))), 'warning');
   }
   else {
-    $options = 'Currently Available MailChimp lists:<i>';
+    $list_names = array();
     foreach ($mc_lists as $mc_list) {
-      $options .= ' ' . $mc_list['name'] . ',';
+      $list_names[] = $mc_list['name'];
     }
-    $options = rtrim($options, ',');
-    $options .= ".</i>";
-    $table['caption'] = $options;
+    $caption = 'Currently Available MailChimp lists: <i>';
+    $caption .= implode(', ', $list_names);
+    $caption .= ".</i>";
+    $table['caption'] = $caption;
   }
 
   return theme('table', $table);
