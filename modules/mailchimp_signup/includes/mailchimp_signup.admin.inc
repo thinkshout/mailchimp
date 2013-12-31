@@ -88,6 +88,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
   );
   $form['description'] = array(
     '#type' => 'textarea',
+    '#title' => 'Description',
     '#default_value' => $signup ? $signup->settings['description'] : '',
     '#rows' => 2,
     '#maxlength' => 500,
@@ -106,7 +107,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
       MAILCHIMP_SIGNUP_BLOCK => 'Block',
       MAILCHIMP_SIGNUP_PAGE => 'Page',
     ),
-    '#default_value' => isset($signup) ? $mode_defaults[$signup->mode] : NULL,
+    '#default_value' => isset($signup) ? $mode_defaults[$signup->mode] : array(),
   );
 
   $form['settings'] = array(
@@ -167,7 +168,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     '#description' => t('Which lists to show on your signup form. You can create additional lists at !MailChimp.',
       array('!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'))),
     '#options' => $options,
-    '#default_value' => $signup ? $signup->mc_lists : NULL,
+    '#default_value' => $signup ? $signup->mc_lists : array(),
     '#required' => TRUE,
     '#ajax' => array(
       'callback' => 'mailchimp_signup_mergefields_callback',
