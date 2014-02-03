@@ -445,6 +445,16 @@ function mailchimp_signup_signup_delete_submit($form, &$form_state) {
 }
 
 /**
+ * Submit handler for mailchimp_signup_signup_delete_form().
+ */
+function mailchimp_signup_signup_delete_form_submit($form, &$form_state) {
+  $signup = $form_state['signup'];
+  mailchimp_signup_delete_multiple(array($signup->mcs_id));
+  drupal_set_message(t('%name has been deleted.', array('%name' => $signup->label())));
+  $form_state['redirect'] = 'admin/config/services/mailchimp/signup';
+}
+
+/**
  * Create a new Mailchimp Signup object.
  *
  * @param array $values
