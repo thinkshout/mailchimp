@@ -72,6 +72,51 @@ function mailchimp_entities_permission() {
 }
 
 /**
+ * Implements hook_menu().
+ */
+function mailchimp_entities_menu() {
+  $items = array();
+
+  $items['admin/config/services/mailchimp/entities'] = array(
+    'title' => 'Subscribed Entities',
+    'description' => 'Setting for subscribing entities to Mailchimp lists.',
+    'page callback' => 'mailchimp_entities_overview_page',
+    'access arguments' => array('administer mailchimp'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/mailchimp_entities.admin.inc',
+    'weight' => -10,
+  );
+  $items['admin/config/services/mailchimp/entities/add'] = array(
+    'title' => 'Add Entity->List Connection',
+    'description' => 'Link an entity/bundle to a Mailchimp list.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_entities_entity_form'),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'includes/mailchimp_entities.admin.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
+  $items['admin/config/services/mailchimp/entities/%mailchimp_entity/edit'] = array(
+    'title' => 'Edit an Entity->List Connection',
+    'description' => 'Edit an Entity->list Connection.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_entities_entity_form', 5),
+    'load arguments' => array(5),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'includes/mailchimp_entities.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/config/services/mailchimp/lists/%mailchimp_entity/delete'] = array(
+    'title' => 'Remove an Entity->List Connection',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_entities_delete_entity_form', 5),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'includes/mailchimp_entities.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
  * Loads multiple mailchimp_entitys by ID or based on a set of matching conditions.
  *
  * @see entity_load()
