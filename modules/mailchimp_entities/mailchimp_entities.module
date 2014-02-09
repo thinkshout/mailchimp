@@ -4,3 +4,93 @@
  * @file
  * Mailchimp entities module.
  */
+
+/**
+ * Implements hook_entity_info().
+ */
+
+
+function mailchimp_entities_entity_info() {
+  $return = array(
+    'mailchimp_entity' => array(
+      'label' => t('MailChimp Entity'),
+      'plural label' => t('MailChimp Entities'),
+      'entity class' => 'MailchimpEntity',
+      'controller class' => 'EntityAPIControllerExportable',
+      'base table' => 'mailchimp_entity',
+      'uri callback' => 'entity_class_uri',
+      'fieldable' => FALSE,
+      'exportable' => TRUE,
+      'label callback' => 'entity_class_label',
+      'access callback' => 'mailchimp_entities_entity_access',
+      'module' => 'mailchimp_entities',
+      'entity keys' => array(
+        'id' => 'id',
+        'name' => 'name',
+      ),
+      'bundles' => array(
+        'mailchimp_entity' => array(
+          'label' => t('MailChimp Entity'),
+        ),
+      ),
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full'),
+          'custom settings' => FALSE,
+        ),
+      ),
+    ),
+  );
+
+  return $return;
+}
+
+/**
+ * Access callback for mailchimp_entities.
+ *
+ * @return bool
+ */
+function mailchimp_entities_entity_access() {
+  return user_access('administer mailchimp entities');
+}
+
+/**
+ * Implements hook_permission().
+ */
+function mailchimp_entities_permission() {
+  $return = array();
+
+  $return['access mailchimp activity'] = array(
+    'title' => t('Access MailChimp Activity'),
+    'description' => t('View own MailChimp Activity History.'),
+  );
+  $return['administer mailchimp entities'] = array(
+    'title' => t('Administer MailChimp Entities'),
+    'description' => t('Add, Delete, and Configure MailChimp Entity settings.'),
+  );
+  return $return;
+}
+
+/**
+ * Loads multiple mailchimp_entitys by ID or based on a set of matching conditions.
+ *
+ * @see entity_load()
+ *
+ * @array $entity_ids
+ *   Array of entity IDS to load.
+ * @array $conditions
+ *   An array of conditions on the {mailchimp_entity} table in the form
+ *     'field' => $value.
+ * @bool $reset
+ *   Whether to reset the internal contact loading cache.
+ *
+ * @return array
+ *   An array of contact objects indexed by registration_id.
+ */
+function mailchimp_entities_load_multiple($entity_ids = array(), $conditions = array(), $reset = FALSE) {
+  if (empty($entity_ids)) {
+    $entity_ids = FALSE;
+  }
+
+  return entity_load('mailchimp_entity', $entity_ids, $conditions, $reset);
+}

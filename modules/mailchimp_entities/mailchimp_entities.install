@@ -6,3 +6,98 @@
  *
  */
 
+/**
+ * Implements hook_schema().
+ */
+function mailchimp_entities_schema() {
+  $schema['mailchimp_entity'] = array(
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique mailchimp_entities entity ID.',
+      ),
+      'name' => array(
+        'description' => 'The machine-readable name of this mailchimp_entity.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ),
+      'entity_type' => array(
+        'description' => 'The Drupal entity type (e.g. "node", "user").',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'bundle' => array(
+        'description' => 'The Drupal bundle (e.g. "page", "user")',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'entity_path' => array(
+        'description' => 'The path to view individual entities of the selected type.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'email_property' => array(
+        'description' => 'The property that contains the email address to track',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'mc_list_id' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 32,
+        'description' => 'The MailChimp list id to connect to this entity.',
+      ),
+      'label' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'description' => 'The {mailchimp_entity}.label of this mailchimp_entity.',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'description' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'description' => 'The {mailchimp_entity}.description of this mailchimp_entity.',
+        'not null' => FALSE,
+        'default' => '',
+      ),
+      'settings' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized object that stores the settings for the specific list.',
+      ),
+      // following fields are for supporting exportable status.
+      'status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        // Set the default to ENTITY_CUSTOM without using the constant as it is
+        // not safe to use it at this point.
+        'default' => 0x01,
+        'size' => 'tiny',
+        'description' => 'The exportable status of the entity.',
+      ),
+      'module' => array(
+        'description' => 'The name of the providing module if the entity has been defined in code.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('id'),
+    'unique key' => array('name'),
+  );
+
+  return $schema;
+}
