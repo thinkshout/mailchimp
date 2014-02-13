@@ -4,6 +4,7 @@
  * @file
  * Mailchimp lists module.
  */
+module_load_include('inc', 'mailchimp_lists', 'includes/mailchimp_lists.field');
 
 define('MAILCHIMP_TESTLIST_REQUIRED', 'required');
 define('MAILCHIMP_TESTLIST_OPTIONAL', 'optional');
