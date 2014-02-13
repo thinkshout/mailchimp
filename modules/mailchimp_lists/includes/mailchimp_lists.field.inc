@@ -109,6 +109,71 @@ function _mailchimp_lists_field_settings_process($element, $form_state) {
 function mailchimp_lists_field_settings_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
 
 }
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function mailchimp_lists_field_is_empty($item, $field) {
+  return FALSE;
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function mailchimp_lists_field_widget_info() {
+  return array(
+    'mailchimp_lists_select' => array(
+      'label' => t('default'),
+      'field types' => array('mailchimp_lists_subscription'),
+      'settings' => array(),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+        'default value' => FIELD_BEHAVIOR_DEFAULT,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+
+  $element += array(
+    '#title' => $element['#title'],
+    '#type' => 'checkbox',
+    '#default_value' => isset($items[$delta]) ? $items[$delta] : FALSE,
+  );
+
+  return array($element['#field_name'] => $element);
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function mailchimp_lists_field_formatter_info() {
+  return array(
+    'mailchimp_lists_subscribe' => array(
+      'label' => t('Subscription Form'),
+      'field types' => array('mailchimp_lists_subscription'),
+      'settings' => array(
+        'label' => ' ',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function mailchimp_lists_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $element = array();
+
+  return $element;
+}
  * Implements hook_form_FORM_ID_alter().
  *
  * Hide the cardinality setting on the field settings for
