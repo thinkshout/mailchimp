@@ -29,6 +29,86 @@ function mailchimp_lists_field_info() {
 }
 
 /**
+ * Implements hook_field_instance_settings_form().
+ */
+function mailchimp_lists_field_instance_settings_form($field, $instance) {
+  $form = array();
+  $lists = mailchimp_get_lists();
+  $options = array('' => t('-- Select --'));
+  foreach ($lists as $mc_list) {
+    $options[$mc_list['id']] = $mc_list['name'];
+  }
+  $form['mc_list_id'] = array(
+    '#type' => 'select',
+    '#title' => t('MailChimp List'),
+    '#multiple' => FALSE,
+    '#description' => t('Available MailChimp lists. If there are no options,
+      create a list at !MailChimp first, then refresh this page.',
+      array('!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'))),
+    '#options' => $options,
+    '#default_value' => $instance['settings']['mc_list_id'],
+    '#required' => TRUE,
+    '#ajax' => array(
+      'callback' => 'mailchimp_lists_mergefields_callback',
+      'wrapper' => 'mergefields-wrapper',
+      'method' => 'replace',
+      'effect' => 'fade',
+      'progress' => array(
+        'type' => 'throbber',
+        'message' => t('Retrieving merge fields for this list.'),
+      ),
+    ),
+  );
+  // We add the mergefields container only. The actually mergefield form
+  // elements cannot be added here because we don't have the $form_state,
+  // so we add a #process function to take care of those elements.
+  $form['mergefields'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Merge Fields'),
+    '#process' => array('_mailchimp_lists_field_settings_process'),
+    '#id' => 'mergefields-wrapper',
+    '#tree' => TRUE,
+  );
+
+  return $form;
+}
+
+/**
+ * AJAX callback to return fields for a given type.
+ */
+function mailchimp_lists_mergefields_callback($form, &$form_state) {
+  return $form['instance']['settings']['mergefields'];
+}
+
+/**
+ * Helper #process function to have ajaxified dynamic form elements.
+ */
+function _mailchimp_lists_field_settings_process($element, $form_state) {
+  $mc_list_id = $form_state['values']['instance']['settings']['mc_list_id'];
+  if (strlen($form_state['values']['instance']['settings']['mc_list_id'])) {
+    $mergevars = mailchimp_get_mergevars(array($mc_list_id));
+    $fields = mailchimp_lists_fieldmap_options($form_state['values']['instance']['entity_type'], $form_state['values']['instance']['bundle']);
+    foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
+      $default_value = isset($element['#instance']['settings']['mergefields'][$mergevar['tag']]) ? $element['#instance']['settings']['mergefields'][$mergevar['tag']] : -1;
+      $element[$mergevar['tag']] = array(
+        '#type' => 'select',
+        '#title' => $mergevar['name'],
+        '#description' => '',
+        '#default_value' => isset($fields[$default_value]) ? $default_value : '',
+        '#required' => $mergevar['req'],
+        '#options' => $fields,
+      );
+    }
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_field_validate().
+ */
+function mailchimp_lists_field_settings_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+
+}
  * Implements hook_form_FORM_ID_alter().
  *
  * Hide the cardinality setting on the field settings for
