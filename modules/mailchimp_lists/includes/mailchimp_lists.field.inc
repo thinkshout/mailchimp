@@ -205,6 +205,45 @@ function mailchimp_lists_field_formatter_settings_summary($field, $instance, $vi
 
   return $summary;
 }
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  switch ($display['type']) {
+    case 'mailchimp_lists_subscribe_default':
+      if (isset($instance['settings']['mergefields']['EMAIL'])) {
+        $wrapper = entity_metadata_wrapper($entity_type, $entity);
+        $email = $wrapper->{$instance['settings']['mergefields']['EMAIL']}->value();
+        if (strlen($email)) {
+          if (mailchimp_is_subscribed($instance['settings']['mc_list_id'], $email)) {
+            $status = "<i>Subscribed</i>";
+          }
+          else {
+            $status = "<i>Not Subscribed</i>";
+          }
+        }
+        else {
+          $status = "<i>No Valid Email Address</i>";
+        }
+        $element[0] = array('#markup' => $status);
+      }
+      break;
+
+    case 'mailchimp_lists_field_subscribe':
+      // Display subscription form if accessible.
+      if (TRUE) {
+        // @todo: check for valid permissions here
+        $element[0] = drupal_get_form('mailchimp_lists_subscribe_form', $instance, $entity);
+      }
+      break;
+
+  }
+  return $element;
+}
+
+/**
  * Implements hook_form_FORM_ID_alter().
  *
  * Hide the cardinality setting on the field settings for
