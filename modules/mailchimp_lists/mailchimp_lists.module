@@ -1173,3 +1173,45 @@ function mailchimp_lists_mollom_form_info($form_id) {
 
   return $form_info;
 }
+
+/**
+ * Return all possible Drupal properties for a given entity type.
+ *
+ * @param string $entity_type
+ *   Name of entity whose properties to list.
+ * @param string $entity_bundle
+ *   Optional bundle to limit available properties.
+ *
+ * @return array
+ *   List of properties that can be used as an #options list.
+ */
+function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL) {
+  $options = array('' => t('-- Select --'));
+
+  $properties = entity_get_all_property_info($entity_type);
+  if (isset($entity_bundle)) {
+    $info = entity_get_property_info($entity_type);
+    $properties = $info['properties'];
+    if (isset($info['bundles'][$entity_bundle])) {
+      $properties += $info['bundles'][$entity_bundle]['properties'];
+    }
+  }
+
+  foreach ($properties as $key => $property) {
+    $type = isset($property['type']) ? entity_property_extract_innermost_type($property['type']) : 'text';
+    $is_entity = ($type == 'entity') || (bool) entity_get_info($type);
+    // Leave entities out of this.
+    if (!$is_entity) {
+      if (isset($property['field']) && $property['field'] && !empty($property['property info'])) {
+        foreach ($property['property info'] as $sub_key => $sub_prop) {
+          $options[$property['label']][$key . ':' . $sub_key] = $sub_prop['label'];
+        }
+      }
+      else {
+        $options[$key] = $property['label'];
+      }
+    }
+  }
+
+  return $options;
+}
