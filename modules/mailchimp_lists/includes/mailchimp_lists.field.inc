@@ -140,7 +140,6 @@ function mailchimp_lists_field_widget_info() {
  * Implements hook_field_widget_form().
  */
 function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-
   // @todo: deal with case where "required" is checked
   $default = isset($instance['default_value'][0][$element['#field_name']]) ? $instance['default_value'][0][$element['#field_name']] : FALSE;
   if (isset($element['#entity']) && isset($instance['settings']['mergefields']['EMAIL'])) {
@@ -165,8 +164,15 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
  */
 function mailchimp_lists_field_formatter_info() {
   return array(
-    'mailchimp_lists_subscribe' => array(
+    'mailchimp_lists_field_subscribe' => array(
       'label' => t('Subscription Form'),
+      'field types' => array('mailchimp_lists_subscription'),
+      'settings' => array(
+        'label' => ' ',
+      ),
+    ),
+    'mailchimp_lists_subscribe_default' => array(
+      'label' => t('Subscription Info'),
       'field types' => array('mailchimp_lists_subscription'),
       'settings' => array(
         'label' => ' ',
