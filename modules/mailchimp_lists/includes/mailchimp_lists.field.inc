@@ -15,15 +15,16 @@ function mailchimp_lists_field_info() {
       'description' => t('Allows an entity to be subscribed to a Mailchimp list.'),
       'instance_settings' => array(
         'mc_list_id' => NULL,
-        'merge_fields' => array(),
+        'mergefields' => array(),
         'default_subscription_settings' => array(
-          'subscribed' => FALSE,
           'interest_groups' => array(),
         ),
       ),
       'default_widget' => 'mailchimp_lists_select',
-      'default_formatter' => 'mailchimp_lists_subscribe',
+      'default_formatter' => 'mailchimp_lists_subscribe_default',
       'no_ui' => FALSE,
+      'property_type' => 'mailchimp_lists_subscription',
+      'property_callbacks' => array('mailchimp_lists_subscription_property_info_callback'),
     ),
   );
 }
