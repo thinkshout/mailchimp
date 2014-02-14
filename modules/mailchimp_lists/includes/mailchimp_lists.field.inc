@@ -289,3 +289,34 @@ function mailchimp_lists_subscription_property_info_callback(&$info, $entity_typ
   unset($property['query callback']);
 }
 
+/**
+ * Implements hook_field_presave().
+ * 
+ * If we have any mailchimp_lists_subscription fields, we handle any changes to
+ * them by making appropriate subscription calls.
+ */
+function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  if ($field['type'] == 'mailchimp_lists_subscription') {
+    $list_id = $instance['settings']['mc_list_id'];
+    $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
+    $email_field = $instance['settings']['mergefields']['EMAIL'];
+    $email = $entity_wrapper->{$email_field}->value();
+    // Do we have a valid email?
+    if (strlen($email)) {
+      $subscribed = mailchimp_is_subscribed($list_id, $email);
+      $choices = $entity_wrapper->{$instance['field_name']}->value();
+      if ($choices['subscribe'] != $subscribed) {
+        // Subscription selection has changed.
+        if ($choices['subscribe']) {
+          mailchimp_subscribe($instance['settings']['mc_list_id'], $email);
+        }
+        else {
+          mailchimp_unsubscribe($instance['settings']['mc_list_id'], $email);
+        }
+      }
+      // @todo: mergefields
+
+      // @todo: if email address has changed, do we unsubscribe the old one?
+    }
+  }
+}
