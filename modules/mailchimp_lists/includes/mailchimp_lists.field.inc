@@ -141,13 +141,23 @@ function mailchimp_lists_field_widget_info() {
  */
 function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
+  // @todo: deal with case where "required" is checked
+  $default = isset($instance['default_value'][0][$element['#field_name']]) ? $instance['default_value'][0][$element['#field_name']] : FALSE;
+  if (isset($element['#entity']) && isset($instance['settings']['mergefields']['EMAIL'])) {
+    $entity_wrapper = entity_metadata_wrapper($element['#entity_type'], $element['#entity']);
+    $email_prop = $instance['settings']['mergefields']['EMAIL'];
+    $email = $entity_wrapper->{$email_prop}->value();
+    if (!empty($email)) {
+      $default = mailchimp_is_subscribed($instance['settings']['mc_list_id'], $email);
+    }
+  }
   $element += array(
     '#title' => $element['#title'],
     '#type' => 'checkbox',
-    '#default_value' => isset($items[$delta]) ? $items[$delta] : FALSE,
+    '#default_value' => $default,
   );
 
-  return array($element['#field_name'] => $element);
+  return array('subscribe' => $element);
 }
 
 /**
