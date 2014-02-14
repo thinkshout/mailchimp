@@ -192,6 +192,19 @@ function mailchimp_lists_field_formatter_settings_form($field, $instance, $view_
 
   return $element;
 }
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function mailchimp_lists_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $summary = '';
+
+
+  return $summary;
+}
  * Implements hook_form_FORM_ID_alter().
  *
  * Hide the cardinality setting on the field settings for
