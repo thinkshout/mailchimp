@@ -86,11 +86,12 @@ function mailchimp_lists_mergefields_callback($form, &$form_state) {
  */
 function _mailchimp_lists_field_settings_process($element, $form_state) {
   $mc_list_id = $form_state['values']['instance']['settings']['mc_list_id'];
+  $defaults = $form_state['build_info']['args'][0]['settings']['mergefields'];
   if (strlen($form_state['values']['instance']['settings']['mc_list_id'])) {
     $mergevars = mailchimp_get_mergevars(array($mc_list_id));
     $fields = mailchimp_lists_fieldmap_options($form_state['values']['instance']['entity_type'], $form_state['values']['instance']['bundle']);
     foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
-      $default_value = isset($element['#instance']['settings']['mergefields'][$mergevar['tag']]) ? $element['#instance']['settings']['mergefields'][$mergevar['tag']] : -1;
+      $default_value = isset($defaults[$mergevar['tag']]) ? $defaults[$mergevar['tag']] : -1;
       $element[$mergevar['tag']] = array(
         '#type' => 'select',
         '#title' => $mergevar['name'],
