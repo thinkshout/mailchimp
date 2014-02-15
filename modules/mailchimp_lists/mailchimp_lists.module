@@ -627,7 +627,23 @@ function _mailchimp_lists_interest_groups_form_elements($mc_list, $defaults_merg
  * @return <boolean>
  *   Indicates whether the operation was successful.
  */
-function mailchimp_lists_execute_change($function, $list, $mail, $mergevars = NULL, $account = NULL, $mcapi = NULL, &$queue = NULL) {
+function mailchimp_lists_execute_change($function, $list, $mail, $mergevars = NULL, $mcapi = NULL, &$queue = NULL) {
+
+  switch ($function) {
+    case 'add':
+      $ret = mailchimp_subscribe($list, $mail, $mergevars);
+      break;
+
+    case 'remove':
+      $ret = mailchimp_unsubscribe($list, $mail, TRUE);
+      break;
+
+    case 'update':
+      $ret = mailchimp_update_member($list, $mail, $mergevars);
+      break;
+  }
+  return $ret;
+  
   // If cron is enabled for this list, queue the function.
   if ($list->settings['cron'] || isset($queue)) {
     if (!isset($queue)) {
