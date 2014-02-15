@@ -560,31 +560,57 @@ function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type
   return $mergevars;
 }
 
+function _mailchimp_lists_interest_groups_form_elements($mc_list, $defaults_merge_values, $email = NULL) {
+  $return = array();
+  foreach ($mc_list['intgroups'] as $group) {
+    if ($group['form_field'] == 'hidden') {
+      continue;
+    }
+    // Set the form field type:
+    switch ($group['form_field']) {
+      case 'radio':
+        $field_type = 'radios';
+        break;
 
-    $is_subscribed = mailchimp_is_subscribed($list->mc_list_id, $mail);
+      case 'dropdown':
+        $field_type = 'select';
+        break;
 
-    // Determine what function is appropriate.
-    // Unsubscribe a subscribed user who unchecked an Optional list:
-    if ($is_subscribed && !$selected && !$list->settings['required']) {
-      $function = 'remove';
+      default:
+        $field_type = $group['form_field'];
     }
-    // Otherwise we are doing an update or an add, based on $is_subscribed:
-    elseif ($selected || $list->settings['required'] || $is_anonymous) {
-      if ($is_subscribed) {
-        $function = 'update';
-      }
-      else {
-        $function = "add";
+
+    // Extract the field options:
+    $options = array();
+    foreach ($group['groups'] as $option) {
+      $options[$option['name']] = $option['name'];
+    }
+    // Grab the default values for this group:
+    if ($email) {
+      $memberinfo = mailchimp_get_memberinfo($mc_list['id'], $email);
+      if (isset($memberinfo['merges']['GROUPINGS'])) {
+        $default_merge_values = array();
+        foreach ($memberinfo['merges']['GROUPINGS'] as $membergroup) {
+          if ($membergroup['id'] == $group['id']) {
+            foreach($membergroup['groups'] as $option) {
+              if ($option['interested']) {
+                $default_merge_values[] = $option['name'];
+              }
+            }
+            break;
+          }
+        }
       }
     }
-    if (!empty($function)) {
-      $ret = mailchimp_lists_execute_change($function, $list, $mail, $mergevars, $account, $mcapi);
-      if (!$ret) {
-        drupal_set_message(t('There was a problem with your newsletter signup: @msg',
-          array('@msg' => $mcapi->errorMessage)), 'warning');
-      }
-    }
+    $return[$group['id']] = array(
+      '#type' => $field_type,
+      '#title' => $group['name'],
+      '#options' => $options,
+      '#default_value' => isset($default_merge_values) ? $default_merge_values : array(),
+      '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $mc_list['id'])),
+    );
   }
+  return $return;
 }
 
 /**
@@ -679,42 +705,6 @@ function mailchimp_lists_mailchimp_lists_merge_tokens() {
     }
   }
   return $tokens;
-}
-
-/**
- * Get the relevant merge vars for the given user for the given list.
- * 
- * @account $account
- * @mailchimp_list $list
- * @array null $interest_groups
- *
- * @return <array>
- *   mergevars array formatted for the MCAPI
- */
-function mailchimp_lists_load_user_mergevars($account, $list, $interest_groups = NULL) {
-  $values = array();
-
-  // Grab the saved list merge vars and filter out unset values:
-  if (!empty($list->settings['mergefields'])) {
-    $mergevars = array_filter($list->settings['mergefields']);
-    // We have to filter one-by-one, since an array_flip would munch any
-    // duplicate values.
-    foreach ($mergevars as $name => $token) {
-      // Match with token values:
-      $replaced = module_invoke_all('mailchimp_lists_merge_values', array($token => $name), $account, $list);
-      $values[$name] = $replaced[$name];
-    }
-    // Always add email:
-    $values += array(
-      'EMAIL' => $account->mail,
-    );
-  }
-  // Format interest groups if present:
-  if (!empty($interest_groups)) {
-    $values['GROUPINGS'] = _mailchimp_lists_reformat_groupings($interest_groups);
-  }
-
-  return $values;
 }
 
 /**
@@ -962,9 +952,8 @@ function mailchimp_lists_queue_existing($list, $queue_removals = FALSE) {
  */
 function _mailchimp_lists_reformat_groupings($interest_groups) {
   $groupings = array();
-  foreach ($interest_groups as $key => $group) {
-    $group = preg_replace('/,/', '\,', $group);
-    $groups = is_array($group) ? implode(',', array_filter($group)) : $group;
+  foreach ($interest_groups as $key => $groups) {
+    $groups = array_filter($groups);
     $groupings[] = array('id' => $key, 'groups' => $groups);
   }
   return $groupings;
