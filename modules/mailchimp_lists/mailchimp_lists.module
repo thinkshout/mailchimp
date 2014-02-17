@@ -629,17 +629,20 @@ function _mailchimp_lists_interest_groups_form_elements($mc_list, $default_merge
  */
 function mailchimp_lists_execute_change($function, $list, $mail, $mergevars = NULL, $mcapi = NULL, &$queue = NULL) {
 
+  if (empty($mcapi)) {
+    $mcapi = mailchimp_get_api_object();
+  }
   switch ($function) {
     case 'add':
-      $ret = mailchimp_subscribe($list, $mail, $mergevars);
+      $ret = mailchimp_subscribe($list, $mail, $mergevars, 'html', FALSE, TRUE, TRUE, TRUE, $mcapi);
       break;
 
     case 'remove':
-      $ret = mailchimp_unsubscribe($list, $mail, TRUE);
+      $ret = mailchimp_unsubscribe($list, $mail, TRUE, FALSE, FALSE, $mcapi);
       break;
 
     case 'update':
-      $ret = mailchimp_update_member($list, $mail, $mergevars);
+      $ret = mailchimp_update_member($list, $mail, $mergevars, '', TRUE, $mcapi);
       break;
   }
   return $ret;
