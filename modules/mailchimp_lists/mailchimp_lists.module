@@ -485,7 +485,7 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
           ),
         ),
       );
-      $form[$wrapper_key]['interest_groups'] += _mailchimp_lists_interest_groups_form_elements($mc_list, $instance['default_value'][0]['interest_groups'], $email);
+      $form[$wrapper_key]['interest_groups'] += _mailchimp_lists_interest_groups_form_elements($mc_list, $instance['default_value'][0]['options']['interest_groups'], $email);
     }
   }
   $form['submit'] = array(
@@ -538,7 +538,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $en
     }
   }
   if (!empty($function)) {
-    $ret = mailchimp_lists_execute_change($function, $mc_list['id'], $email, $mergevars);
+    $ret = mailchimp_lists_execute_change($function, $mc_list['id'], $email, $mergevars, $mcapi);
     if (!$ret) {
       drupal_set_message(t('There was a problem with your newsletter signup.', 'warning'));
     }
@@ -560,7 +560,7 @@ function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type
   return $mergevars;
 }
 
-function _mailchimp_lists_interest_groups_form_elements($mc_list, $defaults_merge_values, $email = NULL) {
+function _mailchimp_lists_interest_groups_form_elements($mc_list, $default_merge_values = array(), $email = NULL) {
   $return = array();
   foreach ($mc_list['intgroups'] as $group) {
     if ($group['form_field'] == 'hidden') {
@@ -594,7 +594,7 @@ function _mailchimp_lists_interest_groups_form_elements($mc_list, $defaults_merg
           if ($membergroup['id'] == $group['id']) {
             foreach($membergroup['groups'] as $option) {
               if ($option['interested']) {
-                $default_merge_values[] = $option['name'];
+                $default_merge_values[$group['id']][] = $option['name'];
               }
             }
             break;
@@ -606,7 +606,7 @@ function _mailchimp_lists_interest_groups_form_elements($mc_list, $defaults_merg
       '#type' => $field_type,
       '#title' => $group['name'],
       '#options' => $options,
-      '#default_value' => isset($default_merge_values) ? $default_merge_values : array(),
+      '#default_value' => isset($default_merge_values[$group['id']]) ? $default_merge_values[$group['id']] : array(),
       '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $mc_list['id'])),
     );
   }
