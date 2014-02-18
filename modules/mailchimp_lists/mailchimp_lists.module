@@ -1108,8 +1108,8 @@ function mailchimp_list_create(array $values = array()) {
  */
 function mailchimp_lists_mollom_form_list() {
   $forms = array();
-  $forms['mailchimp_lists_user_subscribe_form'] = array(
-    'title' => t('User newsletter subscription'),
+  $forms['mailchimp_lists_subscribe_form'] = array(
+    'title' => t('Mailchimp Newsletter Subscription Fields'),
   );
 
   return $forms;
@@ -1166,6 +1166,5 @@ function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL) {
       }
     }
   }
-
   return $options;
 }
