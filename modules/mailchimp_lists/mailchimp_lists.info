@@ -4,7 +4,6 @@ package = MailChimp
 core = 7.x
 dependencies[] = mailchimp
 dependencies[] = entity
-dependencies[] = entity_token
 
 configure = admin/config/services/mailchimp/lists
 
