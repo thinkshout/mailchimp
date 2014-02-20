@@ -171,8 +171,7 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
   $default = isset($instance['default_value'][0]['options']['subscribe']) ? $instance['default_value'][0]['options']['subscribe'] : FALSE;
   $email = NULL;
   if (isset($element['#entity'])) {
-    $entity_wrapper = entity_metadata_wrapper($element['#entity_type'], $element['#entity']);
-    $email = mailchimp_lists_load_email($instance, $entity_wrapper, FALSE);
+    $email = mailchimp_lists_load_email($instance, $element['#entity'], FALSE);
     if ($email) {
       $default = mailchimp_is_subscribed($instance['settings']['mc_list_id'], $email);
     }
@@ -265,8 +264,7 @@ function mailchimp_lists_field_formatter_settings_summary($field, $instance, $vi
 function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   $mc_list = mailchimp_get_list($instance['settings']['mc_list_id']);
-  $wrapper = entity_metadata_wrapper($entity_type, $entity);
-  $email = mailchimp_lists_load_email($instance, $wrapper, FALSE);
+  $email = mailchimp_lists_load_email($instance, $entity, FALSE);
   switch ($display['type']) {
     case 'mailchimp_lists_subscribe_default':
       if ($email) {

@@ -128,8 +128,7 @@ function mailchimp_lists_entity_delete($entity, $type) {
  */
 function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $settings, $entity) {
   $mc_list = mailchimp_get_list($instance['settings']['mc_list_id']);
-  $entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity);
-  $email = mailchimp_lists_load_email($instance, $entity_wrapper);
+  $email = mailchimp_lists_load_email($instance, $entity);
   if (!$email) {
     return array();
   }
@@ -323,7 +322,8 @@ function _mailchimp_lists_interest_groups_form_elements($mc_list, $default_value
  * 
  * Returns an email address or FALSE.
  */
-function mailchimp_lists_load_email($instance, $entity_wrapper, $log_errors = TRUE) {
+function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
+  $entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity);
   if (!isset($instance['settings']['mergefields']['EMAIL'])) {
     if ($log_errors) {
       watchdog('mailchimp_lists', 'Mailchimp Lists field "@field" on @entity -> @bundle has no EMAIL field configured, subscription actions cannot take place.', array(
