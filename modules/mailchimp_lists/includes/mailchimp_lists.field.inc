@@ -13,6 +13,7 @@ function mailchimp_lists_field_info() {
     'mailchimp_lists_subscription' => array(
       'label' => t('Mailchimp Subscription'),
       'description' => t('Allows an entity to be subscribed to a Mailchimp list.'),
+      'double_opt_in' => FALSE,
       'instance_settings' => array(
         'mc_list_id' => NULL,
         'show_interest_groups' => FALSE,
@@ -30,6 +31,19 @@ function mailchimp_lists_field_info() {
       'property_callbacks' => array('mailchimp_lists_subscription_property_info_callback'),
     ),
   );
+}
+
+/**
+ * Implements hook_field_settings_form().
+ */
+function mailchimp_lists_field_settings_form($field, $instance, $has_data) {
+  $form['double_opt_in'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Require subscribers to Double Opt-in',
+    '#description' => 'New subscribers will be sent a link with an email they must follow to confirm their subscription.',
+    '#default_value' => isset($field['settings']['double_opt_in']) ? $field['settings']['double_opt_in'] : FALSE,
+  );
+  return $form;
 }
 
 /**
@@ -388,7 +402,19 @@ function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance,
           }
         // @todo: if email address has changed, do we unsubscribe the old one?
         }
-        mailchimp_lists_execute_change($function, $instance['settings']['mc_list_id'], $email, $mergevars);
+        switch ($function) {
+          case 'add':
+            mailchimp_subscribe($instance['settings']['mc_list_id'], $email, $mergevars, 'html', $field['settings']['double_opt_in']);
+            break;
+
+          case 'remove':
+            mailchimp_unsubscribe($instance['settings']['mc_list_id'], $email, TRUE);
+            break;
+
+          case 'update':
+            mailchimp_update_member($instance['settings']['mc_list_id'], $email, $mergevars);
+            break;
+        }
       }
     }
   }
