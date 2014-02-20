@@ -191,7 +191,10 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
  * Submit handler to add emails to lists when editing/creating an entity.
  */
 function mailchimp_lists_subscribe_form_submit($form, &$form_state) {
-  mailchimp_lists_process_subscribe_form_choices($form_state['values'][$form_state['settings']['wrapper_key']], $form_state['settings']['instance'], $form_state['settings']['entity']);
+  mailchimp_lists_process_subscribe_form_choices(
+    $form_state['values'][$form_state['settings']['wrapper_key']],
+    $form_state['settings']['instance'], 
+    $form_state['settings']['entity']);
 }
 
 /**
