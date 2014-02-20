@@ -126,7 +126,7 @@ function mailchimp_lists_entity_delete($entity, $type) {
 /**
  * Return a form element for a single newsletter.
  */
-function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $settings, $entity) {
+function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $settings, $entity, $field) {
   $mc_list = mailchimp_get_list($instance['settings']['mc_list_id']);
   $email = mailchimp_lists_load_email($instance, $entity);
   if (!$email) {
@@ -158,6 +158,10 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
     '#disabled' => $instance['required'],
     '#required' => $instance['required'],
     '#default_value' => $instance['required'] || $is_subscribed,
+  );
+  $form[$wrapper_key]['double_opt_in'] = array(
+    '#type' => 'hidden',
+    '#value' => $field['settings']['double_opt_in'],
   );
   // Present interest groups:
   if ($settings['show_interest_groups']) {
@@ -201,33 +205,50 @@ function mailchimp_lists_subscribe_form_submit($form, &$form_state) {
  *   Otherwise, operations will be run with the ['mergevars']['EMAIL'] value.
  */
 function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $entity) {
-  $mcapi = mailchimp_get_api_object();
-  $mc_list = mailchimp_get_list($instance['settings']['mc_list_id']);
-  $mergevars = _mailchimp_lists_mergevars_populate($instance['settings']['mergefields'], $entity, $instance['entity_type']);
-  $interest_groups = !empty($choices['interest_groups']) ? $choices['interest_groups'] : NULL;
-  $email = $mergevars['EMAIL'];
-  if (!empty($interest_groups)) {
-    $mergevars['GROUPINGS'] = _mailchimp_lists_reformat_groupings($interest_groups);
+  $email = mailchimp_lists_load_email($instance, $entity);
+  if (!$email) {
+    // We can't do much subscribing without an email address.
+    return;
   }
-  $is_subscribed = mailchimp_is_subscribed($mc_list['id'], $email);
-
-  // Determine what function is appropriate.
-  // Unsubscribe a subscribed user who unchecked an Optional list:
-  if ($is_subscribed && !$choices['subscribe']) {
-    $function = 'remove';
-  }
-  // Otherwise we are doing an update or an add, based on $is_subscribed:
-  elseif ($choices['subscribe']) {
-    if ($is_subscribed) {
-      $function = 'update';
+  $function = FALSE;
+  $list_id = $instance['settings']['mc_list_id'];
+  $subscribed = mailchimp_is_subscribed($list_id, $email);
+  if ($choices['subscribe'] != $subscribed) {
+    // Subscription selection has changed.
+    if ($choices['subscribe']) {
+      $function = 'add';
     }
     else {
-      $function = "add";
+      $function = 'remove';
     }
   }
-  if (!empty($function)) {
-    $ret = mailchimp_lists_execute_change($function, $mc_list['id'], $email, $mergevars, $mcapi);
-    if (!$ret) {
+  elseif($choices['subscribe']) {
+    $function = 'update';
+  }
+  if ($function) {
+    if ($function == 'remove') {
+      $mergevars = array();
+    }
+    else {
+      $mergevars = _mailchimp_lists_mergevars_populate($instance['settings']['mergefields'], $entity, $instance['entity_type']);
+      if (!empty($choices['interest_groups'])) {
+        $mergevars['GROUPINGS'] = _mailchimp_lists_reformat_groupings($choices['interest_groups']);
+      }
+    }
+    switch ($function) {
+      case 'add':
+        $ret = mailchimp_subscribe($instance['settings']['mc_list_id'], $email, $mergevars, 'html', $choices['double_opt_in']);
+        break;
+
+      case 'remove':
+        $ret = mailchimp_unsubscribe($instance['settings']['mc_list_id'], $email, TRUE);
+        break;
+
+      case 'update':
+        $ret = mailchimp_update_member($instance['settings']['mc_list_id'], $email, $mergevars);
+        break;
+    }
+    if (empty($ret)) {
       drupal_set_message(t('There was a problem with your newsletter signup.', 'warning'));
     }
   }

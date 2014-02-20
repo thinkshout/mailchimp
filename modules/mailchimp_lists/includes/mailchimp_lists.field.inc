@@ -303,7 +303,7 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
       if ($email) {
         if (TRUE) {
           // @todo: check for valid permissions here
-          $element = drupal_get_form('mailchimp_lists_subscribe_form', $instance, $display['settings'], $entity);
+          $element = drupal_get_form('mailchimp_lists_subscribe_form', $instance, $display['settings'], $entity, $field);
         }
       }
       break;
@@ -366,54 +366,9 @@ function mailchimp_lists_subscription_property_info_callback(&$info, $entity_typ
  */
 function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
   if ($field['type'] == 'mailchimp_lists_subscription') {
-    $list_id = $instance['settings']['mc_list_id'];
-    $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
-    $email = mailchimp_lists_load_email($instance, $entity_wrapper);
-    if (!$email) {
-      return;
-    }
-    // Do we have a valid email?
-    if (strlen($email)) {
-      $function = FALSE;
-      $subscribed = mailchimp_is_subscribed($list_id, $email);
-      $choices = $entity_wrapper->{$instance['field_name']}->value();
-      if ($choices['options']['subscribe'] != $subscribed) {
-        // Subscription selection has changed.
-        if ($choices['options']['subscribe']) {
-          $function = 'add';
-        }
-        else {
-          $function = 'remove';
-        }
-      }
-      elseif($choices['options']['subscribe']) {
-        $function = 'update';
-      }
-      if ($function) {
-        if ($function == 'remove') {
-          $mergevars = array();
-        }
-        else {
-          $mergevars = _mailchimp_lists_mergevars_populate($instance['settings']['mergefields'], $entity, $instance['entity_type']);
-          if (!empty($choices['options']['interest_groups'])) {        
-            $mergevars['GROUPINGS'] = _mailchimp_lists_reformat_groupings($choices['options']['interest_groups']);
-          }
-        // @todo: if email address has changed, do we unsubscribe the old one?
-        }
-        switch ($function) {
-          case 'add':
-            mailchimp_subscribe($instance['settings']['mc_list_id'], $email, $mergevars, 'html', $field['settings']['double_opt_in']);
-            break;
-
-          case 'remove':
-            mailchimp_unsubscribe($instance['settings']['mc_list_id'], $email, TRUE);
-            break;
-
-          case 'update':
-            mailchimp_update_member($instance['settings']['mc_list_id'], $email, $mergevars);
-            break;
-        }
-      }
-    }
+    $choices = $entity_wrapper->{$instance['field_name']}->value();
+    $choices['options']['double_opt_in'] = $field['settings']['double_opt_in'];
+    mailchimp_lists_process_subscribe_form_choices($choices['options'], $instance, $entity);
+    // @todo: if email address has changed, do we unsubscribe the old one?
   }
 }
