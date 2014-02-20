@@ -129,7 +129,10 @@ function mailchimp_lists_entity_delete($entity, $type) {
 function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $settings, $entity) {
   $mc_list = mailchimp_get_list($instance['settings']['mc_list_id']);
   $entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity);
-  $email = $entity_wrapper->{$instance['settings']['mergefields']['EMAIL']}->value();
+  $email = mailchimp_lists_load_email($instance, $entity_wrapper);
+  if (!$email) {
+    return array();
+  }
   // Determine if a user is subscribed to the list.
   $is_subscribed = mailchimp_is_subscribed($mc_list['id'], $email);
   $wrapper_key = 'mailchimp_' . $instance['field_name'];
@@ -314,6 +317,33 @@ function _mailchimp_lists_interest_groups_form_elements($mc_list, $default_value
   }
   return $return;
 }
+
+/**
+ * Helper function to check if a valid email is configured for an entity field.
+ * 
+ * Returns an email address or FALSE.
+ */
+function mailchimp_lists_load_email($instance, $entity_wrapper, $log_errors = TRUE) {
+  if (!isset($instance['settings']['mergefields']['EMAIL'])) {
+    if ($log_errors) {
+      watchdog('mailchimp_lists', 'Mailchimp Lists field "@field" on @entity -> @bundle has no EMAIL field configured, subscription actions cannot take place.', array(
+        '@field' => $field['field_name'],
+        '@entity' => $entity_type,
+        '@bundle' => $instance['bundle'],
+      ), WATCHDOG_NOTICE);
+    }
+    return FALSE;
+  }
+  $email = $entity_wrapper->{$instance['settings']['mergefields']['EMAIL']}->value();
+  // @todo: more stringent email verification.
+  if (strlen($email)) {
+    return $email;
+  }
+  else {
+    return FALSE;
+  }
+}
+
 
 /**
  * Calls the corresponding API function, or adds to the queue, as appropriate.

@@ -156,11 +156,10 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
   // @todo: deal with case where "required" is checked
   $default = isset($instance['default_value'][0]['options']['subscribe']) ? $instance['default_value'][0]['options']['subscribe'] : FALSE;
   $email = NULL;
-  if (isset($element['#entity']) && isset($instance['settings']['mergefields']['EMAIL'])) {
+  if (isset($element['#entity'])) {
     $entity_wrapper = entity_metadata_wrapper($element['#entity_type'], $element['#entity']);
-    $email_prop = $instance['settings']['mergefields']['EMAIL'];
-    $email = $entity_wrapper->{$email_prop}->value();
-    if (!empty($email)) {
+    $email = mailchimp_lists_load_email($instance, $entity_wrapper, FALSE);
+    if ($email) {
       $default = mailchimp_is_subscribed($instance['settings']['mc_list_id'], $email);
     }
   }
@@ -252,13 +251,11 @@ function mailchimp_lists_field_formatter_settings_summary($field, $instance, $vi
 function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   $mc_list = mailchimp_get_list($instance['settings']['mc_list_id']);
-  if (isset($instance['settings']['mergefields']['EMAIL'])) {
-    $wrapper = entity_metadata_wrapper($entity_type, $entity);
-    $email = $wrapper->{$instance['settings']['mergefields']['EMAIL']}->value();
-  }
+  $wrapper = entity_metadata_wrapper($entity_type, $entity);
+  $email = mailchimp_lists_load_email($instance, $wrapper, FALSE);
   switch ($display['type']) {
     case 'mailchimp_lists_subscribe_default':
-      if (strlen($email)) {
+      if ($email) {
         if (mailchimp_is_subscribed($instance['settings']['mc_list_id'], $email)) {
           $status = "<i>Subscribed</i>";
         }
@@ -291,7 +288,7 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
 
     case 'mailchimp_lists_field_subscribe':
       // Display subscription form if accessible.
-      if (strlen($email)) {
+      if ($email) {
         if (TRUE) {
           // @todo: check for valid permissions here
           $element = drupal_get_form('mailchimp_lists_subscribe_form', $instance, $display['settings'], $entity);
@@ -359,8 +356,10 @@ function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance,
   if ($field['type'] == 'mailchimp_lists_subscription') {
     $list_id = $instance['settings']['mc_list_id'];
     $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
-    $email_field = $instance['settings']['mergefields']['EMAIL'];
-    $email = $entity_wrapper->{$email_field}->value();
+    $email = mailchimp_lists_load_email($instance, $entity_wrapper);
+    if (!$email) {
+      return;
+    }
     // Do we have a valid email?
     if (strlen($email)) {
       $function = FALSE;
