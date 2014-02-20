@@ -16,6 +16,12 @@ function mailchimp_admin_settings() {
     '#default_value' => variable_get('mailchimp_api_key', ''),
     '#description' => t('The API key for your MailChimp account. Get or generate a valid API key at your !apilink.', array('!apilink' => l(t('MailChimp API Dashboard'), 'http://admin.mailchimp.com/account/api'))),
   );
+  $form['mailchimp_cron'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Use batch processing.',
+    '#description' => 'Puts all Mailchimp subscription operations into the cron queue. (Includes subscribe, update, and unsubscribe operations.) <i>Note: May cause confusion if caches are cleared, as requested changes will appear to have failed until cron is run.</i>',
+    '#default_value' => variable_get('mailchimp_cron', FALSE),
+  );
   $form['mailchimp_batch_limit'] = array(
     '#type' => 'select',
     '#options' => array(
@@ -35,7 +41,7 @@ function mailchimp_admin_settings() {
       '10000' => '10000',
     ),
     '#title' => t('Batch limit'),
-    '#description' => t('Maximum number of users to process in a single cron run. Mailchimp suggest keeping this below 5000-10000. Ignored if updates take place on user add / edit.'),
+    '#description' => t('Maximum number of entities to process in a single cron run. Mailchimp suggest keeping this below 5000-10000.'),
     '#default_value' => variable_get('mailchimp_batch_limit', 100),
   );
 
