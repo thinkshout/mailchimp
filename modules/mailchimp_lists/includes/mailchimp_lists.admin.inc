@@ -59,3 +59,82 @@ function mailchimp_lists_overview_page() {
 
   return theme('table', $table);
 }
+
+/**
+ * Webhooks Toggle form.
+ */
+function mailchimp_lists_webhook_form($form, &$form_state, $list_id, $action) {
+  $list = mailchimp_get_list($list_id);
+  $form_state['list'] = $list;
+  $form_state['action'] = $action;
+  if ($list) {
+    switch ($action) {
+      case "enable":
+        break;
+
+      case "disable":
+        break;
+
+      default:
+        return array();
+    }
+    $label = $action . " webhooks";
+    return confirm_form($form,
+      t('Are you sure you want to &action webhooks for %name?',
+        array(
+          '&action' => $action,
+          '%name' => $list['name'],
+        )),
+      'admin/config/services/mailchimp/lists',
+      t('You can change this setting back from the mailchimp administrative UI.'),
+      $label
+    );
+  }
+  return array();
+}
+
+/**
+ * Submit handler for mailchimp_lists_webhook_form().
+ */
+function mailchimp_lists_webhook_form_submit($form, &$form_state) {
+  $list_id = $form_state['list']['id'];
+  switch ($form_state['action']) {
+    case 'enable':
+      $result = mailchimp_webhook_add(
+        $list_id,
+        mailchimp_webhook_url(),
+        array('unsubscribe', 'profile', 'cleaned', 'upemail')
+      );
+      break;
+
+    case 'disable':
+      $result = mailchimp_webhook_delete(
+        $list_id,
+        mailchimp_webhook_url()
+      );
+      break;
+
+    default:
+      $result = FALSE;
+      break;
+
+  }
+  if ($result) {
+    drupal_set_message(t('Webhooks for list "%name" have been %action.',
+      array(
+        '%name' => $form_state['list']['name'],
+        '%action' => $form_state['action'] . 'd',
+      )
+    ));
+  }
+  else {
+    drupal_set_message(t('Unable to perform webhook action "%action" for list "%name".',
+      array(
+        '%name' => $form_state['list']['name'],
+        '%action' => $form_state['action'],
+      )
+    ));
+
+  }
+  $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
+}
