@@ -7,6 +7,33 @@
 module_load_include('inc', 'mailchimp_lists', 'includes/mailchimp_lists.field');
 
 /**
+ * Implements hook_menu().
+ */
+function mailchimp_lists_menu() {
+  $items = array();
+
+  $items['admin/config/services/mailchimp/lists'] = array(
+    'title' => 'Lists',
+    'description' => 'Display MailChimp Lists and configure Webhooks.',
+    'page callback' => 'mailchimp_lists_overview_page',
+    'access arguments' => array('administer mailchimp'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/mailchimp_lists.admin.inc',
+    'weight' => 10,
+  );
+  $items['admin/config/services/mailchimp/lists/%/webhook/%'] = array(
+    'title' => 'Enable/disable Webhooks',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_lists_webhook_form', 5, 7),
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'includes/mailchimp_lists.admin.inc',
+  );
+
+
+  return $items;
+}
+
+/**
  * Implements hook_cron().
  *
  * Process all records in the mailchimp cron queue.
