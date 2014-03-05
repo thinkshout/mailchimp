@@ -1,11 +1,38 @@
 <?php
 
-class MailChimp extends MCAPI {
+class DrupalMailchimp extends Mailchimp {
+
+  var $allow_async;
+
+  /**
+   * Override __construct() to initialize async setting.
+   */
+  public function __construct($apikey=null, $opts=array(), $async = FALSE){
+    parent::__construct($apikey, $opts);
+    $this->allow_async = $async;
+  }
+
+  /** 
+   * Returns TRUE if we should use the queue.
+   */
+  public function asyncronous(){
+    if ($this->allow_async) {
+      if (variable_get('mailchimp_cron', FALSE)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
 
   /**
    * Override MCAPI::callServer() to leverage Drupal's core HTTP handling.
    */
-  public function callServer($method, $params) {
+  public function call($url, $params) {
+    return parent::call($url, $params);
+  }
+/**
+ * @todo
+ *
     $dc = "us1";
     if (strstr($this->api_key, "-")) {
       list($key, $dc) = explode("-", $this->api_key, 2);
@@ -66,5 +93,5 @@ class MailChimp extends MCAPI {
 
     return $return;
   }
-
+*/
 }
