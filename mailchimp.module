@@ -516,12 +516,12 @@ function mailchimp_webhook_get($list_id) {
 
 /**
  * Wrapper around MCAPI->lists->webhookAdd().
- * 
+ *
  * @string $list_id
  * @string $url
  * @array $actions
  * @array $sources
- * 
+ *
  * @return bool
  *   TRUE if deletion was successful, otherwise FALSE.
  */
@@ -651,6 +651,9 @@ function mailchimp_process_webhook_access($key) {
  * Process a webhook post from MailChimp.
  */
 function mailchimp_process_webhook() {
+  if (!isset($_POST)) {
+    return "Mailchimp Webhook Endpoint.";
+  }
   $data = $_POST['data'];
   $type = $_POST['type'];
   switch ($type) {
