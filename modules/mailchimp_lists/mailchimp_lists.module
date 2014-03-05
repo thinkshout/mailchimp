@@ -176,7 +176,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $en
         break;
     }
     if (empty($ret)) {
-      drupal_set_message(t('There was a problem with your newsletter signup.', 'warning'));
+      drupal_set_message(t('There was a problem with your newsletter signup.'), 'warning');
     }
   }
 }
@@ -275,8 +275,8 @@ function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
   if (!isset($instance['settings']['mergefields']['EMAIL'])) {
     if ($log_errors) {
       watchdog('mailchimp_lists', 'Mailchimp Lists field "@field" on @entity -> @bundle has no EMAIL field configured, subscription actions cannot take place.', array(
-        '@field' => $field['field_name'],
-        '@entity' => $entity_type,
+        '@field' => $instance['field_name'],
+        '@entity' => $instance['entity_type'],
         '@bundle' => $instance['bundle'],
       ), WATCHDOG_NOTICE);
     }
