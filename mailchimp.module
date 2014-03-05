@@ -313,8 +313,33 @@ function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
  */
 function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $format = 'html', $double_optin = FALSE, $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE, $mcapi = NULL) {
   $success = FALSE;
-  if ($mcapi || $mcapi = mailchimp_get_api_object()) {
-    try {
+  // If we aren't given an MCAPI object, we allow Async in our API object.
+  // The object itself will tell us whether to use the queue.
+  if ($mcapi || $mcapi = mailchimp_get_api_object(TRUE)) {
+    if ($mcapi->asyncronous()) {
+      $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+      $queue->createQueue();
+      $success = $queue->createItem(array(
+        'function' => 'mailchimp_subscribe',
+        'args' => array(
+          'list_id' => $list_id,
+          'email' => $email,
+          'merge_vars' => $merge_vars,
+          'format' => $format,
+          'double_optin' => $double_optin,
+          'update_existing' => $update_existing,
+          'replace_interests' => $replace_interests,
+          'confirm' => $confirm,
+        )
+      ));
+      if (!$success) {
+        watchdog('mailchimp', 'A problem occurred adding a mailchimp subscription to the queue. Email: @email List: @list.', array(
+          '@email' => $email,
+          '@list' => $list_id,
+        ), WATCHDOG_WARNING);
+      }
+    }
+    else try {
       $result = $mcapi->lists->subscribe($list_id, array('email' => $email), $merge_vars, $format, $double_optin, $update_existing, $replace_interests, $confirm);
       if (isset($result['email'])) {
         $success = $result;
@@ -347,10 +372,32 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $format = 'ht
 /**
  * Wrapper around MCAPI->lists->updateMember.
  */
-function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE,  $mcapi = NULL) {
+function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE, $mcapi = NULL) {
   $success = FALSE;
-  if ($mcapi || $mcapi = mailchimp_get_api_object()) {
-    try {
+  // If we aren't given an MCAPI object, we allow Async in our API object.
+  // The object itself will tell us whether to use the queue.
+  if ($mcapi || $mcapi = mailchimp_get_api_object(TRUE)) {
+    if ($mcapi->asyncronous()) {
+      $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+      $queue->createQueue();
+      $success = $queue->createItem(array(
+        'function' => 'mailchimp_update_member',
+        'args' => array(
+          'list_id' => $list_id,
+          'email' => $email,
+          'merge_vars' => $merge_vars,
+          'format' => $format,
+          'replace_interests' => $replace_interests,
+        )
+      ));
+      if (!$success) {
+        watchdog('mailchimp', 'A problem occurred adding a mailchimp membership update to the queue. Email: @email List: @list.', array(
+          '@email' => $email,
+          '@list' => $list_id,
+        ), WATCHDOG_WARNING);
+      }
+    }
+    else try {
       $result = $mcapi->lists->updateMember($list_id, array('email' => $email), $merge_vars, $format, $replace_interests);
       if (isset($result['email'])) {
         $success = $result;
@@ -402,9 +449,31 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
  */
 function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FALSE, $notify = FALSE, $mcapi = NULL) {
   $success = FALSE;
-  if ($mcapi || $mcapi = mailchimp_get_api_object()) {
+  // If we aren't given an MCAPI object, we allow Async in our API object.
+  // The object itself will tell us whether to use the queue.
+  if ($mcapi || $mcapi = mailchimp_get_api_object(TRUE)) {
     if (mailchimp_is_subscribed($list_id, $email)) {
-      try {
+      if ($mcapi->asyncronous()) {
+        $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+        $queue->createQueue();
+        $success = $queue->createItem(array(
+          'function' => 'mailchimp_unsubscribe',
+          'args' => array(
+            'list_id' => $list_id,
+            'email' => $email,
+            'delete' => $delete,
+            'goodbye' => $goodbye,
+            'notify' => $notify,
+          )
+        ));
+        if (!$success) {
+          watchdog('mailchimp', 'A problem occurred adding a mailchimp unsubscribe to the queue. Email: @email List: @list.', array(
+            '@email' => $email,
+            '@list' => $list_id,
+          ), WATCHDOG_WARNING);
+        }
+      }
+      else try {
         $success = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
         if ($success) {
           module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
