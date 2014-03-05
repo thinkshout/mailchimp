@@ -73,7 +73,7 @@ function mailchimp_permission() {
 /**
  * Get a Mailchimp API object for communication with the mailchimp server.
  */
-function mailchimp_get_api_object() {
+function mailchimp_get_api_object($async = FALSE) {
   $library = libraries_load('mailchimp');
   if (!$library['installed']) {
     $msg = 'Failed to load MailChimp PHP library. Please refer to the installation requirements.';
@@ -93,9 +93,8 @@ function mailchimp_get_api_object() {
   // We allow the class name to be overridden, following the example of core's
   // mailsystem, in order to use alternate MailChimp classes. The bundled tests
   // use this approach to extend the MailChimp class with a test server.
-  // @ todo switch over to DrupalMailchimp (and override http sends)
-  $classname = variable_get('mailchimp_api_classname', 'Mailchimp');
-  $mailchimp = new $classname($api_key, $options);
+  $classname = variable_get('mailchimp_api_classname', 'DrupalMailchimp');
+  $mailchimp = new $classname($api_key, $options, $async);
   // @todo catch creation error and do something sensible.
   return $mailchimp;
 }
