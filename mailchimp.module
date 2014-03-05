@@ -492,6 +492,29 @@ function mailchimp_get_campaigns_for_email($email) {
 }
 
 /**
+ * Wrapper around MCAPI->lists->webhooks().
+ *
+ * @string $list_id
+ *
+ * @return array
+ *   List of existing webhooks, or FALSE.
+ */
+function mailchimp_webhook_get($list_id) {
+  $q = mailchimp_get_api_object();
+  try {
+    $result = $q->lists->webhooks($list_id);
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred reading webhooks for list @list. "%message"', array(
+      '@list' => $list_id,
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+    return FALSE;
+  }
+  return $result;
+}
+
+/**
  * Wrapper around MCAPI->lists->webhookAdd().
  * 
  * @string $list_id
