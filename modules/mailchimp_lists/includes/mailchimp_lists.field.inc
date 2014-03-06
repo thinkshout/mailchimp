@@ -135,8 +135,19 @@ function _mailchimp_lists_field_settings_process($element, $form_state) {
 /**
  * Implements hook_field_validate().
  */
-function mailchimp_lists_field_settings_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
-
+function mailchimp_lists_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+  if ($instance['required'] && $entity !== NULL) {
+    foreach ($items as $delta => $item) {
+      if (!$item['options']['subscribe']) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+          'error' => 'mailchimp_lists_required',
+          'message' => t('Subscription to Mailchimp List %name is required.', array('%name' => $instance['label'])),
+        );
+        return FALSE;
+      }
+    }
+  }
+  return TRUE;
 }
 
 /**
@@ -167,7 +178,6 @@ function mailchimp_lists_field_widget_info() {
  * Implements hook_field_widget_form().
  */
 function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  // @todo: deal with case where "required" is checked
   $default = isset($instance['default_value'][0]['options']['subscribe']) ? $instance['default_value'][0]['options']['subscribe'] : FALSE;
   $email = NULL;
   if (isset($element['#entity'])) {
@@ -183,7 +193,9 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
   $element['subscribe'] = array(
     '#title' => 'Subscribe',
     '#type' => 'checkbox',
-    '#default_value' => $default,
+    '#default_value' => $default || $instance['required'],
+    '#required' => $instance['required'],
+    '#disabled' => $instance['required'],
   );
   if ($instance['settings']['show_interest_groups']) {
     $mc_list = mailchimp_get_list($instance['settings']['mc_list_id']);
