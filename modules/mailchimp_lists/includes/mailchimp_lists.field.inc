@@ -366,6 +366,7 @@ function mailchimp_lists_subscription_property_info_callback(&$info, $entity_typ
  */
 function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
   if ($field['type'] == 'mailchimp_lists_subscription') {
+    $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
     $choices = $entity_wrapper->{$instance['field_name']}->value();
     $choices['options']['double_opt_in'] = $field['settings']['double_opt_in'];
     mailchimp_lists_process_subscribe_form_choices($choices['options'], $instance, $entity);
