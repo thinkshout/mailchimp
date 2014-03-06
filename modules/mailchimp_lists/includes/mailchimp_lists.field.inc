@@ -353,8 +353,6 @@ function mailchimp_lists_subscription_property_info_callback(&$info, $entity_typ
   $property['type'] = 'mailchimp_lists_subscription';
   $property['getter callback'] = 'entity_metadata_field_verbatim_get';
   $property['setter callback'] = 'entity_metadata_field_verbatim_set';
-  //$property['auto creation'] = 'redhen_fields_email_default_values';
-  //$property['property info'] = mailchimp_lists_subscription_data_property_info();
 
   unset($property['query callback']);
 }
