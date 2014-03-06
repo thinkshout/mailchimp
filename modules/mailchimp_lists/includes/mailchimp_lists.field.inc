@@ -316,7 +316,11 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
       if ($email) {
         if (TRUE) {
           // @todo: check for valid permissions here
-          $element = drupal_get_form('mailchimp_lists_subscribe_form', $instance, $display['settings'], $entity, $field);
+          // This custom form ID could be more specific. This may have issues
+          // if 2 different entities with the same mailchimp list field appear
+          // as forms on a single page.
+          $field_form_id = 'mailchimp_lists_' . $field['field_name'] . '_form';
+          $element = drupal_get_form($field_form_id, $instance, $display['settings'], $entity, $field);
         }
       }
       break;
