@@ -224,14 +224,14 @@ function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NU
     // updates must be done one value at a time
     $values = $options += array('content' => $content);
     foreach ($values as $key => $value) {
-      $mcapi->campaigns->update($campaign_id, $key, $value);
+      $result = $mcapi->campaigns->update($campaign_id, $key, $value);
     }
   }
 
-  if ($mcapi->errorCode) {
+  if (isset($result['status']) && ($result['status'] == 'error')) {
     // Display and log error, if any.
     $message = 'MailChimp error. The campaign was not saved.';
-    _mailchimp_campaign_mcapi_error_message($mcapi, $message);
+    _mailchimp_campaign_mcapi_error_message($result, $message);
   }
   else {
     drupal_set_message(t('Campaign %name (%cid) was successfully saved.',
@@ -260,22 +260,23 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
   $mcapi = mailchimp_get_api_object();
 
   // Send campaign.
-  $sent = $mcapi->campaigns->send($campaign->mc_campaign_id);
+  $result = $mcapi->campaigns->send($campaign->mc_campaign_id);
 
-  if ($mcapi->errorCode) {
+  if (isset($result['status']) && ($result['status'] == 'error')) {
     // Display and log error, if any.
     $message = 'MailChimp error. The campaign was not sent.';
-    _mailchimp_campaign_mcapi_error_message($mcapi, $message);
-  }
+    _mailchimp_campaign_mcapi_error_message($result, $message);
 
-  if ($sent) {
+    return false;
+  }
+  else if (isset($result['complete']) && ($result['complete'] === TRUE)) {
     // Log action, and notify the user.
     watchdog('mailchimp_campaign', 'MailChimp campaign %name has been sent.',
       array('%name' => $campaign->label())
     );
-  }
 
-  return $sent;
+    return true;
+  }
 }
 
 /**
@@ -285,14 +286,14 @@ function mailchimp_campaign_delete_campaign($cid) {
   $mcapi = mailchimp_get_api_object();
 
   // Delete campaign from MailChimp
-  $delete = $mcapi->campaigns->delete($cid);
+  $result = $mcapi->campaigns->delete($cid);
 
-  if ($mcapi->errorCode) {
+  if (isset($result['status']) && ($result['status'] == 'error')) {
     // Display and log error, if any.
     $message = 'MailChimp error. The campaign was not deleted.';
-    _mailchimp_campaign_mcapi_error_message($mcapi, $message);
+    _mailchimp_campaign_mcapi_error_message($result, $message);
   }
-  else {
+  else if (isset($result['complete']) && ($result['complete'] === TRUE)) {
     // Delete campaign from the database
     mailchimp_campaign_delete($cid);
     watchdog('mailchimp_campaign', 'MailChimp campaign %cid was deleted.', array('%cid' => $cid));
@@ -343,11 +344,11 @@ function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
 /**
  * Set and log error messages after MailChimp API errors.
  */
-function _mailchimp_campaign_mcapi_error_message($mcapi, $message, $variables = array()) {
+function _mailchimp_campaign_mcapi_error_message($result, $message, $variables = array()) {
   $mcapiErrorMessage = 'MailChimp error code: %errorCode, MailChimp error message: %errorMessage.';
   $mcapiErrorVariables = array(
-    '%errorCode' => $mcapi->errorCode,
-    '%errorMessage' => $mcapi->errorMessage
+    '%errorCode' => $result['code'],
+    '%errorMessage' => $result['message']
   );
 
   $human = t($message, $variables) . ' ' . t($mcapiErrorMessage, $mcapiErrorVariables);
