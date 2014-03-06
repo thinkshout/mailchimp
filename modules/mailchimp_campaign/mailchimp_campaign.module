@@ -218,13 +218,13 @@ function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NU
   // Save campaign to MailChimp. (Only regular campaigns are supported)
   $is_new = empty($campaign_id);
   if ($is_new) {
-    $campaign_id = $mcapi->campaignCreate('regular', $options, $content);
+    $campaign_id = $mcapi->campaigns->create('regular', $options, $content);
   }
   else {
     // updates must be done one value at a time
     $values = $options += array('content' => $content);
     foreach ($values as $key => $value) {
-      $mcapi->campaignUpdate($campaign_id, $key, $value);
+      $mcapi->campaigns->update($campaign_id, $key, $value);
     }
   }
 
@@ -260,7 +260,7 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
   $mcapi = mailchimp_get_api_object();
 
   // Send campaign.
-  $sent = $mcapi->campaignSendNow($campaign->mc_campaign_id);
+  $sent = $mcapi->campaigns->send($campaign->mc_campaign_id);
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
@@ -285,7 +285,7 @@ function mailchimp_campaign_delete_campaign($cid) {
   $mcapi = mailchimp_get_api_object();
 
   // Delete campaign from MailChimp
-  $delete = $mcapi->campaignDelete($cid);
+  $delete = $mcapi->campaigns->delete($cid);
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
@@ -473,6 +473,7 @@ function mailchimp_campaign_process_callback($matches = array()) {
  */
 function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
   $mcapi = mailchimp_get_api_object();
+  // TODO: Refactor to work with MailChimp API V2.
   $response = $mcapi->campaignStats($campaign->mc_campaign_id);
 
   if (empty($response)) {
@@ -568,7 +569,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
 
   if (!empty($to_refresh)) {
     $mcapi = mailchimp_get_api_object();
-    $response = $mcapi->campaigns(array('campaign_id' => implode(',', $to_refresh)));
+    $response = $mcapi->campaigns->getList(array('campaign_id' => implode(',', $to_refresh)));
     if (isset($response['total']) && $response['total'] > 0) {
       foreach ($response['data'] as $mc_campaign) {
         $mc_campaigns[$mc_campaign['id']] = $mc_campaign;
