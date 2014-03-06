@@ -314,10 +314,10 @@ function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
   // Query lists from the MC API and store in cache
   else {
     if ($mcapi = mailchimp_get_api_object()) {
-      $response = $mcapi->templates(array('user' => TRUE));
+      $response = $mcapi->templates->getList(array('user' => TRUE));
       foreach ($response['user'] as $template) {
         $tid = $template['id'];
-        $info = $mcapi->templateInfo($tid);
+        $info = $mcapi->templates->info($tid);
 
         // exclude templates with repeating content. This is a current
         // limitation of the MC API as repeating sections cannot be  updated
