@@ -41,8 +41,8 @@ function mailchimp_lists_entity_delete($entity, $type) {
   $fields = field_info_fields();
   foreach($fields as $field) {
     if ($field['type'] == 'mailchimp_lists_subscription' && in_array($entity->type, $field['bundles'][$type])) {
-      $config = field_info_instance($type, $field['field_name'], $entity->type);
-      mailchimp_lists_process_subscribe_form_choices(array('subscribe' => FALSE), $config, $entity);
+      $instance = field_info_instance($type, $field['field_name'], $entity->type);
+      mailchimp_lists_process_subscribe_form_choices(array('subscribe' => FALSE), $instance, $field, $entity);
     }
   }
 }
@@ -64,7 +64,7 @@ function mailchimp_lists_forms($form_id, $args) {
  * Return a form element for a single newsletter.
  */
 function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $settings, $entity, $field) {
-  $mc_list = mailchimp_get_list($instance['settings']['mc_list_id']);
+  $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
   $email = mailchimp_lists_load_email($instance, $entity);
   if (!$email) {
     return array();
@@ -75,6 +75,7 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
   $form_state['settings'] = array(
     'wrapper_key' => $wrapper_key,
     'instance' => $instance,
+    'field' => $field,
     'entity' => $entity,
   );
   $form[$wrapper_key] = array(
@@ -95,10 +96,6 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
     '#disabled' => $instance['required'],
     '#required' => $instance['required'],
     '#default_value' => $instance['required'] || $is_subscribed,
-  );
-  $form[$wrapper_key]['double_opt_in'] = array(
-    '#type' => 'hidden',
-    '#value' => $field['settings']['double_opt_in'],
   );
   // Present interest groups:
   if ($settings['show_interest_groups']) {
@@ -131,6 +128,7 @@ function mailchimp_lists_subscribe_form_submit($form, &$form_state) {
   mailchimp_lists_process_subscribe_form_choices(
     $form_state['values'][$form_state['settings']['wrapper_key']],
     $form_state['settings']['instance'], 
+    $form_state['settings']['field'], 
     $form_state['settings']['entity']);
 }
 
@@ -144,14 +142,14 @@ function mailchimp_lists_subscribe_form_submit($form, &$form_state) {
  * @account null $account: the user account to subscribe, if available.
  *   Otherwise, operations will be run with the ['mergevars']['EMAIL'] value.
  */
-function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $entity) {
+function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $field, $entity) {
   $email = mailchimp_lists_load_email($instance, $entity);
   if (!$email) {
     // We can't do much subscribing without an email address.
     return;
   }
   $function = FALSE;
-  $list_id = $instance['settings']['mc_list_id'];
+  $list_id = $field['settings']['mc_list_id'];
   $subscribed = mailchimp_is_subscribed($list_id, $email);
   if ($choices['subscribe'] != $subscribed) {
     // Subscription selection has changed.
@@ -177,15 +175,15 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $en
     }
     switch ($function) {
       case 'add':
-        $ret = mailchimp_subscribe($instance['settings']['mc_list_id'], $email, $mergevars, 'html', $choices['double_opt_in']);
+        $ret = mailchimp_subscribe($list_id, $email, $mergevars, 'html', $field['settings']['double_opt_in']);
         break;
 
       case 'remove':
-        $ret = mailchimp_unsubscribe($instance['settings']['mc_list_id'], $email, TRUE);
+        $ret = mailchimp_unsubscribe($list_id, $email, TRUE);
         break;
 
       case 'update':
-        $ret = mailchimp_update_member($instance['settings']['mc_list_id'], $email, $mergevars);
+        $ret = mailchimp_update_member($list_id, $email, $mergevars);
         break;
     }
     if (empty($ret)) {

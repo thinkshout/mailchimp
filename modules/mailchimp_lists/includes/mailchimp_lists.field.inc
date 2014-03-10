@@ -13,9 +13,9 @@ function mailchimp_lists_field_info() {
     'mailchimp_lists_subscription' => array(
       'label' => t('Mailchimp Subscription'),
       'description' => t('Allows an entity to be subscribed to a Mailchimp list.'),
+      'mc_list_id' => NULL,
       'double_opt_in' => FALSE,
       'instance_settings' => array(
-        'mc_list_id' => NULL,
         'show_interest_groups' => FALSE,
         'interest_groups_title' => NULL,
         'mergefields' => array(),
@@ -37,6 +37,22 @@ function mailchimp_lists_field_info() {
  * Implements hook_field_settings_form().
  */
 function mailchimp_lists_field_settings_form($field, $instance, $has_data) {
+  $lists = mailchimp_get_lists();
+  $options = array('' => t('-- Select --'));
+  foreach ($lists as $mc_list) {
+    $options[$mc_list['id']] = $mc_list['name'];
+  }
+  $form['mc_list_id'] = array(
+    '#type' => 'select',
+    '#title' => t('MailChimp List'),
+    '#multiple' => FALSE,
+    '#description' => t('Available MailChimp lists. If there are no options,
+      create a list at !MailChimp first, then refresh this page.',
+      array('!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'))),
+    '#options' => $options,
+    '#default_value' => isset($field['settings']['mc_list_id']) ? $field['settings']['mc_list_id'] : FALSE,
+    '#required' => TRUE,
+  );
   $form['double_opt_in'] = array(
     '#type' => 'checkbox',
     '#title' => 'Require subscribers to Double Opt-in',
@@ -51,32 +67,7 @@ function mailchimp_lists_field_settings_form($field, $instance, $has_data) {
  */
 function mailchimp_lists_field_instance_settings_form($field, $instance) {
   $form = array();
-  $lists = mailchimp_get_lists();
-  $options = array('' => t('-- Select --'));
-  foreach ($lists as $mc_list) {
-    $options[$mc_list['id']] = $mc_list['name'];
-  }
-  $form['mc_list_id'] = array(
-    '#type' => 'select',
-    '#title' => t('MailChimp List'),
-    '#multiple' => FALSE,
-    '#description' => t('Available MailChimp lists. If there are no options,
-      create a list at !MailChimp first, then refresh this page.',
-      array('!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'))),
-    '#options' => $options,
-    '#default_value' => $instance['settings']['mc_list_id'],
-    '#required' => TRUE,
-    '#ajax' => array(
-      'callback' => 'mailchimp_lists_mergefields_callback',
-      'wrapper' => 'mergefields-wrapper',
-      'method' => 'replace',
-      'effect' => 'fade',
-      'progress' => array(
-        'type' => 'throbber',
-        'message' => t('Retrieving merge fields for this list.'),
-      ),
-    ),
-  );
+  $mc_list_id = $field['settings']['mc_list_id'];
   $form['show_interest_groups'] = array(
     '#title' => "Enable Interest Groups",
     '#type' => "checkbox",
@@ -87,49 +78,27 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
     '#type' => "textfield",
     '#default_value' => isset($instance['settings']['interest_groups_title']) ? $instance['settings']['interest_groups_title'] : "Interest Groups",
   );
-  // We add the mergefields container only. The actually mergefield form
-  // elements cannot be added here because we don't have the $form_state,
-  // so we add a #process function to take care of those elements.
   $form['mergefields'] = array(
     '#type' => 'fieldset',
     '#title' => t('Merge Fields'),
-    '#process' => array('_mailchimp_lists_field_settings_process'),
-    '#id' => 'mergefields-wrapper',
     '#tree' => TRUE,
   );
+  $mv_defaults = $instance['settings']['mergefields'];
+  $mergevars = mailchimp_get_mergevars(array($mc_list_id));
+  $fields = mailchimp_lists_fieldmap_options($instance['entity_type'], $instance['bundle']);
+  unset($fields[$field['field_name']]);
+  foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
+    $default_value = isset($mv_defaults[$mergevar['tag']]) ? $mv_defaults[$mergevar['tag']] : -1;
+    $form['mergefields'][$mergevar['tag']] = array(
+      '#type' => 'select',
+      '#title' => $mergevar['name'],
+      '#default_value' => isset($fields[$default_value]) ? $default_value : '',
+      '#required' => $mergevar['req'],
+      '#options' => $fields,
+    );
+  }
 
   return $form;
-}
-
-/**
- * AJAX callback to return fields for a given type.
- */
-function mailchimp_lists_mergefields_callback($form, &$form_state) {
-  return $form['instance']['settings']['mergefields'];
-}
-
-/**
- * Helper #process function to have ajaxified dynamic form elements.
- */
-function _mailchimp_lists_field_settings_process($element, $form_state) {
-  $mc_list_id = $form_state['values']['instance']['settings']['mc_list_id'];
-  $defaults = $form_state['build_info']['args'][0]['settings']['mergefields'];
-  if (strlen($form_state['values']['instance']['settings']['mc_list_id'])) {
-    $mergevars = mailchimp_get_mergevars(array($mc_list_id));
-    $fields = mailchimp_lists_fieldmap_options($form_state['values']['instance']['entity_type'], $form_state['values']['instance']['bundle']);
-    foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
-      $default_value = isset($defaults[$mergevar['tag']]) ? $defaults[$mergevar['tag']] : -1;
-      $element[$mergevar['tag']] = array(
-        '#type' => 'select',
-        '#title' => $mergevar['name'],
-        '#description' => '',
-        '#default_value' => isset($fields[$default_value]) ? $default_value : '',
-        '#required' => $mergevar['req'],
-        '#options' => $fields,
-      );
-    }
-  }
-  return $element;
 }
 
 /**
@@ -183,7 +152,7 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
   if (isset($element['#entity'])) {
     $email = mailchimp_lists_load_email($instance, $element['#entity'], FALSE);
     if ($email) {
-      $default = mailchimp_is_subscribed($instance['settings']['mc_list_id'], $email);
+      $default = mailchimp_is_subscribed($field['settings']['mc_list_id'], $email);
     }
   }
   $element += array(
@@ -198,7 +167,7 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
     '#disabled' => $instance['required'],
   );
   if ($instance['settings']['show_interest_groups']) {
-    $mc_list = mailchimp_get_list($instance['settings']['mc_list_id']);
+    $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
     $element['interest_groups'] = array(
       '#type' => 'fieldset',
       '#title' => $instance['settings']['interest_groups_title'],
@@ -276,12 +245,12 @@ function mailchimp_lists_field_formatter_settings_summary($field, $instance, $vi
  */
 function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
-  $mc_list = mailchimp_get_list($instance['settings']['mc_list_id']);
+  $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
   $email = mailchimp_lists_load_email($instance, $entity, FALSE);
   switch ($display['type']) {
     case 'mailchimp_lists_subscribe_default':
       if ($email) {
-        if (mailchimp_is_subscribed($instance['settings']['mc_list_id'], $email)) {
+        if (mailchimp_is_subscribed($field['settings']['mc_list_id'], $email)) {
           $status = "<i>Subscribed</i>";
         }
         else {
@@ -383,8 +352,7 @@ function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance,
   if ($field['type'] == 'mailchimp_lists_subscription') {
     $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
     $choices = $entity_wrapper->{$instance['field_name']}->value();
-    $choices['options']['double_opt_in'] = $field['settings']['double_opt_in'];
-    mailchimp_lists_process_subscribe_form_choices($choices['options'], $instance, $entity);
+    mailchimp_lists_process_subscribe_form_choices($choices['options'], $instance, $field, $entity);
     // @todo: if email address has changed, do we unsubscribe the old one?
   }
 }
