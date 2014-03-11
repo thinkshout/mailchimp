@@ -6,6 +6,7 @@
  */
 
 define('MAILCHIMP_QUEUE_CRON', 'mailchimp');
+define('MAILCHIMP_BATCH_QUEUE_CRON', 'mailchimp_batch');
 
 /**
  * Implements hook_libraries_info().
@@ -492,6 +493,154 @@ function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FAL
   }
 
   return $success;
+}
+
+/**
+ * Wrapper around MCAPI->lists->segments.
+ *
+ * @string $list_id
+ *   A mailchimp list id.
+ * @string $type
+ *   'static' or 'saved' to limit results based on segment type.
+ * @bool $reset
+ * 
+ * @return array
+ *   Array of segments details.
+ */
+function mailchimp_get_segments($list_id, $reset = NULL) {
+  $cache = $reset ? NULL : cache_get($list_id . '-segments', 'cache_mailchimp');
+  $segments = array();
+  // Return cached lists:
+  if ($cache) {
+    $segments = $cache->data;
+  }
+  // Query segments from the MCAPI and store in cache:
+  else {
+    try {
+      if ($q = mailchimp_get_api_object()) {
+        $segments = $q->lists->segments($list_id);
+      }
+      cache_set($list_id . '-segments', $segments, 'cache_mailchimp', CACHE_TEMPORARY);
+    }
+    catch (Exception $e) {
+      watchdog('mailchimp', 'An error occurred requesting list segment information from Mailchimp. "%message"', array(
+        '%message' => $e->getMessage(),
+      ), WATCHDOG_ERROR);
+    }
+  }
+  return $segments;
+}
+
+/**
+ * Wrapper around MCAPI->lists->segmentAdd.
+ *
+ * @string $list_id
+ *   A mailchimp list id.
+ * @string $name
+ *   A label for the segment.
+ * @string $type
+ *   'static' or 'saved'
+ * @array $segment_options
+ *   Array of options for 'saved' segments. See Mailchimp API docs.
+ * 
+ * @return int
+ *   ID of the new segment.
+ */
+function mailchimp_segment_create($list_id, $name, $type, $segment_options = NULL) {
+  $mcapi = mailchimp_get_api_object();
+  try {
+    $options = array(
+      'type' => $type,
+      'name' => $name,
+    );
+    if ($type == 'saved') {
+      $options['segment_opts'] = $segment_options;
+    }
+    $segment_id = $mcapi->lists->segmentAdd($list_id, $options);
+
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred creating segment @segment for list @list. "%message"', array(
+      '@segment' => $name,
+      '@list' => $list_id,
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+  }
+
+  return $segment_id;
+}
+
+/**
+ * Add a specific subscriber to a static segment of a list.
+ * 
+ * @string $list_id
+ *   ID of a mailchimp list
+ * @string $segment_id
+ *   ID of a segment of the mailchimp list
+ * @string $email
+ *   Email address to add to the segment (does NOT subscribe to the list)
+ * @bool $batch
+ *   Whether to queue this for the batch processor. Defaults to TRUE.
+ * 
+ * @return bool
+ *   Success boolean
+ */
+function mailchimp_segment_add_subscriber($list_id, $segment_id, $email, $batch = TRUE, $queue_id = MAILCHIMP_BATCH_QUEUE_CRON) {
+  $item = array(
+    'email' => $email,
+  );
+  if (!$batch) {
+    $batch = array($item);
+    $success = mailchimp_segment_batch_add_subscribers($list_id, $segment_id, $batch);
+  }
+  else {
+    $queue = DrupalQueue::get($queue_id);
+    $queue->createQueue();
+    $success = $queue->createItem(array(
+      'function' => 'mailchimp_segment_batch_add_subscribers',
+      'list_id' => $list_id,
+      'arg' => $segment_id,
+      'item' => $item,
+    ));
+    if (!$success) {
+      watchdog('mailchimp', 'A problem occurred adding a mailchimp segment subscribe to the queue. Email: @email List: @list Segment: @segment.', array(
+        '@email' => $email,
+        '@list' => $list_id,
+        '@segment' => $segment_id,
+      ), WATCHDOG_WARNING);
+    }
+  }
+  return $success;
+}
+
+/**
+ * Add a batch of email addresses to a static segment of a list.
+ *
+ * @string $list_id
+ *   ID of a mailchimp list
+ * @string $segment_id
+ *   ID of a segment of the mailchimp list
+ * @array $batch
+ *   Batch of email addresses to add to the segment (does NOT subscribe new)
+ *
+ * @return int
+ *   Successful subscribe count
+ */
+function mailchimp_segment_batch_add_subscribers($list_id, $segment_id, $batch) {
+  $q = mailchimp_get_api_object();
+  $count = 0;
+  try {
+    $results = $q->lists->staticSegmentMembersAdd($list_id, $segment_id, $batch);
+    $count = isset($results['success_count']) ? $results['success_count'] : 0;
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred on batch segment add. List: @list_id Segment: @segment_id. "%message"', array(
+      '@list_id' => $list_id,
+      '@segment_id' => $segment_id,
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+  }
+  return $count;
 }
 
 /**
