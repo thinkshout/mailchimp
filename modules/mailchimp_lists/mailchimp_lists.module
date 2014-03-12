@@ -399,12 +399,19 @@ function mailchimp_lists_action_info() {
   return $actions;
 }
 
+/**
+ * Action function for the Add To Segment action.
+ * 
+ * Does the actual subscription work. Builds a queue of segment adds and then
+ * intermittently builds a batched API action from the queue and sends to
+ * Mailchimp.
+ */
 function mailchimp_lists_add_to_segment_action($entity, $context = array()) {
   $entity_info = entity_get_info($context['entity_type']);
   $list_id = $context['mc_list_id'];
   $field_instance = field_info_instance($context['entity_type'], $context['mailchimp_field'], $entity->{$entity_info['entity keys']['bundle']});
   $wrapper = entity_metadata_wrapper($context['entity_type'], $entity);
-  $queue_id = 'mailchimp_lists_action_' . $list_id . '_' . $context['segment_id']; 
+  $queue_id = 'mailchimp_lists_action_' . $list_id . '_' . $context['segment_id'];
   mailchimp_segment_add_subscriber($list_id, $context['segment_id'], $wrapper->{$field_instance['settings']['mergefields']['EMAIL']}->value(), TRUE, $queue_id);
   // Send to Mailchimp in a batch when we are done, or when we reach 10000, as
   // 10000 records is the maximum batch size Mailchimp recommends.
@@ -427,20 +434,9 @@ function mailchimp_lists_add_to_segment_action($entity, $context = array()) {
   }
 }
 
-function mailchimp_lists_add_to_segment_action_submit($form, &$form_state) {
-  $mc_list_id = $form_state['mc_list_ids'][$form_state['values']['mailchimp_field']];
-  if (!$form_state['values']['segment']) {
-    $segment = mailchimp_segment_create($mc_list_id, $form_state['values']['new_segment'], 'static');
-    $form_state['values']['segment'] = $segment['id'];
-  }
-  $values = array(
-    'mailchimp_field' => $form_state['values']['mailchimp_field'],
-    'mc_list_id' => $mc_list_id,
-    'segment_id' => $form_state['values']['segment'],
-  );
-  return $values;
-}
-
+/**
+ * An action configuration form for performing Add To Segment actions.
+ */
 function mailchimp_lists_add_to_segment_action_form($context, &$form_state) {
   $form = array();
   $mailchimp_field_options = array();
@@ -510,6 +506,23 @@ function mailchimp_lists_add_to_segment_action_form($context, &$form_state) {
 }
 
 /**
+ * Form handler for mailchimp_lists_add_to_segment_action_form().
+ */
+function mailchimp_lists_add_to_segment_action_submit($form, &$form_state) {
+  $mc_list_id = $form_state['mc_list_ids'][$form_state['values']['mailchimp_field']];
+  if (!$form_state['values']['segment']) {
+    $segment = mailchimp_segment_create($mc_list_id, $form_state['values']['new_segment'], 'static');
+    $form_state['values']['segment'] = $segment['id'];
+  }
+  $values = array(
+    'mailchimp_field' => $form_state['values']['mailchimp_field'],
+    'mc_list_id' => $mc_list_id,
+    'segment_id' => $form_state['values']['segment'],
+  );
+  return $values;
+}
+
+/**
  * AJAX callback to return segments for a given list.
  */
 function mailchimp_lists_segment_action_callback($form, $form_state) {
@@ -519,8 +532,8 @@ function mailchimp_lists_segment_action_callback($form, $form_state) {
 
 /**
  * Implements hook_views_bulk_operations_form().
- * 
- * Configuration option for adding VBO action 
+ *
+ * Configuration option for adding VBO action
  */
 function mailchimp_lists_add_to_segment_action_views_bulk_operations_form($options, $entity_type, $dom_id) {
   $field_options = array();
