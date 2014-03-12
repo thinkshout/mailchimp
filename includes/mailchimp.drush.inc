@@ -26,13 +26,16 @@ function mailchimp_drush_command() {
   return $items;
 }
 
+/**
+ * @int null $temp_batchsize
+ */
 function _mailchimp_cron_batch($temp_batchsize = NULL) {
-  if ( !is_null($temp_batchsize) ) {
+  if (!is_null($temp_batchsize)) {
     $stored_batchsize = variable_get('mailchimp_batch_limit', 100);
     variable_set('mailchimp_batch_limit', $temp_batchsize);
   }
-  mailchimp_lists_cron();
-  if ( !is_null($batchsize) ) {
+  mailchimp_cron();
+  if (!is_null($batchsize)) {
     variable_set('mailchimp_batch_limit', $stored_batchsize);
   }
 }
