@@ -418,9 +418,11 @@ function mailchimp_lists_add_to_segment_action($entity, $context = array()) {
   $entity_info = entity_get_info($context['entity_type']);
   $list_id = $context['mc_list_id'];
   $field_instance = field_info_instance($context['entity_type'], $context['mailchimp_field'], $entity->{$entity_info['entity keys']['bundle']});
-  $wrapper = entity_metadata_wrapper($context['entity_type'], $entity);
+  $email = mailchimp_lists_load_email($field_instance, $entity);
   $queue_id = 'mailchimp_lists_action_' . $list_id . '_' . $context['segment_id'];
-  mailchimp_segment_add_subscriber($list_id, $context['segment_id'], $wrapper->{$field_instance['settings']['mergefields']['EMAIL']}->value(), TRUE, $queue_id);
+  if ($email) {
+    mailchimp_segment_add_subscriber($list_id, $context['segment_id'], $email, TRUE, $queue_id);
+  }
   // Send to Mailchimp in a batch when we are done, or when we reach 10000, as
   // 10000 records is the maximum batch size Mailchimp recommends.
   if ($context['progress']['current'] == $context['progress']['total'] || !($context['progress']['current'] % 10000)) {
