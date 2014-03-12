@@ -76,6 +76,10 @@ function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
 
 /**
  * Implements hook_forms().
+ * 
+ * This allows each field's subscription-form rendering to have a unique form
+ * ID. If this weren't the case, multiple forms getting rendered on a single
+ * entity display would have submit button conflicts.
  */
 function mailchimp_lists_forms($form_id, $args) {
   $forms = array();
@@ -164,10 +168,14 @@ function mailchimp_lists_subscribe_form_submit($form, &$form_state) {
  *
  * Subscription blocks, user settings, and new user creation.
  * 
- * @array $list_forms: an array of mailchimp_list form values, as generated
- *   by mailchimp_lists_list_form() 
- * @account null $account: the user account to subscribe, if available.
- *   Otherwise, operations will be run with the ['mergevars']['EMAIL'] value.
+ * @array $choices
+ *   An array representing the form values selected.
+ * @array $instance
+ *   A mailchimp_lists_subscription field instance configuration.
+ * @array $field
+ *   A mailchimp_lists_subscription field definition.
+ * @entity $entity
+ *   An Entity that has the $instance field.
  */
 function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $field, $entity) {
   $email = mailchimp_lists_load_email($instance, $entity);
@@ -219,9 +227,8 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
   }
 }
 
-
 /**
- * Helper function to complete a mailchimp api ready mergevars array.
+ * Helper function to complete a mailchimp-api-ready mergevars array.
  */
 function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type) {
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
@@ -247,6 +254,7 @@ function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type
  * @string $email
  *   Optional email address to pass to the MCAPI and retrieve existing values
  *   for use as defaults.
+ *
  * @return array
  *   A collection of form elements, one per interest group.
  */
