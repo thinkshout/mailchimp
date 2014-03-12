@@ -48,6 +48,33 @@ function mailchimp_lists_entity_delete($entity, $type) {
 }
 
 /**
+ * Helper function to check if a valid email is configured for an entity field.
+ *
+ * Returns an email address or FALSE.
+ */
+function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
+  $entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity);
+  if (!isset($instance['settings']['mergefields']['EMAIL'])) {
+    if ($log_errors) {
+      watchdog('mailchimp_lists', 'Mailchimp Lists field "@field" on @entity -> @bundle has no EMAIL field configured, subscription actions cannot take place.', array(
+        '@field' => $instance['field_name'],
+        '@entity' => $instance['entity_type'],
+        '@bundle' => $instance['bundle'],
+      ), WATCHDOG_NOTICE);
+    }
+    return FALSE;
+  }
+  $email = $entity_wrapper->{$instance['settings']['mergefields']['EMAIL']}->value();
+  // @todo: more stringent email verification.
+  if (strlen($email)) {
+    return $email;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
  * Implements hook_forms().
  */
 function mailchimp_lists_forms($form_id, $args) {
@@ -274,33 +301,6 @@ function _mailchimp_lists_interest_groups_form_elements($mc_list, $default_value
     );
   }
   return $return;
-}
-
-/**
- * Helper function to check if a valid email is configured for an entity field.
- * 
- * Returns an email address or FALSE.
- */
-function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
-  $entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity);
-  if (!isset($instance['settings']['mergefields']['EMAIL'])) {
-    if ($log_errors) {
-      watchdog('mailchimp_lists', 'Mailchimp Lists field "@field" on @entity -> @bundle has no EMAIL field configured, subscription actions cannot take place.', array(
-        '@field' => $instance['field_name'],
-        '@entity' => $instance['entity_type'],
-        '@bundle' => $instance['bundle'],
-      ), WATCHDOG_NOTICE);
-    }
-    return FALSE;
-  }
-  $email = $entity_wrapper->{$instance['settings']['mergefields']['EMAIL']}->value();
-  // @todo: more stringent email verification.
-  if (strlen($email)) {
-    return $email;
-  }
-  else {
-    return FALSE;
-  }
 }
 
 /**
