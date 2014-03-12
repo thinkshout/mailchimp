@@ -8,4 +8,4 @@ dependencies[] = entity
 configure = admin/config/services/mailchimp/lists
 
 files[] = lib/mailchimp_lists.entity.inc
-files[] = tests/mailchimp_lists.test
+;files[] = tests/mailchimp_lists.test
