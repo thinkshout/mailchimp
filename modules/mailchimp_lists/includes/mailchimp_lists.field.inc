@@ -247,53 +247,46 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
   $element = array();
   $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
   $email = mailchimp_lists_load_email($instance, $entity, FALSE);
-  switch ($display['type']) {
-    case 'mailchimp_lists_subscribe_default':
-      if ($email) {
-        if (mailchimp_is_subscribed($field['settings']['mc_list_id'], $email)) {
-          $status = "<i>Subscribed</i>";
-        }
-        else {
-          $status = "<i>Not Subscribed</i>";
-        }
+  if ($display['type'] == 'mailchimp_lists_field_subscribe') {
+    // Display subscription form if accessible.
+    if ($email && entity_access('edit', $entity_type, $entity)) {
+      $field_form_id = 'mailchimp_lists_' . $field['field_name'] . '_form';
+      $element = drupal_get_form($field_form_id, $instance, $display['settings'], $entity, $field);
+    }
+    else {
+      $display['type'] = 'mailchimp_lists_subscribe_default';
+    }
+  }
+  if ($display['type'] == 'mailchimp_lists_subscribe_default') {
+    if ($email) {
+      if (mailchimp_is_subscribed($field['settings']['mc_list_id'], $email)) {
+        $status = "<i>Subscribed</i>";
       }
       else {
-        $status = "<i>No Valid Email Address</i>";
+        $status = "<i>Not Subscribed</i>";
       }
-      $element['status'] = array(
-        '#markup' => $status,
-        '#description' => t('@mc_list_description', array('@mc_list_description' => $instance['description'])),
-      );
-      if ($display['settings']['show_interest_groups']) {
-        if (is_array($mc_list['intgroups'])) {
-          $element['interest_groups'] = array(
-            '#type' => 'fieldset',
-            '#title' => t('Interest Groups'),
-            '#weight' => 100,
+    }
+    else {
+      $status = "<i>No Valid Email Address</i>";
+    }
+    $element['status'] = array(
+      '#markup' => $status,
+      '#description' => t('@mc_list_description', array('@mc_list_description' => $instance['description'])),
+    );
+    if ($display['settings']['show_interest_groups']) {
+      if (is_array($mc_list['intgroups'])) {
+        $element['interest_groups'] = array(
+          '#type' => 'fieldset',
+          '#title' => t('Interest Groups'),
+          '#weight' => 100,
+        );
+        foreach ($mc_list['intgroups'] as $group) {
+          $element['interest_groups'][$group['id']] = array(
+            '#markup' => $group['name'],
           );
-          foreach ($mc_list['intgroups'] as $group) {
-            $element['interest_groups'][$group['id']] = array(
-              '#markup' => $group['name'],
-            );
-          }
         }
       }
-      break;
-
-    case 'mailchimp_lists_field_subscribe':
-      // Display subscription form if accessible.
-      if ($email) {
-        if (TRUE) {
-          // @todo: check for valid permissions here
-          // This custom form ID could be more specific. This may have issues
-          // if 2 different entities with the same mailchimp list field appear
-          // as forms on a single page.
-          $field_form_id = 'mailchimp_lists_' . $field['field_name'] . '_form';
-          $element = drupal_get_form($field_form_id, $instance, $display['settings'], $entity, $field);
-        }
-      }
-      break;
-
+    }
   }
   return array($element);
 }
