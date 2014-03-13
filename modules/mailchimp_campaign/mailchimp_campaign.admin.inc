@@ -237,10 +237,11 @@ function mailchimp_campaign_delete_form($form, &$form_state, MailChimpCampaign $
  */
 function mailchimp_campaign_delete_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
-  mailchimp_campaign_delete_campaign($campaign->mc_campaign_id);
-  drupal_set_message(t('Campaign %name has been deleted.',
+  if (mailchimp_campaign_delete_campaign($campaign->mc_campaign_id)) {
+    drupal_set_message(t('Campaign %name has been deleted.',
       array('%name' => $campaign->label()))
-  );
+    );
+  }
   drupal_goto('admin/config/services/mailchimp/campaigns');
 }
 

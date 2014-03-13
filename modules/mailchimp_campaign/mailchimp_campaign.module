@@ -290,8 +290,16 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
 function mailchimp_campaign_delete_campaign($cid) {
   $mcapi = mailchimp_get_api_object();
 
+  $result = NULL;
   // Delete campaign from MailChimp
-  $result = $mcapi->campaigns->delete($cid);
+  try {
+    $result = $mcapi->campaigns->delete($cid);
+  }
+  catch (Mailchimp_Error $e) {
+    drupal_set_message($e->getMessage(), 'error');
+    watchdog('mailchimp_campaign', 'Caught MailChimp API Exception: ' . $e->getMessage(), WATCHDOG_ERROR);
+    return FALSE;
+  }
 
   if (isset($result['status']) && ($result['status'] == 'error')) {
     // Display and log error, if any.
@@ -302,7 +310,9 @@ function mailchimp_campaign_delete_campaign($cid) {
     // Delete campaign from the database
     mailchimp_campaign_delete($cid);
     watchdog('mailchimp_campaign', 'MailChimp campaign %cid was deleted.', array('%cid' => $cid));
+    return TRUE;
   }
+  return FALSE;
 }
 
 /**
