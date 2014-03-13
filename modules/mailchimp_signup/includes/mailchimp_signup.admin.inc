@@ -230,17 +230,25 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     }
   }
 
+  $form['subscription_settings'] = array(
     '#type' => 'fieldset',
+    '#title' => t('Subscription Settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
   );
 
+  $form['subscription_settings']['doublein'] = array(
     '#type' => 'checkbox',
     '#title' => t('Require subscribers to Double Opt-in'),
+    '#description' => t('New subscribers will be sent a link with an email they must follow to confirm their subscription.'),
     '#default_value' => isset($signup->settings['doublein']) ? $signup->settings['doublein'] : FALSE,
   );
 
+  $form['subscription_settings']['include_interest_groups'] = array(
     '#type' => 'checkbox',
     '#title' => t('Include interest groups on subscription form.'),
     '#default_value' => isset($signup->settings['include_interest_groups']) ? $signup->settings['include_interest_groups'] : FALSE,
+    '#description' => t('If set, subscribers will be able to select applicable interest groups on the signup form.'),
   );
 
   $form['save'] = array(
@@ -288,6 +296,8 @@ function mailchimp_signup_signup_form_submit($form, &$form_state) {
   $signup->settings = $form_state['values']['settings'];
   $signup->settings['mergefields'] = $mergefields;
   $signup->settings['description'] = $form_state['values']['description'];
+  $signup->settings['doublein'] = $form_state['values']['doublein'];
+  $signup->settings['include_interest_groups'] = $form_state['values']['include_interest_groups'];
   if ($signup->save()) {
     drupal_set_message(t('Signup form @name has been saved. If you have added or removed blocks or pages, you may need to clear caches.',
       array('@name' => $signup->name)));
