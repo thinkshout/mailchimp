@@ -225,10 +225,11 @@ function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NU
     }
   }
   else {
-    // updates must be done one value at a time
-    $values = $options += array('content' => $content);
-    foreach ($values as $key => $value) {
-      $result = $mcapi->campaigns->update($campaign_id, $key, $value);
+    // Updates must be sent one type at a time.
+    $result = $mcapi->campaigns->update($campaign_id, 'options', $options);
+    if (!isset($result['errors']) || (count($result['errors']) == 0))
+    {
+      $result = $mcapi->campaigns->update($campaign_id, 'content', $content);
     }
   }
 
