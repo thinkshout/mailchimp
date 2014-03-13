@@ -245,6 +245,10 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
   }
   else {
     $list = reset($lists);
+    if ($signup->settings['include_interest_groups'] && isset($list['intgroups'])) {
+      $form['mailchimp_lists']['#weight'] = 9;
+      $form['mailchimp_lists']['interest_groups'] = mailchimp_interest_groups_form_elements($list);
+    }
   }
   $form['mergevars'] = array(
     '#prefix' => '<div id="mailchimp-newsletter-' . $list['web_id'] . '-mergefields" class="mailchimp-newsletter-mergefields">',
@@ -259,6 +263,7 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
 
   $form['submit'] = array(
     '#type' => 'submit',
+    '#weight' => 10,
     '#value' => t($signup->settings['submit_button']),
   );
 
@@ -277,8 +282,10 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
   $email = $merge_values['EMAIL'];
   // If we only have one list we won't have checkbox values to investigate:
   if (count($signup->mc_lists) == 1) {
-    $subscribe_lists[0] = $form_state['values']['mailchimp_lists'];
-    $subscribe_lists[0]['subscribe'] = reset(reset($signup->mc_lists));
+    $subscribe_lists[0] = array(
+      'subscribe' => reset($signup->mc_lists),
+      'interest_groups' => isset($form_state['values']['mailchimp_lists']['interest_groups']) ? $form_state['values']['mailchimp_lists']['interest_groups'] : NULL, 
+    );
   }
   else {
     // We can look at the checkbox values now:
