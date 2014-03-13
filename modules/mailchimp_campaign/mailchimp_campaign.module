@@ -218,7 +218,11 @@ function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NU
   // Save campaign to MailChimp. (Only regular campaigns are supported)
   $is_new = empty($campaign_id);
   if ($is_new) {
-    $campaign_id = $mcapi->campaigns->create('regular', $options, $content);
+    $result = $mcapi->campaigns->create('regular', $options, $content);
+    if (isset($result['status']) && ($result['status'] == 'save'))
+    {
+      $campaign_id = $result['id'];
+    }
   }
   else {
     // updates must be done one value at a time
