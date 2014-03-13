@@ -229,146 +229,19 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
       );
     }
   }
-/*
-  $form['list_settings']['required'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Automatically add all eligible users. <em>(Formerly "Required List")</em>'),
-    '#description' => t('Adds all registered users with appropriate Roles to the list automatically. This will block them from controlling their subscription status through Drupal. (Email confirmation from Mailchimp may still be required.)'),
-    '#default_value' => ($signup && !empty($signup->settings['required'])) ? $signup->settings['required'] : FALSE,
-  );
 
-  $form['list_settings']['roles'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Roles'),
-    '#tree' => TRUE,
-    '#description' => t('<p>Choose which roles may subscribe to this list. All
-      users will see the lists they\'re eligible for at the !subscribe and in
-      the subscription block. Lists assigned to the Authenticated role may
-      also apear in the registration form if that option is selected below.
-      Authenticated user may also manage their list settings from their profile.
-      The Anonymous role may <em>only</em> be set for free form lists.</p>',
-      array(
-        '!subscribe' => l(t('newsletter subscription page'),
-          'mailchimp/subscribe'),
-      )),
-  );
-  $roles = user_roles();
-  foreach ($roles as $rid => $role) {
-    $form['list_settings']['roles'][$rid] = array(
-      '#type' => 'checkbox',
-      '#tree' => TRUE,
-      '#title' => $role,
-      '#return_value' => $rid,
-      '#default_value' => ($signup && !empty($signup->settings['roles'][$rid])) ? $signup->settings['roles'][$rid] : FALSE,
-    );
-  }
-  // We don't show the anonymous role: instead we use the "allow anonymous"
-  // setting:
-  unset($form['list_settings']['roles'][DRUPAL_ANONYMOUS_RID]);
-
-  $form['list_settings']['settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Settings'),
   );
 
-  $form['list_settings']['settings']['doublein'] = array(
     '#type' => 'checkbox',
     '#title' => t('Require subscribers to Double Opt-in'),
-    '#description' => t('New subscribers will be sent a link with an email
-      they must follow to confirm their subscription.'),
     '#default_value' => isset($signup->settings['doublein']) ? $signup->settings['doublein'] : FALSE,
   );
 
-  $form['list_settings']['settings']['show_register_form'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Show subscription options on the user registration form.'),
-    '#description' => t('This will only apply for lists granted to an authenticated role. <em>(If the list is set to "Automatically add", only the title and Interest Group options will appear.)</em>'),
-    '#default_value' => isset($signup->settings['show_register_form']) ? $signup->settings['show_register_form'] : FALSE,
-  );
-  $form['list_settings']['settings']['show_account_form'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Show subscription options on user edit screen'),
-    '#description' => t('If set, a tab will be presented for managing newsletter subscriptions when editing an account. <em>(If the list is set to "Automatically add", the option to unsubscribe will be disabled, but users can configure their Interest Groups.)</em>'),
-    '#default_value' => isset($signup->settings['show_account_form']) ? $signup->settings['show_account_form'] : FALSE,
-  );
-  $form['list_settings']['settings']['cron'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Sync List During Cron'),
-    '#default_value' => isset($signup->settings['cron']) ? $signup->settings['cron'] : FALSE,
-    '#description' => t('If this is set, users will be subscribed to the
-      required list during cron runs. Otherwise subscription will take place when a user is added/edited.'),
-  );
-  $form['list_settings']['settings']['webhooks'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Enable MailChimp webhooks for this list'),
-    '#default_value' => isset($signup->settings['webhooks']) ? $signup->settings['webhooks'] : FALSE,
-    '#description' => t("When a user unsubscribes from a list or updates
-      their profile outside of Drupal, MailChimp will trigger an event to
-      update the user's cached MailChimp member information. This will
-      <em>not</em> update any of their Drupal user information."),
-  );
-
-  $form['form_option_settings']['form_label'] = array(
-    '#type' => 'textfield',
-    '#title' => t('List Label'),
-    '#description' => t('The label for this list that will appear on forms, either next to a checkbox or above the list merge fields, depending on the type of list.'),
-    '#size' => 40,
-    '#maxlength' => 64,
-    '#default_value' => isset($signup->settings['form_label']) ? $signup->settings['form_label'] : '',
-  );
-  $form['form_option_settings']['submit_label'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Submit Button Label'),
-    '#description' => t('The label for the Submit button that will appear on subscription forms that include only this list: generally blocks only.'),
-    '#size' => 20,
-    '#maxlength' => 20,
-    '#default_value' => isset($signup->settings['submit_label']) ? $signup->settings['submit_label'] : 'Submit',
-  );
-  $form['form_option_settings']['default_register_form_optin'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Default to opt-in on registration form.'),
-    '#description' => t('This will only apply for lists appearing on the register form.'),
-    '#default_value' => isset($signup->settings['default_register_form_optin']) ? $signup->settings['default_register_form_optin'] : FALSE,
-    '#states' => array(
-      // Hide for required lists.
-      'disabled' => array(
-        ':input[name="show_register_form"]' => array('checked' => FALSE),
-      ),
-      'checked' => array(
-        ':input[name="required"]' => array('checked' => TRUE),
-      ),
-    ),
-  );
-  $form['form_option_settings']['include_interest_groups'] = array(
     '#type' => 'checkbox',
     '#title' => t('Include interest groups on subscription form.'),
     '#default_value' => isset($signup->settings['include_interest_groups']) ? $signup->settings['include_interest_groups'] : FALSE,
-    '#description' => t('If set, users will be able to select applicable interest groups when registering or editing their accounts.'),
   );
-  $form['form_option_settings']['opt_in_interest_groups'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Default all groups to opt-in.'),
-    '#default_value' => isset($signup->settings['opt_in_interest_groups']) ? $signup->settings['opt_in_interest_groups'] : FALSE,
-    '#description' => t('If set, the registration form will check all interest groups by default.'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="include_interest_groups"]' => array('checked' => TRUE),
-      ),
-    ),
-  );
-  $form['form_option_settings']['interest_groups_label'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Interest groups label'),
-    '#default_value' => isset($signup->settings['interest_groups_label']) ? $signup->settings['interest_groups_label'] : t('Interest Groups'),
-    '#description' => t('Label to appear above the interest group options.'),
-    '#size' => 40,
-    '#maxlength' => 255,
-    '#states' => array(
-      'enabled' => array(
-        ':input[name="include_interest_groups"]' => array('checked' => TRUE),
-      ),
-    ),
-  );*/
 
   $form['save'] = array(
     '#type' => 'submit',
