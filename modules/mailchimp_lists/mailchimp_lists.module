@@ -142,7 +142,7 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
           ),
         ),
       );
-      $form[$wrapper_key]['interest_groups'] += _mailchimp_lists_interest_groups_form_elements($mc_list, $instance['default_value'][0]['options']['interest_groups'], $email);
+      $form[$wrapper_key]['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $instance['default_value'][0]['options']['interest_groups'], $email);
     }
   }
   $form['submit'] = array(
@@ -205,7 +205,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
     else {
       $mergevars = _mailchimp_lists_mergevars_populate($instance['settings']['mergefields'], $entity, $instance['entity_type']);
       if (!empty($choices['interest_groups'])) {
-        $mergevars['GROUPINGS'] = _mailchimp_lists_reformat_groupings($choices['interest_groups']);
+        $mergevars['GROUPINGS'] = mailchimp_reformat_groupings($choices['interest_groups']);
       }
     }
     switch ($function) {
@@ -240,87 +240,6 @@ function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type
   }
   drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
   return $mergevars;
-}
-
-/**
- * Helper function to generate form elements for a lists interest groups.
- * 
- * @array $mc_list
- *   Fully loaded array with mailchimp list settings as returned by
- *   mailchimp_get_list()
- * @array $default_values
- *   Array of default values to use if no group subscription values already
- *   exist at Mailchimp.
- * @string $email
- *   Optional email address to pass to the MCAPI and retrieve existing values
- *   for use as defaults.
- *
- * @return array
- *   A collection of form elements, one per interest group.
- */
-function _mailchimp_lists_interest_groups_form_elements($mc_list, $default_values = array(), $email = NULL) {
-  $return = array();
-  foreach ($mc_list['intgroups'] as $group) {
-    if ($group['form_field'] == 'hidden') {
-      continue;
-    }
-    // Set the form field type:
-    switch ($group['form_field']) {
-      case 'radio':
-        $field_type = 'radios';
-        break;
-
-      case 'dropdown':
-        $field_type = 'select';
-        break;
-
-      default:
-        $field_type = $group['form_field'];
-    }
-
-    // Extract the field options:
-    $options = array();
-    foreach ($group['groups'] as $option) {
-      $options[$option['name']] = $option['name'];
-    }
-    // Grab the default values for this group:
-    if ($email) {
-      $memberinfo = mailchimp_get_memberinfo($mc_list['id'], $email);
-      if (isset($memberinfo['merges']['GROUPINGS'])) {
-        $default_values = array();
-        foreach ($memberinfo['merges']['GROUPINGS'] as $membergroup) {
-          if ($membergroup['id'] == $group['id']) {
-            foreach($membergroup['groups'] as $option) {
-              if ($option['interested']) {
-                $default_values[$group['id']][] = $option['name'];
-              }
-            }
-            break;
-          }
-        }
-      }
-    }
-    $return[$group['id']] = array(
-      '#type' => $field_type,
-      '#title' => $group['name'],
-      '#options' => $options,
-      '#default_value' => isset($default_values[$group['id']]) ? $default_values[$group['id']] : array(),
-      '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $mc_list['id'])),
-    );
-  }
-  return $return;
-}
-
-/**
- * Helper function to make an API-ready array from an interest group form.
- */
-function _mailchimp_lists_reformat_groupings($interest_groups) {
-  $groupings = array();
-  foreach ($interest_groups as $key => $groups) {
-    $groups = array_filter($groups);
-    $groupings[] = array('id' => $key, 'groups' => $groups);
-  }
-  return $groupings;
 }
 
 /**
