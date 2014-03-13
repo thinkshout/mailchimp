@@ -299,6 +299,21 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
 }
 
 /**
+ * Implements hook_field_prepare_view().
+ * 
+ * Our field has no actual data in the database, so we have to push a dummy
+ * value into $items, or the render system will assume we have nothing to
+ * display. See https://api.drupal.org/comment/48043#comment-48043
+ */
+function mailchimp_lists_field_prepare_view($entity_type, $entities, $field, $instances, $langcode, &$items) {
+  if ($field['type'] == 'mailchimp_lists_subscription') {
+    foreach ($items as $key => $item) {
+      $items[$key][0]['value'] = 'Dummy value';
+    }
+  }
+}
+
+/**
  * Implements hook_form_FORM_ID_alter().
  *
  * Hide the cardinality setting on the field settings for
