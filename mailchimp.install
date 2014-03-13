@@ -11,7 +11,7 @@
  */
 function mailchimp_schema() {
   $schema['cache_mailchimp'] = drupal_get_schema_unprocessed('system', 'cache');
-  $schema['cache_mailchimp']['description'] = 'Cache table for the MailChimp module to store a list subscribers member info.';
+  $schema['cache_mailchimp']['description'] = 'Cache table for the MailChimp module to store a list of subscribers member info.';
 
   return $schema;
 }
