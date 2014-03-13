@@ -210,7 +210,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
     }
     switch ($function) {
       case 'add':
-        $ret = mailchimp_subscribe($list_id, $email, $mergevars, 'html', $field['settings']['double_opt_in']);
+        $ret = mailchimp_subscribe($list_id, $email, $mergevars, $field['settings']['double_opt_in']);
         break;
 
       case 'remove':

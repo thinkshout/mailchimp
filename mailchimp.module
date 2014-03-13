@@ -312,7 +312,7 @@ function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
 /**
  * Wrapper around MCAPI->lists->subscribe.
  */
-function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $format = 'html', $double_optin = FALSE, $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE, $mcapi = NULL) {
+function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE, $mcapi = NULL) {
   $success = FALSE;
   // If we aren't given an MCAPI object, we allow Async in our API object.
   // The object itself will tell us whether to use the queue.
