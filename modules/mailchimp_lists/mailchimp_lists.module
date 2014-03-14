@@ -489,7 +489,7 @@ function mailchimp_lists_add_to_segment_action_views_bulk_operations_form($optio
     '#options' => $field_options,
     '#multiple' => TRUE,
     '#description' => t('Select the mailchimp fields for which to allow segmentation.'),
-    '#default_value' => $options['mailchimp_field'],
+    '#default_value' => isset($options['mailchimp_field']) ? $options['mailchimp_field'] : NULL,
     '#required' => TRUE,
   );
   return $form;
