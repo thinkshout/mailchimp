@@ -43,6 +43,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     $segment_id = $campaign->mc_data['saved_segment']['id'];
   }
 
+  $list_segments = array();
   if (isset($list_id)) {
     $list_segments = mailchimp_campaign_get_list_segments($list_id, 'saved');
   }
@@ -51,7 +52,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#type' => 'select',
     '#title' => t('List Segment'),
     '#description' => t('Select the list segment this campaign should be sent to.'),
-    '#options' => (is_array($list_segments)) ? _mailchimp_campaign_build_option_list($list_segments) : array(),
+    '#options' => _mailchimp_campaign_build_option_list($list_segments, '-- No segment --'),
     '#default_value' => (isset($segment_id))? $segment_id : '',
     '#prefix' => '<div id="list_segments_wrapper">',
     '#suffix' => '</div>',
@@ -248,8 +249,8 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
 /**
  * Returns an options list for a given array of items.
  */
-function _mailchimp_campaign_build_option_list($list) {
-  $options = array('' => t('-- Select --'));
+function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- Select --') {
+  $options = array('' => t($no_selection_label));
   foreach ($list as $item) {
     $options[$item['id']] = $item['name'];
   }
