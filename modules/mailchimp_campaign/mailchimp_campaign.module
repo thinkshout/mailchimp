@@ -227,7 +227,7 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
   $is_new = empty($campaign_id);
   if ($is_new) {
     try {
-      $result = $mcapi->campaigns->create('regular', $options, $content);
+      $result = $mcapi->campaigns->create('regular', $options, $content, $segment_options);
     } catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
       watchdog('mailchimp_campaign', 'An error occurred while creating this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
