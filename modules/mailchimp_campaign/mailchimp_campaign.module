@@ -506,8 +506,13 @@ function mailchimp_campaign_process_callback($matches = array()) {
  */
 function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
   $mcapi = mailchimp_get_api_object();
-  // TODO: Refactor to work with MailChimp API V2.
-  $response = $mcapi->campaignStats($campaign->mc_campaign_id);
+
+  try {
+    $response = $mcapi->reports->summary($campaign->mc_campaign_id);
+  } catch (Mailchimp_Error $e) {
+    drupal_set_message($e->getMessage(), 'error');
+    watchdog('mailchimp_campaign', 'An error occurred getting report data from MailChimp: ' . $e->getMessage(), WATCHDOG_ERROR);
+  }
 
   if (empty($response)) {
     return t('The campaign stats are unavailable at this time.');
