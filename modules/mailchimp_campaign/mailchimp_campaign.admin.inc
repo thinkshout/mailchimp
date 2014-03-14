@@ -40,6 +40,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     $list_id = $form_state['values']['list_id'];
   } else if ($campaign && $campaign->mc_data) {
     $list_id = $campaign->mc_data['list_id'];
+    $segment_id = $campaign->mc_data['saved_segment']['id'];
   }
 
   if (isset($list_id)) {
@@ -52,7 +53,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#description' => t('Select the list segment this campaign should be sent to.'),
     '#options' => (is_array($list_segments)) ? _mailchimp_campaign_build_option_list($list_segments) : array(),
     '#access' => TRUE,
-    //'#default_value' => ($campaign) ? $campaign->mc_data['list_id'] : '',
+    '#default_value' => (isset($segment_id))? $segment_id : '',
     '#prefix' => '<div id="list_segments_wrapper">',
     '#suffix' => '</div>',
   );
