@@ -626,3 +626,28 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
 
   return $mc_campaigns;
 }
+
+/**
+ * Gets an array of list segments for a given list ID.
+ *
+ * @param int $list_id
+ *  The list ID.
+ * @param string $type
+ *  The segment type to get. "static" or "saved"
+ *
+ * @return array
+ */
+function mailchimp_campaign_get_list_segments($list_id, $type) {
+  $mcapi = mailchimp_get_api_object();
+
+  try {
+    $response = $mcapi->lists->segments($list_id, $type);
+  } catch (Mailchimp_Error $e) {
+    drupal_set_message($e->getMessage(), 'error');
+    watchdog('mailchimp_campaign', 'An error occurred getting list segments for list ID ' . $list_id . ': ' . $e->getMessage(), WATCHDOG_ERROR);
+    return NULL;
+  }
+
+  // Temporary.
+  return array();
+}
