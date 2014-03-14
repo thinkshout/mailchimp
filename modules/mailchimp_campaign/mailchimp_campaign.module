@@ -655,6 +655,17 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
   return $response[$type];
 }
 
+/**
+ * Tests a list segment, returning the number of subscribers contained in the segment.
+ *
+ * @param $list_id
+ *  The list ID.
+ * @param $list_segment_id
+ *  The list segment ID.
+ *
+ * @return int
+ *  The number of subscribers contained in the segment.
+ */
 function mailchimp_test_list_segment($list_id, $list_segment_id) {
   $mcapi = mailchimp_get_api_object();
 
