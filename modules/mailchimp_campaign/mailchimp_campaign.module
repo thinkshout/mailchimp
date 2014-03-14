@@ -196,12 +196,13 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
  *
  * @param $template
  * @param $options
+ * @param $segment_options
  * @param null $campaign_id
  *
  * @return string
  *   New or existing campaign ID.
  */
-function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NULL) {
+function mailchimp_campaign_save_campaign($template, $options, $segment_options = NULL, $campaign_id = NULL) {
   $mcapi = mailchimp_get_api_object();
   $options += array(
     'generate_text' => TRUE,
@@ -215,6 +216,13 @@ function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NU
   // convert template to content by running through formatter
   $content = mailchimp_campaign_render_template($template);
 
+  // Test for valid list segment, if selected.
+  if ($segment_options != NULL) {
+    if (mailchimp_test_list_segment($options['list_id'], $segment_options['saved_segment_id']) === NULL) {
+      return NULL;
+    }
+  }
+
   // Save campaign to MailChimp. (Only regular campaigns are supported)
   $is_new = empty($campaign_id);
   if ($is_new) {
@@ -225,19 +233,15 @@ function mailchimp_campaign_save_campaign($template, $options, $campaign_id = NU
       watchdog('mailchimp_campaign', 'Caught MailChimp API Exception: ' . $e->getMessage(), WATCHDOG_ERROR);
       return NULL;
     }
-    if (isset($result['status']) && ($result['status'] == 'save'))
-    {
+    if (isset($result['status']) && ($result['status'] == 'save')) {
       $campaign_id = $result['id'];
     }
-  }
-  else {
+  } else {
     // Updates must be sent one type at a time.
     try {
-      $result = $mcapi->campaigns->update($campaign_id, 'options', $options);
-      if (!isset($result['errors']) || (count($result['errors']) == 0))
-      {
-        $result = $mcapi->campaigns->update($campaign_id, 'content', $content);
-      }
+      $mcapi->campaigns->update($campaign_id, 'options', $options);
+      $mcapi->campaigns->update($campaign_id, 'segment_opts', $segment_options);
+      $mcapi->campaigns->update($campaign_id, 'content', $content);
     } catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
       watchdog('mailchimp_campaign', 'Caught MailChimp API Exception: ' . $e->getMessage(), WATCHDOG_ERROR);
@@ -649,4 +653,21 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
   }
 
   return $response[$type];
+}
+
+function mailchimp_test_list_segment($list_id, $list_segment_id) {
+  $mcapi = mailchimp_get_api_object();
+
+  try {
+    $result = $mcapi->campaigns->segmentTest($list_id,
+      array(
+        'saved_segment_id' => $list_segment_id,
+      ));
+  } catch (Mailchimp_Error $e) {
+    drupal_set_message($e->getMessage(), 'error');
+    watchdog('mailchimp_campaign', 'An error occurred testing a list segment: ' . $e->getMessage(), WATCHDOG_ERROR);
+    return NULL;
+  }
+
+  return $result['total'];
 }

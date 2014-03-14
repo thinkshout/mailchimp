@@ -230,9 +230,15 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
     'from_name' => check_plain($values['from_name']),
     'template_id' => $values['template_id']
   );
+  $segment_options = NULL;
+  if (isset($values['list_segment_id']) && !empty($values['list_segment_id'])) {
+    $segment_options = array(
+      'saved_segment_id' => $values['list_segment_id'],
+    );
+  }
 
   $campaign_id = (isset($form_state['campaign']) ? $form_state['campaign']->mc_campaign_id : NULL);
-  mailchimp_campaign_save_campaign($values['content'], $options, $campaign_id);
+  mailchimp_campaign_save_campaign($values['content'], $options, $segment_options, $campaign_id);
 
   cache_clear_all('mailchimp_campaign_campaigns', 'cache');
 
