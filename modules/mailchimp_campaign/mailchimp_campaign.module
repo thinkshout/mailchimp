@@ -230,7 +230,7 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
       $result = $mcapi->campaigns->create('regular', $options, $content);
     } catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
-      watchdog('mailchimp_campaign', 'Caught MailChimp API Exception: ' . $e->getMessage(), WATCHDOG_ERROR);
+      watchdog('mailchimp_campaign', 'An error occurred while creating this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
       return NULL;
     }
     if (isset($result['status']) && ($result['status'] == 'save')) {
@@ -244,7 +244,7 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
       $mcapi->campaigns->update($campaign_id, 'content', $content);
     } catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
-      watchdog('mailchimp_campaign', 'Caught MailChimp API Exception: ' . $e->getMessage(), WATCHDOG_ERROR);
+      watchdog('mailchimp_campaign', 'An error occurred while updating this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
       return NULL;
     }
   }
@@ -285,7 +285,7 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     $result = $mcapi->campaigns->send($campaign->mc_campaign_id);
   } catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
-    watchdog('mailchimp_campaign', 'Caught MailChimp API Exception: ' . $e->getMessage(), WATCHDOG_ERROR);
+    watchdog('mailchimp_campaign', 'An error occurred while sending to this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
     return FALSE;
   }
 
@@ -318,7 +318,7 @@ function mailchimp_campaign_delete_campaign($cid) {
     $result = $mcapi->campaigns->delete($cid);
   } catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
-    watchdog('mailchimp_campaign', 'Caught MailChimp API Exception: ' . $e->getMessage(), WATCHDOG_ERROR);
+    watchdog('mailchimp_campaign', 'An error occurred while deleting this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
     return FALSE;
   }
 
@@ -615,7 +615,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
       $response = $mcapi->campaigns->getList(array('campaign_id' => implode(',', $to_refresh)));
     } catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
-      watchdog('mailchimp_campaign', 'Caught MailChimp API Exception: ' . $e->getMessage(), WATCHDOG_ERROR);
+      watchdog('mailchimp_campaign', 'An error occurred while getting campaigns: ' . $e->getMessage(), WATCHDOG_ERROR);
       return FALSE;
     }
 
