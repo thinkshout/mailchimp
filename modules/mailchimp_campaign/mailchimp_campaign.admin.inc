@@ -28,8 +28,40 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#description' => t('Select the list this campaign should be sent to.'),
     '#options' => _mailchimp_campaign_build_option_list(mailchimp_get_lists()),
     '#default_value' => ($campaign) ? $campaign->mc_data['list_id'] : -1,
-    '#required' => TRUE
+    '#required' => TRUE,
+    '#ajax' => array(
+      'callback' => 'mailchimp_campaign_list_segment_callback',
+      'method' => 'replace',
+      'wrapper' => 'list_segments_wrapper',
+    ),
   );
+
+  if (!empty($form_state['values']['list_id'])) {
+    $list_id = $form_state['values']['list_id'];
+  } else if ($campaign && $campaign->mc_data) {
+    $list_id = $campaign->mc_data['list_id'];
+  }
+
+  if (isset($list_id)) {
+    $list_segments = mailchimp_campaign_get_list_segments($list_id, 'saved');
+  }
+
+  $form['list_segment_id'] = array(
+    '#type' => 'select',
+    '#title' => t('List Segment'),
+    '#description' => t('Select the list segment this campaign should be sent to.'),
+    '#options' => (is_array($list_segments)) ? _mailchimp_campaign_build_option_list($list_segments) : array(),
+    '#access' => TRUE,
+    //'#default_value' => ($campaign) ? $campaign->mc_data['list_id'] : '',
+    '#prefix' => '<div id="list_segments_wrapper">',
+    '#suffix' => '</div>',
+  );
+
+  if (!is_array($list_segments) || (count($list_segments) == 0)) {
+  //$form['list_segment_id']['#access'] = FALSE;
+    $form['list_segment_id']['#default_value'] = '';
+  }
+
   $form['from_email'] = array(
     '#type' => 'textfield',
     '#title' => t('From Email'),
@@ -144,6 +176,18 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
  */
 function mailchimp_campaign_template_callback($form, $form_state) {
   return $form['content'];
+}
+
+/**
+ * AJAX callback when changing list ID.
+ *
+ * @param $form
+ * @param $form_state
+ *
+ * @return mixed
+ */
+function mailchimp_campaign_list_segment_callback($form, $form_state) {
+  return $form['list_segment_id'];
 }
 
 /**
