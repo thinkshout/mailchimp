@@ -133,7 +133,7 @@ function mailchimp_lists_webhook_form_submit($form, &$form_state) {
         '%name' => $form_state['list']['name'],
         '%action' => $form_state['action'],
       )
-    ));
+    ), 'warning');
 
   }
   $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
