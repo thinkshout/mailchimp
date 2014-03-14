@@ -118,6 +118,17 @@ class MailChimpCampaign extends Entity {
     $mc_template = mailchimp_campaign_get_templates($this->mc_data['template_id']);
     $mc_template_name = isset($mc_template) ? $mc_template['name'] : '';
 
+    $list_segment_name = 'N/A';
+
+    $list_segments = mailchimp_campaign_get_list_segments($this->list['id'], 'saved');
+    if (isset($this->mc_data['saved_segment']['id'])) {
+      foreach ($list_segments as $list_segment) {
+        if ($list_segment['id'] == $this->mc_data['saved_segment']['id']) {
+          $list_segment_name = $list_segment['name'];
+        }
+      }
+    }
+
     $fields = array(
       'subject' => array(
         'label' => t('Subject'),
@@ -128,6 +139,10 @@ class MailChimpCampaign extends Entity {
         'value' => l($this->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $this->list['web_id'], array(
           'attributes' => array('target' => '_blank'),
         ))
+      ),
+      'list_segment' => array(
+        'label' => t('List Segment'),
+        'value' => $list_segment_name
       ),
       'from_email' => array(
         'label' => t('From Email'),
