@@ -40,7 +40,9 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     $list_id = $form_state['values']['list_id'];
   } else if ($campaign && $campaign->mc_data) {
     $list_id = $campaign->mc_data['list_id'];
-    $segment_id = $campaign->mc_data['saved_segment']['id'];
+    if (isset($campaign->mc_data['saved_segment']['id'])) {
+      $segment_id = $campaign->mc_data['saved_segment']['id'];
+    }
   }
 
   $list_segments = array();
