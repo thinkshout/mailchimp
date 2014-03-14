@@ -52,16 +52,10 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#title' => t('List Segment'),
     '#description' => t('Select the list segment this campaign should be sent to.'),
     '#options' => (is_array($list_segments)) ? _mailchimp_campaign_build_option_list($list_segments) : array(),
-    '#access' => TRUE,
     '#default_value' => (isset($segment_id))? $segment_id : '',
     '#prefix' => '<div id="list_segments_wrapper">',
     '#suffix' => '</div>',
   );
-
-  if (!is_array($list_segments) || (count($list_segments) == 0)) {
-  //$form['list_segment_id']['#access'] = FALSE;
-    $form['list_segment_id']['#default_value'] = '';
-  }
 
   $form['from_email'] = array(
     '#type' => 'textfield',
