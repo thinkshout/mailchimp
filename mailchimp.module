@@ -557,7 +557,8 @@ function mailchimp_segment_create($list_id, $name, $type, $segment_options = NUL
       $options['segment_opts'] = $segment_options;
     }
     $segment_id = $mcapi->lists->segmentAdd($list_id, $options);
-
+    // Clear the segment cache:
+    mailchimp_get_segments($list_id, TRUE);
   }
   catch (Exception $e) {
     watchdog('mailchimp', 'An error occurred creating segment @segment for list @list. "%message"', array(

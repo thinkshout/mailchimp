@@ -6,29 +6,6 @@
  */
 
 /**
- * Respond to an email being added to a list.
- *
- * @param $list
- *   MailChimp list object.
- * @param $email
- * @param $merge_vars
- */
-function hook_mailchimp_subscribe_user($list, $email, $merge_vars) {
-
-}
-
-/**
- * Respond to an email being removed from a list.
- *
- * @param $list
- *   MailChimp list object.
- * @param $email
- */
-function hook_mailchimp_unsubscribe_user($list, $email) {
-
-}
-
-/**
  * Alter mergevars before they are sent to Mailchimp.
  *
  * @return NULL

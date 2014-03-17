@@ -1,3 +1,12 @@
+----
+WARNING:
+This is an ALPHA release of MailChimp 7.x-3.0. If you want a stable Mailchimp
+integration, start with 7.x-2.14. If you need MailChimp integration with
+non-user entities and want to help test the 3.x branch, this is a good starting
+point. This is not intended as a stable release, though, so proceed with
+caution!
+----
+
 This module provides integration with the MailChimp email delivery service.
 While tools for sending email from your own server, like SimpleNews, are great,
 they lack the sophistication and ease of use of dedicated email providers like
@@ -11,30 +20,28 @@ mailchimp.module. See their respective README's for more details.
   * API integration
   * Support for an unlimited number of mailing lists
   * Have anonymous sign up forms to subscribe site visitors to any combination
-    of Mailchimp lists.
+    of Mailchimp lists
   * Mailchimp list subscription via entity fields, allowing subscription rules
-    to be governed by entity controls, permissions, and UI.
-  * Compatibility with Views Bulk Operations.
-  * Allow users to subscribe during registration by adding a field to Users.
-  * Map field values to your MailChimp merge fields
+    to be governed by entity controls, permissions, and UI
+  * Compatibility with Views Bulk Operations
+  * Special VBO function for creating & updating static list segments
+  * Allow users to subscribe during registration by adding a field to Users
+  * Map Entity field values to your MailChimp merge fields
   * Standalone subscribe and unsubscribe forms
   * Subscriptions can be maintained via cron or in real time
   * Subscription forms can be created as pages or as blocks, with one or more
-    list subscriptions on a single form.
-  * Include merge fields on anonymous subscription forms as desired.
-  * Create campaigns containing any Drupal entity as content, send them, and
-    view statistics.
-  * Campaign activity for any entity with an email address.
+    list subscriptions on a single form
+  * Include merge fields & interest groups on anonymous subscription forms
 
 ## Installation Notes
   * You need to have a MailChimp API Key.
   * You need to have at least one list created in MailChimp to use the
     mailchimp_lists module.
-  * For versions 7.x-3.x, the MCAPI library must be downloaded into your
-    libraries folder. 7.x-3.x uses the 2.0.x version of the Mailchimp API, where
-    7.x-2.x used the 1.3 version. Make sure you have the new version. It's
-    available at: https://bitbucket.org/mailchimp/mailchimp-api-php/downloads or
-    by using the included example drush make file. Proper libraries structure:
+  * The MCAPI library must be downloaded into your libraries folder. 7.x-3.x
+    uses the 2.0.x version of the Mailchimp API, where 7.x-2.x used the 1.3
+    version. Make sure you have the new version. It's available at:
+    https://bitbucket.org/mailchimp/mailchimp-api-php/downloads or by using the
+    included example drush make file. Proper libraries structure:
     - libraries/
       - README.md
       - composer.js
@@ -43,8 +50,8 @@ mailchimp.module. See their respective README's for more details.
           - Mailchimp.php
           - Mailchimp/
   * At the time of writing, version 2.0.4 of the Mailchimp API library was the
-    latest. If you are using a later version and have issue, consider going to
-    version 2.0.4.
+    latest. If you are using a later version and have issues, consider switching
+    to version 2.0.4.
 
 ## Configuration
   1. Direct your browser to http://example.com/admin/config/services/mailchimp
@@ -63,14 +70,14 @@ mailchimp.module. See their respective README's for more details.
   Mailchimp suggest keeping this below 5000-10000.
 
 ## Submodules
+  * mailchimp_signup: Create anonymous signup forms for your Mailchimp Lists,
+    and display them as blocks or as standalone pages. Provide multiple-list
+    subscription from a single form, include merge variables as desired, and
+    optionally include Interest Group selection.
   * mailchimp_lists: Subscribe any entity with an email address to MailChimp
     lists by creating a mailchimp_list field, and allow anyone who can edit such
     an entity to subscribe, unsubscribe, and update member information. Also
     allows other entity fields to be synced to Mailchimp list Merge Fields.
-  * mailchimp_campaigns: Create newsletters with Drupal content, send the
-    campaigns, and view statistics.
-  * mailchimp_activity: View campaign activity for any entity with an email
-    address.
 
 ## Testing
 (todo)
