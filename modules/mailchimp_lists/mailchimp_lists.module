@@ -485,12 +485,16 @@ function mailchimp_lists_add_to_segment_action_views_bulk_operations_form($optio
   }
   $form['mailchimp_field'] = array(
     '#type' => 'select',
-    '#title' => t('Mailchimp List Field'),
+    '#title' => t('REQUIRED: Mailchimp List Field(s)'),
     '#options' => $field_options,
     '#multiple' => TRUE,
     '#description' => t('Select the mailchimp fields for which to allow segmentation.'),
     '#default_value' => isset($options['mailchimp_field']) ? $options['mailchimp_field'] : NULL,
-    '#required' => TRUE,
+    '#states' => array(
+      'required' => array(
+        ':input[name="options[vbo_operations][action::mailchimp_lists_add_to_segment_action][selected]"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   return $form;
 }
