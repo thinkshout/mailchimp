@@ -89,8 +89,29 @@ function mailchimp_campaign_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 4
   );
+  $items['mailchimp_campaign_entities_autocomplete_callback'] = array(
+    'page callback' => 'mailchimp_campaign_entities_autocomplete_callback',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
+}
+
+function mailchimp_campaign_entities_autocomplete_callback($string = '') {
+  $matches = array();
+  if ($string) {
+    $result = db_select('node')
+      ->fields('node', array('nid', 'title'))
+      ->condition('title', db_like($string) . '%', 'LIKE')
+      ->range(0, 10)
+      ->execute();
+    foreach ($result as $node) {
+      $matches[$node->title . " [$node->nid]"] = check_plain($node->title);
+    }
+  }
+
+  drupal_json_output($matches);
 }
 
 /**

@@ -136,6 +136,12 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         '#title' => drupal_ucfirst($section),
         '#default_value' => $default_value,
       );
+      $form['content']['entity_id_' . $section] = array(
+        '#type' => 'textfield',
+        '#title' => t('Entity'),
+        '#description' => t('Choose an entity by title.'),
+        '#autocomplete_path' => 'mailchimp_campaign_entities_autocomplete_callback',
+      );
     }
   }
   else {
