@@ -60,19 +60,6 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#suffix' => '</div>',
   );
 
-  if (isset($list_id)) {
-    $merge_vars = mailchimp_lists_get_merge_vars(array($list_id));
-    if (isset($merge_vars[$list_id])) {
-      $form['tokens'] = array(
-        '#type' => 'fieldset',
-        '#title' => 'tokens',
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        '#children' => _mailchimp_campaign_build_merge_vars_html($merge_vars[$list_id]),
-      );
-    }
-  }
-
   $form['from_email'] = array(
     '#type' => 'textfield',
     '#title' => t('From Email'),
@@ -122,6 +109,19 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
   }
 
   if ($mc_template) {
+    if (isset($list_id)) {
+      $merge_vars = mailchimp_lists_get_merge_vars(array($list_id));
+      if (isset($merge_vars[$list_id])) {
+        $form['content']['tokens'] = array(
+          '#type' => 'fieldset',
+          '#title' => 'tokens',
+          '#collapsible' => TRUE,
+          '#collapsed' => TRUE,
+          '#children' => _mailchimp_campaign_build_merge_vars_html(
+            $merge_vars[$list_id]),
+        );
+      }
+    }
     foreach ($mc_template['info']['default_content'] as $section => $content) {
       // Set the default value and text format to either saved campaign values
       // or defaults coming from the MC template.
