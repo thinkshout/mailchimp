@@ -286,13 +286,23 @@ function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- 
 function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
   $html = '';
 
-  if (count($merge_vars) > 0) {
+  if (!empty($merge_vars)) {
     $html .= '<table>';
     foreach ($merge_vars as $var) {
-      $html .= '<tr><td>' . $var['name'] . '</td><td>*|' . $var['tag'] . '|*</td></tr>';
+      $html .= '<tr>'
+        . '<td>' . $var['name'] . '</td>'
+        . '<td>*|' . $var['tag'] . '|*</td>'
+        . '</tr>';
     }
     $html .= '</table>';
   }
+  else {
+    $html .= t('No custom merge vars exist for the current list.');
+  }
+
+  $html .= '<p>' . l(t('Standard MailChimp merge tags are available.'),
+      'http://kb.mailchimp.com/article/all-the-merge-tags-cheatsheet',
+      array('attributes' => array('target' => '_blank'))) . '</p>';
 
   return $html;
 }
