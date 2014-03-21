@@ -136,7 +136,11 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         '#title' => drupal_ucfirst($section),
         '#default_value' => $default_value,
       );
-      $form['content']['entity_id_' . $section] = array(
+      $form['content']['entity_' . $section] = array(
+        '#type' => 'fieldset',
+        '#collapsible' => FALSE,
+      );
+      $form['content']['entity_' . $section]['entity'] = array(
         '#type' => 'textfield',
         '#title' => t('Entity'),
         '#description' => t('Choose an entity by title.'),
