@@ -185,10 +185,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
  * @return mixed
  */
 function mailchimp_campaign_template_callback($form, $form_state) {
-  return array(
-    $form['content'],
-    $form['tokens']
-  );
+  return $form['content'];
 }
 
 /**
