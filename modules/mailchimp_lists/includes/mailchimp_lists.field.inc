@@ -81,18 +81,20 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
   $form['mergefields'] = array(
     '#type' => 'fieldset',
     '#title' => t('Merge Fields'),
+    '#description' => t('Multi-value fields will sync their first value to Mailchimp, as Mailchimp does not support multi-value fields.'),
     '#tree' => TRUE,
   );
   $mv_defaults = $instance['settings']['mergefields'];
   $mergevars = mailchimp_get_mergevars(array($mc_list_id));
   $fields = mailchimp_lists_fieldmap_options($instance['entity_type'], $instance['bundle']);
   unset($fields[$field['field_name']]);
+  $fields_flat = options_array_flatten($fields);
   foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
     $default_value = isset($mv_defaults[$mergevar['tag']]) ? $mv_defaults[$mergevar['tag']] : -1;
     $form['mergefields'][$mergevar['tag']] = array(
       '#type' => 'select',
       '#title' => $mergevar['name'],
-      '#default_value' => isset($fields[$default_value]) ? $default_value : '',
+      '#default_value' => array_key_exists($default_value, $fields_flat) ? $default_value : '',
       '#required' => $mergevar['req'],
       '#options' => $fields,
     );

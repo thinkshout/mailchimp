@@ -235,12 +235,21 @@ function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type
   $mergevars = array();
   foreach($mergefields as $label => $property) {
     if (!empty($property) && strlen($property)) {
-      $mergevars[$label] = $wrapper->{$property}->value();
+      $elements = explode(':', $property);
+      $object = $wrapper;
+      foreach ($elements as $element) {
+        if ($object instanceof EntityListWrapper) {
+          $object = $object[0];
+        }
+        $object = $object->{$element};
+      }
+      $mergevars[$label] = $object->value();
     }
   }
   drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
   return $mergevars;
 }
+
 
 /**
  * Implements hook_mollom_form_list().
@@ -280,8 +289,11 @@ function mailchimp_lists_mollom_form_info($form_id) {
  * @return array
  *   List of properties that can be used as an #options list.
  */
-function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL) {
-  $options = array('' => t('-- Select --'));
+function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $prefix = NULL, $tree = NULL) {
+  $options = array();
+  if (!$prefix) {
+    $options[''] = t('-- Select --');
+  }
 
   $properties = entity_get_all_property_info($entity_type);
   if (isset($entity_bundle)) {
@@ -293,18 +305,25 @@ function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL) {
   }
 
   foreach ($properties as $key => $property) {
+    $keypath = $prefix ? $prefix . ':' . $key : $key;
     $type = isset($property['type']) ? entity_property_extract_innermost_type($property['type']) : 'text';
     $is_entity = ($type == 'entity') || (bool) entity_get_info($type);
-    // Leave entities out of this.
     if (!$is_entity) {
       if (isset($property['field']) && $property['field'] && !empty($property['property info'])) {
         foreach ($property['property info'] as $sub_key => $sub_prop) {
-          $options[$property['label']][$key . ':' . $sub_key] = $sub_prop['label'];
+          $label = isset($tree) ? $tree . ' - ' .$property['label'] : $property['label'];
+          $options[$label][$keypath . ':' . $sub_key] = $sub_prop['label'];
         }
       }
       else {
-        $options[$key] = $property['label'];
+        $options[$keypath] = $property['label'];
       }
+    }
+    elseif (!$prefix) {
+      // We offer fields on related entities (useful for field collections).
+      // But we only offer 1 level of depth to avoid loops.
+      $bundle = isset($property['bundle']) ? $property['bundle'] : NULL;
+      $options[$property['label']] = mailchimp_lists_fieldmap_options($type, $bundle, $keypath, $property['label']);
     }
   }
   return $options;
