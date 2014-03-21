@@ -60,6 +60,19 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#suffix' => '</div>',
   );
 
+  if (isset($list_id)) {
+    $merge_vars = mailchimp_lists_get_merge_vars(array($list_id));
+    if (isset($merge_vars[$list_id])) {
+      $form['tokens'] = array(
+        '#type' => 'fieldset',
+        '#title' => 'tokens',
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#children' => _mailchimp_campaign_build_merge_vars_html($merge_vars[$list_id]),
+      );
+    }
+  }
+
   $form['from_email'] = array(
     '#type' => 'textfield',
     '#title' => t('From Email'),
@@ -173,7 +186,12 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
  * @return mixed
  */
 function mailchimp_campaign_template_callback($form, $form_state) {
-  return $form['content'];
+  return array(
+    $form['content'],
+    $form['tokens']
+  );
+
+  //return $form['content'];
 }
 
 /**
@@ -258,6 +276,28 @@ function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- 
   }
 
   return $options;
+}
+
+/**
+ * Builds a HTML string used to render merge vars on the campaign form.
+ *
+ * @param array $merge_vars
+ *  Array of merge vars. @see mailchimp_lists_get_merge_vars
+ * @return string
+ *  HTML string containing formatted merge vars.
+ */
+function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
+  $html = '';
+
+  if (count($merge_vars) > 0) {
+    $html .= '<table>';
+    foreach ($merge_vars as $var) {
+      $html .= '<tr><td>' . $var['name'] . '</td><td>' . $var['tag'] . '</td></tr>';
+    }
+    $html .= '</table>';
+  }
+
+  return $html;
 }
 
 /**
