@@ -59,7 +59,6 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#prefix' => '<div id="list_segments_wrapper">',
     '#suffix' => '</div>',
   );
-
   $form['from_email'] = array(
     '#type' => 'textfield',
     '#title' => t('From Email'),
@@ -178,7 +177,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
 }
 
 /**
- * AJAX callback when changing template id.
+ * AJAX callback when changing template ID.
  *
  * @param $form
  * @param $form_state
@@ -190,8 +189,6 @@ function mailchimp_campaign_template_callback($form, $form_state) {
     $form['content'],
     $form['tokens']
   );
-
-  //return $form['content'];
 }
 
 /**
