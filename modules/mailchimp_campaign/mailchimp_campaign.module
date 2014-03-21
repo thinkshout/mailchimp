@@ -98,6 +98,13 @@ function mailchimp_campaign_menu() {
   return $items;
 }
 
+/**
+ * Callback for campaign template entity search field.
+ * Returns entities with titles matching search string.
+ *
+ * @param string $string
+ *  The string to search entity titles for.
+ */
 function mailchimp_campaign_entities_autocomplete_callback($string = '') {
   $matches = array();
   if ($string) {
