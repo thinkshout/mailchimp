@@ -289,7 +289,7 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
   if (count($merge_vars) > 0) {
     $html .= '<table>';
     foreach ($merge_vars as $var) {
-      $html .= '<tr><td>' . $var['name'] . '</td><td>' . $var['tag'] . '</td></tr>';
+      $html .= '<tr><td>' . $var['name'] . '</td><td>*|' . $var['tag'] . '|*</td></tr>';
     }
     $html .= '</table>';
   }
