@@ -8,6 +8,9 @@
  * Returns a form for creating a campaign.
  */
 function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign $campaign = NULL) {
+  $path = drupal_get_path('module', 'mailchimp_campaign');
+  drupal_add_js($path . '/mailchimp_campaign.utils.js', 'file');
+
   $form_state['campaign'] = $campaign;
   $form['title'] = array(
     '#type' => 'textfield',
@@ -130,6 +133,9 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         $default_value = $campaign->template['html_' . $section]['value'];
         $format = $campaign->template['html_' . $section]['format'];
       }
+
+      $suffix = '<a href="javascript:void(0);" onclick="javascript:Drupal.mailchimp_campaign_add_entity_token()">Add entity token</a>';
+
       $form['content']['html_' . $section] = array(
         '#type' => 'text_format',
         '#format' => $format,
@@ -138,13 +144,30 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
       );
       $form['content']['entity_' . $section] = array(
         '#type' => 'fieldset',
+        '#title' => 'Entity Import',
         '#collapsible' => FALSE,
+        '#suffix' => $suffix,
+      );
+      $form['content']['entity_' . $section]['entity_type'] = array(
+        '#type' => 'select',
+        '#title' => t('Entity Type'),
+        '#options' => array(
+          'block' => 'Block',
+          'node' => 'Node',
+        ),
       );
       $form['content']['entity_' . $section]['entity'] = array(
         '#type' => 'textfield',
-        '#title' => t('Entity'),
-        '#description' => t('Choose an entity by title.'),
+        '#title' => t('Entity Title'),
         '#autocomplete_path' => 'mailchimp_campaign_entities_autocomplete_callback',
+      );
+      $form['content']['entity_' . $section]['entity_view_mode'] = array(
+        '#type' => 'select',
+        '#title' => t('View Mode'),
+        '#options' => array(
+          // TODO: Get entity view modes.
+          'default' => 'Default',
+        ),
       );
     }
   }
