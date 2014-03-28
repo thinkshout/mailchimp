@@ -1,7 +1,7 @@
 (function ($) {
 
-  Drupal.mailchimp_campaign_add_entity_token = function() {
-    console.log('Adding entity token.');
+  Drupal.mailchimp_campaign_add_entity_token = function(target_element_id) {
+    console.log('Adding entity token to element: ' + target_element_id);
 
     var entity_id = '';
     var entity_value = $('#edit-content-entity-header-entity').val();
@@ -22,6 +22,8 @@
       + ']';
 
     console.log(token);
+
+    $('#' + target_element_id).append(token);
   };
 
 })(jQuery);
