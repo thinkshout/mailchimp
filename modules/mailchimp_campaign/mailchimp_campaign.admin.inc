@@ -134,7 +134,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         $format = $campaign->template['html_' . $section]['format'];
       }
 
-      $suffix = '<a href="javascript:void(0);" onclick="javascript:Drupal.mailchimp_campaign_add_entity_token(\'edit-content-html-' . $section . '-value\')">Add entity token</a>';
+      $suffix = '<a id="add-entity-token-' . $section . '" class="add-entity-token" href="javascript:void(0);">Add entity token</a>';
 
       $form['content']['html_' . $section] = array(
         '#type' => 'text_format',
