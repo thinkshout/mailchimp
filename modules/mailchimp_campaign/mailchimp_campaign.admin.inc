@@ -111,9 +111,9 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     if (isset($list_id)) {
       $merge_vars = mailchimp_lists_get_merge_vars(array($list_id));
       if (isset($merge_vars[$list_id])) {
-        $form['content']['tokens'] = array(
+        $form['content']['merge_vars'] = array(
           '#type' => 'fieldset',
-          '#title' => 'tokens',
+          '#title' => 'Merge Tags',
           '#collapsible' => TRUE,
           '#collapsed' => TRUE,
           '#children' => _mailchimp_campaign_build_merge_vars_html(
