@@ -168,8 +168,10 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#prefix' => '<div id="content-entity-view-modes-wrapper">',
     '#suffix' => '</div>',
   );
-
-  //$form['content']['entity_import']['#children'][] = '<a id="add-entity-token" href="javascript:void(0);">Add entity token</a>';
+  $form['content']['entity_import']['entity_import_link'] = array(
+    '#type' => 'item',
+    '#markup' => '<a id="add-entity-token" href="javascript:void(0);">Add entity token</a>',
+  );
 
   if ($mc_template) {
     foreach ($mc_template['info']['default_content'] as $section => $content) {

@@ -13,20 +13,14 @@
         console.log('Got text field focus: ' + $(this).attr('id'));
       });
 
-      $('#add-entity-token', context).one('click', function() {
-        var element_id = $(this).attr('id');
-
-        // Determine form section using this element's ID.
-        var element_id_parts = element_id.split('-');
-        var section = element_id_parts[element_id_parts.length - 1];
-
+      $('#add-entity-token', context).unbind('click').bind('click', function() {
         // Get the last selected text field.
         var target_element = Drupal.settings.mailchimpCampaignFocusedField;
 
         // Get the selected entity ID.
         var entity_id = '';
-        var entity_value = $('#edit-content-entity-' + section + '-entity').val();
-        if (entity_value.length > 0) {
+        var entity_value = $('#edit-content-entity-import-entity').val();
+        if ((entity_value) && (entity_value.length > 0)) {
           var entity_parts = entity_value.split(' ');
           var entity_id_string = entity_parts[entity_parts.length - 1];
 
@@ -34,8 +28,8 @@
         }
 
         // Generate token based on user input.
-        var entity_type = $('#edit-content-entity-' + section + '-entity-type').val();
-        var view_mode = $('#edit-content-entity-' + section + '-entity-view-mode').val();
+        var entity_type = $('#edit-content-entity-import-entity-type').val();
+        var view_mode = $('#edit-content-entity-import-entity-view-mode').val();
 
         var token = '[mailchimp_campaign'
           + '|entity_type=' + entity_type
