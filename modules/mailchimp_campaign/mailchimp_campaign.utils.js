@@ -20,8 +20,8 @@
           entity_id = entity_id_string.replace('[', '').replace(']', '');
         }
 
-        var entity_type = $('#edit-content-entity-header-entity-type').val();
-        var view_mode = $('#edit-content-entity-header-entity-view-mode').val();
+        var entity_type = $('#edit-content-entity-' + section + '-entity-type').val();
+        var view_mode = $('#edit-content-entity-' + section + '-entity-view-mode').val();
 
         var token = '[mailchimp_campaign'
           + '|entity_type=' + entity_type
