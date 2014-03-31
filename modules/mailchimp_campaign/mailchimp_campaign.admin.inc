@@ -153,7 +153,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#ajax' => array(
       'callback' => 'mailchimp_campaign_entity_type_callback',
       'method' => 'replace',
-      'wrapper' => 'content-entity-view-modes-wrapper',
+      'wrapper' => 'content-entity-lookup-wrapper',
     ),
   );
   $form['content']['entity_import']['entity'] = array(
@@ -161,12 +161,12 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#title' => t('Entity Title'),
     // Pass entity type as first parameter to entity autocomplete callback.
     '#autocomplete_path' => 'admin/config/services/mailchimp/campaigns/entities/' . $entity_type,
+    '#prefix' => '<div id="content-entity-lookup-wrapper">',
   );
   $form['content']['entity_import']['entity_view_mode'] = array(
     '#type' => 'select',
     '#title' => t('View Mode'),
     '#options' => $entity_view_mode_options,
-    '#prefix' => '<div id="content-entity-view-modes-wrapper">',
     '#suffix' => '</div>',
   );
   $form['content']['entity_import']['entity_import_link'] = array(
@@ -273,7 +273,10 @@ function mailchimp_campaign_list_segment_callback($form, $form_state) {
  * @param $form_state
  */
 function mailchimp_campaign_entity_type_callback($form, $form_state) {
-  return $form['content']['entity_import']['entity_view_mode'];
+  return array(
+    $form['content']['entity_import']['entity'],
+    $form['content']['entity_import']['entity_view_mode'],
+  );
 }
 
 /**
