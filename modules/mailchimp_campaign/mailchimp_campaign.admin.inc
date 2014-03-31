@@ -95,7 +95,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#type' => 'fieldset',
     '#title' => t('Content sections'),
     '#description' => t('The HTML content or, if a template is selected, the content for each section.'),
-    '#collapsible' => TRUE,
+    '#collapsible' => FALSE,
     '#collapsed' => FALSE,
     '#tree' => TRUE
   );
@@ -110,20 +110,68 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     }
   }
 
-  if ($mc_template) {
-    if (isset($list_id)) {
-      $merge_vars = mailchimp_lists_get_merge_vars(array($list_id));
-      if (isset($merge_vars[$list_id])) {
-        $form['content']['merge_vars'] = array(
-          '#type' => 'fieldset',
-          '#title' => 'Merge Tags',
-          '#collapsible' => TRUE,
-          '#collapsed' => TRUE,
-          '#children' => _mailchimp_campaign_build_merge_vars_html(
-            $merge_vars[$list_id]),
-        );
-      }
+  if (isset($list_id)) {
+    $merge_vars = mailchimp_lists_get_merge_vars(array($list_id));
+    if (isset($merge_vars[$list_id])) {
+      $form['content']['merge_vars'] = array(
+        '#type' => 'fieldset',
+        '#title' => 'Merge Tags',
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#children' => _mailchimp_campaign_build_merge_vars_html(
+          $merge_vars[$list_id]),
+      );
     }
+  }
+
+  $form['content']['entity_import'] = array(
+    '#id' => 'entity-import',
+    '#type' => 'fieldset',
+    '#title' => t('Site content import'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $entity_info = entity_get_info();
+  $entity_options = _mailchimp_campaign_build_entity_option_list($entity_info);
+
+  if (!empty($form_state['values']['content']['entity_import']['entity_type'])) {
+    $entity_type = $form_state['values']['content']['entity_import']['entity_type'];
+  }
+  else {
+    reset($entity_options);
+    $entity_type = current(array_keys($entity_options));
+  }
+
+  $entity_view_mode_options = _mailchimp_campaign_build_entity_view_mode_option_list($entity_info[$entity_type]);
+
+  $form['content']['entity_import']['entity_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Entity Type'),
+    '#options' => $entity_options,
+    '#default_value' => $entity_type,
+    '#ajax' => array(
+      'callback' => 'mailchimp_campaign_entity_type_callback',
+      'method' => 'replace',
+      'wrapper' => 'content-entity-view-modes-wrapper',
+    ),
+  );
+  $form['content']['entity_import']['entity'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Entity Title'),
+    '#autocomplete_path' => 'mailchimp_campaign_entities_autocomplete_callback',
+  );
+  $form['content']['entity_import']['entity_view_mode'] = array(
+    '#type' => 'select',
+    '#title' => t('View Mode'),
+    '#options' => $entity_view_mode_options,
+    '#prefix' => '<div id="content-entity-view-modes-wrapper">',
+    '#suffix' => '</div>',
+  );
+
+  //$form['content']['entity_import']['#children'][] = '<a id="add-entity-token" href="javascript:void(0);">Add entity token</a>';
+
+  if ($mc_template) {
     foreach ($mc_template['info']['default_content'] as $section => $content) {
       // Set the default value and text format to either saved campaign values
       // or defaults coming from the MC template.
@@ -133,63 +181,28 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         $default_value = $campaign->template['html_' . $section]['value'];
         $format = $campaign->template['html_' . $section]['format'];
       }
-
-      $suffix = '<a id="add-entity-token-' . $section . '" class="add-entity-token" href="javascript:void(0);">Add entity token</a>';
-
-      $form['content']['html_' . $section] = array(
+      $form['content']['html_' . $section . '_wrapper'] = array(
+        '#type' => 'fieldset',
+        '#title' => drupal_ucfirst($section),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
+      $form['content']['html_' . $section . '_wrapper']['html_' . $section] = array(
         '#type' => 'text_format',
         '#format' => $format,
         '#title' => drupal_ucfirst($section),
         '#default_value' => $default_value,
       );
-      $form['content']['entity_' . $section] = array(
-        '#type' => 'fieldset',
-        '#title' => 'Site Content Import',
-        '#collapsible' => FALSE,
-        '#suffix' => $suffix,
-      );
-
-      $entity_info = entity_get_info();
-      $entity_options = _mailchimp_campaign_build_entity_option_list($entity_info);
-
-      if (!empty($form_state['values']['content']['entity_' . $section]['entity_type'])) {
-        $entity_type = $form_state['values']['content']['entity_' . $section]['entity_type'];
-      }
-      else
-      {
-        reset($entity_options);
-        $entity_type = current(array_keys($entity_options));
-      }
-
-      $entity_view_mode_options = _mailchimp_campaign_build_entity_view_mode_option_list($entity_info[$entity_type]);
-
-      $form['content']['entity_' . $section]['entity_type'] = array(
-        '#type' => 'select',
-        '#title' => t('Entity Type'),
-        '#options' => $entity_options,
-        '#default_value' => $entity_type,
-        '#ajax' => array(
-          'callback' => 'mailchimp_campaign_entity_type_callback',
-          'method' => 'replace',
-          'wrapper' => 'content-entity-view-modes-' . $section . '-wrapper',
-        ),
-      );
-      $form['content']['entity_' . $section]['entity'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Entity Title'),
-        '#autocomplete_path' => 'mailchimp_campaign_entities_autocomplete_callback',
-      );
-      $form['content']['entity_' . $section]['entity_view_mode'] = array(
-        '#type' => 'select',
-        '#title' => t('View Mode'),
-        '#options' => $entity_view_mode_options,
-        '#prefix' => '<div id="content-entity-view-modes-' . $section . '-wrapper">',
-        '#suffix' => '</div>',
-      );
     }
   }
   else {
-    $form['content']['html'] = array(
+    $form['content']['html_wrapper'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Content'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $form['content']['html_wrapper']['html'] = array(
       '#type' => 'text_format',
       '#format' => ($campaign) ? $campaign->template['html']['format'] : 'mailchimp_campaign',
       '#title' => t('Content'),
@@ -257,16 +270,7 @@ function mailchimp_campaign_list_segment_callback($form, $form_state) {
  * @param $form_state
  */
 function mailchimp_campaign_entity_type_callback($form, $form_state) {
-  $triggering_element_id = $form_state['triggering_element']['#id'];
-
-  // Entity type select ID should match format 'edit-content-entity-header-entity-type'
-  // where 'header' is the content section.
-  $element_id_parts = explode('-', $triggering_element_id);
-  $section = $element_id_parts[3];
-
-  if (!empty($section)) {
-    return $form['content']['entity_' . $section]['entity_view_mode'];
-  }
+  return $form['content']['entity_import']['entity_view_mode'];
 }
 
 /**
@@ -321,8 +325,24 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
     );
   }
 
+  // Parse template content to remove wrapper elements from tree.
+  $template_content = array();
+  $content_keys = array_keys($values['content']);
+  foreach ($content_keys as $content_key) {
+    if (strpos($content_key, '_wrapper') !== FALSE) {
+      // If this element is a wrapper, add the element contained
+      // within the wrapper to the template content.
+      $new_content_key = str_replace('_wrapper', '', $content_key);
+      $template_content[$new_content_key] = $values['content'][$content_key][$new_content_key];
+    }
+    else {
+      // If this element is not a wrapper, add it to the template content.
+      $template_content[$content_key] = $values['content'][$content_key];
+    }
+  }
+
   $campaign_id = (isset($form_state['campaign']) ? $form_state['campaign']->mc_campaign_id : NULL);
-  mailchimp_campaign_save_campaign($values['content'], $options, $segment_options, $campaign_id);
+  mailchimp_campaign_save_campaign($template_content, $options, $segment_options, $campaign_id);
 
   cache_clear_all('mailchimp_campaign_campaigns', 'cache');
 

@@ -13,7 +13,7 @@
         console.log('Got text field focus: ' + $(this).attr('id'));
       });
 
-      $('.add-entity-token', context).one('click', function() {
+      $('#add-entity-token', context).one('click', function() {
         var element_id = $(this).attr('id');
 
         // Determine form section using this element's ID.
