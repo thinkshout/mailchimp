@@ -89,7 +89,7 @@ function mailchimp_campaign_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 4
   );
-  $items['mailchimp_campaign_entities_autocomplete_callback'] = array(
+  $items['admin/config/services/mailchimp/campaigns/entities'] = array(
     'page callback' => 'mailchimp_campaign_entities_autocomplete_callback',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
@@ -102,23 +102,32 @@ function mailchimp_campaign_menu() {
  * Callback for campaign template entity search field.
  * Returns entities with titles matching search string.
  *
+ * @param string $type
+ *  The entity type to limit search to.
  * @param string $string
  *  The string to search entity titles for.
  */
-function mailchimp_campaign_entities_autocomplete_callback($string = '') {
-  $matches = array();
-  if ($string) {
-    $result = db_select('node')
-      ->fields('node', array('nid', 'title'))
-      ->condition('title', db_like($string) . '%', 'LIKE')
-      ->range(0, 10)
-      ->execute();
-    foreach ($result as $node) {
-      $matches[$node->title . " [$node->nid]"] = check_plain($node->title);
+function mailchimp_campaign_entities_autocomplete_callback($type, $string = '') {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', $type)
+    ->propertyCondition('title', $string, 'CONTAINS')
+    ->range(0, 10);
+
+  $entities = array();
+
+  $result = $query->execute();
+  if (isset($result[$type])) {
+    $entity_ids = array_keys($result[$type]);
+    $entities_data = entity_load($type, $entity_ids);
+
+    if (!empty($entities_data)) {
+      foreach ($entities_data as $id => $entity) {
+        $entities[$id] = $entity->title;
+      }
     }
   }
 
-  drupal_json_output($matches);
+  drupal_json_output($entities);
 }
 
 /**

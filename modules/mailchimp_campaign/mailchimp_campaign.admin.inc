@@ -159,7 +159,8 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
   $form['content']['entity_import']['entity'] = array(
     '#type' => 'textfield',
     '#title' => t('Entity Title'),
-    '#autocomplete_path' => 'mailchimp_campaign_entities_autocomplete_callback',
+    // Pass entity type as first parameter to entity autocomplete callback.
+    '#autocomplete_path' => 'admin/config/services/mailchimp/campaigns/entities/' . $entity_type,
   );
   $form['content']['entity_import']['entity_view_mode'] = array(
     '#type' => 'select',
