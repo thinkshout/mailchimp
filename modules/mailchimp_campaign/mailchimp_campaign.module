@@ -610,7 +610,9 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
 function mailchimp_campaign_render_template($template) {
   $content = array();
   foreach ($template as $key => $part) {
-    $content[$key] = check_markup($part['value'], $part['format']);
+    if (isset($part['format'])) {
+      $content[$key] = check_markup($part['value'], $part['format']);
+    }
   }
 
   return $content;
