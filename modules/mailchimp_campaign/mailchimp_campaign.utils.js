@@ -17,6 +17,11 @@
         // Get the last selected text field.
         var target_element = Drupal.settings.mailchimpCampaignFocusedField;
 
+        if (typeof target_element == 'undefined') {
+          alert(Drupal.t('First click a template section field to insert the token into.'));
+          return;
+        }
+
         // Get the selected entity ID.
         var entity_id = '';
         var entity_value = $('#edit-content-entity-import-entity').val();
@@ -25,6 +30,11 @@
           var entity_id_string = entity_parts[entity_parts.length - 1];
 
           entity_id = entity_id_string.replace('[', '').replace(']', '');
+        }
+
+        if (entity_id.length == 0) {
+          alert(Drupal.t('Select an entity to import before adding the token.'));
+          return;
         }
 
         // Generate token based on user input.
