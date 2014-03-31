@@ -35,7 +35,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#ajax' => array(
       'callback' => 'mailchimp_campaign_list_segment_callback',
       'method' => 'replace',
-      'wrapper' => 'list_segments_wrapper',
+      'wrapper' => 'list-segments-wrapper',
     ),
   );
 
@@ -59,7 +59,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#description' => t('Select the list segment this campaign should be sent to.'),
     '#options' => _mailchimp_campaign_build_option_list($list_segments, '-- No segment --'),
     '#default_value' => (isset($segment_id))? $segment_id : '',
-    '#prefix' => '<div id="list_segments_wrapper">',
+    '#prefix' => '<div id="list-segments-wrapper">',
     '#suffix' => '</div>',
   );
   $form['from_email'] = array(
@@ -153,19 +153,26 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
       $entity_options = _mailchimp_campaign_build_entity_option_list($entity_info);
 
       if (!empty($form_state['values']['content']['entity_' . $section]['entity_type'])) {
-        $entity_id = $form_state['values']['content']['entity_' . $section]['entity_type'];
+        $entity_type = $form_state['values']['content']['entity_' . $section]['entity_type'];
       }
       else
       {
         reset($entity_options);
-        $entity_id = current(array_keys($entity_options));
+        $entity_type = current(array_keys($entity_options));
       }
+
+      $entity_view_mode_options = _mailchimp_campaign_build_entity_view_mode_option_list($entity_info[$entity_type]);
 
       $form['content']['entity_' . $section]['entity_type'] = array(
         '#type' => 'select',
         '#title' => t('Entity Type'),
         '#options' => $entity_options,
-        '#default_value' => $entity_id,
+        '#default_value' => $entity_type,
+        '#ajax' => array(
+          'callback' => 'mailchimp_campaign_entity_type_callback',
+          'method' => 'replace',
+          'wrapper' => 'content-entity-view-modes-' . $section . '-wrapper',
+        ),
       );
       $form['content']['entity_' . $section]['entity'] = array(
         '#type' => 'textfield',
@@ -175,10 +182,9 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
       $form['content']['entity_' . $section]['entity_view_mode'] = array(
         '#type' => 'select',
         '#title' => t('View Mode'),
-        '#options' => array(
-          // TODO: Get entity view modes.
-          'default' => 'Default',
-        ),
+        '#options' => $entity_view_mode_options,
+        '#prefix' => '<div id="content-entity-view-modes-' . $section . '-wrapper">',
+        '#suffix' => '</div>',
       );
     }
   }
@@ -242,6 +248,25 @@ function mailchimp_campaign_template_callback($form, $form_state) {
  */
 function mailchimp_campaign_list_segment_callback($form, $form_state) {
   return $form['list_segment_id'];
+}
+
+/**
+ * AJAX callback when changing entity type.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function mailchimp_campaign_entity_type_callback($form, $form_state) {
+  $triggering_element_id = $form_state['triggering_element']['#id'];
+
+  // Entity type select ID should match format 'edit-content-entity-header-entity-type'
+  // where 'header' is the content section.
+  $element_id_parts = explode('-', $triggering_element_id);
+  $section = $element_id_parts[3];
+
+  if (!empty($section)) {
+    return $form['content']['entity_' . $section]['entity_view_mode'];
+  }
 }
 
 /**
@@ -317,6 +342,23 @@ function _mailchimp_campaign_build_entity_option_list($entity_info) {
   $options = array();
   foreach ($entity_info as $entity_id => $entity_data) {
     $options[$entity_id] = $entity_data['label'];
+  }
+
+  return $options;
+}
+
+/**
+ * Returns an options list of entity view modes.
+ *
+ * @param $entity
+ *  Array of entity data as returned by entity_get_info().
+ * @return array
+ *  Associative array of view mode IDs to name.
+ */
+function _mailchimp_campaign_build_entity_view_mode_option_list(array $entity) {
+  $options = array();
+  foreach ($entity['view modes'] as $view_mode_id => $view_mode_data) {
+    $options[$view_mode_id] = $view_mode_data['label'];
   }
 
   return $options;
