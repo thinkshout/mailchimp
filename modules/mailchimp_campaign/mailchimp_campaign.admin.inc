@@ -57,7 +57,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#type' => 'select',
     '#title' => t('List Segment'),
     '#description' => t('Select the list segment this campaign should be sent to.'),
-    '#options' => _mailchimp_campaign_build_option_list($list_segments, '-- No segment --'),
+    '#options' => _mailchimp_campaign_build_option_list($list_segments, '-- Entire list --'),
     '#default_value' => (isset($segment_id))? $segment_id : '',
     '#prefix' => '<div id="list-segments-wrapper">',
     '#suffix' => '</div>',
@@ -144,7 +144,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
       );
       $form['content']['entity_' . $section] = array(
         '#type' => 'fieldset',
-        '#title' => 'Entity Import',
+        '#title' => 'Site Content Import',
         '#collapsible' => FALSE,
         '#suffix' => $suffix,
       );
