@@ -186,6 +186,13 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#markup' => '<a id="add-entity-token" href="javascript:void(0);">Add entity token</a>',
   );
 
+  $form['content']['entity_import']['entity_import_tag'] = array(
+    '#type' => 'textfield',
+    '#size' => 80,
+    '#prefix' => '<div id="entity-import-tag-field">',
+    '#suffix' => '</div>',
+  );
+
   if ($mc_template) {
     foreach ($mc_template['info']['default_content'] as $section => $content) {
       // Set the default value and text format to either saved campaign values

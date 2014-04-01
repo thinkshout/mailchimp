@@ -7,6 +7,9 @@
    */
   Drupal.behaviors.mailchimp_campaign_utils = {
     attach: function(context, settings) {
+      // Hide entity import tag field by default.
+      $('#entity-import-tag-field').hide();
+
       // Keep track of which textfield was last selected/focused.
       $('textarea', context).focus(function() {
         Drupal.settings.mailchimpCampaignFocusedField = this;
@@ -16,11 +19,6 @@
       $('#add-entity-token', context).unbind('click').bind('click', function() {
         // Get the last selected text field.
         var target_element = Drupal.settings.mailchimpCampaignFocusedField;
-
-        if (typeof target_element == 'undefined') {
-          alert(Drupal.t('First click a template section field to insert the token into.'));
-          return;
-        }
 
         // Get the selected entity ID.
         var entity_id = '';
@@ -51,6 +49,8 @@
         if (target_element) {
           console.log('Inserting token: ' + token);
 
+          $('#entity-import-tag-field').hide();
+
           // IE support.
           if (document.selection) {
             target_element.focus();
@@ -70,8 +70,15 @@
           }
         }
         else {
-          console.log('Unable to insert token; no text field selected.');
+          // Insert token into token field, where it can be manually copied
+          // by the user. This is a fallback for cases where WYSIWYG text
+          // fields prevent automatic insertion of the token.
+          $('#entity-import-tag-field input').val(token);
+          $('#entity-import-tag-field').show();
         }
+
+        // Unset last focused field.
+        Drupal.settings.mailchimpCampaignFocusedField = null;
       });
     }
   }
