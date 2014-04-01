@@ -132,7 +132,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#collapsed' => TRUE,
   );
 
-  $entity_info = entity_get_info();
+  $entity_info = _mailchimp_campaign_get_entities_for_content_import();
   $entity_options = _mailchimp_campaign_build_entity_option_list($entity_info);
 
   if (!empty($form_state['values']['content']['entity_import']['entity_type'])) {
@@ -356,8 +356,30 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
 }
 
 /**
+ * Returns an array of entities based on data from entity_get_info().
+ * Filters out entities that do not contain a title field, as they cannot
+ * be used to import content into templates.
+ *
+ * @return array
+ *  Filtered entities from entity_get_info().
+ */
+function _mailchimp_campaign_get_entities_for_content_import() {
+  $entity_info = entity_get_info();
+
+  $filtered_entities = array();
+  foreach ($entity_info as $key => $entity) {
+    if (in_array('title', $entity['schema_fields_sql']['base table'])) {
+      $filtered_entities[$key] = $entity;
+    }
+  }
+
+  return $filtered_entities;
+}
+
+/**
  * Returns an options list of entities based on data from entity_get_info().
- * TODO: Add entity type filtering based on module settings.
+ * Filters out entities that do not contain a title field, as they cannot
+ * be used to import content into templates.
  *
  * @param $entity_info
  *  Array of entities as returned by entity_get_info().
