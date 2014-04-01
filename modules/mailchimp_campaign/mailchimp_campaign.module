@@ -122,7 +122,7 @@ function mailchimp_campaign_entities_autocomplete_callback($type, $string = '') 
 
     if (!empty($entities_data)) {
       foreach ($entities_data as $id => $entity) {
-        $entities[$id] = $entity->title;
+        $entities[$entity->title . ' [' . $id . ']'] = $entity->title;
       }
     }
   }
