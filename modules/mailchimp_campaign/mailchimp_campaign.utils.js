@@ -24,7 +24,7 @@
 
         // Get the selected entity ID.
         var entity_id = '';
-        var entity_value = $('#edit-content-entity-import-entity').val();
+        var entity_value = $('.entity-import-entity-id').val();
         if ((entity_value) && (entity_value.length > 0)) {
           var entity_parts = entity_value.split(' ');
           var entity_id_string = entity_parts[entity_parts.length - 1];
@@ -38,8 +38,8 @@
         }
 
         // Generate token based on user input.
-        var entity_type = $('#edit-content-entity-import-entity-type').val();
-        var view_mode = $('#edit-content-entity-import-entity-view-mode').val();
+        var entity_type = $('.entity-import-entity-type').val();
+        var view_mode = $('.entity-import-entity-view-mode').val();
 
         var token = '[mailchimp_campaign'
           + '|entity_type=' + entity_type

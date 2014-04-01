@@ -156,19 +156,25 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
       'wrapper' => 'content-entity-lookup-wrapper',
     ),
   );
-  $form['content']['entity_import']['entity'] = array(
+  $form['content']['entity_import']['entity_type']['#attributes']['class'][] = 'entity-import-entity-type';
+
+  $form['content']['entity_import']['entity_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Entity Title'),
     // Pass entity type as first parameter to entity autocomplete callback.
     '#autocomplete_path' => 'admin/config/services/mailchimp/campaigns/entities/' . $entity_type,
     '#prefix' => '<div id="content-entity-lookup-wrapper">',
   );
+  $form['content']['entity_import']['entity_id']['#attributes']['class'][] = 'entity-import-entity-id';
+
   $form['content']['entity_import']['entity_view_mode'] = array(
     '#type' => 'select',
     '#title' => t('View Mode'),
     '#options' => $entity_view_mode_options,
     '#suffix' => '</div>',
   );
+  $form['content']['entity_import']['entity_view_mode']['#attributes']['class'][] = 'entity-import-entity-view-mode';
+
   $form['content']['entity_import']['entity_import_link'] = array(
     '#type' => 'item',
     '#markup' => '<a id="add-entity-token" href="javascript:void(0);">Add entity token</a>',
@@ -274,7 +280,7 @@ function mailchimp_campaign_list_segment_callback($form, $form_state) {
  */
 function mailchimp_campaign_entity_type_callback($form, $form_state) {
   return array(
-    $form['content']['entity_import']['entity'],
+    $form['content']['entity_import']['entity_id'],
     $form['content']['entity_import']['entity_view_mode'],
   );
 }
