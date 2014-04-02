@@ -466,7 +466,7 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
     foreach ($merge_vars as $var) {
       $html .= '<tr>'
         . '<td>' . $var['name'] . '</td>'
-        . '<td>*|' . $var['tag'] . '|*</td>'
+        . '<td><a id="merge-var-' . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a></td>'
         . '</tr>';
     }
     $html .= '</table>';
