@@ -48,7 +48,11 @@ function mailchimp_signup_overview_page() {
     ),
     'rows' => $rows,
   );
+  $refresh_link = l('Refresh lists from Mailchimp',
+    'admin/config/services/mailchimp/list_cache_clear',
+    array('query' => array('destination' => 'admin/config/services/mailchimp/signup')));
   if (empty($mc_lists)) {
+    $table['caption'] = $refresh_link;
     drupal_set_message(t('You don\'t have any lists configured in your MailChimp account, (or you haven\'t configured your API key correctly on the Global Settings tab). Head over to !link and create some lists, then come back here and click "Refresh lists from MailChimp!"',
       array('!link' => l(t('MailChimp'), 'https://admin.mailchimp.com/lists/'))), 'warning');
   }
@@ -59,7 +63,7 @@ function mailchimp_signup_overview_page() {
     }
     $caption = 'Currently Available MailChimp lists: <i>';
     $caption .= implode(', ', $list_names);
-    $caption .= ".</i>";
+    $caption .= ".</i><br />" . $refresh_link;
     $table['caption'] = $caption;
   }
 
