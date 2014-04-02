@@ -187,10 +187,8 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
   );
 
   $form['content']['entity_import']['entity_import_tag'] = array(
-    '#type' => 'textfield',
-    '#size' => 80,
-    '#prefix' => '<div id="entity-import-tag-field">',
-    '#suffix' => '</div>',
+    '#type' => 'item',
+    '#markup' => '<div id="entity-import-tag-field"></div>',
   );
 
   if ($mc_template) {
