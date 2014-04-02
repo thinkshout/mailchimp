@@ -15,10 +15,12 @@ function mailchimp_lists_overview_page() {
   foreach ($mc_lists as $mc_list) {
     $webhooks = mailchimp_webhook_get($mc_list['id']);
     $enabled = FALSE;
-    foreach ($webhooks as $webhook) {
-      if ($webhook_url == $webhook['url']) {
-        $enabled = TRUE;
-        continue;
+    if ($webhooks) {
+      foreach ($webhooks as $webhook) {
+        if ($webhook_url == $webhook['url']) {
+          $enabled = TRUE;
+          continue;
+        }
       }
     }
     if ($enabled) {
