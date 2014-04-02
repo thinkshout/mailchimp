@@ -15,10 +15,12 @@ function mailchimp_lists_overview_page() {
   foreach ($mc_lists as $mc_list) {
     $webhooks = mailchimp_webhook_get($mc_list['id']);
     $enabled = FALSE;
-    foreach ($webhooks as $webhook) {
-      if ($webhook_url == $webhook['url']) {
-        $enabled = TRUE;
-        continue;
+    if ($webhooks) {
+      foreach ($webhooks as $webhook) {
+        if ($webhook_url == $webhook['url']) {
+          $enabled = TRUE;
+          continue;
+        }
       }
     }
     if ($enabled) {
@@ -43,8 +45,12 @@ function mailchimp_lists_overview_page() {
     ),
     'rows' => $rows,
   );
+  $refresh_link = l('Refresh lists from Mailchimp',
+    'admin/config/services/mailchimp/list_cache_clear',
+    array('query' => array('destination' => 'admin/config/services/mailchimp/lists')));
   if (empty($mc_lists)) {
-    drupal_set_message(t('You don\'t have any lists configured in your MailChimp account, (or you haven\'t configured your API key correctly on the Global Settings tab). Head over to !link and create some lists, then come back here and click "Refresh lists from MailChimp!"',
+    $table['caption'] = $refresh_link;
+    drupal_set_message(t('You don\'t have any lists configured in your MailChimp account, (or you haven\'t configured your API key correctly on the Global Settings tab). Head over to !link and create some lists, then come back here and click "Refresh lists from MailChimp"',
       array('!link' => l(t('MailChimp'), 'https://admin.mailchimp.com/lists/'))), 'warning');
   }
   else {
@@ -53,7 +59,7 @@ function mailchimp_lists_overview_page() {
       $options .= ' ' . $mc_list['name'] . ',';
     }
     $options = rtrim($options, ',');
-    $options .= ".</i>";
+    $options .= ".</i><br />" . $refresh_link;
     $table['caption'] = $options;
   }
 

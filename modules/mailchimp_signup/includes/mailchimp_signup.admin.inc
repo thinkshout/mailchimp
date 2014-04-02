@@ -48,7 +48,11 @@ function mailchimp_signup_overview_page() {
     ),
     'rows' => $rows,
   );
+  $refresh_link = l('Refresh lists from Mailchimp',
+    'admin/config/services/mailchimp/list_cache_clear',
+    array('query' => array('destination' => 'admin/config/services/mailchimp/signup')));
   if (empty($mc_lists)) {
+    $table['caption'] = $refresh_link;
     drupal_set_message(t('You don\'t have any lists configured in your MailChimp account, (or you haven\'t configured your API key correctly on the Global Settings tab). Head over to !link and create some lists, then come back here and click "Refresh lists from MailChimp!"',
       array('!link' => l(t('MailChimp'), 'https://admin.mailchimp.com/lists/'))), 'warning');
   }
@@ -59,7 +63,7 @@ function mailchimp_signup_overview_page() {
     }
     $caption = 'Currently Available MailChimp lists: <i>';
     $caption .= implode(', ', $list_names);
-    $caption .= ".</i>";
+    $caption .= ".</i><br />" . $refresh_link;
     $table['caption'] = $caption;
   }
 
@@ -151,6 +155,13 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     '#title' => 'Submit Button Label',
     '#required' => 'TRUE',
     '#default_value' => isset($signup) ? $signup->settings['submit_button'] : 'Submit',
+  );
+
+  $form['settings']['confirmation_message'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Confirmation Message',
+    '#description' => 'This message will appear after a successful submission of this form. Leave blank for no message, but make sure you configure a destination in that case unless you really want to confuse your site visitors.',
+    '#default_value' => isset($signup) ? $signup->settings['confirmation_message'] : 'You have been successfully subscribed.',
   );
 
   $form['settings']['destination'] = array(
@@ -282,7 +293,6 @@ function mailchimp_signup_mergefields_callback($form, $form_state) {
  */
 function mailchimp_signup_signup_form_submit($form, &$form_state) {
   $signup = isset($form_state['signup']) ? $form_state['signup'] : mailchimp_signup_create();
-//  $is_new = isset($signup->is_new) && $signup->is_new;
   $mergefields = $form_state['values']['mergefields'];
   foreach ($mergefields as $id => $val) {
     if ($val) {
