@@ -153,6 +153,13 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     '#default_value' => isset($signup) ? $signup->settings['submit_button'] : 'Submit',
   );
 
+  $form['settings']['confirmation_message'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Confirmation Message',
+    '#description' => 'This message will appear after a successful submission of this form. Leave blank for no message, but make sure you configure a destination in that case unless you really want to confuse your site visitors.',
+    '#default_value' => isset($signup) ? $signup->settings['confirmation_message'] : 'You have been successfully subscribed.',
+  );
+
   $form['settings']['destination'] = array(
     '#type' => 'textfield',
     '#title' => 'Form destination page',
@@ -282,7 +289,6 @@ function mailchimp_signup_mergefields_callback($form, $form_state) {
  */
 function mailchimp_signup_signup_form_submit($form, &$form_state) {
   $signup = isset($form_state['signup']) ? $form_state['signup'] : mailchimp_signup_create();
-//  $is_new = isset($signup->is_new) && $signup->is_new;
   $mergefields = $form_state['values']['mergefields'];
   foreach ($mergefields as $id => $val) {
     if ($val) {
