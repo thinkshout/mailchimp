@@ -7,6 +7,8 @@
    */
   Drupal.behaviors.mailchimp_campaign_utils = {
     attach: function(context, settings) {
+      // Start with import tag field hidden.
+      $('#edit-content-entity-import-entity-import-tag').hide();
 
       // Keep track of which textfield was last selected/focused.
       $('textarea', context).focus(function() {
@@ -55,6 +57,7 @@
         else {
           // Insert token into token field, where it can be manually copied by the user.
           $('#entity-import-tag-field').html(token);
+          $('#edit-content-entity-import-entity-import-tag').show();
         }
 
         // Unset last focused field.
