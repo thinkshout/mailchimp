@@ -49,6 +49,8 @@
         if (target_element) {
           console.log('Inserting token: ' + token);
 
+          $('#entity-import-tag-field').hide();
+
           Drupal.behaviors.mailchimp_campaign_utils.addTokenToElement(target_element, token);
         }
         else {
@@ -76,8 +78,6 @@
         if (target_element) {
           console.log('Inserting token: ' + token);
 
-          $('#entity-import-tag-field').hide();
-
           Drupal.behaviors.mailchimp_campaign_utils.addTokenToElement(target_element, token);
         }
 
@@ -86,6 +86,14 @@
       });
     },
 
+    /**
+     * Inserts a token at the last selected point in a text field element.
+     *
+     * @param object target_element
+     *  The text field element to insert the token into.
+     * @param string token
+     *  The token to insert.
+     */
     addTokenToElement: function(target_element, token) {
       // IE support.
       if (document.selection) {
