@@ -111,30 +111,37 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
   }
   // Query lists from the MC API and store in cache
   else {
-    if ($mcapi = mailchimp_get_api_object()) {
-      $emails = array();
-      $emails[] = array('email' => $email);
+    $mcapi = mailchimp_get_api_object();
+
+    $emails = array();
+    $emails[] = array('email' => $email);
+    try {
       $result = $mcapi->lists->memberActivity($list_id, $emails);
-      if ($result['success_count'] > 0) {
-        $memberactivity = reset($result['data']);
-        $newcache = array();
-        if ($cache) {
-          $newcache = $cache;
-        }
-        $newcache[$email] = $memberactivity;
-        cache_set(
-          'mailchimp_activity_' . $list_id,
-          $newcache,
-          'cache',
-          CACHE_TEMPORARY);
+    } catch (Mailchimp_Error $e) {
+      drupal_set_message($e->getMessage(), 'error');
+      watchdog('mailchimp_campaign', 'An error occurred while getting activity: ' . $e->getMessage(), WATCHDOG_ERROR);
+      return NULL;
+    }
+    if ($result['success_count'] > 0) {
+      $memberactivity = reset($result['data']);
+      $newcache = array();
+      if ($cache) {
+        $newcache = $cache;
       }
-      if ($result['error_count'] > 0) {
-        foreach ($result['errors'] as $error) {
-          watchdog('mailchimp_activity',
-            'An error occurred getting activity for email "' . $error['email'] . '": ' . $error['error'], WATCHDOG_ERROR);
-        }
+      $newcache[$email] = $memberactivity;
+      cache_set(
+        'mailchimp_activity_' . $list_id,
+        $newcache,
+        'cache',
+        CACHE_TEMPORARY);
+    }
+    if ($result['error_count'] > 0) {
+      foreach ($result['errors'] as $error) {
+        watchdog('mailchimp_activity',
+          'An error occurred getting activity for email "' . $error['email'] . '": ' . $error['error'], WATCHDOG_ERROR);
       }
     }
+
   }
 
   return $memberactivity;
