@@ -112,8 +112,10 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
   // Query lists from the MC API and store in cache
   else {
     if ($mcapi = mailchimp_get_api_object()) {
-      $result = $mcapi->lists->memberActivity($list_id, array($email));
-      if ($result['success']) {
+      $emails = array();
+      $emails[] = array('email' => $email);
+      $result = $mcapi->lists->memberActivity($list_id, $emails);
+      if ($result['success_count'] > 0) {
         $memberactivity = reset($result['data']);
         $newcache = array();
         if ($cache) {
@@ -125,6 +127,12 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
           $newcache,
           'cache',
           CACHE_TEMPORARY);
+      }
+      if ($result['error_count'] > 0) {
+        foreach ($result['errors'] as $error) {
+          watchdog('mailchimp_activity',
+            'An error occurred getting activity for email "' . $error['email'] . '": ' . $error['error'], WATCHDOG_ERROR);
+        }
       }
     }
   }
@@ -187,7 +195,7 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
         ),
       );
 
-      foreach ($list_activity['activity'] as $activity) {
+      foreach ($list_activity['activity']['activity'] as $activity) {
         $rows[] = array(
           array(
             'data' => array(
