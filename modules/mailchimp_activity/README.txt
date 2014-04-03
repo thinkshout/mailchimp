@@ -6,8 +6,8 @@ is sent.
 ## Installation
 
 1. Enable the MailChimp Activity module and the Entity Module
-2. To use MailChimp Activity module, you will need to install and enable the Entity
-API module [http://drupal.org/project/entity]([http://drupal.org/project/entity)
+2. To use MailChimp Activity module, you will need to install and enable the
+   Entity API module [http://drupal.org/project/entity]([http://drupal.org/project/entity)
 
 ## Usage
 
