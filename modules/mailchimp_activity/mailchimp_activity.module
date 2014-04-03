@@ -111,8 +111,8 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
   }
   // Query lists from the MC API and store in cache
   else {
-    if ($q = mailchimp_get_api_object()) {
-      $result = $q->listMemberActivity($list_id, array($email));
+    if ($mcapi = mailchimp_get_api_object()) {
+      $result = $mcapi->lists->memberActivity($list_id, array($email));
       if ($result['success']) {
         $memberactivity = reset($result['data']);
         $newcache = array();
