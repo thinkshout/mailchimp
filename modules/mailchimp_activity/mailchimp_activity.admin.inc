@@ -164,11 +164,16 @@ function mailchimp_activity_entity_form_validate($form, &$form_state) {
  * Submit handler for mailchimp_activity_entity_form().
  */
 function mailchimp_activity_entity_form_submit($form, &$form_state) {
-  $dummy = entity_create($form_state['values']['entity_type'], array('type' => $form_state['values']['bundle']));
-  $uri = entity_uri($form_state['values']['entity_type'], $dummy);
+  $dummy_entity = entity_create($form_state['values']['entity_type'], array('type' => $form_state['values']['bundle']));
+  $entity_info = entity_get_info($dummy_entity->type);
+  if (!empty($entity_info)) {
+    // Create empty entity ID field so entity_uri doesn't result in an error.
+    $entity_id_field = $entity_info['entity keys']['id'];
+    $dummy_entity->$entity_id_field = NULL;
+  }
+  $uri = entity_uri($form_state['values']['entity_type'], $dummy_entity);
   $values = $form_state['values'];
   $values['entity_path'] = $uri['path'];
-
   $activity_entity = array();
   if ($form_state['op'] == 'add' || $form_state['op'] == 'clone') {
     $activity_entity = entity_create('mailchimp_activity_entity', $values);
