@@ -19,6 +19,7 @@ function mailchimp_lists_field_info() {
         'show_interest_groups' => FALSE,
         'interest_groups_title' => NULL,
         'mergefields' => array(),
+        'unsubscribe_on_delete' => TRUE,
         'options' => array(
           'subscribe' => FALSE,
           'interest_groups' => array(),
@@ -88,6 +89,12 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
     '#title' => t('Merge Fields'),
     '#description' => t('Multi-value fields will sync their first value to Mailchimp, as Mailchimp does not support multi-value fields.'),
     '#tree' => TRUE,
+  );
+  $form['unsubscribe_on_delete'] = array(
+    '#title' => "Unsubscribe on deletion",
+    '#type' => "checkbox",
+    '#description' => t('Unsubscribe entities from this list when they are deleted.'),
+    '#default_value' => $instance['settings']['unsubscribe_on_delete'],
   );
   $mv_defaults = $instance['settings']['mergefields'];
   $mergevars = mailchimp_get_mergevars(array($mc_list_id));
