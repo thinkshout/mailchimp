@@ -72,4 +72,6 @@ function mailchimp_uninstall() {
   variable_del('mailchimp_batch_limit');
   $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
   $queue->deleteQueue();
+  $queue = DrupalQueue::get(MAILCHIMP_BATCH_QUEUE_CRON);
+  $queue->deleteQueue();
 }
