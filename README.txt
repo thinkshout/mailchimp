@@ -39,13 +39,16 @@ respective README's for more details.
     https://bitbucket.org/mailchimp/mailchimp-api-php/downloads ("Tags" tab)
     or by using the included example drush make file.
     Proper libraries structure:
+
     - libraries/
-      - README.md
-      - composer.js
       - mailchimp/
+        - docs/
         - src/
           - Mailchimp.php
           - Mailchimp/
+        - README.md
+        - composer.json
+
   * At the time of writing, version 2.0.4 of the Mailchimp API library was the
     latest. If you are using a later version and have issues, consider switching
     to version 2.0.4.
