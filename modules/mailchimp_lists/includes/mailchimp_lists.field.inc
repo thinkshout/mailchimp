@@ -367,7 +367,9 @@ function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance,
   if ($field['type'] == 'mailchimp_lists_subscription') {
     $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
     $choices = $entity_wrapper->{$instance['field_name']}->value();
-    mailchimp_lists_process_subscribe_form_choices($choices['options'], $instance, $field, $entity);
+    if (isset($choices['options'])) {
+      mailchimp_lists_process_subscribe_form_choices($choices['options'], $instance, $field, $entity);
+    }
     // @todo: if email address has changed, do we unsubscribe the old one?
   }
 }
