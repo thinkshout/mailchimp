@@ -15,4 +15,17 @@ class MailchimpActivityEntity extends Entity {
     parent::__construct($values, 'mailchimp_activity_entity');
   }
 
+  /**
+   * Overrides Entity\Entity::uri();
+   */
+  public function uri() {
+    return array(
+      'path' => 'admin/config/services/mailchimp/activity/manage/' . $this->name,
+      'options' => array(
+        'entity_type' => $this->entityType,
+        'entity' => $this,
+      ),
+    );
+  }
+
 }
