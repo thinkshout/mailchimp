@@ -40,10 +40,27 @@ function mailchimp_lists_entity_delete($entity, $type) {
   // Check for mailchimp subscription fields and unsubscribe accordingly.
   $fields = field_info_fields();
   foreach($fields as $field) {
-    if ($field['type'] == 'mailchimp_lists_subscription' && in_array($entity->type, $field['bundles'][$type])) {
-      $instance = field_info_instance($type, $field['field_name'], $entity->type);
-      mailchimp_lists_process_subscribe_form_choices(array('subscribe' => FALSE), $instance, $field, $entity);
+    if ($field['type'] == 'mailchimp_lists_subscription' && isset($field['bundles'][$type])) {
+      $bundle = _mailchimp_lists_entity_get_bundle($entity, $type);
+      if (in_array($bundle, $field['bundles'][$type])) {
+        $instance = field_info_instance($type, $field['field_name'], $bundle);
+        if ($instance['settings']['unsubscribe_on_delete']) {
+          mailchimp_lists_process_subscribe_form_choices(array('subscribe' => FALSE), $instance, $field, $entity);
+        }
+      }
     }
+  }
+}
+
+/**
+ * Helper function to retrieve the bundle of a specific entity.
+ */
+function _mailchimp_lists_entity_get_bundle($entity, $entity_type) {
+  $info = entity_get_info($entity_type);
+  if (empty($info['entity keys']['bundle'])) {
+    return $entity_type;
+  } else {
+    return $entity->{$info['entity keys']['bundle']};
   }
 }
 
