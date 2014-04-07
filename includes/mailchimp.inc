@@ -1,21 +1,66 @@
 <?php
 
+/**
+ * Class DrupalMailchimp
+ *
+ * Extend the MailChimp class to add some Drupalisms.
+ */
 class DrupalMailchimp extends Mailchimp {
 
   var $allow_async;
+  protected $timeout;
+  protected $userAgent = 'MailChimp-PHP/2.0.4';
 
   /**
-   * Override __construct() to initialize async setting.
+   * Override __construct().
+   *
+   * The parent constructor sets curl settings that we need to avoid. Much of
+   * code is duplicated from the parent.
    */
-  public function __construct($apikey=null, $opts=array(), $async = FALSE){
-    parent::__construct($apikey, $opts);
+  public function __construct($apikey = NULL, $opts = array(), $async = FALSE) {
+    if (!$apikey) {
+      $apikey = getenv('MAILCHIMP_APIKEY');
+    }
+    if (!$apikey) {
+      $apikey = $this->readConfigs();
+    }
+    if (!$apikey) {
+      throw new Mailchimp_Error(t('You must provide a MailChimp API key'));
+    }
+    $this->apikey = $apikey;
+    $dc = "us1";
+    if (strstr($this->apikey, "-")) {
+      list($key, $dc) = explode("-", $this->apikey, 2);
+      if (!$dc) {
+        $dc = "us1";
+      }
+    }
+    $this->root = str_replace('https://api', 'https://' . $dc . '.api', $this->root);
+    $this->root = rtrim($this->root, '/') . '/';
+
+    $this->timeout = (isset($opts['timeout']) && is_int($opts['timeout'])) ? $opts['timeout'] : 600;
+
+
+    $this->folders = new Mailchimp_Folders($this);
+    $this->templates = new Mailchimp_Templates($this);
+    $this->users = new Mailchimp_Users($this);
+    $this->helper = new Mailchimp_Helper($this);
+    $this->mobile = new Mailchimp_Mobile($this);
+    $this->ecomm = new Mailchimp_Ecomm($this);
+    $this->neapolitan = new Mailchimp_Neapolitan($this);
+    $this->lists = new Mailchimp_Lists($this);
+    $this->campaigns = new Mailchimp_Campaigns($this);
+    $this->vip = new Mailchimp_Vip($this);
+    $this->reports = new Mailchimp_Reports($this);
+    $this->gallery = new Mailchimp_Gallery($this);
+
     $this->allow_async = $async;
   }
 
-  /** 
+  /**
    * Returns TRUE if we should use the queue.
    */
-  public function asyncronous(){
+  public function asyncronous() {
     if ($this->allow_async) {
       if (variable_get('mailchimp_cron', FALSE)) {
         return TRUE;
@@ -28,70 +73,34 @@ class DrupalMailchimp extends Mailchimp {
    * Override MCAPI::callServer() to leverage Drupal's core HTTP handling.
    */
   public function call($url, $params) {
-    return parent::call($url, $params);
-  }
-/**
- * @todo
- *
-    $dc = "us1";
-    if (strstr($this->api_key, "-")) {
-      list($key, $dc) = explode("-", $this->api_key, 2);
-      if (!$dc) {
-        $dc = "us1";
-      }
-    }
-
-    $host = $dc . "." . $this->apiUrl["host"];
-    $protocol = $this->secure ? 'https://' : 'http://';
-    $params["apikey"] = $this->api_key;
-
-    $this->errorMessage = "";
-    $this->errorCode = "";
-    $post_vars = http_build_query($params, NULL, '&');
+    $params['apikey'] = $this->apikey;
+    $params = drupal_json_encode($params);
 
     $response = drupal_http_request(
-      $protocol . $host . $this->apiUrl["path"] . '?method=' . $method,
+      $this->root . $url . '.json',
       array(
         'method' => 'POST',
-        'data' => $post_vars,
+        'data' => $params,
         'headers' => array(
-          'Content-type' => 'application/x-www-form-urlencoded',
-          'Host' => $host,
+          'Content-type' => 'application/json',
           'Accept-Language' => language_default()->language,
-          'User-Agent' => 'MCAPI/' . $this->version,
+          'User-Agent' => $this->userAgent,
         ),
-        'timeout' => $this->getTimeout(),
+        'timeout' => $this->timeout,
       )
     );
 
     if (!empty($response->error)) {
-      $this->errorMessage = $response->error;
-      $this->errorCode = $response->code;
-      return FALSE;
+      throw new Mailchimp_HttpError(t("MailChimp API call to %url failed: @msg", array('%url' => $url, '@msg' => $response->error)));
     }
 
-    foreach ($response->headers as $h) {
-      if (substr($h, 0, 26) === "X-MailChimp-API-Error-Code") {
-        $this->errorMessage = "No error message was found";
-        $this->errorCode = trim(substr($h, 27));
-        return FALSE;
-      }
+    $result = drupal_json_decode($response->data);
+
+    if (floor($response->code / 100) >= 4) {
+      throw $this->castError($result);
     }
 
-    $return = drupal_json_decode($response->data);
-    if ($return === FALSE) {
-      $this->errorMessage = "Bad Response.  Got This: " . $response->data;
-      $this->errorCode = -99;
-      return FALSE;
-    }
-
-    if (isset($return['error']) && is_array($return)) {
-      $this->errorMessage = $return['error'];
-      $this->errorCode = $return['code'];
-      return FALSE;
-    }
-
-    return $return;
+    return $result;
   }
-*/
+
 }
