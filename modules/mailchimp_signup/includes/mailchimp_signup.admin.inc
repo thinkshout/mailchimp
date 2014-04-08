@@ -19,14 +19,17 @@ function mailchimp_signup_overview_page() {
     );
     switch ($signup->mode) {
       case MAILCHIMP_SIGNUP_BLOCK:
-        $modes = l('Block', 'admin/structure/block');
+        $modes = l(t('Block'), 'admin/structure/block');
         break;
+
       case MAILCHIMP_SIGNUP_PAGE:
-        $modes = l('Page', $signup->settings['path']);
+        $modes = l(t('Page'), $signup->settings['path']);
         break;
+
       case MAILCHIMP_SIGNUP_BOTH:
-        $modes = l('Block', 'admin/structure/block') . ' and ' . l('Page', $signup->settings['path']);
+        $modes = l(t('Block'), 'admin/structure/block') . ' and ' . l(t('Page'), $signup->settings['path']);
         break;
+
     }
     $list_labels = array();
     foreach ($signup->mc_lists as $list_id) {
@@ -48,7 +51,7 @@ function mailchimp_signup_overview_page() {
     ),
     'rows' => $rows,
   );
-  $refresh_link = l('Refresh lists from Mailchimp',
+  $refresh_link = l(t('Refresh lists from Mailchimp'),
     'admin/config/services/mailchimp/list_cache_clear',
     array('query' => array('destination' => 'admin/config/services/mailchimp/signup')));
   if (empty($mc_lists)) {
@@ -133,7 +136,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
-  
+
   $form['settings']['path'] = array(
     '#type' => 'textfield',
     '#title' => 'Page URL',
@@ -179,7 +182,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
   );
   $form['mc_lists_config']['instructions'] = array(
     '#markup' => "Select the lists to display on this form:<br /><br />",
-  );  
+  );
   $lists = mailchimp_get_lists();
   $options = array();
   foreach ($lists as $mc_list) {
@@ -230,10 +233,10 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
         }
       }
     }
-    foreach ($form_state['mergevar_options'] as $mergevar){
+    foreach ($form_state['mergevar_options'] as $mergevar) {
       $form['mc_lists_config']['mergefields'][$mergevar['tag']] = array(
         '#type' => 'checkbox',
-        '#title' => $mergevar['name'],
+        '#title' => check_plain($mergevar['name']),
         '#default_value' => isset($signup->settings['mergefields'][$mergevar['tag']]) ? !empty($signup->settings['mergefields'][$mergevar['tag']]) : TRUE,
         '#required' => $mergevar['req'],
         '#disabled' => $mergevar['req'],

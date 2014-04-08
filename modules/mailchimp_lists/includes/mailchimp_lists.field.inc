@@ -51,7 +51,7 @@ function mailchimp_lists_field_settings_form($field, $instance, $has_data) {
       make sure you have created a list at !MailChimp first, then !cacheclear.',
       array(
         '!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'),
-        '!cacheclear' => l('clear your list cache',
+        '!cacheclear' => l(t('clear your list cache'),
             'admin/config/services/mailchimp/list_cache_clear',
             array('query' => array('destination' => $_GET['q']))),
       )),
@@ -105,7 +105,7 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
     $default_value = isset($mv_defaults[$mergevar['tag']]) ? $mv_defaults[$mergevar['tag']] : -1;
     $form['mergefields'][$mergevar['tag']] = array(
       '#type' => 'select',
-      '#title' => $mergevar['name'],
+      '#title' => check_plain($mergevar['name']),
       '#default_value' => array_key_exists($default_value, $fields_flat) ? $default_value : '',
       '#required' => $mergevar['req'],
       '#options' => $fields,
@@ -170,7 +170,7 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
     }
   }
   $element += array(
-    '#title' => $element['#title'],
+    '#title' => check_plain($element['#title']),
     '#type' => 'fieldset',
   );
   $element['subscribe'] = array(
@@ -184,11 +184,11 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
     $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
     $element['interest_groups'] = array(
       '#type' => 'fieldset',
-      '#title' => $instance['settings']['interest_groups_title'],
+      '#title' => check_plain($instance['settings']['interest_groups_title']),
       '#weight' => 100,
       '#states' => array(
         'invisible' => array(
-          ':input[name="' . $field['field_name'] . '['. $langcode .'][0][options][subscribe]"]' => array('checked' => FALSE),
+          ':input[name="' . $field['field_name'] . '[' . $langcode . '][0][options][subscribe]"]' => array('checked' => FALSE),
         ),
       ),
     );
@@ -338,9 +338,6 @@ function mailchimp_lists_form_field_ui_field_edit_form_alter(&$form, &$form_stat
  * Validation handler for mailchimp_lists_form_field_ui_field_edit_form.
  *
  * Ensure cardinality is set to 1 on mailchimp_lists_subscription fields.
- *
- * @param $form
- * @param $form_state
  */
 function mailchimp_lists_form_field_ui_field_edit_form_validate(&$form, &$form_state) {
   if ($form['#field']['type'] == 'mailchimp_lists_subscription') {

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Mailchimp Signup entity class
+ */
+
 class MailchimpSignup extends Entity {
   public
     $mcs_id,

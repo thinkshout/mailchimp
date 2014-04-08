@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Wrapper class around the Mailchimp API.
+ */
+
+/**
  * Class DrupalMailchimp
  *
  * Extend the MailChimp class to add some Drupalisms.
@@ -38,7 +43,6 @@ class DrupalMailchimp extends Mailchimp {
     $this->root = rtrim($this->root, '/') . '/';
 
     $this->timeout = (isset($opts['timeout']) && is_int($opts['timeout'])) ? $opts['timeout'] : 600;
-
 
     $this->folders = new Mailchimp_Folders($this);
     $this->templates = new Mailchimp_Templates($this);

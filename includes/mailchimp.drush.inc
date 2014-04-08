@@ -7,9 +7,6 @@
 
 /**
  * Implements hook_drush_command().
- *
- * @return
- *   An associative array of commands.
  */
 function mailchimp_drush_command() {
   $items = array();
@@ -27,6 +24,8 @@ function mailchimp_drush_command() {
 }
 
 /**
+ * Callback function to run cron.
+ * 
  * @int null $temp_batchsize
  */
 function _mailchimp_cron_batch($temp_batchsize = NULL) {

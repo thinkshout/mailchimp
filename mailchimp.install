@@ -3,7 +3,6 @@
 /**
  * @file
  * Install, update and uninstall functions for the mailchimp module.
- *
  */
 
 /**
@@ -49,7 +48,7 @@ function mailchimp_requirements($phase) {
       $requirements['mailchimp'] += array(
         'value' => $library['version'],
         'description' => $t('The MailChimp MCAPI wrapper library is installed correctly.'),
-        'severity' => REQUIREMENT_OK
+        'severity' => REQUIREMENT_OK,
       );
     }
     else {

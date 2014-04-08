@@ -45,7 +45,7 @@ function mailchimp_lists_overview_page() {
     ),
     'rows' => $rows,
   );
-  $refresh_link = l('Refresh lists from Mailchimp',
+  $refresh_link = l(t('Refresh lists from Mailchimp'),
     'admin/config/services/mailchimp/list_cache_clear',
     array('query' => array('destination' => 'admin/config/services/mailchimp/lists')));
   if (empty($mc_lists)) {
