@@ -7,7 +7,6 @@
  */
 class DrupalMailchimp extends Mailchimp {
 
-  var $allow_async;
   protected $timeout;
   protected $userAgent = 'MailChimp-PHP/2.0.4';
 
@@ -17,7 +16,7 @@ class DrupalMailchimp extends Mailchimp {
    * The parent constructor sets curl settings that we need to avoid. Much of
    * code is duplicated from the parent.
    */
-  public function __construct($apikey = NULL, $opts = array(), $async = FALSE) {
+  public function __construct($apikey = NULL, $opts = array()) {
     if (!$apikey) {
       $apikey = getenv('MAILCHIMP_APIKEY');
     }
@@ -54,19 +53,6 @@ class DrupalMailchimp extends Mailchimp {
     $this->reports = new Mailchimp_Reports($this);
     $this->gallery = new Mailchimp_Gallery($this);
 
-    $this->allow_async = $async;
-  }
-
-  /**
-   * Returns TRUE if we should use the queue.
-   */
-  public function asyncronous() {
-    if ($this->allow_async) {
-      if (variable_get('mailchimp_cron', FALSE)) {
-        return TRUE;
-      }
-    }
-    return FALSE;
   }
 
   /**

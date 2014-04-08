@@ -84,7 +84,7 @@ function mailchimp_permission() {
 /**
  * Get a Mailchimp API object for communication with the mailchimp server.
  */
-function mailchimp_get_api_object($async = FALSE) {
+function mailchimp_get_api_object() {
   $library = libraries_load('mailchimp');
   if (!$library['installed']) {
     $msg = 'Failed to load MailChimp PHP library. Please refer to the installation requirements.';
@@ -105,7 +105,7 @@ function mailchimp_get_api_object($async = FALSE) {
   // mailsystem, in order to use alternate MailChimp classes. The bundled tests
   // use this approach to extend the MailChimp class with a test server.
   $classname = variable_get('mailchimp_api_classname', 'DrupalMailchimp');
-  $mailchimp = new $classname($api_key, $options, $async);
+  $mailchimp = new $classname($api_key, $options);
   // @todo catch creation error and do something sensible.
   return $mailchimp;
 }
@@ -320,12 +320,12 @@ function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
 /**
  * Wrapper around MCAPI->lists->subscribe.
  */
-function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE, $mcapi = NULL) {
+function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE, $mcapi = NULL, $allow_async = TRUE) {
   $success = FALSE;
   // If we aren't given an MCAPI object, we allow Async in our API object.
   // The object itself will tell us whether to use the queue.
-  if ($mcapi || $mcapi = mailchimp_get_api_object(TRUE)) {
-    if ($mcapi->asyncronous()) {
+  if ($mcapi || $mcapi = mailchimp_get_api_object()) {
+    if ($allow_async && variable_get('mailchimp_cron', FALSE)) {
       $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
       $queue->createQueue();
       $success = $queue->createItem(array(
@@ -381,12 +381,12 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin
 /**
  * Wrapper around MCAPI->lists->updateMember.
  */
-function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE, $mcapi = NULL) {
+function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE, $mcapi = NULL, $allow_async = TRUE) {
   $success = FALSE;
   // If we aren't given an MCAPI object, we allow Async in our API object.
   // The object itself will tell us whether to use the queue.
-  if ($mcapi || $mcapi = mailchimp_get_api_object(TRUE)) {
-    if ($mcapi->asyncronous()) {
+  if ($mcapi || $mcapi = mailchimp_get_api_object()) {
+    if ($allow_async && variable_get('mailchimp_cron', FALSE)) {
       $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
       $queue->createQueue();
       $success = $queue->createItem(array(
@@ -456,13 +456,13 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
  * @return bool
  *   Indicates whether unsubscribe was successful.
  */
-function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FALSE, $notify = FALSE, $mcapi = NULL) {
+function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FALSE, $notify = FALSE, $mcapi = NULL, $allow_async = TRUE) {
   $success = FALSE;
   // If we aren't given an MCAPI object, we allow Async in our API object.
   // The object itself will tell us whether to use the queue.
-  if ($mcapi || $mcapi = mailchimp_get_api_object(TRUE)) {
+  if ($mcapi || $mcapi = mailchimp_get_api_object()) {
     if (mailchimp_is_subscribed($list_id, $email)) {
-      if ($mcapi->asyncronous()) {
+      if ($allow_async && variable_get('mailchimp_cron', FALSE)) {
         $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
         $queue->createQueue();
         $success = $queue->createItem(array(
@@ -1105,11 +1105,13 @@ function mailchimp_cron() {
   if ($queue_count > 0) {
     $batch_limit = variable_get('mailchimp_batch_limit', 100);
     $batch_size = ($queue_count < $batch_limit) ? $queue_count : $batch_limit;
-    $mcapi = mailchimp_get_api_object(FALSE);
+    $mcapi = mailchimp_get_api_object();
     $count = 0;
     while ($count < $batch_size) {
       if ($item = $queue->claimItem()) {
         $item->data['args'][] = $mcapi;
+        // Flag the function so it doesn't go back in the queue:
+        $item->data['args'][] = FALSE;
         call_user_func_array($item->data['function'], $item->data['args']);
         $queue->deleteItem($item);
       }
