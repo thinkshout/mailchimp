@@ -306,7 +306,7 @@ function mailchimp_lists_mollom_form_info($form_id) {
  * @return array
  *   List of properties that can be used as an #options list.
  */
-function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $prefix = NULL, $tree = NULL) {
+function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $required = FALSE, $prefix = NULL, $tree = NULL) {
   $options = array();
   if (!$prefix) {
     $options[''] = t('-- Select --');
@@ -325,7 +325,16 @@ function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $
     $keypath = $prefix ? $prefix . ':' . $key : $key;
     $type = isset($property['type']) ? entity_property_extract_innermost_type($property['type']) : 'text';
     $is_entity = ($type == 'entity') || (bool) entity_get_info($type);
-    if (!$is_entity) {
+    $required_property = isset($property['required']) ? $property['required'] : FALSE;
+    if ($is_entity) {
+      // We offer fields on related entities (useful for field collections).
+      // But we only offer 1 level of depth to avoid loops.
+      if (!$prefix) {
+        $bundle = isset($property['bundle']) ? $property['bundle'] : NULL;
+        $options[$property['label']] = mailchimp_lists_fieldmap_options($type, $bundle, $required, $keypath, $property['label']);
+      }
+    }
+    elseif (!$required || $required_property) {
       if (isset($property['field']) && $property['field'] && !empty($property['property info'])) {
         foreach ($property['property info'] as $sub_key => $sub_prop) {
           $label = isset($tree) ? $tree . ' - ' .$property['label'] : $property['label'];
@@ -335,12 +344,6 @@ function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $
       else {
         $options[$keypath] = $property['label'];
       }
-    }
-    elseif (!$prefix) {
-      // We offer fields on related entities (useful for field collections).
-      // But we only offer 1 level of depth to avoid loops.
-      $bundle = isset($property['bundle']) ? $property['bundle'] : NULL;
-      $options[$property['label']] = mailchimp_lists_fieldmap_options($type, $bundle, $keypath, $property['label']);
     }
   }
   return $options;

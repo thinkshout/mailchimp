@@ -99,6 +99,7 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
   $mv_defaults = $instance['settings']['mergefields'];
   $mergevars = mailchimp_get_mergevars(array($mc_list_id));
   $fields = mailchimp_lists_fieldmap_options($instance['entity_type'], $instance['bundle']);
+  $required_fields = mailchimp_lists_fieldmap_options($instance['entity_type'], $instance['bundle'], TRUE);
   unset($fields[$field['field_name']]);
   $fields_flat = options_array_flatten($fields);
   foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
@@ -108,7 +109,7 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
       '#title' => check_plain($mergevar['name']),
       '#default_value' => array_key_exists($default_value, $fields_flat) ? $default_value : '',
       '#required' => $mergevar['req'],
-      '#options' => $fields,
+      '#options' => $mergevar['req'] ? $required_fields : $fields,
     );
   }
 
