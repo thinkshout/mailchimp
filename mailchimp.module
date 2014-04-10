@@ -211,8 +211,10 @@ function _mailchimp_list_cmp($a, $b) {
 /**
  * Wrapper around MCAPI->Lists->mergeVars.
  * 
- * @string $list_ids
- * @boolean $reset
+ * @param array $list_ids
+ *   Array of MailChimp list IDs.
+ * @param bool $reset
+ *   Set to TRUE if mergevars should not be loaded from cache.
  * 
  * @return array
  *   Struct describing mergevars for the specified lists.
@@ -231,18 +233,20 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
 
   if (count($list_ids)) {
     if ($q = mailchimp_get_api_object()) {
+      $last_list_id = NULL;
       try {
         $result = $q->lists->mergeVars($list_ids);
         if ($result['success_count']) {
           foreach ($result['data'] as $list_mergevars) {
-            $mergevars[$list_mergevars['id']] = $list_mergevars;
-            cache_set($list_id . '-mergevars', $list_mergevars, 'cache_mailchimp', CACHE_PERMANENT);
+            $last_list_id = $list_mergevars['id'];
+            $mergevars[$last_list_id] = $list_mergevars;
+            cache_set($last_list_id . '-mergevars', $list_mergevars, 'cache_mailchimp', CACHE_PERMANENT);
           }
         }
       }
       catch (Exception $e) {
         watchdog('mailchimp', 'An error occurred requesting mergevars for list @list. "%message"', array(
-          '@list' => $list_id,
+          '@list' => $last_list_id,
           '%message' => $e->getMessage(),
         ), WATCHDOG_ERROR);
       }
@@ -253,17 +257,20 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
 }
 
 /**
- * Get the MailChimp memberinfo for a given email address and list.
+ * Get the MailChimp member info for a given email address and list.
  *
  * Results are cached in the cache_mailchimp bin which is cleared by the MC
  * web hooks system when needed.
  *
- * @string $list_id
- * @string $email
- * @bool $reset
+ * @param string $list_id
+ *   The MailChimp list ID to get member info for.
+ * @param string $email
+ *   The MailChimp user email address to load member info for.
+ * @param bool $reset
+ *   Set to TRUE if member info should not be loaded from cache.
  *
  * @return array
- *   memberinfo array, empty if there is no valid info.
+ *   Member info array, empty if there is no valid info.
  */
 function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get($list_id . '-' . $email, 'cache_mailchimp');
@@ -301,11 +308,11 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
  *
  * Simple wrapper around mailchimp_get_memberinfo().
  *
- * @string  $list_id
+ * @param string $list_id
  *   Unique string identifier for the list on your MailChimp account.
- * @string  $email
+ * @param string $email
  *   Email address to check for on the identified Mailchimp List
- * @bool $reset
+ * @param bool $reset
  *   Set to TRUE to ignore the cache. (Used heavily in testing functions.)
  *
  * @return bool
@@ -447,19 +454,21 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
 /**
  * Wrapper around MCAPI->lists->unsubscribe.
  *
- * @string $list_id
+ * @param string $list_id
  *   A mailchimp list id.
- * @string $email
+ * @param string $email
  *   Email address to be unsubscribed.
- * @bool $delete
+ * @param bool $delete
  *   Indicates whether an email should be deleted or just unsubscribed.
- * @bool $goodbye
+ * @param bool $goodbye
  *   Indicates whether to send the goodbye email to the email address.
- * @bool $notify
+ * @param bool $notify
  *   Indicates whether to send the unsubscribe notification email to the address
  *   defined in the list email notification settings.
- * @object $mcapi
+ * @param object $mcapi
  *   Mailchimp API object if one is already loaded.
+ * @param bool $allow_async
+ *   Set to TRUE to allow asynchronous processing using DrupalQueue.
  *
  * @return bool
  *   Indicates whether unsubscribe was successful.
@@ -516,11 +525,10 @@ function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FAL
 /**
  * Wrapper around MCAPI->lists->segments.
  *
- * @string $list_id
- *   A mailchimp list id.
- * @string $type
- *   'static' or 'saved' to limit results based on segment type.
- * @bool $reset
+ * @param string $list_id
+ *   A MailChimp list id.
+ * @param bool $reset
+ *   Set to TRUE if list segments should not be loaded from cache.
  * 
  * @return array
  *   Array of segments details.
@@ -552,13 +560,13 @@ function mailchimp_get_segments($list_id, $reset = NULL) {
 /**
  * Wrapper around MCAPI->lists->segmentAdd.
  *
- * @string $list_id
- *   A mailchimp list id.
- * @string $name
+ * @param string $list_id
+ *   A MailChimp list id.
+ * @param string $name
  *   A label for the segment.
- * @string $type
+ * @param string $type
  *   'static' or 'saved'
- * @array $segment_options
+ * @param array $segment_options
  *   Array of options for 'saved' segments. See Mailchimp API docs.
  * 
  * @return int
@@ -593,14 +601,16 @@ function mailchimp_segment_create($list_id, $name, $type, $segment_options = NUL
 /**
  * Add a specific subscriber to a static segment of a list.
  * 
- * @string $list_id
- *   ID of a mailchimp list
- * @string $segment_id
- *   ID of a segment of the mailchimp list
- * @string $email
+ * @param string $list_id
+ *   ID of a MailChimp list
+ * @param string $segment_id
+ *   ID of a segment of the MailChimp list
+ * @param string $email
  *   Email address to add to the segment (does NOT subscribe to the list)
- * @bool $batch
+ * @param bool $batch
  *   Whether to queue this for the batch processor. Defaults to TRUE.
+ * @param string $queue_id
+ *   The ID of the queue to use in batch processing.
  * 
  * @return bool
  *   Success boolean
@@ -636,11 +646,11 @@ function mailchimp_segment_add_subscriber($list_id, $segment_id, $email, $batch 
 /**
  * Add a batch of email addresses to a static segment of a list.
  *
- * @string $list_id
- *   ID of a mailchimp list
- * @string $segment_id
- *   ID of a segment of the mailchimp list
- * @array $batch
+ * @param string $list_id
+ *   ID of a MailChimp list
+ * @param string $segment_id
+ *   ID of a segment of the MailChimp list
+ * @param array $batch
  *   Batch of email addresses to add to the segment (does NOT subscribe new)
  *
  * @return int
@@ -666,9 +676,12 @@ function mailchimp_segment_batch_add_subscribers($list_id, $segment_id, $batch) 
 /**
  * Wrapper around MCAPI->campaigns->getList to return data for a given campaign.
  *
- * Data is stored in the mailchimp cache.
+ * Data is stored in the MailChimp cache.
  *
- * @string $campaign_id
+ * @param string $campaign_id
+ *   The ID of the campaign to get data for.
+ * @param bool $reset
+ *   Set to TRUE if campaign data should not be loaded from cache.
  *
  * @return mixed
  *   Array of campaign data or FALSE if not found.
@@ -711,7 +724,7 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
  *
  * Returns all IDs of campaigns that have included a given email address.
  *
- * @string $email
+ * @param string $email
  *
  * @return array
  *   Campaign structs containing id, title, subject, send_time, type.
@@ -734,10 +747,10 @@ function mailchimp_get_campaigns_for_email($email) {
 /**
  * Wrapper around MCAPI->lists->webhooks().
  *
- * @string $list_id
+ * @param string $list_id
  *
- * @return array
- *   List of existing webhooks, or FALSE.
+ * @return mixed
+ *   Array of existing webhooks, or FALSE.
  */
 function mailchimp_webhook_get($list_id) {
   $q = mailchimp_get_api_object();
@@ -757,10 +770,10 @@ function mailchimp_webhook_get($list_id) {
 /**
  * Wrapper around MCAPI->lists->webhookAdd().
  *
- * @string $list_id
- * @string $url
- * @array $actions
- * @array $sources
+ * @param string $list_id
+ * @param string $url
+ * @param array $actions
+ * @param array $sources
  *
  * @return bool
  *   TRUE if deletion was successful, otherwise FALSE.
@@ -784,8 +797,8 @@ function mailchimp_webhook_add($list_id, $url, $actions = array(), $sources = ar
 /**
  * Wrapper around MCAPI->lists->webhookDel().
  * 
- * @string $list_id
- * @string $url
+ * @param string $list_id
+ * @param string $url
  *
  * @return bool
  *   TRUE if deletion was successful, otherwise FALSE.
@@ -811,7 +824,7 @@ function mailchimp_webhook_delete($list_id, $url) {
  *
  * Includes a value indicating whether they are currently a subscribed or not.
  *
- * @string $email
+ * @param string $email
  *
  * @return array
  *   Containing 2 arrays -- one ('lists') of all lists that have made use of
@@ -921,6 +934,7 @@ function mailchimp_process_webhook() {
   watchdog('mailchimp', 'Webhook type @type has been processed.',
     array('@type' => $type), WATCHDOG_INFO
   );
+  return NULL;
 }
 
 /**
@@ -951,13 +965,13 @@ function mailchimp_webhook_url() {
 /**
  * Helper function to generate form elements for a list's interest groups.
  *
- * @array $mc_list
+ * @param array $mc_list
  *   Fully loaded array with mailchimp list settings as returned by
  *   mailchimp_get_list()
- * @array $default_values
+ * @param array $default_values
  *   Array of default values to use if no group subscription values already
  *   exist at Mailchimp.
- * @string $email
+ * @param string $email
  *   Optional email address to pass to the MCAPI and retrieve existing values
  *   for use as defaults.
  *
@@ -1032,10 +1046,10 @@ function mailchimp_reformat_groupings($interest_groups) {
 /**
  * Convert mailchimp form elements to Drupal Form API.
  *
- * @param <mailchimp_form_element> $mergevar
+ * @param array $mergevar
  *   The mailchimp-formatted form element to convert.
  *
- * @return <drupal_form_element>
+ * @return array
  *   A properly formatted drupal form element.
  */
 function mailchimp_insert_drupal_form_tag($mergevar) {
@@ -1054,6 +1068,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
 
       // Creates options, we must delete array keys to have relevant information
       // on MailChimp.
+      $choices = array();
       foreach ($mergevar['choices'] as $choice) {
         $choices[$choice] = $choice;
       }
@@ -1068,6 +1083,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
 
       // Creates options, we must delete array keys to have relevant information
       // on MailChimp.
+      $choices = array();
       foreach ($mergevar['choices'] as $choice) {
         $choices[$choice] = $choice;
       }

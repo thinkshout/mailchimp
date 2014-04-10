@@ -212,6 +212,7 @@ class MailChimpCampaignController extends EntityAPIController {
    * @param bool $revision_id
    */
   protected function attachLoad(&$campaigns, $revision_id = FALSE) {
+    $ids = array();
     if (!empty($campaigns)) {
       foreach ($campaigns as $campaign) {
         $ids[] = $campaign->mc_campaign_id;

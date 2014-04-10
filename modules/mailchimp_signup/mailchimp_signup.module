@@ -128,7 +128,7 @@ function mailchimp_signup_load_multiple($signup_ids = array(), $conditions = arr
 /**
  * Deletes multiple signups by ID.
  *
- * @array $signup_ids
+ * @param array $signup_ids
  *   An array of signup IDs to delete.
  *
  * @return bool
@@ -141,7 +141,7 @@ function mailchimp_signup_delete_multiple($signup_ids) {
 /**
  * Gets an array of all Signups, keyed by the list name.
  *
- * @string $name
+ * @param string $name
  *   If set, the signup with the given name is returned.
  *
  * @return MailchimpSignup[]
@@ -215,6 +215,7 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
   $lists = mailchimp_get_lists($signup->mc_lists);
   $multiple_lists = (count($lists) != 1);
 
+  $list = array();
   if ($multiple_lists) {
     foreach ($lists as $list) {
       // Wrap in a div:

@@ -89,7 +89,8 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
   $form['template_id'] = array(
     '#type' => 'select',
     '#title' => t('Template'),
-    '#description' => t('Select a MailChimp user template to use. Due to a limitation in the API, only templates that do not contain repeating sections are available. If empty, the default template will be applied.'),
+    '#description' => t('Select a MailChimp user template to use. Due to a limitation in the API, only templates that'
+      . ' do not contain repeating sections are available. If empty, the default template will be applied.'),
     '#options' => _mailchimp_campaign_build_option_list(mailchimp_campaign_get_templates()),
     '#default_value' => ($campaign) ? $campaign->mc_data['template_id'] : -1,
     '#ajax' => array(
@@ -275,8 +276,8 @@ function mailchimp_campaign_template_callback($form, $form_state) {
 /**
  * AJAX callback when changing list ID.
  *
- * @param $form
- * @param $form_state
+ * @param array $form
+ * @param array $form_state
  *
  * @return mixed
  */
@@ -287,8 +288,11 @@ function mailchimp_campaign_list_segment_callback($form, $form_state) {
 /**
  * AJAX callback when changing entity type.
  *
- * @param $form
- * @param $form_state
+ * @param array $form
+ * @param array $form_state
+ *
+ * @return array
+ *  Entity form elements array.
  */
 function mailchimp_campaign_entity_type_callback($form, $form_state) {
   return array(
@@ -300,8 +304,8 @@ function mailchimp_campaign_entity_type_callback($form, $form_state) {
 /**
  * Preview callback for mailchimp_campaign_campaign_form().
  *
- * @param $form
- * @param $form_state
+ * @param array $form
+ * @param array $form_state
  */
 function mailchimp_campaign_campaign_preview($form, &$form_state) {
   $text = '';
@@ -317,8 +321,8 @@ function mailchimp_campaign_campaign_preview($form, &$form_state) {
 /**
  * Validation callback for mailchimp_campaign_campaign_form().
  *
- * @param $form
- * @param $form_state
+ * @param array $form
+ * @param array $form_state
  */
 function mailchimp_campaign_campaign_form_validate($form, &$form_state) {
   if (!valid_email_address($form_state['values']['from_email'])) {
@@ -329,8 +333,8 @@ function mailchimp_campaign_campaign_form_validate($form, &$form_state) {
 /**
  * Submit handler for mailchimp_campaign_campaign_form().
  *
- * @param $form
- * @param $form_state
+ * @param array $form
+ * @param array $form_state
  */
 function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
   $values = $form_state['values'];
@@ -465,7 +469,8 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
     foreach ($merge_vars as $var) {
       $html .= '<tr>'
         . '<td>' . $var['name'] . '</td>'
-        . '<td><a id="merge-var-' . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a></td>'
+        . '<td><a id="merge-var-'
+        . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a></td>'
         . '</tr>';
     }
     $html .= '</table>';
@@ -484,9 +489,13 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
 /**
  * List deletion form.
  *
- * @param string $form
- * @param string $form_state
- * @param object $list
+ * @param array $form
+ * @param array $form_state
+ * @param MailChimpCampaign $campaign
+ *  The MailChimp campaign instance.
+ *
+ * @return array
+ *  The form array.
  */
 function mailchimp_campaign_delete_form($form, &$form_state, MailChimpCampaign $campaign) {
   $form_state['campaign'] = $campaign;
@@ -517,9 +526,13 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
 /**
  * List deletion form.
  *
- * @param string $form
- * @param string $form_state
- * @param object $list
+ * @param array $form
+ * @param array $form_state
+ * @param MailChimpCampaign $campaign
+ *   The MailChimp campaign instance.
+ *
+ * @return array
+ *   The form array.
  */
 function mailchimp_campaign_send_form($form, &$form_state, MailChimpCampaign $campaign) {
   $form_state['campaign'] = $campaign;

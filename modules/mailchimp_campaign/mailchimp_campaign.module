@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Module file for mailchimp.
+ */
+
 module_load_include('inc', 'mailchimp_campaign', 'mailchimp_campaign.entity');
 
 /**
@@ -15,7 +20,7 @@ function mailchimp_campaign_permission() {
 }
 
 /**
- * Implements   hook_menu().
+ * Implements hook_menu().
  */
 function mailchimp_campaign_menu() {
   $items['admin/config/services/mailchimp/campaigns'] = array(
@@ -36,7 +41,6 @@ function mailchimp_campaign_menu() {
     'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_ACTION,
   );
-
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign'] = array(
     'title callback' => 'mailchimp_campaign_page_title',
     'title arguments' => array(5),
@@ -103,9 +107,9 @@ function mailchimp_campaign_menu() {
  * Returns entities with titles matching search string.
  *
  * @param string $type
- *  The entity type to limit search to.
+ *   The entity type to limit search to.
  * @param string $string
- *  The string to search entity titles for.
+ *   The string to search entity titles for.
  */
 function mailchimp_campaign_entities_autocomplete_callback($type, $string = '') {
   $query = new EntityFieldQuery();
@@ -135,10 +139,11 @@ function mailchimp_campaign_entities_autocomplete_callback($type, $string = '') 
  *
  * Callback for hook_menu() within system_themes_page().
  *
- * @param @registration
- *   A fully loaded registration object.
+ * @param MailChimpCampaign $campaign
+ *   The MailChimp campaign instance.
  *
  * @return string
+ *   The entity title.
  */
 function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
   return $campaign->label();
@@ -150,7 +155,7 @@ function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
  *
  * @param MailChimpCampaign $campaign
  * @param bool $sent
- *   Whether or not a campaign has been sent.
+ *   Set to TRUE when a campaign has been sent.
  *
  * @return bool
  */
@@ -187,9 +192,10 @@ function mailchimp_campaign_overview_page() {
         'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id),
       $campaign->mc_data['subject'],
       $campaign->mc_data['status'],
-      l($campaign->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list['web_id'], array(
-        'attributes' => array('target' => '_blank'),
-      )),
+      l($campaign->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list['web_id'],
+        array(
+          'attributes' => array('target' => '_blank'),
+        )),
       isset($templates[$campaign->mc_data['template_id']]) ? $templates[$campaign->mc_data['template_id']]['name'] : '',
       $campaign->mc_data['create_time'],
       implode(' | ', $actions)
@@ -231,16 +237,21 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
 /**
  * Save a campaign in MailChimp and as a Drupal entity.
  *
- * @param $template
- * @param $options
- * @param $segment_options
- * @param null $campaign_id
+ * @param array $template
+ *   Associative array of template content indexed by section IDs.
+ * @param array $options
+ *   Associative array of template values.
+ * @param array $segment_options
+ *   Associative array of list segment options.
+ * @param string $campaign_id
+ *   The ID of the campaign to save, if updating.
  *
  * @return string
  *   New or existing campaign ID.
  */
 function mailchimp_campaign_save_campaign($template, $options, $segment_options = NULL, $campaign_id = NULL) {
   $mcapi = mailchimp_get_api_object();
+
   $options += array(
     'generate_text' => TRUE,
     'tracking' => array(
@@ -267,7 +278,8 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
       $result = $mcapi->campaigns->create('regular', $options, $content, $segment_options);
     } catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
-      watchdog('mailchimp_campaign', 'An error occurred while creating this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
+      watchdog('mailchimp_campaign',
+        'An error occurred while creating this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
       return NULL;
     }
     if (isset($result['status']) && ($result['status'] == 'save')) {
@@ -281,7 +293,8 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
       $mcapi->campaigns->update($campaign_id, 'content', $content);
     } catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
-      watchdog('mailchimp_campaign', 'An error occurred while updating this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
+      watchdog('mailchimp_campaign',
+        'An error occurred while updating this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
       return NULL;
     }
   }
@@ -322,25 +335,24 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     $result = $mcapi->campaigns->send($campaign->mc_campaign_id);
   } catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
-    watchdog('mailchimp_campaign', 'An error occurred while sending to this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
+    watchdog('mailchimp_campaign',
+      'An error occurred while sending to this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
     return FALSE;
   }
 
-  if (isset($result['status']) && ($result['status'] == 'error')) {
-    // Display and log error, if any.
-    $message = 'MailChimp error. The campaign was not sent.';
-    _mailchimp_campaign_mcapi_error_message($result, $message);
-
-    return false;
-  }
-  else if (isset($result['complete']) && ($result['complete'] === TRUE)) {
+  if (isset($result['complete']) && ($result['complete'] === TRUE)) {
     // Log action, and notify the user.
     watchdog('mailchimp_campaign', 'MailChimp campaign %name has been sent.',
       array('%name' => $campaign->label())
     );
-
-    return true;
+    return TRUE;
   }
+  else if (isset($result['status']) && ($result['status'] == 'error')) {
+    // Display and log error, if any.
+    $message = 'MailChimp error. The campaign was not sent.';
+    _mailchimp_campaign_mcapi_error_message($result, $message);
+  }
+  return FALSE;
 }
 
 /**
@@ -355,7 +367,8 @@ function mailchimp_campaign_delete_campaign($cid) {
     $result = $mcapi->campaigns->delete($cid);
   } catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
-    watchdog('mailchimp_campaign', 'An error occurred while deleting this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
+    watchdog('mailchimp_campaign',
+      'An error occurred while deleting this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
     return FALSE;
   }
 
@@ -376,7 +389,13 @@ function mailchimp_campaign_delete_campaign($cid) {
 /**
  * Return all available user templates.
  *
- * @return array().
+ * @param string $template_id
+ *   Optional template ID. Set to return a single MailChimp template.
+ * @param bool $reset
+ *   True if templates should not be loaded from cache.
+ *
+ * @return mixed
+ *   Array of MailChimp templates or a single MailChimp template.
  */
 function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get('mailchimp_templates', 'cache_mailchimp');
@@ -466,7 +485,14 @@ function mailchimp_campaign_filter_info() {
 /**
  * Tips callback for mailchimp_campaign_filter_info().
  *
- * @return
+ * @param object $filter
+ *   The filter object containing settings for the given format.
+ * @param object $format
+ *   The text format object assigned to the text to be filtered.
+ * @param bool $long
+ *   Set to TRUE to return a long tip, FALSE for short.
+ *
+ * @return string
  *   Translated text to display as a tip.
  */
 function mailchimp_campaign_filter_tips($filter, $format, $long) {
@@ -492,7 +518,7 @@ function mailchimp_campaign_filter_tips($filter, $format, $long) {
  * @param $cache_id
  *   The ID of the filtered text in {cache_filter}, if $cache is TRUE.
  *
- * @return
+ * @return string
  *   The filtered text.
  */
 function mailchimp_campaign_filter_campaign_process($text, $filter, $format, $langcode, $cache, $cache_id) {
@@ -515,6 +541,7 @@ function mailchimp_campaign_filter_campaign_process($text, $filter, $format, $la
  */
 function mailchimp_campaign_process_callback($matches = array()) {
   $content = '';
+  $entity_type = $entity_id = $view_mode = '';
   foreach ($matches as $key => $match) {
     switch ($key) {
       case 1:
@@ -552,7 +579,8 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
     $response = $mcapi->reports->summary($campaign->mc_campaign_id);
   } catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
-    watchdog('mailchimp_campaign', 'An error occurred getting report data from MailChimp: ' . $e->getMessage(), WATCHDOG_ERROR);
+    watchdog('mailchimp_campaign',
+      'An error occurred getting report data from MailChimp: ' . $e->getMessage(), WATCHDOG_ERROR);
   }
 
   if (empty($response)) {
@@ -560,6 +588,7 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
   }
 
   // tabular summary
+  $rows = array();
   foreach ($response as $key => $stat) {
     if (is_array($stat)) {
       break;
@@ -610,11 +639,11 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
 /**
  * Convert an array of templates into rendered content.
  *
- * @param $template
+ * @param array $template
  *   Array keyed by the section name with a value of the template.
  *
  * @return array
- *   Maintains section key with the value being the rendered content.
+ *   Array of template content indexed by section ID.
  */
 function mailchimp_campaign_render_template($template) {
   $content = array();
@@ -628,13 +657,15 @@ function mailchimp_campaign_render_template($template) {
 }
 
 /**
- * Return MailChimp campaigns.
+ * Get MailChimp campaigns.
  *
- * @param Array $mc_campaign_ids
+ * @param array $mc_campaign_ids
  *   Array of MailChimp campaign IDs.
+ * @param bool $reset
+ *   Set to TRUE if campaigns should not be loaded from cache.
  *
  * @return array
- *   Keyed by campaign ID.
+ *   Associative array of MailChimp campaigns indexed by campaign ID.
  */
 function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
   $mc_campaigns = array();
@@ -655,7 +686,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
     } catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
       watchdog('mailchimp_campaign', 'An error occurred while getting campaigns: ' . $e->getMessage(), WATCHDOG_ERROR);
-      return FALSE;
+      return NULL;
     }
 
     if (isset($response['total']) && $response['total'] > 0) {
@@ -687,7 +718,8 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
     $response = $mcapi->lists->segments($list_id, $type);
   } catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
-    watchdog('mailchimp_campaign', 'An error occurred getting list segments for list ID ' . $list_id . ': ' . $e->getMessage(), WATCHDOG_ERROR);
+    watchdog('mailchimp_campaign',
+      'An error occurred getting list segments for list ID ' . $list_id . ': ' . $e->getMessage(), WATCHDOG_ERROR);
     return NULL;
   }
 

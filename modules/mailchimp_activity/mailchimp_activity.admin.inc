@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Administration pages for mailchimp_campaign module.
+ * Administration pages for mailchimp_activity module.
  */
 
 /**
@@ -132,6 +132,9 @@ function mailchimp_activity_entity_form($form, &$form_state, MailchimpActivityEn
 
 /**
  * Ajax callback for mailchimp_activity_mapping_form().
+ *
+ * @param array $form
+ * @param array $form_state
  */
 function mailchimp_activity_mapping_form_callback($form, &$form_state) {
   return $form['drupal_entity'];
@@ -139,6 +142,9 @@ function mailchimp_activity_mapping_form_callback($form, &$form_state) {
 
 /**
  * Validation callback for mailchimp_activity_entity_form().
+ *
+ * @param array $form
+ * @param array $form_state
  */
 function mailchimp_activity_entity_form_validate($form, &$form_state) {
   $extant_mc_entities = entity_load('mailchimp_activity_entity');
@@ -162,6 +168,9 @@ function mailchimp_activity_entity_form_validate($form, &$form_state) {
 
 /**
  * Submit handler for mailchimp_activity_entity_form().
+ *
+ * @param array $form
+ * @param array $form_state
  */
 function mailchimp_activity_entity_form_submit($form, &$form_state) {
   $dummy_entity = entity_create($form_state['values']['entity_type'], array('type' => $form_state['values']['bundle']));
@@ -174,7 +183,6 @@ function mailchimp_activity_entity_form_submit($form, &$form_state) {
   $uri = entity_uri($form_state['values']['entity_type'], $dummy_entity);
   $values = $form_state['values'];
   $values['entity_path'] = $uri['path'];
-  $activity_entity = array();
   if ($form_state['op'] == 'add' || $form_state['op'] == 'clone') {
     $activity_entity = entity_create('mailchimp_activity_entity', $values);
   }
@@ -194,9 +202,8 @@ function mailchimp_activity_entity_form_submit($form, &$form_state) {
  *
  * @param string $entity_type
  *   Name of entity whose properties to list.
- * @param bool $include_entities
- *   Choose whether or not to include properties of the given entity type that
- *   are themselves also entities.
+ * @param string $entity_bundle
+ *   Optional entity bundle to get properties for.
  *
  * @return array
  *   List of entities that can be used as an #options list.

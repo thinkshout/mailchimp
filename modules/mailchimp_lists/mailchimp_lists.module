@@ -171,6 +171,9 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
 
 /**
  * Submit handler to add emails to lists when editing/creating an entity.
+ *
+ * @param array $form
+ * @param array $form_state
  */
 function mailchimp_lists_subscribe_form_submit($form, &$form_state) {
   mailchimp_lists_process_subscribe_form_choices(
@@ -296,12 +299,18 @@ function mailchimp_lists_mollom_form_info($form_id) {
 }
 
 /**
- * Return all possible Drupal properties for a given entity type.
+ * Get an options list array containing all possible Drupal properties for a given entity type.
  *
  * @param string $entity_type
  *   Name of entity whose properties to list.
  * @param string $entity_bundle
  *   Optional bundle to limit available properties.
+ * @param bool $required
+ *   Set to TRUE if properties are required.
+ * @param string $prefix
+ *   Optional prefix for option IDs in the options list.
+ * @param string $tree
+ *   Optional name of the parent element when this options list is part of a tree.
  *
  * @return array
  *   List of properties that can be used as an #options list.
@@ -475,6 +484,12 @@ function mailchimp_lists_add_to_segment_action_form($context, &$form_state) {
 
 /**
  * Form handler for mailchimp_lists_add_to_segment_action_form().
+ *
+ * @param array $form
+ * @param array $form_state
+ *
+ * @return array
+ *   Array of submitted form values.
  */
 function mailchimp_lists_add_to_segment_action_submit($form, &$form_state) {
   $mc_list_id = $form_state['mc_list_ids'][$form_state['values']['mailchimp_field']];
@@ -492,6 +507,12 @@ function mailchimp_lists_add_to_segment_action_submit($form, &$form_state) {
 
 /**
  * AJAX callback to return segments for a given list.
+ *
+ * @param array $form
+ * @param array $form_state
+ *
+ * @return array
+ *   List segment section of the form.
  */
 function mailchimp_lists_segment_action_callback($form, $form_state) {
   $ret = $form['segment'];
