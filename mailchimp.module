@@ -48,7 +48,7 @@ function mailchimp_menu() {
   $items['admin/config/services/mailchimp/global'] = array(
     'title' => 'Global Settings',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => 10,
+    'weight' => -10,
   );
   $items['admin/config/services/mailchimp/list_cache_clear'] = array(
     'title' => 'MailChimp webhooks endpoint',
