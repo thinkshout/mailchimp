@@ -154,6 +154,7 @@ function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
  * whether or not a campaign has been sent.
  *
  * @param MailChimpCampaign $campaign
+ *   The MailChimp campaign instance.
  * @param bool $sent
  *   Set to TRUE when a campaign has been sent.
  *
@@ -170,7 +171,7 @@ function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
 }
 
 /**
- * Page callback for showing a list of MC Campaign entities.
+ * Page callback for showing a list of MailChimp Campaign entities.
  *
  * @return array
  */
@@ -404,7 +405,7 @@ function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
   if ($cache) {
     $templates = $cache->data;
   }
-  // Query lists from the MC API and store in cache
+  // Query lists from the MailChimp API and store in cache
   else {
     if ($mcapi = mailchimp_get_api_object()) {
       $response = $mcapi->templates->getList(array('user' => TRUE));
@@ -413,7 +414,7 @@ function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
         $info = $mcapi->templates->info($tid);
 
         // exclude templates with repeating content. This is a current
-        // limitation of the MC API as repeating sections cannot be  updated
+        // limitation of the MailChimp API as repeating sections cannot be  updated
         // through the API
         if (!strpos($info['source'], 'mc:repeatable')) {
           $template['info'] = $info;
@@ -569,8 +570,10 @@ function mailchimp_campaign_process_callback($matches = array()) {
  * Page callback for a campaign's statistics.
  *
  * @param MailChimpCampaign $campaign
+ *   The MailChimp campaign instance.
  *
  * @return array
+ *   A renderable array for the campaign stats page.
  */
 function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
   $mcapi = mailchimp_get_api_object();
@@ -705,11 +708,12 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
  * Gets an array of list segments for a given list ID.
  *
  * @param int $list_id
- *  The list ID.
+ *   The list ID.
  * @param string $type
- *  The segment type to get. "static" or "saved"
+ *   The segment type to get. "static" or "saved"
  *
  * @return array
+ *   Array of MailChimp list segments.
  */
 function mailchimp_campaign_get_list_segments($list_id, $type) {
   $mcapi = mailchimp_get_api_object();
@@ -730,12 +734,12 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
  * Tests a list segment, returning the number of subscribers contained in the segment.
  *
  * @param $list_id
- *  The list ID.
+ *   The list ID.
  * @param $list_segment_id
- *  The list segment ID.
+ *   The list segment ID.
  *
  * @return int
- *  The number of subscribers contained in the segment.
+ *   The number of subscribers contained in the segment.
  */
 function mailchimp_test_list_segment($list_id, $list_segment_id) {
   $mcapi = mailchimp_get_api_object();

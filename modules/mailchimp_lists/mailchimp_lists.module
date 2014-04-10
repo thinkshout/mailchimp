@@ -564,10 +564,10 @@ function mailchimp_lists_add_to_segment_action_views_bulk_operations_form($optio
  * and required setting.
  *
  * @param array $list_ids
- *  The IDs of lists to get merge tags for.
+ *   The IDs of lists to get merge tags for.
  *
  * @return array
- *  Array of merge vars indexed by list ID.
+ *   Array of merge vars indexed by list ID.
  */
 function mailchimp_lists_get_merge_vars(array $list_ids) {
   $mcapi = mailchimp_get_api_object();

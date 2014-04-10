@@ -206,7 +206,7 @@ class MailChimpCampaign extends Entity {
 class MailChimpCampaignController extends EntityAPIController {
 
   /**
-   * Implement in order to attach MC data to campaign entities.
+   * Implement in order to attach MailChimp data to campaign entities.
    *
    * @param $campaigns
    * @param bool $revision_id
@@ -237,9 +237,10 @@ class MailChimpCampaignController extends EntityAPIController {
   }
 
   /**
-   * Implement to clear MC campaign data caches.
+   * Implement to clear MailChimp campaign data caches.
    *
-   * @param array|null $ids
+   * @param array $ids
+   *   Optional array of campaign IDs to clear cache for.
    */
   public function resetCache(array $ids = NULL) {
     parent::resetCache($ids);

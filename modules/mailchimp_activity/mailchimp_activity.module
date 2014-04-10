@@ -94,8 +94,8 @@ function mailchimp_activity_load_entities($name = NULL) {
 
 /**
  * Get the MailChimp member activity for a given email address and list. Results
- * are cached in the cache_mailchimp_user bin which is cleared by the MC web
- * hooks system when needed.
+ * are cached in the cache_mailchimp_user bin which is cleared by the MailChimp
+ * web hooks system when needed.
  *
  * @param string $list_id
  *   The MailChimp list to get activity for.
@@ -115,7 +115,7 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
   if ($cache && isset($cache->data[$email])) {
     $memberactivity = $cache->data[$email];
   }
-  // Query lists from the MC API and store in cache
+  // Query lists from the MailChimp API and store in cache
   else {
     $mcapi = mailchimp_get_api_object();
 

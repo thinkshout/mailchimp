@@ -259,8 +259,8 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
 /**
  * Get the MailChimp member info for a given email address and list.
  *
- * Results are cached in the cache_mailchimp bin which is cleared by the MC
- * web hooks system when needed.
+ * Results are cached in the cache_mailchimp bin which is cleared by the
+ * MailChimp web hooks system when needed.
  *
  * @param string $list_id
  *   The MailChimp list ID to get member info for.
