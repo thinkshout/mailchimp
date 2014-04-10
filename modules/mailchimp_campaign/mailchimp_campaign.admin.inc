@@ -89,7 +89,8 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
   $form['template_id'] = array(
     '#type' => 'select',
     '#title' => t('Template'),
-    '#description' => t('Select a MailChimp user template to use. Due to a limitation in the API, only templates that do not contain repeating sections are available. If empty, the default template will be applied.'),
+    '#description' => t('Select a MailChimp user template to use. Due to a limitation in the API, only templates that'
+      . ' do not contain repeating sections are available. If empty, the default template will be applied.'),
     '#options' => _mailchimp_campaign_build_option_list(mailchimp_campaign_get_templates()),
     '#default_value' => ($campaign) ? $campaign->mc_data['template_id'] : -1,
     '#ajax' => array(
@@ -195,7 +196,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
   if ($mc_template) {
     foreach ($mc_template['info']['default_content'] as $section => $content) {
       // Set the default value and text format to either saved campaign values
-      // or defaults coming from the MC template.
+      // or defaults coming from the MailChimp template.
       $default_value = $content;
       $format = 'mailchimp_campaign';
       if ($campaign && $campaign->template['html_' . $section]) {
@@ -275,8 +276,8 @@ function mailchimp_campaign_template_callback($form, $form_state) {
 /**
  * AJAX callback when changing list ID.
  *
- * @param $form
- * @param $form_state
+ * @param array $form
+ * @param array $form_state
  *
  * @return mixed
  */
@@ -287,8 +288,11 @@ function mailchimp_campaign_list_segment_callback($form, $form_state) {
 /**
  * AJAX callback when changing entity type.
  *
- * @param $form
- * @param $form_state
+ * @param array $form
+ * @param array $form_state
+ *
+ * @return array
+ *  Entity form elements array.
  */
 function mailchimp_campaign_entity_type_callback($form, $form_state) {
   return array(
@@ -300,8 +304,8 @@ function mailchimp_campaign_entity_type_callback($form, $form_state) {
 /**
  * Preview callback for mailchimp_campaign_campaign_form().
  *
- * @param $form
- * @param $form_state
+ * @param array $form
+ * @param array $form_state
  */
 function mailchimp_campaign_campaign_preview($form, &$form_state) {
   $text = '';
@@ -317,8 +321,8 @@ function mailchimp_campaign_campaign_preview($form, &$form_state) {
 /**
  * Validation callback for mailchimp_campaign_campaign_form().
  *
- * @param $form
- * @param $form_state
+ * @param array $form
+ * @param array $form_state
  */
 function mailchimp_campaign_campaign_form_validate($form, &$form_state) {
   if (!valid_email_address($form_state['values']['from_email'])) {
@@ -329,8 +333,8 @@ function mailchimp_campaign_campaign_form_validate($form, &$form_state) {
 /**
  * Submit handler for mailchimp_campaign_campaign_form().
  *
- * @param $form
- * @param $form_state
+ * @param array $form
+ * @param array $form_state
  */
 function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
   $values = $form_state['values'];
@@ -379,7 +383,7 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
  * be used to import content into templates.
  *
  * @return array
- *  Filtered entities from entity_get_info().
+ *   Filtered entities from entity_get_info().
  */
 function _mailchimp_campaign_get_entities_for_content_import() {
   $entity_info = entity_get_info();
@@ -400,9 +404,9 @@ function _mailchimp_campaign_get_entities_for_content_import() {
  * be used to import content into templates.
  *
  * @param $entity_info
- *  Array of entities as returned by entity_get_info().
+ *   Array of entities as returned by entity_get_info().
  * @return array
- *  Associative array of entity IDs to name.
+ *   Associative array of entity IDs to name.
  */
 function _mailchimp_campaign_build_entity_option_list($entity_info) {
   $options = array();
@@ -417,9 +421,9 @@ function _mailchimp_campaign_build_entity_option_list($entity_info) {
  * Returns an options list of entity view modes.
  *
  * @param $entity
- *  Array of entity data as returned by entity_get_info().
+ *   Array of entity data as returned by entity_get_info().
  * @return array
- *  Associative array of view mode IDs to name.
+ *   Associative array of view mode IDs to name.
  */
 function _mailchimp_campaign_build_entity_view_mode_option_list(array $entity) {
   $options = array();
@@ -434,11 +438,11 @@ function _mailchimp_campaign_build_entity_view_mode_option_list(array $entity) {
  * Returns an options list for a given array of items.
  *
  * @param array $list
- *  Array of item data containing 'id' and 'name' properties.
+ *   Array of item data containing 'id' and 'name' properties.
  * @param string $no_selection_label
- *  The option value to display when no option is selected.
+ *   The option value to display when no option is selected.
  * @return array
- *  Associative array of item IDs to name.
+ *   Associative array of item IDs to name.
  */
 function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- Select --') {
   $options = array('' => t($no_selection_label));
@@ -453,9 +457,9 @@ function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- 
  * Builds a HTML string used to render merge vars on the campaign form.
  *
  * @param array $merge_vars
- *  Array of merge vars. @see mailchimp_lists_get_merge_vars
+ *   Array of merge vars. @see mailchimp_lists_get_merge_vars
  * @return string
- *  HTML string containing formatted merge vars.
+ *   HTML string containing formatted merge vars.
  */
 function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
   $html = '';
@@ -465,7 +469,8 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
     foreach ($merge_vars as $var) {
       $html .= '<tr>'
         . '<td>' . $var['name'] . '</td>'
-        . '<td><a id="merge-var-' . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a></td>'
+        . '<td><a id="merge-var-'
+        . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a></td>'
         . '</tr>';
     }
     $html .= '</table>';
@@ -484,9 +489,13 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
 /**
  * List deletion form.
  *
- * @param string $form
- * @param string $form_state
- * @param object $list
+ * @param array $form
+ * @param array $form_state
+ * @param MailChimpCampaign $campaign
+ *   The MailChimp campaign instance.
+ *
+ * @return array
+ *   The form array.
  */
 function mailchimp_campaign_delete_form($form, &$form_state, MailChimpCampaign $campaign) {
   $form_state['campaign'] = $campaign;
@@ -517,9 +526,13 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
 /**
  * List deletion form.
  *
- * @param string $form
- * @param string $form_state
- * @param object $list
+ * @param array $form
+ * @param array $form_state
+ * @param MailChimpCampaign $campaign
+ *   The MailChimp campaign instance.
+ *
+ * @return array
+ *   The form array.
  */
 function mailchimp_campaign_send_form($form, &$form_state, MailChimpCampaign $campaign) {
   $form_state['campaign'] = $campaign;

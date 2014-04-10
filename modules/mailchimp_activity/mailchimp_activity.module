@@ -79,11 +79,13 @@ function mailchimp_activity_access(MailchimpActivityEntity $mailchimp_activity_e
 }
 
 /**
- * Loads a single mailchimp_activity_entity or all of them if no name provided.
+ * Loads a single or multiple instances of MailChimpActivityEntity.
  *
- * @param null $name
+ * @param string $name
+ *   Optional name of the MailChimpActivityEntity instance to load.
  *
- * @return array
+ * @return mixed
+ *   Array of MailchimpActivityEntity instances or single instance if $name is set.
  */
 function mailchimp_activity_load_entities($name = NULL) {
   $types = entity_load_multiple_by_name('mailchimp_activity_entity', isset($name) ? array($name) : FALSE);
@@ -91,15 +93,19 @@ function mailchimp_activity_load_entities($name = NULL) {
 }
 
 /**
- * Get the MailChimp memberactivity for a given email address and list. Results
- * are cached in the cache_mailchimp_user bin which is cleared by the MC web
- * hooks system when needed.
+ * Get the MailChimp member activity for a given email address and list. Results
+ * are cached in the cache_mailchimp_user bin which is cleared by the MailChimp
+ * web hooks system when needed.
  *
  * @param string $list_id
+ *   The MailChimp list to get activity for.
  * @param string $email
+ *   The MailChimp user email address to get activity for.
  * @param bool $reset
+ *   Set to TRUE if member activity should not be loaded from cache.
  *
- * @return array memberactivity
+ * @return array
+ *   Associative array of MailChimp member activity.
 */
 function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get("mailchimp_activity_{$list_id}");
@@ -109,7 +115,7 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
   if ($cache && isset($cache->data[$email])) {
     $memberactivity = $cache->data[$email];
   }
-  // Query lists from the MC API and store in cache
+  // Query lists from the MailChimp API and store in cache
   else {
     $mcapi = mailchimp_get_api_object();
 
@@ -150,10 +156,13 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
 /**
  * Content for the mailchimp log tab on entity instance pages.
  *
- * @param $entity
- * @param $mailchimp_activity_entity
+ * @param object $entity
+ *   The entity this page is being generated for.
+ * @param MailchimpActivityEntity $mailchimp_activity_entity
+ *   The MailChimpActivityEntity instance for this page.
  *
- * @return array (renderable)
+ * @return array
+ *   Render array for the activity page.
  */
 function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_activity_entity) {
   $entity_wrapper = entity_metadata_wrapper($mailchimp_activity_entity->entity_type, $entity);
@@ -226,13 +235,14 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
   return $display;
 }
 
-
 /**
- * Return all activity on all lists for a given email address
+ * Return all activity on all lists for a given email address.
  *
  * @param string $email
+ *   The email address to get activity for.
  *
- * @return $array
+ * @return array
+ *   Array of MailChimp activity for the email address.
  */
 function mailchimp_activity_get_all_activity($email) {
   $all_activity = array();

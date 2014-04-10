@@ -92,9 +92,9 @@
      * Inserts a token at the last selected point in a text field element.
      *
      * @param object target_element
-     *  The text field element to insert the token into.
+     *   The text field element to insert the token into.
      * @param string token
-     *  The token to insert.
+     *   The token to insert.
      */
     addTokenToElement: function(target_element, token) {
       // IE support.

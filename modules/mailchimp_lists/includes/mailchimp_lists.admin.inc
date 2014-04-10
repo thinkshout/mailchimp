@@ -101,6 +101,9 @@ function mailchimp_lists_webhook_form($form, &$form_state, $list_id, $action) {
 
 /**
  * Submit handler for mailchimp_lists_webhook_form().
+ *
+ * @param array $form
+ * @param array $form_state
  */
 function mailchimp_lists_webhook_form_submit($form, &$form_state) {
   $list_id = $form_state['list']['id'];

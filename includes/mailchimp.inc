@@ -34,10 +34,8 @@ class DrupalMailchimp extends Mailchimp {
     $this->apikey = $apikey;
     $dc = "us1";
     if (strstr($this->apikey, "-")) {
-      list($key, $dc) = explode("-", $this->apikey, 2);
-      if (!$dc) {
-        $dc = "us1";
-      }
+      $key_parts = explode("-", $this->apikey, 2);
+      $dc = (isset($key_parts[1]))? $key_parts[1] : 'us1';
     }
     $this->root = str_replace('https://api', 'https://' . $dc . '.api', $this->root);
     $this->root = rtrim($this->root, '/') . '/';
