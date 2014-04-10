@@ -1,0 +1,156 @@
+<?php
+/**
+ * @file
+ * Test class and methods for the Mailchimp Lists module.
+ */
+
+define('MAILCHIMP_TESTLIST_REQUIRED', 'required');
+define('MAILCHIMP_TESTLIST_OPTIONAL', 'optional');
+define('MAILCHIMP_TESTLIST_ANONYMOUS', 'anonymous');
+
+class MailchimpListsTestCase extends DrupalWebTestCase {
+
+  /**
+   * Returns info displayed in the test interface.
+   *
+   * @return array
+   *   Formatted as specified by simpletest.
+   */
+  public static function getInfo() {
+    // Note: getInfo() strings are not translated with t().
+    return array(
+      'name' => 'Mailchimp Lists',
+      'description' => 'Test List Subscription Logic.',
+      'group' => 'MailChimp',
+    );
+  }
+
+  /**
+   * Pre-test setup function.
+   *
+   * Enables dependencies, sets the mailchimp_api_key to the test-mode key, and
+   * sets up the 3 mailchimp_lists entities used in our tests:
+   *
+   * anonymous_test_list entity attaches to the Mailchimp List test_list_A
+   *
+   * optional_test_list entity attaches to the Mailchimp List test_list_B
+   *
+   * required_test_list entity attaches to the Mailchimp List test_list_C
+   */
+  public function setUp() {
+    // Use a profile that contains required modules:
+    $prof = drupal_get_profile();
+    $this->profile = $prof;
+    // Enable modules required for the test.
+    $enabled_modules = array(
+      'libraries',
+      'mailchimp',
+      'entity',
+      'entity_token',
+      'mailchimp_lists',
+    );
+    parent::setUp($enabled_modules);
+    variable_set('mailchimp_api_classname', 'MailChimpTest');
+
+    // Create some users with different roles/permissions.
+    $this->authorized_user = $this->drupalCreateUser(array());
+    // Create some lists.
+    $lists = $this->getTestLists();
+
+    cache_set('mailchimp_lists', $lists, 'cache_mailchimp', CACHE_PERMANENT);
+  }
+
+  /**
+   * Tests list activity stats.
+   */
+  public function testActivity() {
+    // TODO: Populate test.
+    $this->assertEqual(1, 1);
+  }
+
+  /**
+   * Helper function to set the Cron setting on the test lists.
+   *
+   * @boolean $flag
+   *   Whatever value you want to set the Cron settigs to.
+   */
+  protected function setListsCron($flag) {
+    //$lists = mailchimp_lists_load_multiple();
+    //foreach ($lists as $list) {
+      //$list->settings['cron'] = $flag;
+      // TODO: Cache lists in DB.
+      //mailchimp_lists_save($list);
+    //}
+  }
+
+  /**
+   * Helper function to generate a random email address.
+   *
+   * @return string
+   *   approximate email format
+   */
+  protected function randomEmail() {
+    return $this->randomName() . "@" . $this->randomName() . ".net";
+  }
+
+  /**
+   * Return an array of lists keyed by machine name to use in testing.
+   *
+   * @return array
+   */
+  protected function getTestLists() {
+    $lists = array();
+
+    $list = new stdClass();
+    $list->label = 'Anonymous Test List';
+    $list->name = 'anonymous_test_list';
+    $list->description = 'Anonymous list description';
+    $list->mc_list_id = MAILCHIMP_TESTLIST_ANONYMOUS;
+    $list->settings = array(
+      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID, DRUPAL_ANONYMOUS_RID => DRUPAL_ANONYMOUS_RID),
+      'mergefields' => array('EMAIL'),
+      'mergefields_display' => array('EMAIL' => TRUE),
+      'cron' => FALSE,
+      'doublein' => FALSE,
+      'include_interest_groups' => FALSE,
+      'required' => FALSE,
+      'allow_anonymous' => TRUE,
+    );
+    $lists[$list->name] = $list;
+
+    $list = new stdClass();
+    $list->label = 'Optional Test List';
+    $list->name = 'optional_test_list';
+    $list->description = 'Optional list description';
+    $list->mc_list_id = MAILCHIMP_TESTLIST_OPTIONAL;
+    $list->settings = array(
+      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID),
+      'mergefields' => array(''),
+      'cron' => FALSE,
+      'show_account_form' => TRUE,
+      'doublein' => FALSE,
+      'include_interest_groups' => FALSE,
+      'required' => FALSE,
+      'allow_anonymous' => FALSE,
+    );
+    $lists[$list->name] = $list;
+
+    $list = new stdClass();
+    $list->label = 'Required Test List';
+    $list->name = 'required_test_list';
+    $list->description = 'Required list description';
+    $list->mc_list_id = MAILCHIMP_TESTLIST_REQUIRED;
+    $list->settings = array(
+      'roles' => array(DRUPAL_AUTHENTICATED_RID => DRUPAL_AUTHENTICATED_RID),
+      'mergefields' => array(),
+      'cron' => FALSE,
+      'doublein' => FALSE,
+      'include_interest_groups' => FALSE,
+      'required' => TRUE,
+      'allow_anonymous' => FALSE,
+    );
+    $lists[$list->name] = $list;
+
+    return $lists;
+  }
+}
