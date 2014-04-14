@@ -5,9 +5,22 @@
  */
 
 class MailChimpTest extends MailChimp {
+
   /**
-   * @var Mailchimp_ListsTest
-   * @access public
+   * @var Mailchimp_ListsTest $lists
    */
-  var $lists;
+  public $lists;
+
+  /**
+   * @var Mailchimp CampaignsTest $campaigns
+   */
+  public $campaigns;
+
+  public function __construct($apikey=null, $opts=array()) {
+    parent::_construct($apikey, $opts);
+
+    $this->lists = new MailChimp_ListsTest();
+    $this->campaigns = new MailChimp_CampaignsTest();
+  }
+
 }

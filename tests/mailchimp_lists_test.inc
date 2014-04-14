@@ -12,6 +12,10 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
   /** @var string $errorMessage */
   public $errorMessage;
 
+  public function __construct(MailChimpTest $master) {
+    parent::__construct($master);
+  }
+
   /**
    * @see Mailchimp_Lists::memberInfo()
    */
