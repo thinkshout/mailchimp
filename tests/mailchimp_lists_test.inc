@@ -9,6 +9,9 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
   const MAILCHIMP_TEST_LIST_B = 'mailchimp_test_list_b';
   const MAILCHIMP_TEST_LIST_C = 'mailchimp_test_list_c';
 
+  /** @var string $errorMessage */
+  public $errorMessage;
+
   /**
    * @see Mailchimp_Lists::memberInfo()
    */
@@ -20,14 +23,58 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
    * @see Mailchimp_Lists::subscribe()
    */
   public function subscribe($id, $email, $merge_vars=null, $email_type='html', $double_optin=true, $update_existing=false, $replace_interests=true, $send_welcome=false) {
-    // TODO: Populate method.
+    $lists = $this->loadLists();
+    if (isset($lists[$id])) {
+      if (isset($lists[$id]['data'][$email])) {
+        $lists[$id]['data'][$email]['subscribed'] = TRUE;
+      }
+      else {
+        $lists[$id]['data'][$email] = array(
+          'subscribed' => TRUE,
+          'email_type' => $email_type,
+          'merge_vars' => $merge_vars,
+        );
+      }
+      $this->writeLists($lists);
+
+      return TRUE;
+    }
+    else {
+      $this->errorMessage = 'Could not add ' . $email . ' to non-existant list: ' . $id;
+      return FALSE;
+    }
   }
 
   /**
    * @see Mailchimp_Lists::unsubscribe()
    */
   public function unsubscribe($id, $email, $delete_member=false, $send_goodbye=true, $send_notify=true) {
-    // TODO: Populate method.
+    $lists = $this->loadLists();
+    if (isset($lists[$id])) {
+      if (isset($lists[$id]['data'][$email])) {
+        if ($lists[$id]['data'][$email]['subscribed']) {
+          if ($delete_member) {
+            unset($lists[$id]['data'][$email]);
+          }
+          else {
+            $lists[$id]['data'][$email]['subscribed'] = FALSE;
+          }
+          $this->writeLists($lists);
+
+          return TRUE;
+        }
+        else {
+          $this->errorMessage = 'Could not unsubscribe ' . $email . ' from: ' . $id . ': not currently subscribed.';
+        }
+      }
+      else {
+        $this->errorMessage = 'Could not unsubscribe ' . $email . ' from: ' . $id . ': address not on list';
+      }
+    }
+    else {
+      $this->errorMessage = 'Could not unsubscribe ' . $email . ' from non-existant list: ' . $id;
+    }
+    return FALSE;
   }
 
   /**
