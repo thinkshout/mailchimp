@@ -58,6 +58,28 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
   }
 
   /**
+   * Tests retrieval of a specific set of lists.
+   */
+  public function testMultiListRetrieval() {
+
+    $list_ids = array(
+      'mailchimp_test_list_a',
+      'mailchimp_test_list_b',
+    );
+
+    $lists = mailchimp_get_lists($list_ids);
+
+    $this->assertEqual(count($lists), 2, 'Tested correct list count on retrieval.');
+
+    foreach ($list_ids as $list_id) {
+      $this->assertEqual((isset($lists[$list_id])), true, 'Tested valid list ID retrieved: ' . $list_id);
+      unset($lists[$list_id]);
+    }
+
+    $this->assertEqual(count($lists), 0, 'Tested all lists retrieved.');
+  }
+
+  /**
    * Tests list subscription.
    */
   public function testSubscription() {
