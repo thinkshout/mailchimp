@@ -267,7 +267,7 @@ function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type
         }
         $object = $object->{$element};
       }
-      $mergevars[$label] = isset($objects) ? $object->value(): NULL;
+      $mergevars[$label] = isset($object) ? $object->value(): NULL;
     }
   }
   drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
