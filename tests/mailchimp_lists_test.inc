@@ -94,11 +94,8 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
 
     foreach ($lists as $list_id => $list_data) {
       $list_data['id'] = $list_id;
-      $response['data'][] = array(
-        'id' => $list_id,
-        'name' => $list_data['name'],
-      );
-      $response['count']++;
+      $response['data'][] = $list_data;
+      $response['total']++;
     }
 
     return $response;
@@ -158,20 +155,29 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
       'public' => TRUE,
     );
     $lists = array(
-      MAILCHIMP_TEST_LIST_A => array(
+      self::MAILCHIMP_TEST_LIST_A => array(
         'name' => 'Test List A',
         'data' => array(),
         'mergevars' => $default_mergevars,
+        'stats' => array(
+          'group_count' => 0,
+        ),
       ),
-      MAILCHIMP_TEST_LIST_B => array(
+      self::MAILCHIMP_TEST_LIST_B => array(
         'name' => 'Test List B',
         'data' => array(),
         'mergevars' => $default_mergevars,
+        'stats' => array(
+          'group_count' => 0,
+        ),
       ),
-      MAILCHIMP_TEST_LIST_C => array(
+      self::MAILCHIMP_TEST_LIST_C => array(
         'name' => 'Test List C',
         'data' => array(),
         'mergevars' => $default_mergevars,
+        'stats' => array(
+          'group_count' => 0,
+        ),
       ),
     );
     return $lists;

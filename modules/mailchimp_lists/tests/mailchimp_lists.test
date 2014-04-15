@@ -25,15 +25,7 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    * Pre-test setup function.
    *
    * Enables dependencies.
-   * Creates sign-up forms.
    * Sets the mailchimp_api_key to the test-mode key.
-   * Sets up the 3 mailchimp_lists entities used in our tests:
-   *
-   * anonymous_test_list entity attaches to the Mailchimp List test_list_A
-   *
-   * optional_test_list entity attaches to the Mailchimp List test_list_B
-   *
-   * required_test_list entity attaches to the Mailchimp List test_list_C
    */
   public function setUp() {
     // Use a profile that contains required modules:
@@ -50,12 +42,19 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
     parent::setUp($enabled_modules);
     variable_set('mailchimp_api_classname', 'MailChimpTest');
 
+    variable_set('mailchimp_api_key', 'MAILCHIMP_TEST_API_KEY');
+
     // Create some users with different roles/permissions.
     $this->authorized_user = $this->drupalCreateUser(array());
-    // Create some lists.
-    $lists = $this->getTestLists();
+  }
 
-    cache_set('mailchimp_lists', $lists, 'cache_mailchimp', CACHE_PERMANENT);
+  /**
+   * Tests retrieval of a specific list.
+   */
+  public function testListRetrieval() {
+    $list = mailchimp_get_list('mailchimp_test_list_a');
+
+    $this->assertEqual($list['id'], 'mailchimp_test_list_a', 'Tested list retrieval.');
   }
 
   /**
