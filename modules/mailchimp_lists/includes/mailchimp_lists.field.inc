@@ -396,7 +396,7 @@ function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance,
     if (isset($choices['subscribe'])) {
       mailchimp_lists_process_subscribe_form_choices($choices, $instance, $field, $entity);
     }
-    elseif ($entity->is_new_revision) {
+    elseif (isset($entity->is_new_revision) && $entity->is_new_revision) {
       // If this user is subscribed, check for updated merge field values:
       $email = mailchimp_lists_load_email($instance, $entity);
       if ($email && mailchimp_is_subscribed($field['settings']['mc_list_id'], $email)) {
@@ -431,6 +431,5 @@ function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance,
         }
       }
     }
-    // @todo: if email address has changed, do we unsubscribe the old one?
   }
 }
