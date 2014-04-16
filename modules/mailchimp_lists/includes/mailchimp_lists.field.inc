@@ -122,7 +122,7 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
 function mailchimp_lists_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   if ($instance['required'] && $entity !== NULL) {
     foreach ($items as $delta => $item) {
-      if (!$item['options']['subscribe']) {
+      if (!$item['subscribe']) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
           'error' => 'mailchimp_lists_required',
           'message' => t('Subscription to Mailchimp List %name is required.', array('%name' => $instance['label'])),
@@ -162,7 +162,7 @@ function mailchimp_lists_field_widget_info() {
  * Implements hook_field_widget_form().
  */
 function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  $default = isset($instance['default_value'][0]['options']['subscribe']) ? $instance['default_value'][0]['options']['subscribe'] : FALSE;
+  $default = isset($instance['default_value'][0]['subscribe']) ? $instance['default_value'][0]['subscribe'] : FALSE;
   $email = NULL;
   if (isset($element['#entity'])) {
     $email = mailchimp_lists_load_email($instance, $element['#entity'], FALSE);
@@ -189,14 +189,14 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
       '#weight' => 100,
       '#states' => array(
         'invisible' => array(
-          ':input[name="' . $field['field_name'] . '[' . $langcode . '][0][options][subscribe]"]' => array('checked' => FALSE),
+          ':input[name="' . $field['field_name'] . '[' . $langcode . '][0][subscribe]"]' => array('checked' => FALSE),
         ),
       ),
     );
-    $groups_default = isset($instance['default_value'][0]['options']['interest_groups']) ? $instance['default_value'][0]['options']['interest_groups'] : array();
+    $groups_default = isset($instance['default_value'][0]['interest_groups']) ? $instance['default_value'][0]['interest_groups'] : array();
     $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
   }
-  return array('options' => $element);
+  return $element;
 }
 
 /**
@@ -372,8 +372,8 @@ function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance,
   if ($field['type'] == 'mailchimp_lists_subscription') {
     $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
     $choices = $entity_wrapper->{$instance['field_name']}->value();
-    if (isset($choices['options'])) {
-      mailchimp_lists_process_subscribe_form_choices($choices['options'], $instance, $field, $entity);
+    if (isset($choices['subscribe'])) {
+      mailchimp_lists_process_subscribe_form_choices($choices, $instance, $field, $entity);
     }
     elseif ($entity->is_new_revision) {
       // If this user is subscribed, check for updated merge field values:
