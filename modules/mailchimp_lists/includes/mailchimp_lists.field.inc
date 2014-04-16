@@ -375,6 +375,41 @@ function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance,
     if (isset($choices['options'])) {
       mailchimp_lists_process_subscribe_form_choices($choices['options'], $instance, $field, $entity);
     }
+    elseif ($entity->is_new_revision) {
+      // If this user is subscribed, check for updated merge field values:
+      $email = mailchimp_lists_load_email($instance, $entity);
+      if ($email && mailchimp_is_subscribed($field['settings']['mc_list_id'], $email)) {
+        $update = FALSE;
+        $old_entity_wrapper = entity_metadata_wrapper($entity_type, $entity->original);
+        foreach ($instance['settings']['mergefields'] as $property) {
+          $elements = explode(':', $property);
+          $new_object = $entity_wrapper;
+          $old_object = $old_entity_wrapper;
+          foreach ($elements as $element) {
+            if ($new_object instanceof EntityListWrapper) {
+              $new_object = $new_object[0];
+              $old_object = $old_object[0];
+            }
+            if ($new_object->value() === NULL || !isset($new_object->{$element})) {
+              $new_object = NULL;
+              break;
+            }
+            $new_object = $new_object->{$element};
+            $old_object = $old_object->{$element};
+          }
+          if (isset($new_object)) {
+            $update = $new_object->value() !== $old_object->value();
+          }
+          if ($update) {
+            break;
+          }
+        }
+        if ($update) {
+          $mergevars = _mailchimp_lists_mergevars_populate($instance['settings']['mergefields'], $entity, $entity_type);
+          mailchimp_update_member($field['settings']['mc_list_id'], $email, $mergevars);
+        }
+      }
+    }
     // @todo: if email address has changed, do we unsubscribe the old one?
   }
 }
