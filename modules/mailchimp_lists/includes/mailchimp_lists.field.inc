@@ -356,10 +356,31 @@ function mailchimp_lists_subscription_property_info_callback(&$info, $entity_typ
   $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$name];
 
   $property['type'] = 'mailchimp_lists_subscription';
-  $property['getter callback'] = 'entity_metadata_field_verbatim_get';
+  $property['getter callback'] = 'mailchimp_lists_field_get';
   $property['setter callback'] = 'entity_metadata_field_verbatim_set';
 
   unset($property['query callback']);
+}
+
+/**
+ * Entity field data callback for mailchimp subscription fields.
+ */
+function mailchimp_lists_field_get($entity, array $options, $name, $entity_type, &$context) {
+  $verbatim = entity_metadata_field_verbatim_get($entity, $options, $name, $entity_type, $context);
+  // If we're creating or updating field values they shouldn't be mucked with:
+  if (isset($verbatim['subscribe'])) {
+    return $verbatim;
+  }
+  $email = mailchimp_lists_load_email($context['instance'], $entity);
+  $subscribed = mailchimp_is_subscribed($context['field']['settings']['mc_list_id'], $email);
+  $val = array('subscribe' => $subscribed);
+  if ($context['instance']['settings']['show_interest_groups']) {
+    $mc_list = mailchimp_get_list($context['field']['settings']['mc_list_id']);
+    if (isset($mc_list['intgroups'])) {
+      $val['interest_groups'] = mailchimp_interest_groups_form_elements($mc_list, array(), $email);
+    }
+  }
+  return $val;
 }
 
 /**
