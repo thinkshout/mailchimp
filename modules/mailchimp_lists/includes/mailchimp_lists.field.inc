@@ -109,7 +109,7 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
       '#title' => check_plain($mergevar['name']),
       '#default_value' => array_key_exists($default_value, $fields_flat) ? $default_value : '',
       '#required' => $mergevar['req'],
-      '#options' => $mergevar['req'] ? $required_fields : $fields,
+      '#options' => (!$mergevar['req'] || $mergevar['tag'] === 'EMAIL') ? $fields : $required_fields,
     );
   }
 
