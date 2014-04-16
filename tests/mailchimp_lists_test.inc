@@ -20,20 +20,97 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
    * @see Mailchimp_Lists::memberInfo()
    */
   public function memberInfo($id, $emails) {
-    // TODO: Populate method.
+    $lists = $this->loadLists();
+
+    $response = array(
+      'success_count' => 0,
+      'error_count' => 0,
+      'data' => array(),
+    );
+    foreach ($lists as $list_data) {
+      if (isset($list_data['data']['members'])) {
+        $response['success_count'] += count($list_data['data']['members']);
+        foreach ($emails as $email) {
+          $email_address = $email['email'];
+          if (isset($list_data['data']['members'][$email_address])) {
+            $member_data = $list_data['data']['members'][$email_address];
+            $response['data'][] = array(
+              'id' => $email_address,
+              'email' => $email_address,
+              'email_type' => $member_data['email_type'],
+              'status' => 'subscribed',
+            );
+          }
+        }
+      }
+    }
+    return $response;
+  }
+
+  /**
+   * @see Mailchimp_Lists::mergeVars()
+   */
+  public function mergeVars($id) {
+    $lists = $this->loadLists();
+
+    $response = array(
+      'success_count' => 1,
+      'error_count' => 0,
+      'data' => array(),
+    );
+    foreach ($lists as $list_id => $list_data) {
+      if (in_array($list_id, $id)) {
+        $response['data'][] = array(
+          'id' => $list_id,
+          'name' => $list_data['name'],
+          'merge_vars' => $list_data['merge_vars'],
+        );
+      }
+    }
+    return $response;
+  }
+
+  /**
+   * @see Mailchimp_Lists::segments()
+   */
+  public function segments($id, $type=null) {
+
+  }
+
+  /**
+   * @see Mailchimp_Lists::segmentAdd()
+   */
+  public function segmentAdd($id, $opts) {
+
+  }
+
+  /**
+   * @see Mailchimp_Lists::staticSegmentMembersAdd()
+   */
+  public function staticSegmentMembersAdd($id, $seg_id, $batch) {
+
   }
 
   /**
    * @see Mailchimp_Lists::subscribe()
    */
   public function subscribe($id, $email, $merge_vars=null, $email_type='html', $double_optin=true, $update_existing=false, $replace_interests=true, $send_welcome=false) {
+    $email_address = $email['email'];
     $lists = $this->loadLists();
     if (isset($lists[$id])) {
-      if (isset($lists[$id]['data'][$email])) {
-        $lists[$id]['data'][$email]['subscribed'] = TRUE;
+      if (!isset($lists[$id]['data']['members'])) {
+        $lists[$id]['data']['members'] = array();
+      }
+
+      if (isset($lists[$id]['data']['members'][$email_address])) {
+        $lists[$id]['data']['members'][$email_address]['subscribed'] = TRUE;
       }
       else {
-        $lists[$id]['data'][$email] = array(
+        $leid = uniqid();
+        $euid = uniqid();
+
+        $lists[$id]['data']['members'][$email_address] = array(
+          'id' => $euid,
           'subscribed' => TRUE,
           'email_type' => $email_type,
           'merge_vars' => $merge_vars,
@@ -41,11 +118,17 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
       }
       $this->writeLists($lists);
 
-      return TRUE;
+      $response = array(
+        'email' => $email_address,
+        'euid' => $euid,
+        'leid' => $leid,
+      );
+
+      return $response;
     }
     else {
       $this->errorMessage = 'Could not add ' . $email . ' to non-existant list: ' . $id;
-      return FALSE;
+      return NULL;
     }
   }
 
@@ -55,13 +138,13 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
   public function unsubscribe($id, $email, $delete_member=false, $send_goodbye=true, $send_notify=true) {
     $lists = $this->loadLists();
     if (isset($lists[$id])) {
-      if (isset($lists[$id]['data'][$email])) {
-        if ($lists[$id]['data'][$email]['subscribed']) {
+      if (isset($lists[$id]['data']['members'][$email])) {
+        if ($lists[$id]['data']['members'][$email]['subscribed']) {
           if ($delete_member) {
-            unset($lists[$id]['data'][$email]);
+            unset($lists[$id]['data']['members'][$email]);
           }
           else {
-            $lists[$id]['data'][$email]['subscribed'] = FALSE;
+            $lists[$id]['data']['members'][$email]['subscribed'] = FALSE;
           }
           $this->writeLists($lists);
 
@@ -82,7 +165,35 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
   }
 
   /**
-   * @see Mailchimp_Lists::unsubscribe()
+   * @see Mailchimp_Lists::updateMember()
+   */
+  public function updateMember($id, $email, $merge_vars, $email_type='', $replace_interests=true) {
+
+  }
+
+  /**
+   * @see Mailchimp_Lists::webhookAdd()
+   */
+  public function webhookAdd($id, $url, $actions=array(), $sources=array()) {
+
+  }
+
+  /**
+   * @see Mailchimp_Lists::webhookDel()
+   */
+  public function webhookDel($id, $url) {
+
+  }
+
+  /**
+   * @see Mailchimp_Lists::webhooks()
+   */
+  public function webhooks($id) {
+
+  }
+
+  /**
+   * @see Mailchimp_Lists::getList()
    */
   public function getList($filters=array(), $start=0, $limit=25, $sort_field='created', $sort_dir='DESC') {
     $lists = $this->loadLists();
@@ -158,7 +269,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
       self::MAILCHIMP_TEST_LIST_A => array(
         'name' => 'Test List A',
         'data' => array(),
-        'mergevars' => $default_mergevars,
+        'merge_vars' => $default_mergevars,
         'stats' => array(
           'group_count' => 0,
         ),
@@ -166,7 +277,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
       self::MAILCHIMP_TEST_LIST_B => array(
         'name' => 'Test List B',
         'data' => array(),
-        'mergevars' => $default_mergevars,
+        'merge_vars' => $default_mergevars,
         'stats' => array(
           'group_count' => 0,
         ),
@@ -174,7 +285,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
       self::MAILCHIMP_TEST_LIST_C => array(
         'name' => 'Test List C',
         'data' => array(),
-        'mergevars' => $default_mergevars,
+        'merge_vars' => $default_mergevars,
         'stats' => array(
           'group_count' => 0,
         ),
