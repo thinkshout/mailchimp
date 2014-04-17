@@ -452,6 +452,29 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
 }
 
 /**
+ * Wrapper around MCAPI->lists->batch-subscribe.
+ *
+ * $batch is an array where each element is an array formatted thus:
+ *   'email' => array('email' => 'example@example.com'),
+ *   'email_type' => 'html' or 'text',
+ *   'merge_vars' => array('MERGEKEY' => 'value', 'MERGEKEY2' => 'value2'),
+ */
+function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE, $update_existing = FALSE, $replace_interests = TRUE) {
+  $results = FALSE;
+  try {
+    if ($q = mailchimp_get_api_object()) {
+      $results = $q->lists->batchSubscribe($list_id, $batch, $double_in, $update_existing, $replace_interests);
+    }
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred performing batch subscribe/update. "%message"', array(
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+  }
+  return $results;
+}
+
+/**
  * Wrapper around MCAPI->lists->unsubscribe.
  *
  * @param string $list_id
