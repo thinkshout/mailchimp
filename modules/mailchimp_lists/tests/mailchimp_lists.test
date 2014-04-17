@@ -6,9 +6,6 @@
 
 class MailchimpListsTestCase extends DrupalWebTestCase {
 
-  /** @var string $authorized_user */
-  public $authorized_user;
-
   /**
    * Returns info displayed in the test interface.
    *
@@ -45,18 +42,15 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
     parent::setUp($enabled_modules);
     variable_set('mailchimp_api_classname', 'MailChimpTest');
     variable_set('mailchimp_api_key', 'MAILCHIMP_TEST_API_KEY');
-
-    // Create a user.
-    $this->authorized_user = $this->drupalCreateUser(array());
   }
 
   /**
    * Tests retrieval of a specific list.
    */
   public function testGetList() {
-    $list = mailchimp_get_list('mailchimp_test_list_a');
+    $list = mailchimp_get_list(MAILCHIMP_TEST_LIST_A);
 
-    $this->assertEqual($list['id'], 'mailchimp_test_list_a', 'Tested list retrieval.');
+    $this->assertEqual($list['id'], MAILCHIMP_TEST_LIST_A, 'Tested list retrieval.');
   }
 
   /**
@@ -65,8 +59,8 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
   public function testMultiListRetrieval() {
 
     $list_ids = array(
-      'mailchimp_test_list_a',
-      'mailchimp_test_list_b',
+      MAILCHIMP_TEST_LIST_A,
+      MAILCHIMP_TEST_LIST_B,
     );
 
     $lists = mailchimp_get_lists($list_ids);
@@ -86,7 +80,7 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    */
   public function testGetMergevars() {
     $list_ids = array(
-      'mailchimp_test_list_a',
+      MAILCHIMP_TEST_LIST_A,
     );
 
     $lists = mailchimp_get_mergevars($list_ids);
@@ -109,13 +103,13 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    * Tests retrieval of member info for a list and email address.
    */
   public function testGetMemberInfo() {
-    $list = 'mailchimp_test_list_a';
+    $list_id = MAILCHIMP_TEST_LIST_A;
     $email = 'user@example.org';
-    $subscribed = mailchimp_subscribe($list, $email);
+    $subscribed = mailchimp_subscribe($list_id, $email);
 
     $this->assertTrue($subscribed, 'Tested new user subscription.');
 
-    $member_info = mailchimp_get_memberinfo($list, $email);
+    $member_info = mailchimp_get_memberinfo($list_id, $email);
 
     $this->assertTrue(is_array($member_info), 'Tested valid member info array returned.');
     $this->assertEqual($member_info['email'], $email, 'Tested valid member email retrieved: ' . $member_info['email']);
@@ -125,13 +119,13 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    * Tests the status of a member's subscription to a list.
    */
   public function testIsSubscribed() {
-    $list = 'mailchimp_test_list_a';
+    $list_id = MAILCHIMP_TEST_LIST_A;
     $email = 'user@example.org';
-    $subscribed = mailchimp_subscribe($list, $email);
+    $subscribed = mailchimp_subscribe($list_id, $email);
 
     $this->assertTrue($subscribed, 'Tested new user subscription.');
 
-    $subscribed = mailchimp_is_subscribed($list, $email);
+    $subscribed = mailchimp_is_subscribed($list_id, $email);
     $this->assertTrue($subscribed, 'Tested user is subscribed to list.');
   }
 
@@ -139,14 +133,14 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    * Tests subscribing a member to a list.
    */
   public function testSubscribe() {
-    $list = 'mailchimp_test_list_a';
+    $list_id = MAILCHIMP_TEST_LIST_A;
     $email = 'user@example.org';
-    $subscribed = mailchimp_subscribe($list, $email);
+    $subscribed = mailchimp_subscribe($list_id, $email);
 
     $this->assertTrue($subscribed, 'Tested new user subscription.');
 
-    $list = 'mailchimp_invalid_list';
-    $subscribed = mailchimp_subscribe($list, $email);
+    $list_id = MAILCHIMP_TEST_LIST_INVALID;
+    $subscribed = mailchimp_subscribe($list_id, $email);
 
     $this->assertFalse($subscribed, 'Tested new user subscription to invalid list.');
   }
@@ -155,17 +149,17 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    * Tests updating a list member.
    */
   public function testUpdateMember() {
-    $list = 'mailchimp_test_list_a';
+    $list_id = MAILCHIMP_TEST_LIST_A;
     $email = 'user@example.org';
-    $subscribed = mailchimp_subscribe($list, $email);
+    $subscribed = mailchimp_subscribe($list_id, $email);
 
     $this->assertTrue($subscribed, 'Tested new user subscription.');
 
-    $updated = mailchimp_update_member($list, $email, NULL, 'text');
+    $updated = mailchimp_update_member($list_id, $email, NULL, 'text');
 
     $this->assertTrue($updated, 'Tested user update.');
 
-    $member_info = mailchimp_get_memberinfo($list, $email);
+    $member_info = mailchimp_get_memberinfo($list_id, $email);
 
     $this->assertEqual($member_info['email'], $email, 'Tested updated member email retrieved: ' . $member_info['email']);
   }
@@ -174,27 +168,27 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    * Tests unsubscribing a member from a list.
    */
   public function testUnsubscribe() {
-    $list = 'mailchimp_test_list_a';
+    $list_id = MAILCHIMP_TEST_LIST_A;
     $email = 'user@example.org';
-    $subscribed = mailchimp_subscribe($list, $email);
+    $subscribed = mailchimp_subscribe($list_id, $email);
 
     $this->assertTrue($subscribed, 'Tested new user subscription.');
 
-    $unsubscribed = mailchimp_unsubscribe($list, $email);
+    $unsubscribed = mailchimp_unsubscribe($list_id, $email);
 
     $this->assertTrue($unsubscribed, 'Tested user unsubscription.');
 
-    $member_info = mailchimp_get_memberinfo($list, $email);
+    $member_info = mailchimp_get_memberinfo($list_id, $email);
 
     $this->assertEqual($member_info['status'], 'unsubscribed', 'Tested updated subscription state.');
 
     // Reset subscription.
-    mailchimp_subscribe($list, $email);
+    mailchimp_subscribe($list_id, $email);
 
     // Delete member.
-    mailchimp_unsubscribe($list, $email, TRUE);
+    mailchimp_unsubscribe($list_id, $email, TRUE);
 
-    $member_info = mailchimp_get_memberinfo($list, $email);
+    $member_info = mailchimp_get_memberinfo($list_id, $email);
 
     $this->assertTrue(empty($member_info), 'Tested user deletion on unsubscribe.');
   }
@@ -203,8 +197,8 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    * Tests retrieval of list segments for a list.
    */
   public function testGetListSegments() {
-    $list = 'mailchimp_test_list_a';
-    $list_segments = mailchimp_get_segments($list);
+    $list_id = MAILCHIMP_TEST_LIST_A;
+    $list_segments = mailchimp_get_segments($list_id);
 
     $this->assertFalse(empty($list_segments['static']), 'Tested static list segments.');
     $this->assertFalse(empty($list_segments['saved']), 'Tested saved list segments.');
@@ -214,10 +208,10 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    * Tests creation of a segmenet for a list.
    */
   public function testCreateSegment() {
-    $list = 'mailchimp_test_list_a';
+    $list_id = MAILCHIMP_TEST_LIST_A;
     $name = 'New List Segment Test';
     $type = 'static';
-    $segment_id = mailchimp_segment_create($list, $name, $type);
+    $segment_id = mailchimp_segment_create($list_id, $name, $type);
 
     $this->assertFalse(empty($segment_id), 'Tested new list segment has valid ID.');
   }
@@ -226,7 +220,34 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    * Tests adding a subscriber to a list segment.
    */
   public function testAddSegmentSubscriber() {
+    $list_id = MAILCHIMP_TEST_LIST_A;
+    $email = 'user@example.org';
+    $subscribed = mailchimp_subscribe($list_id, $email);
 
+    $this->assertTrue($subscribed, 'Tested new user subscription.');
+
+    $segment_id = MAILCHIMP_TEST_SEGMENT_A;
+    $batch = FALSE;
+    $subscriber_added = mailchimp_segment_add_subscriber($list_id, $segment_id, $email, $batch);
+
+    $this->assertTrue($subscriber_added, 'Tested adding subscriber to list segment: ' . $segment_id . ' (NO BATCH)');
+
+    // Reset batch queue.
+    $queue = DrupalQueue::get(MAILCHIMP_TEST_BATCH_QUEUE_CRON);
+    $queue->deleteQueue();
+
+    $batch = TRUE;
+    $queue_id = MAILCHIMP_TEST_BATCH_QUEUE_CRON;
+    $subscriber_added = mailchimp_segment_add_subscriber($list_id, $segment_id, $email, $batch, $queue_id);
+
+    $this->assertTrue($subscriber_added, 'Tested adding subscriber to list segment: ' . $segment_id . ' (BATCH)');
+
+    $queue = DrupalQueue::get(MAILCHIMP_TEST_BATCH_QUEUE_CRON);
+    $queue_item = $queue->claimItem();
+
+    $this->assertFalse(empty($queue_item), 'Tested list segment subscriber exists in batch queue.');
+    $this->assertEqual($queue_item->data['list_id'], $list_id, 'Tested subscription to correct list.');
+    $this->assertEqual($queue_item->data['item']['email'], $email, 'Tested correct email address.');
   }
 
   /**

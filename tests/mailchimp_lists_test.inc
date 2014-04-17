@@ -5,13 +5,6 @@
 */
 
 class MailChimp_ListsTest extends Mailchimp_Lists {
-  const MAILCHIMP_TEST_LIST_A = 'mailchimp_test_list_a';
-  const MAILCHIMP_TEST_LIST_B = 'mailchimp_test_list_b';
-  const MAILCHIMP_TEST_LIST_C = 'mailchimp_test_list_c';
-
-  const MAILCHIMP_TEST_SEGMENT_A = 'mailchimp_test_segment_a';
-  const MAILCHIMP_TEST_SEGMENT_B = 'mailchimp_test_segment_b';
-  const MAILCHIMP_TEST_SEGMENT_C = 'mailchimp_test_segment_c';
 
   /** @var string $errorMessage */
   public $errorMessage;
@@ -37,13 +30,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
         foreach ($emails as $email) {
           $email_address = $email['email'];
           if (isset($list_data['data']['members'][$email_address])) {
-            $member_data = $list_data['data']['members'][$email_address];
-            $response['data'][] = array(
-              'id' => $email_address,
-              'email' => $email_address,
-              'email_type' => $member_data['email_type'],
-              'status' => $member_data['status'],
-            );
+            $response['data'][] = $list_data['data']['members'][$email_address];
           }
         }
       }
@@ -123,7 +110,25 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
    * @see Mailchimp_Lists::staticSegmentMembersAdd()
    */
   public function staticSegmentMembersAdd($id, $seg_id, $batch) {
+    $lists = $this->loadLists();
 
+    $response = array();
+    if (isset($lists[$id])) {
+      $response['success_count'] = 0;
+      foreach ($batch as $batch_email) {
+        if (isset($lists[$id]['data']['members'][$batch_email['email']])) {
+          // No need to store this data, just increment success count.
+          $response['success_count']++;
+        }
+      }
+    }
+    else
+    {
+      $response['status'] = 'error';
+      $response['code'] = 200;
+      $response['name'] = 'List_DoesNotExist';
+    }
+    return $response;
   }
 
   /**
@@ -149,7 +154,9 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
 
         $lists[$id]['data']['members'][$email_address] = array(
           'id' => $euid,
+          'leid' => $leid,
           'status' => 'subscribed',
+          'email' => $email_address,
           'email_type' => $email_type,
           'merge_vars' => $merge_vars,
         );
@@ -326,20 +333,20 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
     );
     $default_segments = array(
       array(
-        'id' => self::MAILCHIMP_TEST_SEGMENT_A,
+        'id' => MAILCHIMP_TEST_SEGMENT_A,
         'name' => 'Test Segment A',
       ),
       array(
-        'id' => self::MAILCHIMP_TEST_SEGMENT_B,
+        'id' => MAILCHIMP_TEST_SEGMENT_B,
         'name' => 'Test Segment B',
       ),
       array(
-        'id' => self::MAILCHIMP_TEST_SEGMENT_C,
+        'id' => MAILCHIMP_TEST_SEGMENT_C,
         'name' => 'Test Segment C',
       )
     );
     $lists = array(
-      self::MAILCHIMP_TEST_LIST_A => array(
+      MAILCHIMP_TEST_LIST_A => array(
         'name' => 'Test List A',
         'data' => array(),
         'merge_vars' => $default_mergevars,
@@ -348,7 +355,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
           'group_count' => 0,
         ),
       ),
-      self::MAILCHIMP_TEST_LIST_B => array(
+      MAILCHIMP_TEST_LIST_B => array(
         'name' => 'Test List B',
         'data' => array(),
         'merge_vars' => $default_mergevars,
@@ -357,7 +364,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
           'group_count' => 0,
         ),
       ),
-      self::MAILCHIMP_TEST_LIST_C => array(
+      MAILCHIMP_TEST_LIST_C => array(
         'name' => 'Test List C',
         'data' => array(),
         'merge_vars' => $default_mergevars,
