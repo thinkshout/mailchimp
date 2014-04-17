@@ -119,7 +119,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
   }
 
   if (isset($list_id)) {
-    $merge_vars = mailchimp_lists_get_merge_vars(array($list_id));
+    $merge_vars = mailchimp_get_mergevars(array($list_id));
     if (isset($merge_vars[$list_id])) {
       $form['content']['merge_vars'] = array(
         '#type' => 'fieldset',
@@ -127,7 +127,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
         '#children' => _mailchimp_campaign_build_merge_vars_html(
-          $merge_vars[$list_id]),
+          $merge_vars[$list_id]['merge_vars']),
       );
     }
   }
