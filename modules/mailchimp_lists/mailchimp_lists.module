@@ -28,7 +28,12 @@ function mailchimp_lists_menu() {
     'access arguments' => array('administer mailchimp'),
     'file' => 'includes/mailchimp_lists.admin.inc',
   );
-
+  $items['admin/config/services/mailchimp/lists/update_mergevars/%/%/%'] = array(
+    'title' => 'Mass Update Merge Variables',
+    'page callback' => 'mailchimp_lists_update_member_merge_values',
+    'page arguments' => array(6, 7, 8),
+    'access arguments' => array('administer mailchimp'),
+  );
 
   return $items;
 }
@@ -274,6 +279,58 @@ function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type
   return $mergevars;
 }
 
+/**
+ * Triggers an update of all merge field values for appropriate entities.
+ */
+function mailchimp_lists_update_member_merge_values($entity_type, $bundle_name, $field_name) {
+  // @todo put this into a drupal batch operation.
+
+  $field = field_info_field($field_name);
+  if (!isset($field['settings']['mc_list_id'])) {
+    return FALSE;
+  }
+  $instance = field_info_instance($entity_type, $field_name, $bundle_name);
+  $mergefields = $instance['settings']['mergefields'];
+  // Assemble a list of current subscription statuses so we don't alter them.
+  // Because of cacheing we don't want to use the standard checks. Expiring the
+  // cache would kill the point of doing this as a batch API operation.
+  $current_subscribers = array();
+  $matches = mailchimp_get_members($field['settings']['mc_list_id'], 'subscribed');
+  if ($matches) {
+    foreach ($matches['data'] as $result) {
+      $current_subscribers[$result['email']] = $result;
+    }
+  }
+  // Load up all our eligible entities.
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', $entity_type);
+  if ($entity_type !== 'user') {
+    $query->entityCondition('bundle', $bundle_name);
+  }
+  $query_results = $query->execute();
+  // If there are no results, we are done here.
+  if (!isset($query_results[$entity_type])) {
+    return array('success' => TRUE, 'count' => 0);
+  }
+  // Now populate our batch, filtering by subscription status:
+  $entities = entity_load($entity_type, array_keys($query_results[$entity_type]));
+  $batch = array();
+  foreach ($entities as $entity) {
+    $merge_vars = _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type);
+    if ($merge_vars['EMAIL'] && isset($current_subscribers[$merge_vars['EMAIL']])) {
+      $batch[] = array(
+        'email' => array('email' => $merge_vars['EMAIL']),
+        'email_type' => $current_subscribers[$merge_vars['EMAIL']]['email_type'],
+        'merge_vars' => $merge_vars,
+      );
+    }
+  }
+  $result = mailchimp_batch_update_members($field['settings']['mc_list_id'], $batch, FALSE, TRUE, FALSE);
+  return array(
+    'success' => TRUE,
+    'count' => $result['update_count'],
+  );
+}
 
 /**
  * Implements hook_mollom_form_list().
