@@ -101,15 +101,3 @@ function mailchimp_activity_schema() {
 
   return $schema;
 }
-
-/**
- * Create the entity path field in mailchimp activity entities.
- */
-function mailchimp_activity_update_7000() {
-  $schema = mailchimp_activity_schema();
-  // Add entity_path to the main table.
-  $field_name = 'entity_path';
-  $table_name = 'mailchimp_activity_entity';
-  $spec = $schema[$table_name]['fields'][$field_name];
-  db_add_field($table_name, $field_name, $spec);
-}
