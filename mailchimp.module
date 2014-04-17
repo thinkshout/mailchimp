@@ -452,6 +452,51 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
 }
 
 /**
+ * Retrieve all members of a given list with a given status.
+ *
+ * Note that this function can cause locking an is somewhat slow. It is not
+ * recommended unless you know what you are doing! See the MCAPI documentation.
+ */
+function mailchimp_get_members($list_id, $status = 'subscribed', $options = array()) {
+  // @todo: use a semaphore to prevent locking
+  $results = FALSE;
+  try {
+    if ($q = mailchimp_get_api_object()) {
+      $results = $q->lists->members($list_id, $status, $options);
+    }
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred pulling member info for a list. "%message"', array(
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+  }
+  return $results;
+}
+
+/**
+ * Wrapper around MCAPI->lists->batch-subscribe.
+ *
+ * $batch is an array where each element is an array formatted thus:
+ *   'email' => array('email' => 'example@example.com'),
+ *   'email_type' => 'html' or 'text',
+ *   'merge_vars' => array('MERGEKEY' => 'value', 'MERGEKEY2' => 'value2'),
+ */
+function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE, $update_existing = FALSE, $replace_interests = TRUE) {
+  $results = FALSE;
+  try {
+    if ($q = mailchimp_get_api_object()) {
+      $results = $q->lists->batchSubscribe($list_id, $batch, $double_in, $update_existing, $replace_interests);
+    }
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred performing batch subscribe/update. "%message"', array(
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+  }
+  return $results;
+}
+
+/**
  * Wrapper around MCAPI->lists->unsubscribe.
  *
  * @param string $list_id
@@ -725,6 +770,7 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
  * Returns all IDs of campaigns that have included a given email address.
  *
  * @param string $email
+ *   Email address to search.
  *
  * @return array
  *   Campaign structs containing id, title, subject, send_time, type.
@@ -748,6 +794,7 @@ function mailchimp_get_campaigns_for_email($email) {
  * Wrapper around MCAPI->lists->webhooks().
  *
  * @param string $list_id
+ *   Mailchimp API List ID.
  *
  * @return mixed
  *   Array of existing webhooks, or FALSE.

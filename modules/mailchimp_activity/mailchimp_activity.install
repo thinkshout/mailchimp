@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Install, update and uninstall functions for the mailchimp_activity module.
+ */
+
+/**
  * Implements hook_schema().
  */
 function mailchimp_activity_schema() {
@@ -60,7 +65,7 @@ function mailchimp_activity_schema() {
         'size' => 'tiny',
         'description' => 'Whether or not this mailchimp activity stream is enabled.',
       ),
-      // following fields are for supporting exportable status.
+      // The following fields are for supporting exportable status.
       'locked' => array(
         'description' => 'A boolean indicating whether the administrator may delete this mapping.',
         'type' => 'int',
@@ -95,16 +100,4 @@ function mailchimp_activity_schema() {
   );
 
   return $schema;
-}
-
-/**
- * Create the entity path field in mailchimp activity entities.
- */
-function mailchimp_activity_update_7000() {
-  $schema = mailchimp_activity_schema();
-  // Add entity_path to the main table.
-  $field_name = 'entity_path';
-  $table_name = 'mailchimp_activity_entity';
-  $spec = $schema[$table_name]['fields'][$field_name];
-  db_add_field($table_name, $field_name, $spec);
 }

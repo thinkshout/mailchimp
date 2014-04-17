@@ -6,6 +6,17 @@
  */
 module_load_include('inc', 'mailchimp_lists', 'includes/mailchimp_lists.field');
 
+define('MAILCHIMP_TEST_LIST_A', 'mailchimp_test_list_a');
+define('MAILCHIMP_TEST_LIST_B', 'mailchimp_test_list_b');
+define('MAILCHIMP_TEST_LIST_C', 'mailchimp_test_list_c');
+define('MAILCHIMP_TEST_LIST_INVALID', 'mailchimp_invalid_list');
+
+define('MAILCHIMP_TEST_SEGMENT_A', 1);
+define('MAILCHIMP_TEST_SEGMENT_B', 2);
+define('MAILCHIMP_TEST_SEGMENT_C', 3);
+
+define('MAILCHIMP_TEST_BATCH_QUEUE_CRON', 'mailchimp_test_batch_queue_cron');
+
 /**
  * Implements hook_menu().
  */
@@ -261,9 +272,13 @@ function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type
         if ($object instanceof EntityListWrapper) {
           $object = $object[0];
         }
+        if ($object->value() === NULL || !isset($object->{$element})) {
+          $object = NULL;
+          break;
+        }
         $object = $object->{$element};
       }
-      $mergevars[$label] = $object->value();
+      $mergevars[$label] = isset($object) ? $object->value() : NULL;
     }
   }
   drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
@@ -335,6 +350,7 @@ function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $
     $type = isset($property['type']) ? entity_property_extract_innermost_type($property['type']) : 'text';
     $is_entity = ($type == 'entity') || (bool) entity_get_info($type);
     $required_property = isset($property['required']) ? $property['required'] : FALSE;
+    $computed_property = isset($property['computed']) ? $property['computed'] : FALSE;
     if ($is_entity) {
       // We offer fields on related entities (useful for field collections).
       // But we only offer 1 level of depth to avoid loops.
@@ -343,10 +359,10 @@ function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $
         $options[$property['label']] = mailchimp_lists_fieldmap_options($type, $bundle, $required, $keypath, $property['label']);
       }
     }
-    elseif (!$required || $required_property) {
+    elseif (!$required || $required_property || $computed_property) {
       if (isset($property['field']) && $property['field'] && !empty($property['property info'])) {
         foreach ($property['property info'] as $sub_key => $sub_prop) {
-          $label = isset($tree) ? $tree . ' - ' .$property['label'] : $property['label'];
+          $label = isset($tree) ? $tree . ' - ' . $property['label'] : $property['label'];
           $options[$label][$keypath . ':' . $sub_key] = $sub_prop['label'];
         }
       }
@@ -484,12 +500,6 @@ function mailchimp_lists_add_to_segment_action_form($context, &$form_state) {
 
 /**
  * Form handler for mailchimp_lists_add_to_segment_action_form().
- *
- * @param array $form
- * @param array $form_state
- *
- * @return array
- *   Array of submitted form values.
  */
 function mailchimp_lists_add_to_segment_action_submit($form, &$form_state) {
   $mc_list_id = $form_state['mc_list_ids'][$form_state['values']['mailchimp_field']];
@@ -507,9 +517,6 @@ function mailchimp_lists_add_to_segment_action_submit($form, &$form_state) {
 
 /**
  * AJAX callback to return segments for a given list.
- *
- * @param array $form
- * @param array $form_state
  *
  * @return array
  *   List segment section of the form.
@@ -557,45 +564,4 @@ function mailchimp_lists_add_to_segment_action_views_bulk_operations_form($optio
     ),
   );
   return $form;
-}
-
-/**
- * Gets the list of merge tags for a given list, including their name, tag,
- * and required setting.
- *
- * @param array $list_ids
- *   The IDs of lists to get merge tags for.
- *
- * @return array
- *   Array of merge vars indexed by list ID.
- */
-function mailchimp_lists_get_merge_vars(array $list_ids) {
-  $mcapi = mailchimp_get_api_object();
-
-  try {
-    $result = $mcapi->lists->mergeVars($list_ids);
-  } catch (Mailchimp_Error $e) {
-    drupal_set_message($e->getMessage(), 'error');
-    watchdog('mailchimp_campaign',
-      'An error occurred while getting merge vars: ' . $e->getMessage(),
-      WATCHDOG_ERROR);
-    return NULL;
-  }
-
-  if (isset($result['errors']) && !empty($result['errors'])) {
-    foreach ($result['errors'] as $error) {
-      $message = 'MailChimp error. Getting list vars for list ID '
-        . $error->id . ': ' . $error->msg;
-      _mailchimp_campaign_mcapi_error_message($result, $message);
-    }
-  }
-
-  $merge_vars = array();
-  if (isset($result['data']) && !empty($result['data'])) {
-    foreach ($result['data'] as $data) {
-      $merge_vars[$data['id']] = $data['merge_vars'];
-    }
-  }
-
-  return $merge_vars;
 }

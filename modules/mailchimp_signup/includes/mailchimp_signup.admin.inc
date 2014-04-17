@@ -288,11 +288,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
 /**
  * AJAX callback to return fields for a given type.
  *
- * @param array $form
- * @param array $form_state
- *
- * @return array
- *   The form lists configuration fields.
+ * Returns the form lists configuration fields.
  */
 function mailchimp_signup_mergefields_callback($form, $form_state) {
   return $form['mc_lists_config']['mergefields'];
@@ -300,9 +296,6 @@ function mailchimp_signup_mergefields_callback($form, $form_state) {
 
 /**
  * Submit handler for mailchimp_lists_list_form().
- *
- * @param array $form
- * @param array $form_state
  */
 function mailchimp_signup_signup_form_submit($form, &$form_state) {
   $signup = isset($form_state['signup']) ? $form_state['signup'] : mailchimp_signup_create();
@@ -345,9 +338,6 @@ function mailchimp_signup_signup_delete_form($form, &$form_state, $signup) {
 
 /**
  * Submit function for the delete button on the signup overview and edit forms.
- *
- * @param array $form
- * @param array $form_state
  */
 function mailchimp_signup_signup_delete_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/config/services/mailchimp/signup/' . $form_state['signup']->mcs_id . '/delete';
@@ -355,9 +345,6 @@ function mailchimp_signup_signup_delete_submit($form, &$form_state) {
 
 /**
  * Submit handler for mailchimp_signup_signup_delete_form().
- *
- * @param array $form
- * @param array $form_state
  */
 function mailchimp_signup_signup_delete_form_submit($form, &$form_state) {
   $signup = $form_state['signup'];

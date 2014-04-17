@@ -109,7 +109,7 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
       '#title' => check_plain($mergevar['name']),
       '#default_value' => array_key_exists($default_value, $fields_flat) ? $default_value : '',
       '#required' => $mergevar['req'],
-      '#options' => $mergevar['req'] ? $required_fields : $fields,
+      '#options' => (!$mergevar['req'] || $mergevar['tag'] === 'EMAIL') ? $fields : $required_fields,
     );
   }
 
@@ -122,7 +122,7 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
 function mailchimp_lists_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   if ($instance['required'] && $entity !== NULL) {
     foreach ($items as $delta => $item) {
-      if (!$item['options']['subscribe']) {
+      if (!$item['subscribe']) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
           'error' => 'mailchimp_lists_required',
           'message' => t('Subscription to Mailchimp List %name is required.', array('%name' => $instance['label'])),
@@ -162,7 +162,7 @@ function mailchimp_lists_field_widget_info() {
  * Implements hook_field_widget_form().
  */
 function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  $default = isset($instance['default_value'][0]['options']['subscribe']) ? $instance['default_value'][0]['options']['subscribe'] : FALSE;
+  $default = isset($instance['default_value'][0]['subscribe']) ? $instance['default_value'][0]['subscribe'] : FALSE;
   $email = NULL;
   if (isset($element['#entity'])) {
     $email = mailchimp_lists_load_email($instance, $element['#entity'], FALSE);
@@ -189,14 +189,14 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
       '#weight' => 100,
       '#states' => array(
         'invisible' => array(
-          ':input[name="' . $field['field_name'] . '[' . $langcode . '][0][options][subscribe]"]' => array('checked' => FALSE),
+          ':input[name="' . $field['field_name'] . '[' . $langcode . '][0][subscribe]"]' => array('checked' => FALSE),
         ),
       ),
     );
-    $groups_default = isset($instance['default_value'][0]['options']['interest_groups']) ? $instance['default_value'][0]['options']['interest_groups'] : array();
+    $groups_default = isset($instance['default_value'][0]['interest_groups']) ? $instance['default_value'][0]['interest_groups'] : array();
     $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
   }
-  return array('options' => $element);
+  return $element;
 }
 
 /**
@@ -356,10 +356,31 @@ function mailchimp_lists_subscription_property_info_callback(&$info, $entity_typ
   $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$name];
 
   $property['type'] = 'mailchimp_lists_subscription';
-  $property['getter callback'] = 'entity_metadata_field_verbatim_get';
+  $property['getter callback'] = 'mailchimp_lists_field_get';
   $property['setter callback'] = 'entity_metadata_field_verbatim_set';
 
   unset($property['query callback']);
+}
+
+/**
+ * Entity field data callback for mailchimp subscription fields.
+ */
+function mailchimp_lists_field_get($entity, array $options, $name, $entity_type, &$context) {
+  $verbatim = entity_metadata_field_verbatim_get($entity, $options, $name, $entity_type, $context);
+  // If we're creating or updating field values they shouldn't be mucked with:
+  if (isset($verbatim['subscribe'])) {
+    return $verbatim;
+  }
+  $email = mailchimp_lists_load_email($context['instance'], $entity);
+  $subscribed = mailchimp_is_subscribed($context['field']['settings']['mc_list_id'], $email);
+  $val = array('subscribe' => $subscribed);
+  if ($context['instance']['settings']['show_interest_groups']) {
+    $mc_list = mailchimp_get_list($context['field']['settings']['mc_list_id']);
+    if (isset($mc_list['intgroups'])) {
+      $val['interest_groups'] = mailchimp_interest_groups_form_elements($mc_list, array(), $email);
+    }
+  }
+  return $val;
 }
 
 /**
@@ -372,9 +393,43 @@ function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance,
   if ($field['type'] == 'mailchimp_lists_subscription') {
     $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
     $choices = $entity_wrapper->{$instance['field_name']}->value();
-    if (isset($choices['options'])) {
-      mailchimp_lists_process_subscribe_form_choices($choices['options'], $instance, $field, $entity);
+    if (isset($choices['subscribe'])) {
+      mailchimp_lists_process_subscribe_form_choices($choices, $instance, $field, $entity);
     }
-    // @todo: if email address has changed, do we unsubscribe the old one?
+    elseif (isset($entity->is_new_revision) && $entity->is_new_revision) {
+      // If this user is subscribed, check for updated merge field values:
+      $email = mailchimp_lists_load_email($instance, $entity);
+      if ($email && mailchimp_is_subscribed($field['settings']['mc_list_id'], $email)) {
+        $update = FALSE;
+        $old_entity_wrapper = entity_metadata_wrapper($entity_type, $entity->original);
+        foreach ($instance['settings']['mergefields'] as $property) {
+          $elements = explode(':', $property);
+          $new_object = $entity_wrapper;
+          $old_object = $old_entity_wrapper;
+          foreach ($elements as $element) {
+            if ($new_object instanceof EntityListWrapper) {
+              $new_object = $new_object[0];
+              $old_object = $old_object[0];
+            }
+            if ($new_object->value() === NULL || !isset($new_object->{$element})) {
+              $new_object = NULL;
+              break;
+            }
+            $new_object = $new_object->{$element};
+            $old_object = $old_object->{$element};
+          }
+          if (isset($new_object)) {
+            $update = $new_object->value() !== $old_object->value();
+          }
+          if ($update) {
+            break;
+          }
+        }
+        if ($update) {
+          $mergevars = _mailchimp_lists_mergevars_populate($instance['settings']['mergefields'], $entity, $entity_type);
+          mailchimp_update_member($field['settings']['mc_list_id'], $email, $mergevars);
+        }
+      }
+    }
   }
 }

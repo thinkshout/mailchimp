@@ -50,12 +50,6 @@ function mailchimp_admin_settings() {
 
 /**
  * Mailchimp List cache clear form.
- *
- * @param array $form
- * @param array $form_state
- *
- * @return array
- *   Array of form elements.
  */
 function mailchimp_clear_list_cache_form($form, &$form_state) {
   $cancel_destination = 'admin/config/services/mailchimp';
@@ -69,9 +63,6 @@ function mailchimp_clear_list_cache_form($form, &$form_state) {
 
 /**
  * Handler for lists cache clear form.
- *
- * @param $form
- * @param $form_state
  */
 function mailchimp_clear_list_cache_form_submit($form, &$form_state) {
   mailchimp_get_lists(array(), TRUE);

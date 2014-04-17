@@ -1,3 +1,8 @@
+/**
+ * @file
+ * Mailchimp Campaign javascript extras.
+ */
+
 (function ($) {
 
   /**

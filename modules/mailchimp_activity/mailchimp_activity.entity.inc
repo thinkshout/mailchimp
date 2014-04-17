@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Mailchimp Activity entity class
+ */
+
 class MailchimpActivityEntity extends Entity {
   public
     $mailchimp_activity_entity_id,
@@ -11,12 +16,15 @@ class MailchimpActivityEntity extends Entity {
     $entity_path,
     $enabled;
 
+  /**
+   * Basic __construct implementation.
+   */
   public function __construct(array $values = array()) {
     parent::__construct($values, 'mailchimp_activity_entity');
   }
 
   /**
-   * Overrides Entity\Entity::uri();
+   * Overrides Entity\Entity::uri().
    */
   public function uri() {
     return array(
