@@ -351,7 +351,7 @@ function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $
     elseif (!$required || $required_property || $computed_property) {
       if (isset($property['field']) && $property['field'] && !empty($property['property info'])) {
         foreach ($property['property info'] as $sub_key => $sub_prop) {
-          $label = isset($tree) ? $tree . ' - ' .$property['label'] : $property['label'];
+          $label = isset($tree) ? $tree . ' - ' . $property['label'] : $property['label'];
           $options[$label][$keypath . ':' . $sub_key] = $sub_prop['label'];
         }
       }
@@ -489,12 +489,6 @@ function mailchimp_lists_add_to_segment_action_form($context, &$form_state) {
 
 /**
  * Form handler for mailchimp_lists_add_to_segment_action_form().
- *
- * @param array $form
- * @param array $form_state
- *
- * @return array
- *   Array of submitted form values.
  */
 function mailchimp_lists_add_to_segment_action_submit($form, &$form_state) {
   $mc_list_id = $form_state['mc_list_ids'][$form_state['values']['mailchimp_field']];
@@ -512,9 +506,6 @@ function mailchimp_lists_add_to_segment_action_submit($form, &$form_state) {
 
 /**
  * AJAX callback to return segments for a given list.
- *
- * @param array $form
- * @param array $form_state
  *
  * @return array
  *   List segment section of the form.
