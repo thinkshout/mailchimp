@@ -39,7 +39,7 @@ function mailchimp_lists_menu() {
 function mailchimp_lists_entity_delete($entity, $type) {
   // Check for mailchimp subscription fields and unsubscribe accordingly.
   $fields = field_info_fields();
-  foreach($fields as $field) {
+  foreach ($fields as $field) {
     if ($field['type'] == 'mailchimp_lists_subscription' && isset($field['bundles'][$type])) {
       $bundle = _mailchimp_lists_entity_get_bundle($entity, $type);
       if (in_array($bundle, $field['bundles'][$type])) {
@@ -151,7 +151,7 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
     if (is_array($mc_list['intgroups'])) {
       $form[$wrapper_key]['interest_groups'] = array(
         '#type' => 'fieldset',
-        '#title' => isset($settings['interest_groups_label']) ? t($settings['interest_groups_label']) : t('Interest Groups'),
+        '#title' => isset($settings['interest_groups_label']) ? $settings['interest_groups_label'] : t('Interest Groups'),
         '#weight' => 100,
         '#states' => array(
           'invisible' => array(
@@ -215,7 +215,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
       $function = 'remove';
     }
   }
-  elseif($choices['subscribe']) {
+  elseif ($choices['subscribe']) {
     $function = 'update';
   }
   if ($function) {
@@ -253,7 +253,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
 function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type) {
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
   $mergevars = array();
-  foreach($mergefields as $label => $property) {
+  foreach ($mergefields as $label => $property) {
     if (!empty($property) && strlen($property)) {
       $elements = explode(':', $property);
       $object = $wrapper;
@@ -303,7 +303,7 @@ function mailchimp_lists_mollom_form_info($form_id) {
 }
 
 /**
- * Get an options list array containing all possible Drupal properties for a given entity type.
+ * Get an array with all possible Drupal properties for a given entity type.
  *
  * @param string $entity_type
  *   Name of entity whose properties to list.
@@ -314,7 +314,7 @@ function mailchimp_lists_mollom_form_info($form_id) {
  * @param string $prefix
  *   Optional prefix for option IDs in the options list.
  * @param string $tree
- *   Optional name of the parent element when this options list is part of a tree.
+ *   Optional name of the parent element if this options list is part of a tree.
  *
  * @return array
  *   List of properties that can be used as an #options list.
