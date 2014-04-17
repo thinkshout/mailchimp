@@ -334,9 +334,11 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
     $actions = array();
     $sources = array();
 
-    $webhook_added = mailchimp_webhook_add($list_id, $url, $actions, $sources);
+    mailchimp_webhook_add($list_id, $url, $actions, $sources);
 
-    $this->assertTrue($webhook_added, 'Tested webhook addition.');
+    $webhook_deleted = mailchimp_webhook_delete($list_id, $url);
+
+    $this->assertTrue($webhook_deleted, 'Tested webhook deletion.');
 
     $found_webhook = FALSE;
     $webhooks = mailchimp_webhook_get($list_id);

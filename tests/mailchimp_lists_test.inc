@@ -240,14 +240,63 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
    * @see Mailchimp_Lists::webhookAdd()
    */
   public function webhookAdd($id, $url, $actions=array(), $sources=array()) {
+    $lists = $this->loadLists();
+    if (isset($lists[$id])) {
+      $new_id = (count($lists[$id]['webhooks']) + 1);
+      $webhook = array(
+        'id' => $new_id,
+        'url' => $url,
+        'actions' => $actions,
+        'sources' => $sources,
+      );
+      $lists[$id]['webhooks'][] = $webhook;
 
+      $response = array(
+        'id' => $new_id,
+      );
+
+      $this->writeLists($lists);
+    }
+    else
+    {
+      $response = array(
+        'status' => 'error',
+        'code' => 200,
+        'name' => 'List_DoesNotExist',
+      );
+    }
+    return $response;
   }
 
   /**
    * @see Mailchimp_Lists::webhookDel()
    */
   public function webhookDel($id, $url) {
+    $lists = $this->loadLists();
+    if (isset($lists[$id])) {
+      $complete = FALSE;
+      foreach ($lists[$id]['webhooks'] as $key => $webhook) {
+        if ($webhook['url'] == $url) {
+          unset($lists[$id]['webhooks'][$key]);
+          $this->writeLists($lists);
+          $complete = TRUE;
+          continue;
+        }
+      }
 
+      $response = array(
+        'complete' => $complete,
+      );
+    }
+    else
+    {
+      $response = array(
+        'status' => 'error',
+        'code' => 200,
+        'name' => 'List_DoesNotExist',
+      );
+    }
+    return $response;
   }
 
   /**
