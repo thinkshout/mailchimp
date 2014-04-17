@@ -203,14 +203,23 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    * Tests retrieval of list segments for a list.
    */
   public function testGetListSegments() {
+    $list = 'mailchimp_test_list_a';
+    $list_segments = mailchimp_get_segments($list);
 
+    $this->assertFalse(empty($list_segments['static']), 'Tested static list segments.');
+    $this->assertFalse(empty($list_segments['saved']), 'Tested saved list segments.');
   }
 
   /**
    * Tests creation of a segmenet for a list.
    */
   public function testCreateSegment() {
+    $list = 'mailchimp_test_list_a';
+    $name = 'New List Segment Test';
+    $type = 'static';
+    $segment_id = mailchimp_segment_create($list, $name, $type);
 
+    $this->assertFalse(empty($segment_id), 'Tested new list segment has valid ID.');
   }
 
   /**

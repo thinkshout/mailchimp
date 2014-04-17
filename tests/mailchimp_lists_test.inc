@@ -9,6 +9,10 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
   const MAILCHIMP_TEST_LIST_B = 'mailchimp_test_list_b';
   const MAILCHIMP_TEST_LIST_C = 'mailchimp_test_list_c';
 
+  const MAILCHIMP_TEST_SEGMENT_A = 'mailchimp_test_segment_a';
+  const MAILCHIMP_TEST_SEGMENT_B = 'mailchimp_test_segment_b';
+  const MAILCHIMP_TEST_SEGMENT_C = 'mailchimp_test_segment_c';
+
   /** @var string $errorMessage */
   public $errorMessage;
 
@@ -38,7 +42,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
               'id' => $email_address,
               'email' => $email_address,
               'email_type' => $member_data['email_type'],
-              'status' => 'subscribed',
+              'status' => $member_data['status'],
             );
           }
         }
@@ -74,14 +78,45 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
    * @see Mailchimp_Lists::segments()
    */
   public function segments($id, $type=null) {
+    $lists = $this->loadLists();
 
+    $response = array(
+      'static' => array(),
+      'saved' => array(),
+    );
+    if (isset($lists[$id])) {
+      $response['static'] = $lists[$id]['segments'];
+      $response['saved'] = $lists[$id]['segments'];
+    }
+    return $response;
   }
 
   /**
    * @see Mailchimp_Lists::segmentAdd()
    */
   public function segmentAdd($id, $opts) {
+    $lists = $this->loadLists();
 
+    $response = array();
+    if (isset($lists[$id])) {
+      $new_id = uniqid();
+      $new_segment = array(
+        'id' => $new_id,
+        'name' => $opts['name'],
+      );
+      if (isset($opts['segment_opts'])) {
+        $new_segment['segment_opts'] = $opts['segment_opts'];
+      }
+      $lists[$id]['segments'][] = $new_segment;
+      $response['id'] = $new_id;
+    }
+    else
+    {
+      $response['status'] = 'error';
+      $response['code'] = 200;
+      $response['name'] = 'List_DoesNotExist';
+    }
+    return $response;
   }
 
   /**
@@ -171,9 +206,10 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
   /**
    * @see Mailchimp_Lists::updateMember()
    */
-  public function updateMember($id, $email, $merge_vars, $email_type='', $replace_interests=true) {
+  public function updateMember($id, $email, $merge_vars, $email_type='', $replace_interests=TRUE) {
     $email_address = $email['email'];
     $lists = $this->loadLists();
+    $response = array();
     if (isset($lists[$id])) {
       if (isset($lists[$id]['data']['members'][$email_address])) {
         if (!empty($merge_vars)) {
@@ -181,10 +217,16 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
         }
         $lists[$id]['data']['members'][$email_address]['email_type'] = $email_type;
 
-        return TRUE;
+        $response['email'] = $email_address;
       }
     }
-    return FALSE;
+    else
+    {
+      $response['status'] = 'error';
+      $response['code'] = 200;
+      $response['name'] = 'List_DoesNotExist';
+    }
+    return $response;
   }
 
   /**
@@ -247,45 +289,61 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
    *   Basic lists.
    */
   protected function defaultLists() {
-    $default_mergevars = array();
-    $default_mergevars[] = array(
-      'name' => 'Email',
-      'order' => 0,
-      'tag' => 'EMAIL',
-      'req' => TRUE,
-      'web_id' => 'test',
-      'field_type' => 'text',
-      'size' => 40,
-      'default' => '',
-      'public' => TRUE,
+    $default_mergevars = array(
+      array(
+        'name' => 'Email',
+        'order' => 0,
+        'tag' => 'EMAIL',
+        'req' => TRUE,
+        'web_id' => 'test',
+        'field_type' => 'text',
+        'size' => 40,
+        'default' => '',
+        'public' => TRUE,
+      ),
+      array(
+        'name' => 'First Name',
+        'order' => 1,
+        'tag' => 'FIRSTNAME',
+        'req' => FALSE,
+        'web_id' => 'test',
+        'field_type' => 'text',
+        'size' => 40,
+        'default' => '',
+        'public' => TRUE,
+      ),
+      array(
+        'name' => 'Last Name',
+        'order' => 2,
+        'tag' => 'LASTNAME',
+        'req' => FALSE,
+        'web_id' => 'test',
+        'field_type' => 'text',
+        'size' => 40,
+        'default' => '',
+        'public' => TRUE,
+      )
     );
-    $default_mergevars[] = array(
-      'name' => 'First Name',
-      'order' => 1,
-      'tag' => 'FIRSTNAME',
-      'req' => FALSE,
-      'web_id' => 'test',
-      'field_type' => 'text',
-      'size' => 40,
-      'default' => '',
-      'public' => TRUE,
-    );
-    $default_mergevars[] = array(
-      'name' => 'Last Name',
-      'order' => 2,
-      'tag' => 'LASTNAME',
-      'req' => FALSE,
-      'web_id' => 'test',
-      'field_type' => 'text',
-      'size' => 40,
-      'default' => '',
-      'public' => TRUE,
+    $default_segments = array(
+      array(
+        'id' => self::MAILCHIMP_TEST_SEGMENT_A,
+        'name' => 'Test Segment A',
+      ),
+      array(
+        'id' => self::MAILCHIMP_TEST_SEGMENT_B,
+        'name' => 'Test Segment B',
+      ),
+      array(
+        'id' => self::MAILCHIMP_TEST_SEGMENT_C,
+        'name' => 'Test Segment C',
+      )
     );
     $lists = array(
       self::MAILCHIMP_TEST_LIST_A => array(
         'name' => 'Test List A',
         'data' => array(),
         'merge_vars' => $default_mergevars,
+        'segments' => $default_segments,
         'stats' => array(
           'group_count' => 0,
         ),
@@ -294,6 +352,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
         'name' => 'Test List B',
         'data' => array(),
         'merge_vars' => $default_mergevars,
+        'segments' => $default_segments,
         'stats' => array(
           'group_count' => 0,
         ),
@@ -302,6 +361,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
         'name' => 'Test List C',
         'data' => array(),
         'merge_vars' => $default_mergevars,
+        'segments' => $default_segments,
         'stats' => array(
           'group_count' => 0,
         ),
