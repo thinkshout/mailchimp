@@ -725,6 +725,7 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
  * Returns all IDs of campaigns that have included a given email address.
  *
  * @param string $email
+ *   Email address to search.
  *
  * @return array
  *   Campaign structs containing id, title, subject, send_time, type.
@@ -748,6 +749,7 @@ function mailchimp_get_campaigns_for_email($email) {
  * Wrapper around MCAPI->lists->webhooks().
  *
  * @param string $list_id
+ *   Mailchimp API List ID.
  *
  * @return mixed
  *   Array of existing webhooks, or FALSE.

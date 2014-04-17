@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Install, update and uninstall functions for the mailchimp_activity module.
+ */
+
+/**
  * Implements hook_schema().
  */
 function mailchimp_activity_schema() {
@@ -60,7 +65,7 @@ function mailchimp_activity_schema() {
         'size' => 'tiny',
         'description' => 'Whether or not this mailchimp activity stream is enabled.',
       ),
-      // following fields are for supporting exportable status.
+      // The following fields are for supporting exportable status.
       'locked' => array(
         'description' => 'A boolean indicating whether the administrator may delete this mapping.',
         'type' => 'int',

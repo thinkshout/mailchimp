@@ -18,13 +18,13 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#title' => t('Title'),
     '#description' => t('An internal name to use for this campaign. By default, the campaign subject will be used.'),
     '#required' => FALSE,
-    '#default_value' => ($campaign) ? $campaign->mc_data['title'] : ''
+    '#default_value' => ($campaign) ? $campaign->mc_data['title'] : '',
   );
   $form['subject'] = array(
     '#type' => 'textfield',
     '#title' => t('Subject'),
     '#required' => TRUE,
-    '#default_value' => ($campaign) ? $campaign->mc_data['subject'] : ''
+    '#default_value' => ($campaign) ? $campaign->mc_data['subject'] : '',
   );
   $form['list_id'] = array(
     '#type' => 'select',
@@ -42,7 +42,8 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
 
   if (!empty($form_state['values']['list_id'])) {
     $list_id = $form_state['values']['list_id'];
-  } else if ($campaign && $campaign->mc_data) {
+  }
+  elseif ($campaign && $campaign->mc_data) {
     $list_id = $campaign->mc_data['list_id'];
     if (isset($campaign->mc_data['saved_segment']['id'])) {
       $segment_id = $campaign->mc_data['saved_segment']['id'];
@@ -89,14 +90,13 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
   $form['template_id'] = array(
     '#type' => 'select',
     '#title' => t('Template'),
-    '#description' => t('Select a MailChimp user template to use. Due to a limitation in the API, only templates that'
-      . ' do not contain repeating sections are available. If empty, the default template will be applied.'),
+    '#description' => t('Select a MailChimp user template to use. Due to a limitation in the API, only templates that do not contain repeating sections are available. If empty, the default template will be applied.'),
     '#options' => _mailchimp_campaign_build_option_list(mailchimp_campaign_get_templates()),
     '#default_value' => ($campaign) ? $campaign->mc_data['template_id'] : -1,
     '#ajax' => array(
       'callback' => 'mailchimp_campaign_template_callback',
-      'wrapper' => 'content-sections'
-    )
+      'wrapper' => 'content-sections',
+    ),
   );
   $form['content'] = array(
     '#id' => 'content-sections',
@@ -105,7 +105,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#description' => t('The HTML content or, if a template is selected, the content for each section.'),
     '#collapsible' => FALSE,
     '#collapsed' => FALSE,
-    '#tree' => TRUE
+    '#tree' => TRUE,
   );
 
   $mc_template = NULL;
@@ -205,14 +205,14 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
       }
       $form['content']['html_' . $section . '_wrapper'] = array(
         '#type' => 'fieldset',
-        '#title' => drupal_ucfirst($section),
+        '#title' => check_plain(drupal_ucfirst($section)),
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
       );
       $form['content']['html_' . $section . '_wrapper']['html_' . $section] = array(
         '#type' => 'text_format',
         '#format' => $format,
-        '#title' => drupal_ucfirst($section),
+        '#title' => check_plain(drupal_ucfirst($section)),
         '#default_value' => $default_value,
       );
     }
@@ -230,11 +230,11 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
       '#title' => t('Content'),
       '#description' => t('The HTML content of the campaign.'),
       '#access' => empty($form_state['values']['template_id']),
-      '#default_value' => ($campaign) ? $campaign->template['html']['value'] : ''
+      '#default_value' => ($campaign) ? $campaign->template['html']['value'] : '',
     );
   }
 
-  // Message preview
+  // Message preview:
   if (isset($form_state['mailchimp_campaign_campaign_preview'])) {
     $form['preview_wrapper'] = array(
       '#title' => t('Campaign content preview'),
@@ -263,11 +263,6 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
 
 /**
  * AJAX callback when changing template ID.
- *
- * @param $form
- * @param $form_state
- *
- * @return mixed
  */
 function mailchimp_campaign_template_callback($form, $form_state) {
   return $form['content'];
@@ -275,11 +270,6 @@ function mailchimp_campaign_template_callback($form, $form_state) {
 
 /**
  * AJAX callback when changing list ID.
- *
- * @param array $form
- * @param array $form_state
- *
- * @return mixed
  */
 function mailchimp_campaign_list_segment_callback($form, $form_state) {
   return $form['list_segment_id'];
@@ -288,11 +278,8 @@ function mailchimp_campaign_list_segment_callback($form, $form_state) {
 /**
  * AJAX callback when changing entity type.
  *
- * @param array $form
- * @param array $form_state
- *
  * @return array
- *  Entity form elements array.
+ *   Entity form elements array.
  */
 function mailchimp_campaign_entity_type_callback($form, $form_state) {
   return array(
@@ -303,9 +290,6 @@ function mailchimp_campaign_entity_type_callback($form, $form_state) {
 
 /**
  * Preview callback for mailchimp_campaign_campaign_form().
- *
- * @param array $form
- * @param array $form_state
  */
 function mailchimp_campaign_campaign_preview($form, &$form_state) {
   $text = '';
@@ -320,9 +304,6 @@ function mailchimp_campaign_campaign_preview($form, &$form_state) {
 
 /**
  * Validation callback for mailchimp_campaign_campaign_form().
- *
- * @param array $form
- * @param array $form_state
  */
 function mailchimp_campaign_campaign_form_validate($form, &$form_state) {
   if (!valid_email_address($form_state['values']['from_email'])) {
@@ -332,9 +313,6 @@ function mailchimp_campaign_campaign_form_validate($form, &$form_state) {
 
 /**
  * Submit handler for mailchimp_campaign_campaign_form().
- *
- * @param array $form
- * @param array $form_state
  */
 function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
   $values = $form_state['values'];
@@ -344,7 +322,7 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
     'list_id' => $values['list_id'],
     'from_email' => $values['from_email'],
     'from_name' => check_plain($values['from_name']),
-    'template_id' => $values['template_id']
+    'template_id' => $values['template_id'],
   );
   $segment_options = NULL;
   if (isset($values['list_segment_id']) && !empty($values['list_segment_id'])) {
@@ -379,6 +357,7 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
 
 /**
  * Returns an array of entities based on data from entity_get_info().
+ *
  * Filters out entities that do not contain a title field, as they cannot
  * be used to import content into templates.
  *
@@ -400,11 +379,13 @@ function _mailchimp_campaign_get_entities_for_content_import() {
 
 /**
  * Returns an options list of entities based on data from entity_get_info().
+ *
  * Filters out entities that do not contain a title field, as they cannot
  * be used to import content into templates.
  *
- * @param $entity_info
+ * @param array $entity_info
  *   Array of entities as returned by entity_get_info().
+ *
  * @return array
  *   Associative array of entity IDs to name.
  */
@@ -420,8 +401,9 @@ function _mailchimp_campaign_build_entity_option_list($entity_info) {
 /**
  * Returns an options list of entity view modes.
  *
- * @param $entity
+ * @param array $entity
  *   Array of entity data as returned by entity_get_info().
+ *
  * @return array
  *   Associative array of view mode IDs to name.
  */
@@ -441,11 +423,12 @@ function _mailchimp_campaign_build_entity_view_mode_option_list(array $entity) {
  *   Array of item data containing 'id' and 'name' properties.
  * @param string $no_selection_label
  *   The option value to display when no option is selected.
+ *
  * @return array
  *   Associative array of item IDs to name.
  */
 function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- Select --') {
-  $options = array('' => t($no_selection_label));
+  $options = array('' => $no_selection_label);
   foreach ($list as $item) {
     $options[$item['id']] = $item['name'];
   }
@@ -458,6 +441,7 @@ function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- 
  *
  * @param array $merge_vars
  *   Array of merge vars. @see mailchimp_lists_get_merge_vars
+ *
  * @return string
  *   HTML string containing formatted merge vars.
  */
@@ -488,14 +472,6 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
 
 /**
  * List deletion form.
- *
- * @param array $form
- * @param array $form_state
- * @param MailChimpCampaign $campaign
- *   The MailChimp campaign instance.
- *
- * @return array
- *   The form array.
  */
 function mailchimp_campaign_delete_form($form, &$form_state, MailChimpCampaign $campaign) {
   $form_state['campaign'] = $campaign;
@@ -508,10 +484,7 @@ function mailchimp_campaign_delete_form($form, &$form_state, MailChimpCampaign $
 }
 
 /**
- * Submit handler for mailchimp_campaign_delete_list_form();
- *
- * @param string $form
- * @param string $form_state
+ * Submit handler for mailchimp_campaign_delete_list_form().
  */
 function mailchimp_campaign_delete_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
@@ -525,14 +498,6 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
 
 /**
  * List deletion form.
- *
- * @param array $form
- * @param array $form_state
- * @param MailChimpCampaign $campaign
- *   The MailChimp campaign instance.
- *
- * @return array
- *   The form array.
  */
 function mailchimp_campaign_send_form($form, &$form_state, MailChimpCampaign $campaign) {
   $form_state['campaign'] = $campaign;
@@ -545,10 +510,7 @@ function mailchimp_campaign_send_form($form, &$form_state, MailChimpCampaign $ca
 }
 
 /**
- * Submit handler for mailchimp_campaign_delete_list_form();
- *
- * @param string $form
- * @param string $form_state
+ * Submit handler for mailchimp_campaign_delete_list_form().
  */
 function mailchimp_campaign_send_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];

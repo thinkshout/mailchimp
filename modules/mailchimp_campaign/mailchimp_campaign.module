@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Module file for mailchimp.
+ * Module file for mailchimp_campaign.
  */
 
 module_load_include('inc', 'mailchimp_campaign', 'mailchimp_campaign.entity');
@@ -30,7 +30,7 @@ function mailchimp_campaign_menu() {
     'access arguments' => array('administer mailchimp campaigns'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'mailchimp_campaign.admin.inc',
-    'weight' => 10
+    'weight' => 10,
   );
   $items['admin/config/services/mailchimp/campaigns/add'] = array(
     'title' => 'Add a Campaign',
@@ -51,7 +51,7 @@ function mailchimp_campaign_menu() {
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/view'] = array(
     'title' => 'View',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => 0
+    'weight' => 0,
   );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/send'] = array(
     'title' => 'Send',
@@ -61,7 +61,7 @@ function mailchimp_campaign_menu() {
     'access arguments' => array(5, FALSE),
     'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
-    'weight' => 1
+    'weight' => 1,
   );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/edit'] = array(
     'title' => 'Edit',
@@ -72,7 +72,7 @@ function mailchimp_campaign_menu() {
     'access arguments' => array(5, FALSE),
     'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
-    'weight' => 2
+    'weight' => 2,
   );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/delete'] = array(
     'title' => 'Delete',
@@ -82,7 +82,7 @@ function mailchimp_campaign_menu() {
     'access arguments' => array(5, FALSE),
     'file' => 'mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
-    'weight' => 3
+    'weight' => 3,
   );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/stats'] = array(
     'title' => 'Stats',
@@ -91,7 +91,7 @@ function mailchimp_campaign_menu() {
     'access callback' => 'mailchimp_campaign_access',
     'access arguments' => array(5, TRUE),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 4
+    'weight' => 4,
   );
   $items['admin/config/services/mailchimp/campaigns/entities'] = array(
     'page callback' => 'mailchimp_campaign_entities_autocomplete_callback',
@@ -104,12 +104,14 @@ function mailchimp_campaign_menu() {
 
 /**
  * Callback for campaign template entity search field.
- * Returns entities with titles matching search string.
  *
  * @param string $type
  *   The entity type to limit search to.
  * @param string $string
  *   The string to search entity titles for.
+ * 
+ * @return array
+ *   Entities with titles matching search string.
  */
 function mailchimp_campaign_entities_autocomplete_callback($type, $string = '') {
   $query = new EntityFieldQuery();
@@ -150,15 +152,14 @@ function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
 }
 
 /**
- * Access callback for campaigns. Provides access to features based on
- * whether or not a campaign has been sent.
+ * Access callback for campaigns.
+ * 
+ * Provides access to features based on whether or not a campaign has been sent.
  *
  * @param MailChimpCampaign $campaign
  *   The MailChimp campaign instance.
  * @param bool $sent
  *   Set to TRUE when a campaign has been sent.
- *
- * @return bool
  */
 function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
   $access = FALSE;

@@ -1,3 +1,8 @@
+/**
+ * @file
+ * Mailchimp Campaign javascript.
+ */
+
 (function ($) {
 
   Drupal.behaviors.mailchimp_campaign = {
