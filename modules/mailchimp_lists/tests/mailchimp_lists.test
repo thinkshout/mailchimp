@@ -125,28 +125,78 @@ class MailchimpListsTestCase extends DrupalWebTestCase {
    * Tests the status of a member's subscription to a list.
    */
   public function testIsSubscribed() {
+    $list = 'mailchimp_test_list_a';
+    $email = 'user@example.org';
+    $subscribed = mailchimp_subscribe($list, $email);
 
+    $this->assertTrue($subscribed, 'Tested new user subscription.');
+
+    $subscribed = mailchimp_is_subscribed($list, $email);
+    $this->assertTrue($subscribed, 'Tested user is subscribed to list.');
   }
 
   /**
    * Tests subscribing a member to a list.
    */
   public function testSubscribe() {
+    $list = 'mailchimp_test_list_a';
+    $email = 'user@example.org';
+    $subscribed = mailchimp_subscribe($list, $email);
 
+    $this->assertTrue($subscribed, 'Tested new user subscription.');
+
+    $list = 'mailchimp_invalid_list';
+    $subscribed = mailchimp_subscribe($list, $email);
+
+    $this->assertFalse($subscribed, 'Tested new user subscription to invalid list.');
   }
 
   /**
    * Tests updating a list member.
    */
   public function testUpdateMember() {
+    $list = 'mailchimp_test_list_a';
+    $email = 'user@example.org';
+    $subscribed = mailchimp_subscribe($list, $email);
 
+    $this->assertTrue($subscribed, 'Tested new user subscription.');
+
+    $updated = mailchimp_update_member($list, $email, NULL, 'text');
+
+    $this->assertTrue($updated, 'Tested user update.');
+
+    $member_info = mailchimp_get_memberinfo($list, $email);
+
+    $this->assertEqual($member_info['email'], $email, 'Tested updated member email retrieved: ' . $member_info['email']);
   }
 
   /**
    * Tests unsubscribing a member from a list.
    */
   public function testUnsubscribe() {
+    $list = 'mailchimp_test_list_a';
+    $email = 'user@example.org';
+    $subscribed = mailchimp_subscribe($list, $email);
 
+    $this->assertTrue($subscribed, 'Tested new user subscription.');
+
+    $unsubscribed = mailchimp_unsubscribe($list, $email);
+
+    $this->assertTrue($unsubscribed, 'Tested user unsubscription.');
+
+    $member_info = mailchimp_get_memberinfo($list, $email);
+
+    $this->assertEqual($member_info['status'], 'unsubscribed', 'Tested updated subscription state.');
+
+    // Reset subscription.
+    mailchimp_subscribe($list, $email);
+
+    // Delete member.
+    mailchimp_unsubscribe($list, $email, TRUE);
+
+    $member_info = mailchimp_get_memberinfo($list, $email);
+
+    $this->assertTrue(empty($member_info), 'Tested user deletion on unsubscribe.');
   }
 
   /**

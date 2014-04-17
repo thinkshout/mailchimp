@@ -102,8 +102,11 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
         $lists[$id]['data']['members'] = array();
       }
 
+      $leid = NULL;
+      $euid = NULL;
+
       if (isset($lists[$id]['data']['members'][$email_address])) {
-        $lists[$id]['data']['members'][$email_address]['subscribed'] = TRUE;
+        $lists[$id]['data']['members'][$email_address]['status'] = 'subscribed';
       }
       else {
         $leid = uniqid();
@@ -111,7 +114,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
 
         $lists[$id]['data']['members'][$email_address] = array(
           'id' => $euid,
-          'subscribed' => TRUE,
+          'status' => 'subscribed',
           'email_type' => $email_type,
           'merge_vars' => $merge_vars,
         );
@@ -127,7 +130,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
       return $response;
     }
     else {
-      $this->errorMessage = 'Could not add ' . $email . ' to non-existant list: ' . $id;
+      $this->errorMessage = 'Could not add ' . $email_address . ' to non-existant list: ' . $id;
       return NULL;
     }
   }
@@ -136,30 +139,31 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
    * @see Mailchimp_Lists::unsubscribe()
    */
   public function unsubscribe($id, $email, $delete_member=false, $send_goodbye=true, $send_notify=true) {
+    $email_address = $email['email'];
     $lists = $this->loadLists();
     if (isset($lists[$id])) {
-      if (isset($lists[$id]['data']['members'][$email])) {
-        if ($lists[$id]['data']['members'][$email]['subscribed']) {
+      if (isset($lists[$id]['data']['members'][$email_address])) {
+        if ($lists[$id]['data']['members'][$email_address]['status'] == 'subscribed') {
           if ($delete_member) {
-            unset($lists[$id]['data']['members'][$email]);
+            unset($lists[$id]['data']['members'][$email_address]);
           }
           else {
-            $lists[$id]['data']['members'][$email]['subscribed'] = FALSE;
+            $lists[$id]['data']['members'][$email_address]['status'] = 'unsubscribed';
           }
           $this->writeLists($lists);
 
           return TRUE;
         }
         else {
-          $this->errorMessage = 'Could not unsubscribe ' . $email . ' from: ' . $id . ': not currently subscribed.';
+          $this->errorMessage = 'Could not unsubscribe ' . $email_address . ' from: ' . $id . ': not currently subscribed.';
         }
       }
       else {
-        $this->errorMessage = 'Could not unsubscribe ' . $email . ' from: ' . $id . ': address not on list';
+        $this->errorMessage = 'Could not unsubscribe ' . $email_address . ' from: ' . $id . ': address not on list';
       }
     }
     else {
-      $this->errorMessage = 'Could not unsubscribe ' . $email . ' from non-existant list: ' . $id;
+      $this->errorMessage = 'Could not unsubscribe ' . $email_address . ' from non-existant list: ' . $id;
     }
     return FALSE;
   }
@@ -168,7 +172,19 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
    * @see Mailchimp_Lists::updateMember()
    */
   public function updateMember($id, $email, $merge_vars, $email_type='', $replace_interests=true) {
+    $email_address = $email['email'];
+    $lists = $this->loadLists();
+    if (isset($lists[$id])) {
+      if (isset($lists[$id]['data']['members'][$email_address])) {
+        if (!empty($merge_vars)) {
+          $lists[$id]['data']['members'][$email_address]['merge_vars'] = $merge_vars;
+        }
+        $lists[$id]['data']['members'][$email_address]['email_type'] = $email_type;
 
+        return TRUE;
+      }
+    }
+    return FALSE;
   }
 
   /**
