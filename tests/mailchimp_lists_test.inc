@@ -254,7 +254,20 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
    * @see Mailchimp_Lists::webhooks()
    */
   public function webhooks($id) {
+    $lists = $this->loadLists();
 
+    if (isset($lists[$id])) {
+      $response = $lists[$id]['webhooks'];
+    }
+    else
+    {
+      $response = array(
+        'status' => 'error',
+        'code' => 200,
+        'name' => 'List_DoesNotExist',
+      );
+    }
+    return $response;
   }
 
   /**
@@ -329,7 +342,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
         'size' => 40,
         'default' => '',
         'public' => TRUE,
-      )
+      ),
     );
     $default_segments = array(
       array(
@@ -343,7 +356,31 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
       array(
         'id' => MAILCHIMP_TEST_SEGMENT_C,
         'name' => 'Test Segment C',
-      )
+      ),
+    );
+    $default_webhooks = array(
+      array(
+        'url' => 'http://example.org/web-hook-subscribe',
+        'actions' => array(
+          'subscribe' => TRUE
+        ),
+        'sources' => array(
+          'user' => TRUE,
+          'admin' => TRUE,
+          'api' => TRUE,
+        ),
+      ),
+      array(
+        'url' => 'http://example.org/web-hook-unsubscribe',
+        'actions' => array(
+          'unsubscribe' => TRUE
+        ),
+        'sources' => array(
+          'user' => TRUE,
+          'admin' => TRUE,
+          'api' => TRUE,
+        ),
+      ),
     );
     $lists = array(
       MAILCHIMP_TEST_LIST_A => array(
@@ -351,6 +388,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
         'data' => array(),
         'merge_vars' => $default_mergevars,
         'segments' => $default_segments,
+        'webhooks' => $default_webhooks,
         'stats' => array(
           'group_count' => 0,
         ),
@@ -360,6 +398,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
         'data' => array(),
         'merge_vars' => $default_mergevars,
         'segments' => $default_segments,
+        'webhooks' => $default_webhooks,
         'stats' => array(
           'group_count' => 0,
         ),
@@ -369,6 +408,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
         'data' => array(),
         'merge_vars' => $default_mergevars,
         'segments' => $default_segments,
+        'webhooks' => $default_webhooks,
         'stats' => array(
           'group_count' => 0,
         ),
