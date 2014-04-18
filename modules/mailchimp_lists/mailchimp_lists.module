@@ -50,7 +50,7 @@ function mailchimp_lists_menu() {
 function mailchimp_lists_entity_delete($entity, $type) {
   // Check for mailchimp subscription fields and unsubscribe accordingly.
   $fields = field_info_fields();
-  foreach($fields as $field) {
+  foreach ($fields as $field) {
     if ($field['type'] == 'mailchimp_lists_subscription' && isset($field['bundles'][$type])) {
       $bundle = _mailchimp_lists_entity_get_bundle($entity, $type);
       if (in_array($bundle, $field['bundles'][$type])) {
@@ -226,7 +226,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
       $function = 'remove';
     }
   }
-  elseif($choices['subscribe']) {
+  elseif ($choices['subscribe']) {
     $function = 'update';
   }
   if ($function) {
