@@ -33,7 +33,6 @@ function mailchimp_campaign_menu() {
     'page callback' => 'mailchimp_campaign_overview_page',
     'access arguments' => array('administer mailchimp campaigns'),
     'type' => MENU_LOCAL_TASK,
-    'file' => 'mailchimp_campaign.admin.inc',
     'weight' => 10,
   );
   $items['admin/config/services/mailchimp/campaigns/add'] = array(
