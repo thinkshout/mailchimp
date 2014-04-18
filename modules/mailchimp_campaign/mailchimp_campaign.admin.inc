@@ -87,11 +87,16 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#size' => 40,
     '#maxlength' => 255,
   );
+  $template_type_labels = array(
+    'user' => 'My Custom Templates',
+    'basic' => 'Basic Templates',
+    'gallery' => 'Themes',
+  );
   $form['template_id'] = array(
     '#type' => 'select',
     '#title' => t('Template'),
     '#description' => t('Select a MailChimp user template to use. Due to a limitation in the API, only templates that do not contain repeating sections are available. If empty, the default template will be applied.'),
-    '#options' => _mailchimp_campaign_build_option_list(mailchimp_campaign_get_templates()),
+    '#options' => _mailchimp_campaign_build_option_list(mailchimp_campaign_get_templates(), '-- Select --', $template_type_labels),
     '#default_value' => ($campaign) ? $campaign->mc_data['template_id'] : -1,
     '#ajax' => array(
       'callback' => 'mailchimp_campaign_template_callback',
@@ -427,14 +432,17 @@ function _mailchimp_campaign_build_entity_view_mode_option_list(array $entity) {
  * @return array
  *   Associative array of item IDs to name.
  */
-function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- Select --') {
+function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- Select --', $labels = array()) {
   $options = array();
   if ($no_selection_label) {
     $options[''] = $no_selection_label;
   }
   foreach ($list as $index => $item) {
     if (!isset($item['id'])) {
-      $options[$index] = _mailchimp_campaign_build_option_list($item, FALSE);
+      $label = isset($labels[$index]) ? $labels[$index] : $index;
+      if (count($item)) {
+        $options[$label] = _mailchimp_campaign_build_option_list($item, FALSE, $labels);
+      }
     }
     else {
       $options[$item['id']] = $item['name'];
