@@ -283,14 +283,8 @@ function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type
 /**
  * Triggers an update of all merge field values for appropriate entities.
  */
-function mailchimp_lists_update_member_merge_values($entity_type, $bundle_name, $field_name) {
-  // @todo put this into a drupal batch operation.
-
-  $field = field_info_field($field_name);
-  if (!isset($field['settings']['mc_list_id'])) {
-    return FALSE;
-  }
-  $instance = field_info_instance($entity_type, $field_name, $bundle_name);
+function mailchimp_lists_update_member_merge_values($entity_type, $bundle_name, $field) {
+  $instance = field_info_instance($entity_type, $field['field_name'], $bundle_name);
   $mergefields = $instance['settings']['mergefields'];
   // Assemble a list of current subscription statuses so we don't alter them.
   // Because of cacheing we don't want to use the standard checks. Expiring the
@@ -302,35 +296,100 @@ function mailchimp_lists_update_member_merge_values($entity_type, $bundle_name, 
       $current_subscribers[$result['email']] = $result;
     }
   }
-  // Load up all our eligible entities.
-  $query = new EntityFieldQuery();
-  $query->entityCondition('entity_type', $entity_type);
-  if ($entity_type !== 'user') {
-    $query->entityCondition('bundle', $bundle_name);
-  }
-  $query_results = $query->execute();
-  // If there are no results, we are done here.
-  if (!isset($query_results[$entity_type])) {
-    return array('success' => TRUE, 'count' => 0);
-  }
-  // Now populate our batch, filtering by subscription status:
-  $entities = entity_load($entity_type, array_keys($query_results[$entity_type]));
-  $batch = array();
-  foreach ($entities as $entity) {
-    $merge_vars = _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type);
-    if ($merge_vars['EMAIL'] && isset($current_subscribers[$merge_vars['EMAIL']])) {
-      $batch[] = array(
-        'email' => array('email' => $merge_vars['EMAIL']),
-        'email_type' => $current_subscribers[$merge_vars['EMAIL']]['email_type'],
-        'merge_vars' => $merge_vars,
-      );
+
+  $batch = array(
+    'operations' => array(
+      array('mailchimp_lists_populate_member_batch', array(
+        $entity_type,
+        $bundle_name,
+        $field,
+        $mergefields,
+        $current_subscribers),
+      ),
+    ),
+    'finished' => 'mailchimp_lists_populate_member_batch_complete',
+    'title' => t('Processing Merge Variable Updates'),
+    'init_message' => t('Starting Mailchimp Merge Variable Update.'),
+    'progress_message' => t('Processed @current out of @total.'),
+    'error_message' => t('MailChimp Merge Variable Update Failed.'),
+  );
+  batch_set($batch);
+}
+
+/**
+ * Batch processor for member mergevar updates.
+ */
+function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $field, $mergefields, $current_subscribers, &$context) {
+  $mailchimp_batch_limit = 5000;
+  if (!isset($context['sandbox']['progress'])) {
+    // Load up all our eligible entities.
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', $entity_type);
+    if ($entity_type !== 'user') {
+      $query->entityCondition('bundle', $bundle_name);
+    }
+    $query_results = $query->execute();
+    $context['sandbox']['progress'] = 0;
+    $context['results']['updates'] = 0;
+    $context['results']['errors'] = 0;
+    $context['sandbox']['max'] = isset($query_results[$entity_type]) ? count($query_results[$entity_type]) : 0;
+    if ($context['sandbox']['max']) {
+      $context['sandbox']['entity_ids'] = array_keys($query_results[$entity_type]);
+      $context['sandbox']['update_queue'] = array();
     }
   }
-  $result = mailchimp_batch_update_members($field['settings']['mc_list_id'], $batch, FALSE, TRUE, FALSE);
-  return array(
-    'success' => TRUE,
-    'count' => $result['update_count'],
-  );
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $batch_size = 50;
+    $item_ids = array_slice($context['sandbox']['entity_ids'], $context['sandbox']['progress'], $context['sandbox']['progress'] + $batch_size);
+    $entities = entity_load($entity_type, $item_ids);
+    foreach ($entities as $entity) {
+      $merge_vars = _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type);
+      if ($merge_vars['EMAIL'] && isset($current_subscribers[$merge_vars['EMAIL']])) {
+        $context['sandbox']['update_queue'][] = array(
+          'email' => array('email' => $merge_vars['EMAIL']),
+          'email_type' => $current_subscribers[$merge_vars['EMAIL']]['email_type'],
+          'merge_vars' => $merge_vars,
+        );
+      }
+      $context['sandbox']['progress']++;
+    }
+    $context['message'] = t('Processed %count items', array('%count' => $context['sandbox']['progress'] - 1));
+    if ($context['sandbox']['progress'] >= $context['sandbox']['max'] || $context['sandbox']['progress'] >= $mailchimp_batch_limit) {
+      $result = mailchimp_batch_update_members($field['settings']['mc_list_id'], $context['sandbox']['update_queue'], FALSE, TRUE, FALSE);
+      $context['sandbox']['update_queue'] = array();
+      if ($result) {
+        $context['results']['updates'] += $result['update_count'];
+        $context['results']['errors'] += $result['error_count'];
+      }
+    }
+    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+  }
+}
+
+/**
+ * Batch completion processor for member mergevar updates.
+ */
+function mailchimp_lists_populate_member_batch_complete($success, $results, $operations){
+  if ($success) {
+    if ($results['errors']) {
+      drupal_set_message(t('Update errors occurred: merge variables updated on %count records, errors occurred on %errors records.',
+        array(
+          '%count' => $results['updates'],
+          '%errors' => $results['errors'],
+        )
+      ), 'warning');
+    }
+    else {
+      drupal_set_message(t('Merge variables updated on %count records.',
+        array(
+          '%count' => $results['updates'],
+        )
+      ), 'status');
+    }
+  }
+  else {
+    drupal_set_message(t('Merge variable update failed.'), 'error');
+  }
 }
 
 /**
