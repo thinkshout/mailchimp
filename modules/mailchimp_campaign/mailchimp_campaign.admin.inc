@@ -199,6 +199,9 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
   );
 
   if ($mc_template) {
+    if (strpos($mc_template['info']['source'], 'mc:repeatable')) {
+      drupal_set_message(t('WARNING: This template section has repeating sections, which are not supported. You may want to select a different template.'), 'warning');
+    }
     foreach ($mc_template['info']['default_content'] as $section => $content) {
       // Set the default value and text format to either saved campaign values
       // or defaults coming from the MailChimp template.
