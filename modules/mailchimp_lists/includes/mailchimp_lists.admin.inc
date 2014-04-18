@@ -144,3 +144,40 @@ function mailchimp_lists_webhook_form_submit($form, &$form_state) {
   }
   $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
 }
+
+
+/**
+ * Update Mergevars Form.
+ */
+function mailchimp_lists_update_mergevars_form($form, &$form_state, $entity_type, $bundle_name, $field_name) {
+  $field = field_info_field($field_name);
+  if (!isset($field['settings']['mc_list_id'])) {
+    return array();
+  }
+  $list = mailchimp_get_list($field['settings']['mc_list_id']);
+  $form_state['entity_type'] = $entity_type;
+  $form_state['bundle_name'] = $bundle_name;
+  $form_state['field'] = $field;
+  if ($list) {
+    return confirm_form($form,
+      t('Update Merge Fields on %list for all @entity_type -- @bundle entities?',
+        array(
+          '%list' => $list['name'],
+          '@entity_type' => $entity_type,
+          '@bundle' => $bundle_name,
+        )),
+      'admin/config/services/mailchimp/lists',
+      t('This can overwrite values configured directly on your Mailchimp Account.'),
+      "Update Merge Values"
+    );
+  }
+  return array();
+}
+
+/**
+ * Submit handler for mailchimp_lists_update_mergevars_form().
+ */
+function mailchimp_lists_update_mergevars_form_submit($form, &$form_state) {
+  mailchimp_lists_update_member_merge_values($form_state['entity_type'], $form_state['bundle_name'], $form_state['field']);
+  $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
+}
