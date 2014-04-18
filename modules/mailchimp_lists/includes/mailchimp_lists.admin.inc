@@ -70,59 +70,33 @@ function mailchimp_lists_overview_page() {
  * Administrative display showing existing lists and allowing edits/adds.
  */
 function mailchimp_lists_fields_overview_page() {
-  $mc_lists = mailchimp_get_lists();
-  $rows = array();
-  $webhook_url = mailchimp_webhook_url();
-  foreach ($mc_lists as $mc_list) {
-    $webhooks = mailchimp_webhook_get($mc_list['id']);
-    $enabled = FALSE;
-    if ($webhooks) {
-      foreach ($webhooks as $webhook) {
-        if ($webhook_url == $webhook['url']) {
-          $enabled = TRUE;
-          continue;
+  $fields = field_info_fields();
+  foreach ($fields as $field) {
+    if ($field['type'] == 'mailchimp_lists_subscription') {
+      foreach ($field['bundles'] as $entity_type => $bundles) {
+        foreach ($bundles as $bundle) {
+          $link = 'admin/config/services/mailchimp/lists/update_mergevars/' . $entity_type . '/' . $bundle . '/' . $fields['field_blazer_fans']['field_name'];
+          $rows[] = array(
+            $entity_type,
+            $bundle,
+            $field['field_name'],
+            l(t('Update Mailchimp Mergevar Values'), $link),
+          );
         }
       }
     }
-    if ($enabled) {
-      // This is a webhook for this Mailchimp Module.
-      $webhook_status = "ENABLED (" . l(t('disable'), 'admin/config/services/mailchimp/lists/' . $mc_list['id'] . '/webhook/disable') . ')';
-    }
-    else {
-      $webhook_status = "disabled (" . l(t('enable'), 'admin/config/services/mailchimp/lists/' . $mc_list['id'] . '/webhook/enable') . ')';
-    }
-    $rows[] = array(
-      l($mc_list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id']),
-      $mc_list['stats']['member_count'],
-      $webhook_status,
-    );
-
   }
   $table = array(
     'header' => array(
-      t('Name'),
-      t('Members'),
-      t('Webhook Status'),
+      t('Entity Type'),
+      t('Bundle'),
+      t('Field'),
+      t('Batch Update'),
     ),
     'rows' => $rows,
   );
-  $refresh_link = l(t('Refresh lists from Mailchimp'),
-    'admin/config/services/mailchimp/list_cache_clear',
-    array('query' => array('destination' => 'admin/config/services/mailchimp/lists')));
-  if (empty($mc_lists)) {
-    $table['caption'] = $refresh_link;
-    drupal_set_message(t('You don\'t have any lists configured in your MailChimp account, (or you haven\'t configured your API key correctly on the Global Settings tab). Head over to !link and create some lists, then come back here and click "Refresh lists from MailChimp"',
-      array('!link' => l(t('MailChimp'), 'https://admin.mailchimp.com/lists/'))), 'warning');
-  }
-  else {
-    $options = 'Currently Available MailChimp lists:<i>';
-    foreach ($mc_lists as $mc_list) {
-      $options .= ' ' . $mc_list['name'] . ',';
-    }
-    $options = rtrim($options, ',');
-    $options .= ".</i><br />" . $refresh_link;
-    $table['caption'] = $options;
-  }
+
+  $table['caption'] = t('The following Mailchimp Subscription Field instances were found:');
 
   return theme('table', $table);
 }
