@@ -407,38 +407,45 @@ function mailchimp_campaign_delete_campaign($cid) {
  */
 function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get('mailchimp_templates', 'cache_mailchimp');
-  $templates = array();
+  $all_templates = array();
   // Return cached lists:
   if ($cache) {
-    $templates = $cache->data;
+    $all_templates = $cache->data;
   }
   // Query lists from the MailChimp API and store in cache:
   else {
     if ($mcapi = mailchimp_get_api_object()) {
-      $response = $mcapi->templates->getList(array('user' => TRUE));
-      foreach ($response['user'] as $template) {
-        $tid = $template['id'];
-        $info = $mcapi->templates->info($tid);
-
-        // Exclude templates with repeating content. This is a current
-        // limitation of the MailChimp API as repeating sections cannot be
-        // updated through the API:
-        // @todo confirm this is true in 2.0 API.
-        if (!strpos($info['source'], 'mc:repeatable')) {
-          $template['info'] = $info;
-          $templates[$tid] = $template;
+      $template_types = array(
+        'user' => 1,
+        'base' => 1,
+        'gallery' => 1,
+      );
+      $response = $mcapi->templates->getList($template_types);
+      foreach ($template_types as $type => $chosen) {
+        if ($chosen) {
+          $all_templates[$type] = array();
+          foreach ($response[$type] as $template) {
+            $tid = $template['id'];
+            $template['info'] = $mcapi->templates->info($tid);
+            $all_templates[$type][$tid] = $template;
+          }
         }
       }
     }
 
-    cache_set('mailchimp_templates', $templates, 'cache_mailchimp', CACHE_TEMPORARY);
+    cache_set('mailchimp_templates', $all_templates, 'cache_mailchimp', CACHE_TEMPORARY);
   }
 
   if (isset($template_id)) {
-    return isset($templates[$template_id]) ? $templates[$template_id] : NULL;
+    foreach ($all_templates as $type) {
+      if (isset($type[$template_id])) {
+        return $type[$template_id];
+      }
+    }
+    return NULL;
   }
   else {
-    return $templates;
+    return $all_templates;
   }
 }
 
