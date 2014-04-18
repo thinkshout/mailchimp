@@ -30,9 +30,10 @@ function mailchimp_lists_menu() {
   );
   $items['admin/config/services/mailchimp/lists/update_mergevars/%/%/%'] = array(
     'title' => 'Mass Update Merge Variables',
-    'page callback' => 'mailchimp_lists_update_member_merge_values',
-    'page arguments' => array(6, 7, 8),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_lists_update_mergevars_form', 6, 7, 8),
     'access arguments' => array('administer mailchimp'),
+    'file' => 'includes/mailchimp_lists.admin.inc',
   );
 
   return $items;
