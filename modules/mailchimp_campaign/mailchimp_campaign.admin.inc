@@ -428,9 +428,17 @@ function _mailchimp_campaign_build_entity_view_mode_option_list(array $entity) {
  *   Associative array of item IDs to name.
  */
 function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- Select --') {
-  $options = array('' => $no_selection_label);
-  foreach ($list as $item) {
-    $options[$item['id']] = $item['name'];
+  $options = array();
+  if ($no_selection_label) {
+    $options[''] = $no_selection_label;
+  }
+  foreach ($list as $index => $item) {
+    if (!isset($item['id'])) {
+      $options[$index] = _mailchimp_campaign_build_option_list($item, FALSE);
+    }
+    else {
+      $options[$item['id']] = $item['name'];
+    }
   }
 
   return $options;
