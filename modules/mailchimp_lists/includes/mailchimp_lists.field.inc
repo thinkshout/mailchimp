@@ -386,7 +386,16 @@ function mailchimp_lists_field_get($entity, array $options, $name, $entity_type,
   if ($context['instance']['settings']['show_interest_groups']) {
     $mc_list = mailchimp_get_list($context['field']['settings']['mc_list_id']);
     if (isset($mc_list['intgroups'])) {
-      $val['interest_groups'] = mailchimp_interest_groups_form_elements($mc_list, array(), $email);
+      $val['interest_groups'] = array();
+      $interest_group_settings = mailchimp_interest_groups_form_elements($mc_list, array(), $email);
+      foreach ($interest_group_settings as $id => $group) {
+        $val['interest_groups'][$id] = $group['#options'];
+        foreach ($val['interest_groups'][$id] as $key => &$value) {
+          if (!in_array($key, $group['#default_value'])) {
+            $value = 0;
+          }
+        }
+      }
     }
   }
   return $val;
