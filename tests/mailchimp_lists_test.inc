@@ -395,15 +395,15 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
     );
     $default_segments = array(
       array(
-        'id' => MAILCHIMP_TEST_SEGMENT_A,
+        'id' => MAILCHIMP_LISTS_TEST_SEGMENT_A,
         'name' => 'Test Segment A',
       ),
       array(
-        'id' => MAILCHIMP_TEST_SEGMENT_B,
+        'id' => MAILCHIMP_LISTS_TEST_SEGMENT_B,
         'name' => 'Test Segment B',
       ),
       array(
-        'id' => MAILCHIMP_TEST_SEGMENT_C,
+        'id' => MAILCHIMP_LISTS_TEST_SEGMENT_C,
         'name' => 'Test Segment C',
       ),
     );
@@ -432,7 +432,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
       ),
     );
     $lists = array(
-      MAILCHIMP_TEST_LIST_A => array(
+      MAILCHIMP_LISTS_TEST_LIST_A => array(
         'name' => 'Test List A',
         'data' => array(),
         'merge_vars' => $default_mergevars,
@@ -442,7 +442,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
           'group_count' => 0,
         ),
       ),
-      MAILCHIMP_TEST_LIST_B => array(
+      MAILCHIMP_LISTS_TEST_LIST_B => array(
         'name' => 'Test List B',
         'data' => array(),
         'merge_vars' => $default_mergevars,
@@ -452,7 +452,7 @@ class MailChimp_ListsTest extends Mailchimp_Lists {
           'group_count' => 0,
         ),
       ),
-      MAILCHIMP_TEST_LIST_C => array(
+      MAILCHIMP_LISTS_TEST_LIST_C => array(
         'name' => 'Test List C',
         'data' => array(),
         'merge_vars' => $default_mergevars,
