@@ -4,6 +4,7 @@
  * @file
  * Mailchimp lists module.
  */
+
 module_load_include('inc', 'mailchimp_lists', 'includes/mailchimp_lists.field');
 
 define('MAILCHIMP_TEST_LIST_A', 'mailchimp_test_list_a');
@@ -447,7 +448,7 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
 /**
  * Batch completion processor for member mergevar updates.
  */
-function mailchimp_lists_populate_member_batch_complete($success, $results, $operations){
+function mailchimp_lists_populate_member_batch_complete($success, $results, $operations) {
   if ($success) {
     if ($results['errors']) {
       drupal_set_message(t('Update errors occurred: merge variables updated on %count records, errors occurred on %errors records.',
