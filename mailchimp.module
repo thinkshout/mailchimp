@@ -458,17 +458,19 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
  * recommended unless you know what you are doing! See the MCAPI documentation.
  */
 function mailchimp_get_members($list_id, $status = 'subscribed', $options = array()) {
-  // @todo: use a semaphore to prevent locking
   $results = FALSE;
-  try {
-    if ($q = mailchimp_get_api_object()) {
-      $results = $q->lists->members($list_id, $status, $options);
+  if (lock_acquire('mailchimp_get_members', 60)) {
+    try {
+      if ($q = mailchimp_get_api_object()) {
+        $results = $q->lists->members($list_id, $status, $options);
+      }
     }
-  }
-  catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred pulling member info for a list. "%message"', array(
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    catch (Exception $e) {
+      watchdog('mailchimp', 'An error occurred pulling member info for a list. "%message"', array(
+        '%message' => $e->getMessage(),
+      ), WATCHDOG_ERROR);
+    }
+    lock_release('mailchimp_get_members');
   }
   return $results;
 }
