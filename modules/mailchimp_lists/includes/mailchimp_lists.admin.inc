@@ -214,5 +214,5 @@ function mailchimp_lists_update_mergevars_form($form, &$form_state, $entity_type
  */
 function mailchimp_lists_update_mergevars_form_submit($form, &$form_state) {
   mailchimp_lists_update_member_merge_values($form_state['entity_type'], $form_state['bundle_name'], $form_state['field']);
-  $form_state['redirect'] = 'admin/config/services/mailchimp/lists';
+  $form_state['redirect'] = 'admin/config/services/mailchimp/fields';
 }
