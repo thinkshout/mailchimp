@@ -9,7 +9,7 @@
  */
 function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign $campaign = NULL) {
   $path = drupal_get_path('module', 'mailchimp_campaign');
-  drupal_add_js($path . '/mailchimp_campaign.utils.js', 'file');
+  drupal_add_js($path . '/js/mailchimp_campaign.utils.js', 'file');
   drupal_add_css($path . '/mailchimp_campaign.css', 'file');
 
   $form_state['campaign'] = $campaign;

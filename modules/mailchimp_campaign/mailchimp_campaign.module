@@ -41,7 +41,7 @@ function mailchimp_campaign_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_campaign_campaign_form'),
     'access arguments' => array('administer mailchimp campaigns'),
-    'file' => 'mailchimp_campaign.admin.inc',
+    'file' => 'includes/mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_ACTION,
   );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign'] = array(
@@ -62,7 +62,7 @@ function mailchimp_campaign_menu() {
     'page arguments' => array('mailchimp_campaign_send_form', 5),
     'access callback' => 'mailchimp_campaign_access',
     'access arguments' => array(5, FALSE),
-    'file' => 'mailchimp_campaign.admin.inc',
+    'file' => 'includes/mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
   );
@@ -73,7 +73,7 @@ function mailchimp_campaign_menu() {
     'page arguments' => array('mailchimp_campaign_campaign_form', 5),
     'access callback' => 'mailchimp_campaign_access',
     'access arguments' => array(5, FALSE),
-    'file' => 'mailchimp_campaign.admin.inc',
+    'file' => 'includes/mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
   );
@@ -83,7 +83,7 @@ function mailchimp_campaign_menu() {
     'page arguments' => array('mailchimp_campaign_delete_form', 5),
     'access callback' => 'mailchimp_campaign_access',
     'access arguments' => array(5, FALSE),
-    'file' => 'mailchimp_campaign.admin.inc',
+    'file' => 'includes/mailchimp_campaign.admin.inc',
     'type' => MENU_LOCAL_TASK,
     'weight' => 3,
   );
@@ -632,7 +632,7 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
           'data' => 'https://www.google.com/jsapi',
           'type' => 'external',
         ),
-        drupal_get_path('module', 'mailchimp_campaign') . '/mailchimp_campaign.js',
+        drupal_get_path('module', 'mailchimp_campaign') . '/js/mailchimp_campaign.js',
         array(
           'data' => $settings,
           'type' => 'setting',
