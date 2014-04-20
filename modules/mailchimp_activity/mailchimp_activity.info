@@ -6,6 +6,5 @@ core = 7.x
 dependencies[] = mailchimp
 dependencies[] = entity
 
-files[] = mailchimp_activity.entity.inc
-files[] = mailchimp_activity.ui_controller.inc
-
+files[] = includes/mailchimp_activity.entity.inc
+files[] = includes/mailchimp_activity.ui_controller.inc
