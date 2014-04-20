@@ -109,8 +109,7 @@ function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
     return FALSE;
   }
   $email = $entity_wrapper->{$instance['settings']['mergefields']['EMAIL']}->value();
-  // @todo: more stringent email verification.
-  if (strlen($email)) {
+  if (valid_email_address($email)) {
     return $email;
   }
   else {
