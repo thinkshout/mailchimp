@@ -86,7 +86,8 @@ function _mailchimp_lists_entity_get_bundle($entity, $entity_type) {
   $info = entity_get_info($entity_type);
   if (empty($info['entity keys']['bundle'])) {
     return $entity_type;
-  } else {
+  }
+  else {
     return $entity->{$info['entity keys']['bundle']};
   }
 }

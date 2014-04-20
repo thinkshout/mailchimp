@@ -819,16 +819,10 @@ function mailchimp_webhook_get($list_id) {
 /**
  * Wrapper around MCAPI->lists->webhookAdd().
  *
- * @param string $list_id
- * @param string $url
- * @param array $actions
- * @param array $sources
- *
  * @return bool
  *   TRUE if deletion was successful, otherwise FALSE.
  */
 function mailchimp_webhook_add($list_id, $url, $actions = array(), $sources = array()) {
-  // @todo: test this function
   $q = mailchimp_get_api_object();
   try {
     $result = $q->lists->webhookAdd($list_id, $url, $actions, $sources);
@@ -845,15 +839,11 @@ function mailchimp_webhook_add($list_id, $url, $actions = array(), $sources = ar
 
 /**
  * Wrapper around MCAPI->lists->webhookDel().
- * 
- * @param string $list_id
- * @param string $url
  *
  * @return bool
  *   TRUE if deletion was successful, otherwise FALSE.
  */
 function mailchimp_webhook_delete($list_id, $url) {
-  // @todo: test this function
   $q = mailchimp_get_api_object();
   try {
     $result = $q->lists->webhookDel($list_id, $url);
