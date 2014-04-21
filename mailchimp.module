@@ -761,7 +761,7 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
       }
     }
     catch (Exception $e) {
-      watchdog('mailchimp', 'An error occurred retreiving campaign data for @campaign. "%message"', array(
+      watchdog('mailchimp', 'An error occurred retrieving campaign data for @campaign. "%message"', array(
         '@campaign' => $campaign_id,
         '%message' => $e->getMessage(),
       ), WATCHDOG_ERROR);
