@@ -89,6 +89,11 @@ function mailchimp_permission() {
  *   can be overridden.
  */
 function mailchimp_get_api_object() {
+  $mailchimp = &drupal_static(__FUNCTION__);
+  if (isset($mailchimp)) {
+    return $mailchimp;
+  }
+
   $library = libraries_load('mailchimp');
   if (!$library['installed']) {
     $msg = t('Failed to load MailChimp PHP library. Please refer to the installation requirements.');
