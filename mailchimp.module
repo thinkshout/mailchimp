@@ -1177,11 +1177,9 @@ function mailchimp_cron() {
   if ($queue_count > 0) {
     $batch_limit = variable_get('mailchimp_batch_limit', 100);
     $batch_size = ($queue_count < $batch_limit) ? $queue_count : $batch_limit;
-    $mcapi = mailchimp_get_api_object();
     $count = 0;
     while ($count < $batch_size) {
       if ($item = $queue->claimItem()) {
-        $item->data['args'][] = $mcapi;
         // Flag the function so it doesn't go back in the queue:
         $item->data['args'][] = FALSE;
         call_user_func_array($item->data['function'], $item->data['args']);
