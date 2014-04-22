@@ -1204,8 +1204,6 @@ function mailchimp_cron() {
     $count = 0;
     while ($count < $batch_size) {
       if ($item = $queue->claimItem()) {
-        // Flag the function so it doesn't go back in the queue:
-        $item->data['args'][] = FALSE;
         call_user_func_array($item->data['function'], $item->data['args']);
         $queue->deleteItem($item);
       }
