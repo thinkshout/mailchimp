@@ -312,7 +312,16 @@ function mailchimp_signup_mergefields_callback($form, $form_state) {
  * Submit handler for mailchimp_lists_list_form().
  */
 function mailchimp_signup_signup_form_submit($form, &$form_state) {
-  $signup = isset($form_state['signup']) ? $form_state['signup'] : mailchimp_signup_create();
+  if (isset($form_state['signup'])) {
+    $signup = $form_state['signup'];
+    $new = FALSE;
+    $was_block_only = $signup->mode == MAILCHIMP_SIGNUP_BLOCK;
+  }
+  else {
+    $signup = mailchimp_signup_create();
+    $new = TRUE;
+    $was_block_only = FALSE;
+  }
   $mergefields = $form_state['values']['mergefields'];
   foreach ($mergefields as $id => $val) {
     if ($val) {
@@ -329,6 +338,11 @@ function mailchimp_signup_signup_form_submit($form, &$form_state) {
   $signup->settings['doublein'] = $form_state['values']['doublein'];
   $signup->settings['include_interest_groups'] = $form_state['values']['include_interest_groups'];
   if ($signup->save()) {
+    // For new pages, set appropriate default permissions:
+    if ($form_state['values']['mode'][MAILCHIMP_SIGNUP_PAGE] && ($new || $was_block_only)) {
+      user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array('mailchimp_signup_form_' . $signup->name));
+      user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, array('mailchimp_signup_form_' . $signup->name));
+    }
     drupal_set_message(t('Signup form @name has been saved. If you have added or removed blocks or pages, you may need to clear caches.',
       array('@name' => $signup->name)));
     $form_state['redirect'] = 'admin/config/services/mailchimp/signup';
