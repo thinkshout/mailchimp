@@ -13,14 +13,12 @@ function mailchimp_signup_overview_page() {
   $rows = array();
   $mc_lists = mailchimp_get_lists();
   foreach ($signup_forms as $signup) {
-    $actions = array(
-      l(t('Edit'), 'admin/config/services/mailchimp/signup/' . $signup->mcs_id . '/edit'),
-      l(t('Delete'), 'admin/config/services/mailchimp/signup/' . $signup->mcs_id . '/delete'),
-    );
     $modes = NULL;
+    $block_only = FALSE;
     switch ($signup->mode) {
       case MAILCHIMP_SIGNUP_BLOCK:
         $modes = l(t('Block'), 'admin/structure/block');
+        $block_only = TRUE;
         break;
 
       case MAILCHIMP_SIGNUP_PAGE:
@@ -36,10 +34,25 @@ function mailchimp_signup_overview_page() {
     foreach ($signup->mc_lists as $list_id) {
       $list_labels[] = l($mc_lists[$list_id]['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_lists[$list_id]['web_id']);
     }
+    $actions = array(
+      l(t('Edit'), 'admin/config/services/mailchimp/signup/' . $signup->mcs_id . '/edit'),
+      l(t('Delete'), 'admin/config/services/mailchimp/signup/' . $signup->mcs_id . '/delete'),
+    );
+    if ($block_only) {
+      $access = 'N/A - this form only exists as a block';
+    }
+    else {
+      $all_roles_allowed = user_roles(FALSE, 'mailchimp_signup_all_forms' . $signup->name);
+      $page_roles_allowed = user_roles(FALSE, 'mailchimp_signup_form_' . $signup->name);
+      $roles_allowed = array_merge($all_roles_allowed, $page_roles_allowed);
+      $access = implode(', ', $roles_allowed);
+      $actions[] = l(t('Permissions'), 'admin/people/permissions', array('fragment' => 'edit-mailchimp-signup-all-forms'));
+    }
     $rows[] = array(
       l($signup->label(), 'admin/config/services/mailchimp/signup/' . $signup->mcs_id . '/edit'),
       $modes,
       implode(', ', $list_labels),
+      $access,
       implode(' | ', $actions),
     );
   }
@@ -48,6 +61,7 @@ function mailchimp_signup_overview_page() {
       t('Name'),
       t('Display Mode(s)'),
       t('MailChimp Lists'),
+      t('Page Access'),
       t('Actions'),
     ),
     'rows' => $rows,

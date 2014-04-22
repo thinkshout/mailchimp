@@ -56,7 +56,7 @@ function mailchimp_signup_menu() {
   );
 
   $signups = mailchimp_signup_load_multiple();
-  foreach($signups as $signup) {
+  foreach ($signups as $signup) {
     if (intval($signup->mode) == MAILCHIMP_SIGNUP_PAGE || intval($signup->mode) == MAILCHIMP_SIGNUP_BOTH) {
       $items[$signup->settings['path']] = array(
         'title' => $signup->title,
@@ -71,12 +71,33 @@ function mailchimp_signup_menu() {
 }
 
 /**
+ * Implements hook_permission().
+ */
+function mailchimp_signup_permission() {
+  $return = array();
+  $signups = mailchimp_signup_load_multiple();
+  $return['mailchimp_signup_all_forms'] = array(
+    'title' => t('Access all Mailchimp Signup Forms.'),
+  );
+  foreach ($signups as $signup) {
+    if (intval($signup->mode) == MAILCHIMP_SIGNUP_PAGE || intval($signup->mode) == MAILCHIMP_SIGNUP_BOTH) {
+      $return['mailchimp_signup_form_' . $signup->name] = array(
+        'title' => t('Access %title', array('%title' => $signup->title)),
+        'description' => t('Allow users to access the %title Mailchimp signup page (Blocks are not impacted by this setting).', array('%title' => $signup->title)),
+      );
+    }
+  }
+
+  return $return;
+}
+
+/**
  * Implements hook_block_info().
  */
 function mailchimp_signup_block_info() {
   $blocks = array();
   $signups = mailchimp_signup_load_multiple();
-  foreach($signups as $signup) {
+  foreach ($signups as $signup) {
     if (intval($signup->mode) == MAILCHIMP_SIGNUP_BLOCK || intval($signup->mode) == MAILCHIMP_SIGNUP_BOTH) {
       $blocks[MAILCHIMP_SIGNUP_BLOCK_LABEL . $signup->mcs_id] = array(
         'info' => t('Mailchimp Subscription Form: @name', array('@name' => $signup->label())),
