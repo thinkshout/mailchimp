@@ -63,11 +63,22 @@ function mailchimp_signup_menu() {
         'page callback' => 'mailchimp_signup_page',
         'page arguments' => array($signup->mcs_id),
         'access callback' => 'mailchimp_signup_page_access',
+        'access arguments' => array('mailchimp_signup_form_' . $signup->name),
         'type' => MENU_SUGGESTED_ITEM,
       );
     }
   }
   return $items;
+}
+
+/**
+ * Access callback for viewing Mailchimp subscription pages.
+ */
+function mailchimp_signup_page_access($permission) {
+  if (user_access('mailchimp_signup_all_forms')) {
+    return TRUE;
+  }
+  return user_access($permission);
 }
 
 /**
@@ -210,10 +221,6 @@ function mailchimp_signup_entity_info() {
   );
 
   return $entities;
-}
-
-function mailchimp_signup_page_access() {
-  return TRUE;
 }
 
 /**
