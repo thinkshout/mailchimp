@@ -28,6 +28,7 @@ function mailchimp_lists_menu() {
     'title' => 'Lists',
     'description' => 'Display MailChimp Lists and configure Webhooks.',
     'page callback' => 'mailchimp_lists_overview_page',
+    'access callback' => 'mailchimp_apikey_ready_access',
     'access arguments' => array('administer mailchimp'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/mailchimp_lists.admin.inc',
@@ -37,6 +38,7 @@ function mailchimp_lists_menu() {
     'title' => 'Fields',
     'description' => 'Display MailChimp Subscription Fields and trigger merge variable updates.',
     'page callback' => 'mailchimp_lists_fields_overview_page',
+    'access callback' => 'mailchimp_apikey_ready_access',
     'access arguments' => array('administer mailchimp'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/mailchimp_lists.admin.inc',
@@ -46,6 +48,7 @@ function mailchimp_lists_menu() {
     'title' => 'Enable/disable Webhooks',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_lists_webhook_form', 5, 7),
+    'access callback' => 'mailchimp_apikey_ready_access',
     'access arguments' => array('administer mailchimp'),
     'file' => 'includes/mailchimp_lists.admin.inc',
   );
@@ -53,6 +56,7 @@ function mailchimp_lists_menu() {
     'title' => 'Mass Update Merge Variables',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_lists_update_mergevars_form', 6, 7, 8),
+    'access callback' => 'mailchimp_apikey_ready_access',
     'access arguments' => array('administer mailchimp'),
     'file' => 'includes/mailchimp_lists.admin.inc',
   );

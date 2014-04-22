@@ -71,6 +71,7 @@ function mailchimp_activity_menu() {
  * Implements hook_menu_alter().
  */
 function mailchimp_activity_menu_alter(&$items) {
+  $items['admin/config/services/mailchimp/activity']['access callback'] = 'mailchimp_apikey_ready_access';
   $items['admin/config/services/mailchimp/activity']['title'] = "Activity";
   $items['admin/config/services/mailchimp/activity']['weight'] = 10;
 }

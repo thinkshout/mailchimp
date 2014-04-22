@@ -54,6 +54,7 @@ function mailchimp_menu() {
     'title' => 'MailChimp webhooks endpoint',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_clear_list_cache_form'),
+    'access callback' => 'mailchimp_apikey_ready_access',
     'access arguments' => array('administer mailchimp'),
     'file' => 'includes/mailchimp.admin.inc',
     'type' => MENU_CALLBACK,
@@ -79,6 +80,16 @@ function mailchimp_permission() {
       'description' => t('Access the mailchimp configuration options.'),
     ),
   );
+}
+
+/**
+ * Access callback for mailchimp submodule menu items.
+ */
+function mailchimp_apikey_ready_access($permission) {
+  if (mailchimp_get_api_object() && user_access($permission)) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /**
