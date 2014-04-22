@@ -108,14 +108,14 @@ function mailchimp_get_api_object() {
   $library = libraries_load('mailchimp');
   if (!$library['installed']) {
     $msg = t('Failed to load MailChimp PHP library. Please refer to the installation requirements.');
-    watchdog('mailchimp', $msg, WATCHDOG_ERROR);
+    watchdog('mailchimp', $msg, NULL, WATCHDOG_ERROR);
     drupal_set_message($msg, 'error');
     return NULL;
   }
 
   $api_key = variable_get('mailchimp_api_key', '');
   if (!strlen($api_key)) {
-    watchdog('mailchimp', 'Mailchimp Error: API Key cannot be blank.', WATCHDOG_ERROR);
+    watchdog('mailchimp', 'Mailchimp Error: API Key cannot be blank.', NULL, WATCHDOG_ERROR);
     return NULL;
   }
   // Set the timeout to something that won't take down the Drupal site:
