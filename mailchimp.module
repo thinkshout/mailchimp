@@ -165,21 +165,20 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
   // Query lists from the MCAPI and store in cache:
   else {
     try {
-      if ($q = mailchimp_get_api_object()) {
-        $result = $q->lists->getList(array(), 0, 100);
-        if ($result['total'] > 0) {
-          foreach ($result['data'] as $list) {
-            if ($list['stats']['group_count']) {
-              // Append interest groups:
-              $list['intgroups'] = $q->lists->interestGroupings($list['id']);
-            }
-            $lists[$list['id']] = $list;
+      $mcapi = mailchimp_get_api_object();
+      $result = $mcapi->lists->getList(array(), 0, 100);
+      if ($result['total'] > 0) {
+        foreach ($result['data'] as $list) {
+          if ($list['stats']['group_count']) {
+            // Append interest groups:
+            $list['intgroups'] = $mcapi->lists->interestGroupings($list['id']);
           }
-          // Append mergefields:
-          $mergevar_settings = $q->lists->mergeVars($list_ids);
-          foreach ($mergevar_settings['data'] as $mergevars) {
-            $lists[$mergevars['id']]['mergevars'] = $mergevars['merge_vars'];
-          }
+          $lists[$list['id']] = $list;
+        }
+        // Append mergefields:
+        $mergevar_settings = $mcapi->lists->mergeVars($list_ids);
+        foreach ($mergevar_settings['data'] as $mergevars) {
+          $lists[$mergevars['id']]['mergevars'] = $mergevars['merge_vars'];
         }
       }
       uasort($lists, '_mailchimp_list_cmp');
@@ -248,24 +247,23 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
   }
 
   if (count($list_ids)) {
-    if ($q = mailchimp_get_api_object()) {
-      $last_list_id = NULL;
-      try {
-        $result = $q->lists->mergeVars($list_ids);
-        if ($result['success_count']) {
-          foreach ($result['data'] as $list_mergevars) {
-            $last_list_id = $list_mergevars['id'];
-            $mergevars[$last_list_id] = $list_mergevars;
-            cache_set($last_list_id . '-mergevars', $list_mergevars, 'cache_mailchimp', CACHE_PERMANENT);
-          }
+    $mcapi = mailchimp_get_api_object();
+    $last_list_id = NULL;
+    try {
+      $result = $mcapi->lists->mergeVars($list_ids);
+      if ($result['success_count']) {
+        foreach ($result['data'] as $list_mergevars) {
+          $last_list_id = $list_mergevars['id'];
+          $mergevars[$last_list_id] = $list_mergevars;
+          cache_set($last_list_id . '-mergevars', $list_mergevars, 'cache_mailchimp', CACHE_PERMANENT);
         }
       }
-      catch (Exception $e) {
-        watchdog('mailchimp', 'An error occurred requesting mergevars for list @list. "%message"', array(
-          '@list' => $last_list_id,
-          '%message' => $e->getMessage(),
-        ), WATCHDOG_ERROR);
-      }
+    }
+    catch (Exception $e) {
+      watchdog('mailchimp', 'An error occurred requesting mergevars for list @list. "%message"', array(
+        '@list' => $last_list_id,
+        '%message' => $e->getMessage(),
+      ), WATCHDOG_ERROR);
     }
   }
 
@@ -298,20 +296,19 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
   }
   // Query lists from the MCAPI and store in cache:
   else {
-    if ($q = mailchimp_get_api_object()) {
-      try {
-        $result = $q->lists->memberInfo($list_id, array(array('email' => $email)));
-        if ($result['success_count']) {
-          $memberinfo = reset($result['data']);
-        }
+    $mcapi = mailchimp_get_api_object();
+    try {
+      $result = $mcapi->lists->memberInfo($list_id, array(array('email' => $email)));
+      if ($result['success_count']) {
+        $memberinfo = reset($result['data']);
       }
-      catch (Exception $e) {
-        watchdog('mailchimp', 'An error occurred requesting memberinfo for @email in list @list. "%message"', array(
-          '@email' => $email,
-          '@list' => $list_id,
-          '%message' => $e->getMessage(),
-        ), WATCHDOG_ERROR);
-      }
+    }
+    catch (Exception $e) {
+      watchdog('mailchimp', 'An error occurred requesting memberinfo for @email in list @list. "%message"', array(
+        '@email' => $email,
+        '@list' => $list_id,
+        '%message' => $e->getMessage(),
+      ), WATCHDOG_ERROR);
     }
     cache_set($list_id . '-' . $email, $memberinfo, 'cache_mailchimp', CACHE_PERMANENT);
   }
@@ -349,10 +346,6 @@ function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
  */
 function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE, $allow_async = TRUE) {
   $success = FALSE;
-  $mcapi = mailchimp_get_api_object();
-  if (!$mcapi) {
-    return FALSE;
-  }
 
   // Process asynchronously if not being called from CRON.
   if ($allow_async && variable_get('mailchimp_cron', FALSE)) {
@@ -380,6 +373,7 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin
   }
   else {
     try {
+      $mcapi = mailchimp_get_api_object();
       $result = $mcapi->lists->subscribe($list_id, array('email' => $email), $merge_vars, $format, $double_optin, $update_existing, $replace_interests, $confirm);
       if (isset($result['email'])) {
         $success = $result;
@@ -414,10 +408,6 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin
  */
 function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE, $allow_async = TRUE) {
   $success = FALSE;
-  $mcapi = $mcapi = mailchimp_get_api_object();
-  if (!$mcapi) {
-    return FALSE;
-  }
 
   if ($allow_async && variable_get('mailchimp_cron', FALSE)) {
     $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
@@ -441,6 +431,7 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
   }
   else {
     try {
+      $mcapi = $mcapi = mailchimp_get_api_object();
       $result = $mcapi->lists->updateMember($list_id, array('email' => $email), $merge_vars, $format, $replace_interests);
       if (isset($result['email'])) {
         $success = $result;
@@ -480,9 +471,8 @@ function mailchimp_get_members($list_id, $status = 'subscribed', $options = arra
   $results = FALSE;
   if (lock_acquire('mailchimp_get_members', 60)) {
     try {
-      if ($q = mailchimp_get_api_object()) {
-        $results = $q->lists->members($list_id, $status, $options);
-      }
+      $mcapi = mailchimp_get_api_object();
+      $results = $mcapi->lists->members($list_id, $status, $options);
     }
     catch (Exception $e) {
       watchdog('mailchimp', 'An error occurred pulling member info for a list. "%message"', array(
@@ -505,9 +495,8 @@ function mailchimp_get_members($list_id, $status = 'subscribed', $options = arra
 function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE, $update_existing = FALSE, $replace_interests = TRUE) {
   $results = FALSE;
   try {
-    if ($q = mailchimp_get_api_object()) {
-      $results = $q->lists->batchSubscribe($list_id, $batch, $double_in, $update_existing, $replace_interests);
-    }
+    $mcapi = mailchimp_get_api_object();
+    $results = $mcapi->lists->batchSubscribe($list_id, $batch, $double_in, $update_existing, $replace_interests);
   }
   catch (Exception $e) {
     watchdog('mailchimp', 'An error occurred performing batch subscribe/update. "%message"', array(
@@ -541,10 +530,6 @@ function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE, $u
  */
 function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FALSE, $notify = FALSE, $allow_async = TRUE) {
   $success = FALSE;
-  $mcapi = mailchimp_get_api_object();
-  if (!$mcapi) {
-    return FALSE;
-  }
 
   if (mailchimp_is_subscribed($list_id, $email)) {
     if ($allow_async && variable_get('mailchimp_cron', FALSE)) {
@@ -569,6 +554,7 @@ function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FAL
     }
     else {
       try {
+        $mcapi = mailchimp_get_api_object();
         $success = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
         if ($success) {
           module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
@@ -610,9 +596,8 @@ function mailchimp_get_segments($list_id, $reset = NULL) {
   // Query segments from the MCAPI and store in cache:
   else {
     try {
-      if ($q = mailchimp_get_api_object()) {
-        $segments = $q->lists->segments($list_id);
-      }
+      $mcapi = mailchimp_get_api_object();
+      $segments = $mcapi->lists->segments($list_id);
       cache_set($list_id . '-segments', $segments, 'cache_mailchimp', CACHE_TEMPORARY);
     }
     catch (Exception $e) {
@@ -640,9 +625,9 @@ function mailchimp_get_segments($list_id, $reset = NULL) {
  *   ID of the new segment.
  */
 function mailchimp_segment_create($list_id, $name, $type, $segment_options = NULL) {
-  $mcapi = mailchimp_get_api_object();
   $segment_id = FALSE;
   try {
+    $mcapi = mailchimp_get_api_object();
     $options = array(
       'type' => $type,
       'name' => $name,
@@ -724,10 +709,10 @@ function mailchimp_segment_add_subscriber($list_id, $segment_id, $email, $batch 
  *   Successful subscribe count
  */
 function mailchimp_segment_batch_add_subscribers($list_id, $segment_id, $batch) {
-  $q = mailchimp_get_api_object();
   $count = 0;
   try {
-    $results = $q->lists->staticSegmentMembersAdd($list_id, $segment_id, $batch);
+    $mcapi = mailchimp_get_api_object();
+    $results = $mcapi->lists->staticSegmentMembersAdd($list_id, $segment_id, $batch);
     $count = isset($results['success_count']) ? $results['success_count'] : 0;
   }
   catch (Exception $e) {
@@ -761,12 +746,12 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
     $campaign_data = $cache->data;
   }
   else {
-    $q = mailchimp_get_api_object();
     $filters = array(
       'campaign_id' => $campaign_id,
     );
     try {
-      $results = $q->campaigns->getList($filters, 0, 1);
+      $mcapi = mailchimp_get_api_object();
+      $results = $mcapi->campaigns->getList($filters, 0, 1);
       if (isset($results['total']) && $results['total']) {
         $campaign_data = $results['data'][0];
         cache_set('mailchimp_campaign_' . $campaign_id, $campaign_data, 'cache_mailchimp', CACHE_TEMPORARY);
@@ -798,9 +783,9 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
  *   Campaign structs containing id, title, subject, send_time, type.
  */
 function mailchimp_get_campaigns_for_email($email) {
-  $q = mailchimp_get_api_object();
   try {
-    $campaign_list = $q->helper->campaignsForEmail(array('email' => $email));
+    $mcapi = mailchimp_get_api_object();
+    $campaign_list = $mcapi->helper->campaignsForEmail(array('email' => $email));
   }
   catch (Exception $e) {
     watchdog('mailchimp', 'An error occurred retreiving campaign data for @email. "%message"', array(
@@ -822,9 +807,9 @@ function mailchimp_get_campaigns_for_email($email) {
  *   Array of existing webhooks, or FALSE.
  */
 function mailchimp_webhook_get($list_id) {
-  $q = mailchimp_get_api_object();
   try {
-    $result = $q->lists->webhooks($list_id);
+    $mcapi = mailchimp_get_api_object();
+    $result = $mcapi->lists->webhooks($list_id);
   }
   catch (Exception $e) {
     watchdog('mailchimp', 'An error occurred reading webhooks for list @list. "%message"', array(
@@ -843,9 +828,9 @@ function mailchimp_webhook_get($list_id) {
  *   TRUE if deletion was successful, otherwise FALSE.
  */
 function mailchimp_webhook_add($list_id, $url, $actions = array(), $sources = array()) {
-  $q = mailchimp_get_api_object();
   try {
-    $result = $q->lists->webhookAdd($list_id, $url, $actions, $sources);
+    $mcapi = mailchimp_get_api_object();
+    $result = $mcapi->lists->webhookAdd($list_id, $url, $actions, $sources);
   }
   catch (Exception $e) {
     watchdog('mailchimp', 'An error occurred adding webhook for list @list. "%message"', array(
@@ -864,9 +849,9 @@ function mailchimp_webhook_add($list_id, $url, $actions = array(), $sources = ar
  *   TRUE if deletion was successful, otherwise FALSE.
  */
 function mailchimp_webhook_delete($list_id, $url) {
-  $q = mailchimp_get_api_object();
   try {
-    $result = $q->lists->webhookDel($list_id, $url);
+    $mcapi = mailchimp_get_api_object();
+    $result = $mcapi->lists->webhookDel($list_id, $url);
   }
   catch (Exception $e) {
     watchdog('mailchimp', 'An error occurred deleting webhook for list @list. "%message"', array(
