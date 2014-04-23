@@ -128,10 +128,15 @@ function mailchimp_signup_block_view($delta = '') {
   $len = strlen(MAILCHIMP_SIGNUP_BLOCK_LABEL);
   $mcs_id = substr($delta, $len);
   $signup = mailchimp_signup_load($mcs_id);
-  $block = array(
-    'subject' => $signup->title,
-    'content' => drupal_get_form('mailchimp_signup_subscribe_form', $signup),
-  );
+  if ($signup) {
+    $block = array(
+      'subject' => $signup->title,
+      'content' => drupal_get_form('mailchimp_signup_subscribe_form', $signup),
+    );
+  }
+  else {
+    $block = FALSE;
+  }
   return $block;
 }
 
