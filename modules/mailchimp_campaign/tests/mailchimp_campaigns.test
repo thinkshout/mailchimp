@@ -28,7 +28,7 @@ class MailchimpCampaignsTestCase extends DrupalWebTestCase {
    * Sets the mailchimp_api_key to the test-mode key.
    * Sets test mode to TRUE.
    */
-  public function setUp() {
+  protected function setUp() {
     // Use a profile that contains required modules:
     $prof = drupal_get_profile();
     $this->profile = $prof;
