@@ -427,9 +427,7 @@ function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
         if ($chosen) {
           $all_templates[$type] = array();
           foreach ($response[$type] as $template) {
-            $tid = $template['id'];
-            $template['info'] = $mcapi->templates->info($tid);
-            $all_templates[$type][$tid] = $template;
+            $all_templates[$type][$template['id']] = $template;
           }
         }
       }
@@ -441,7 +439,21 @@ function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
   if (isset($template_id)) {
     foreach ($all_templates as $type) {
       if (isset($type[$template_id])) {
-        return $type[$template_id];
+        $template = $type[$template_id];
+        // Get template info from cache or the MailChimp API.
+        $cache = $reset ? NULL : cache_get('mailchimp_template_' . $template_id,
+          'cache_mailchimp');
+        if ($cache) {
+          $template['info'] = $cache->data;
+        }
+        else {
+          if ($mcapi = mailchimp_get_api_object()) {
+            $template['info'] = $mcapi->templates->info($template_id);
+            cache_set('mailchimp_template_' . $template_id, $template['info'],
+              'cache_mailchimp', CACHE_TEMPORARY);
+          }
+        }
+        return $template;
       }
     }
     return NULL;
