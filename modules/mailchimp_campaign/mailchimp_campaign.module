@@ -267,7 +267,14 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
   );
 
   // Convert template to content by running through formatter.
-  $content = mailchimp_campaign_render_template($template);
+  if (isset($template['html'])) {
+    $content = mailchimp_campaign_render_template($template);
+  }
+  else {
+    $content = array(
+      'sections' => mailchimp_campaign_render_template($template)
+    );
+  }
 
   // Test for valid list segment, if selected.
   if ($segment_options != NULL) {

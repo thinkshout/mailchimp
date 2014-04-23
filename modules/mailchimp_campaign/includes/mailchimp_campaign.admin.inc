@@ -207,17 +207,17 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
       // or defaults coming from the MailChimp template.
       $default_value = $content;
       $format = 'mailchimp_campaign';
-      if ($campaign && $campaign->template['html_' . $section]) {
-        $default_value = $campaign->template['html_' . $section]['value'];
-        $format = $campaign->template['html_' . $section]['format'];
+      if ($campaign && $campaign->template[$section]) {
+        $default_value = $campaign->template[$section]['value'];
+        $format = $campaign->template[$section]['format'];
       }
-      $form['content']['html_' . $section . '_wrapper'] = array(
+      $form['content'][$section . '_wrapper'] = array(
         '#type' => 'fieldset',
         '#title' => check_plain(drupal_ucfirst($section)),
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
       );
-      $form['content']['html_' . $section . '_wrapper']['html_' . $section] = array(
+      $form['content'][$section . '_wrapper'][$section] = array(
         '#type' => 'text_format',
         '#format' => $format,
         '#title' => check_plain(drupal_ucfirst($section)),
