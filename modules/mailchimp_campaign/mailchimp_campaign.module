@@ -361,6 +361,7 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     watchdog('mailchimp_campaign', 'MailChimp campaign %name has been sent.',
       array('%name' => $campaign->label())
     );
+    cache_clear_all('mailchimp_campaigns', 'cache_mailchimp');
     return TRUE;
   }
   elseif (isset($result['status']) && ($result['status'] == 'error')) {
@@ -710,7 +711,9 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
   $mc_campaigns = array();
   $cached_campaigns = cache_get('mailchimp_campaigns', 'cache_mailchimp');
   foreach ($mc_campaign_ids as $id) {
-    if (!isset($cached_campaigns->data[$id]) || $reset) {
+    if (!isset($cached_campaigns->data[$id])
+      || ($cached_campaigns->data[$id]['status'] == MAILCHIMP_STATUS_SENDING)
+      || $reset) {
       $to_refresh[] = $id;
     }
     else {
