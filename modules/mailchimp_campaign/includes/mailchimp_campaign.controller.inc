@@ -1,0 +1,57 @@
+<?php
+
+/**
+ * @file
+ * MailChimpCampaign controller class.
+ */
+
+class MailChimpCampaignController extends EntityAPIController {
+
+  /**
+   * Implement in order to attach MailChimp data to campaign entities.
+   */
+  protected function attachLoad(&$campaigns, $revision_id = FALSE) {
+    $ids = array();
+    if (!empty($campaigns)) {
+      foreach ($campaigns as $campaign) {
+        $ids[] = $campaign->mc_campaign_id;
+      }
+    }
+    $mc_campaigns = mailchimp_campaign_get_campaigns($ids);
+
+    foreach ($campaigns as $mc_campaign_id => $campaign) {
+      $campaign->mc_data = $mc_campaigns[$mc_campaign_id];
+
+      // Lists are cachced separately, but we want to load them here.
+      if (isset($campaign->mc_data['list_id']) && $campaign->mc_data['list_id']) {
+        $campaign->list = mailchimp_get_list($campaign->mc_data['list_id']);
+      }
+
+      if (isset($campaign->mc_data['template_id']) && $campaign->mc_data['template_id']) {
+        $campaign->mc_template = mailchimp_campaign_get_templates($campaign->mc_data['template_id']);
+      }
+    }
+
+    parent::attachLoad($campaigns, $revision_id);
+  }
+
+  /**
+   * Implement to clear MailChimp campaign data caches.
+   *
+   * @param array $ids
+   *   Optional array of campaign IDs to clear cache for.
+   */
+  public function resetCache(array $ids = NULL) {
+    parent::resetCache($ids);
+    if ($cached_campaigns = cache_get('mailchimp_campaigns', 'cache_mailchimp')) {
+      foreach ($cached_campaigns->data as $id => $cached_campaign) {
+        if (in_array($id, $ids)) {
+          unset($cached_campaigns->data[$id]);
+        }
+      }
+      cache_set('mailchimp_campaign', $cached_campaigns, 'cache_mailchimp');
+    }
+
+    drupal_static_reset('mailchimp_campaign_get_template');
+  }
+}
