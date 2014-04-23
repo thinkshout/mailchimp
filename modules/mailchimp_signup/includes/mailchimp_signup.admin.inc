@@ -315,12 +315,14 @@ function mailchimp_signup_signup_form_submit($form, &$form_state) {
   if (isset($form_state['signup'])) {
     $signup = $form_state['signup'];
     $new = FALSE;
-    $was_block_only = $signup->mode == MAILCHIMP_SIGNUP_BLOCK;
+    $prior_mode = $signup->mode;
+    $prior_settings = $signup->settings;
   }
   else {
     $signup = mailchimp_signup_create();
     $new = TRUE;
-    $was_block_only = FALSE;
+    $prior_mode = 0;
+    $prior_settings = array();
   }
   $mergefields = $form_state['values']['mergefields'];
   foreach ($mergefields as $id => $val) {
@@ -339,7 +341,7 @@ function mailchimp_signup_signup_form_submit($form, &$form_state) {
   $signup->settings['include_interest_groups'] = $form_state['values']['include_interest_groups'];
   if ($signup->save()) {
     // For new pages, set appropriate default permissions:
-    if ($form_state['values']['mode'][MAILCHIMP_SIGNUP_PAGE] && ($new || $was_block_only)) {
+    if (($signup->mode & MAILCHIMP_SIGNUP_PAGE) && ($new || $prior_mode == MAILCHIMP_SIGNUP_BLOCK)) {
       user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array('mailchimp_signup_form_' . $signup->name));
       user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, array('mailchimp_signup_form_' . $signup->name));
     }
