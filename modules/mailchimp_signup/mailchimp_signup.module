@@ -351,3 +351,14 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
     $form_state['redirect'] = $signup->settings['destination'];
   }
 }
+
+/**
+ * Implements hook_entity_delete().
+ */
+function mailchimp_signup_entity_delete($entity, $type) {
+  if ($type == 'mailchimp_signup') {
+    if ($entity->mode & MAILCHIMP_SIGNUP_PAGE) {
+      menu_rebuild();
+    }
+  }
+}
