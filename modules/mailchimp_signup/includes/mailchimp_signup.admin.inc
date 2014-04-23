@@ -317,6 +317,9 @@ function mailchimp_signup_signup_form_submit($form, &$form_state) {
     $new = FALSE;
     $prior_mode = $signup->mode;
     $prior_settings = $signup->settings;
+    if (!$form_state['values']['mode'][MAILCHIMP_SIGNUP_PAGE]) {
+      $form_state['values']['settings']['path'] = '';
+    }
   }
   else {
     $signup = mailchimp_signup_create();
@@ -345,7 +348,13 @@ function mailchimp_signup_signup_form_submit($form, &$form_state) {
       user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array('mailchimp_signup_form_' . $signup->name));
       user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, array('mailchimp_signup_form_' . $signup->name));
     }
-    drupal_set_message(t('Signup form @name has been saved. If you have added or removed blocks or pages, you may need to clear caches.',
+    if (isset($form_state['values']['settings']['path'])) {
+      if (!isset($prior_settings['path']) || $prior_settings['path'] != $signup->settings['path'] || !($signup->mode & MAILCHIMP_SIGNUP_PAGE)) {
+        // We have a new (or removed) path. Rebuild menus.
+        menu_rebuild();
+      }
+    }
+    drupal_set_message(t('Signup form @name has been saved.',
       array('@name' => $signup->name)));
     $form_state['redirect'] = 'admin/config/services/mailchimp/signup';
   }
