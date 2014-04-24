@@ -391,10 +391,12 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin
         );
       }
       else {
-        watchdog('mailchimp', 'A problem occurred subscribing @email to list @list.', array(
-          '@email' => $email,
-          '@list' => $list_id,
-        ), WATCHDOG_WARNING);
+        if (!variable_get('mailchimp_test_mode')) {
+          watchdog('mailchimp', 'A problem occurred subscribing @email to list @list.', array(
+            '@email' => $email,
+            '@list' => $list_id,
+          ), WATCHDOG_WARNING);
+        }
       }
     }
     catch (Exception $e) {
