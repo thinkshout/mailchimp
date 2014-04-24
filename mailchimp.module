@@ -348,123 +348,149 @@ function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
 }
 
 /**
- * Wrapper around MCAPI->lists->subscribe.
+ * Subscribe a user to a MailChimp list in real time or by adding to the queue.
+ *
+ * @see Mailchimp_Lists::subscribe()
+ *
+ * @return bool
+ *   True on success.
  */
-function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE, $allow_async = TRUE) {
-  $success = FALSE;
-
-  // Process asynchronously if not being called from CRON.
-  if ($allow_async && variable_get('mailchimp_cron', FALSE)) {
-    $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
-    $queue->createQueue();
-    $success = $queue->createItem(array(
-      'function' => 'mailchimp_subscribe',
-      'args' => array(
-        'list_id' => $list_id,
-        'email' => $email,
-        'merge_vars' => $merge_vars,
-        'format' => $format,
-        'double_optin' => $double_optin,
-        'update_existing' => $update_existing,
-        'replace_interests' => $replace_interests,
-        'confirm' => $confirm,
-      ),
-    ));
-    if (!$success) {
-      watchdog('mailchimp', 'A problem occurred adding a mailchimp subscription to the queue. Email: @email List: @list.', array(
-        '@email' => $email,
-        '@list' => $list_id,
-      ), WATCHDOG_WARNING);
-    }
-  }
-  else {
-    try {
-      $mcapi = mailchimp_get_api_object();
-      $result = $mcapi->lists->subscribe($list_id, array('email' => $email), $merge_vars, $format, $double_optin, $update_existing, $replace_interests, $confirm);
-      if (isset($result['email'])) {
-        $success = $result;
-        module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
-        // Clear user cache, just in case there's some cruft leftover:
-        mailchimp_cache_clear_member($list_id, $email);
-        watchdog('mailchimp', '@email was subscribed to list @list.',
-          array('@email' => $merge_vars['EMAIL'], '@list' => $list_id), WATCHDOG_NOTICE
-        );
-      }
-      else {
-        watchdog('mailchimp', 'A problem occurred subscribing @email to list @list.', array(
-          '@email' => $email,
-          '@list' => $list_id,
-        ), WATCHDOG_WARNING);
-      }
-    }
-    catch (Exception $e) {
-      watchdog('mailchimp', 'An error occurred subscribing @email to list @list. "%message"', array(
-        '@email' => $email,
-        '@list' => $list_id,
-        '%message' => $e->getMessage(),
-      ), WATCHDOG_ERROR);
-    }
+function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE) {
+  if (variable_get('mailchimp_cron', FALSE)) {
+    $args = array(
+      'list_id' => $list_id,
+      'email' => $email,
+      'merge_vars' => $merge_vars,
+      'format' => $format,
+      'double_optin' => $double_optin,
+      'update_existing' => $update_existing,
+      'replace_interests' => $replace_interests,
+      'confirm' => $confirm,
+    );
+    return mailchimp_addto_queue('mailchimp_subscribe_process', $args);
   }
 
-  return $success;
+  return mailchimp_subscribe_process($list_id, $email, $merge_vars, $double_optin, $format, $update_existing, $replace_interests, $confirm);
 }
 
 /**
- * Wrapper around MCAPI->lists->updateMember.
+ * Wrapper around Mailchimp_Lists::subscribe().
+ *
+ * @see Mailchimp_Lists::subscribe()
+ *
+ * @return bool
+ *   True on success.
  */
-function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE, $allow_async = TRUE) {
-  $success = FALSE;
-
-  if ($allow_async && variable_get('mailchimp_cron', FALSE)) {
-    $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
-    $queue->createQueue();
-    $success = $queue->createItem(array(
-      'function' => 'mailchimp_update_member',
-      'args' => array(
-        'list_id' => $list_id,
-        'email' => $email,
-        'merge_vars' => $merge_vars,
-        'format' => $format,
-        'replace_interests' => $replace_interests,
-      ),
-    ));
-    if (!$success) {
-      watchdog('mailchimp', 'A problem occurred adding a mailchimp membership update to the queue. Email: @email List: @list.', array(
+function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE) {
+  $result = FALSE;
+  try {
+    $mcapi = mailchimp_get_api_object();
+    $result = $mcapi->lists->subscribe($list_id, array('email' => $email), $merge_vars, $format, $double_optin, $update_existing, $replace_interests, $confirm);
+    if (isset($result['email'])) {
+      module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
+      // Clear user cache, just in case there's some cruft leftover:
+      mailchimp_cache_clear_member($list_id, $email);
+      watchdog('mailchimp', '@email was subscribed to list @list.',
+        array('@email' => $merge_vars['EMAIL'], '@list' => $list_id), WATCHDOG_NOTICE
+      );
+    }
+    else {
+      watchdog('mailchimp', 'A problem occurred subscribing @email to list @list.', array(
         '@email' => $email,
         '@list' => $list_id,
       ), WATCHDOG_WARNING);
     }
   }
-  else {
-    try {
-      $mcapi = $mcapi = mailchimp_get_api_object();
-      $result = $mcapi->lists->updateMember($list_id, array('email' => $email), $merge_vars, $format, $replace_interests);
-      if (isset($result['email'])) {
-        $success = $result;
-        watchdog('mailchimp', '@email was updated in list @list_id.', array(
-          '@email' => $email,
-          '@list' => $list_id,
-        ), WATCHDOG_NOTICE);
-        // Clear user cache:
-        mailchimp_cache_clear_member($list_id, $email);
-      }
-      else {
-        watchdog('mailchimp', 'A problem occurred updating @email on list @list.', array(
-          '@email' => $email,
-          '@list' => $list_id,
-        ), WATCHDOG_WARNING);
-      }
-    }
-    catch (Exception $e) {
-      watchdog('mailchimp', 'An error occurred updating @email on list @list. "%message"', array(
-        '@email' => $email,
-        '@list' => $list_id,
-        '%message' => $e->getMessage(),
-      ), WATCHDOG_ERROR);
-    }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred subscribing @email to list @list. "%message"', array(
+      '@email' => $email,
+      '@list' => $list_id,
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
   }
 
-  return $success;
+  return $result;
+}
+
+/**
+ * Add a MailChimp subscription task to the queue.
+ *
+ * @string $function
+ *   The name of the function the queue runner should call.
+ * @array $args
+ *   The list of args to pass to the function.
+ *
+ * @return bool
+ *   Success or failure.
+ */
+function mailchimp_addto_queue($function, $args) {
+  $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+  $queue->createQueue();
+  return $queue->createItem(array(
+    'function' => $function,
+    'args' => $args,
+  ));
+}
+
+/**
+ * Update a members list subscription in real time or by adding to the queue.
+ *
+ * @see Mailchimp_Lists::updateMember()
+ *
+ * @return bool
+ *   Success or failure.
+ */
+function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE) {
+  if (variable_get('mailchimp_cron', FALSE)) {
+    $args = array(
+      'list_id' => $list_id,
+      'email' => $email,
+      'merge_vars' => $merge_vars,
+      'format' => $format,
+      'replace_interests' => $replace_interests,
+    );
+    return mailchimp_addto_queue('mailchimp_update_member_process', $args);
+  }
+
+  return mailchimp_update_member_process($list_id, $email, $merge_vars, $format, $replace_interests);
+}
+
+/**
+ * Wrapper around Mailchimp_Lists::updateMember().
+ *
+ * @see Mailchimp_Lists::updateMember()
+ *
+ * @return bool
+ *   Success or failure.
+ */
+function mailchimp_update_member_process($list_id, $email, $merge_vars, $format, $replace_interests) {
+  $result = FALSE;
+  try {
+    $mcapi = $mcapi = mailchimp_get_api_object();
+    $result = $mcapi->lists->updateMember($list_id, array('email' => $email), $merge_vars, $format, $replace_interests);
+    if (isset($result['email'])) {
+      watchdog('mailchimp', '@email was updated in list @list_id.', array(
+        '@email' => $email,
+        '@list' => $list_id,
+      ), WATCHDOG_NOTICE);
+      // Clear user cache:
+      mailchimp_cache_clear_member($list_id, $email);
+    }
+    else {
+      watchdog('mailchimp', 'A problem occurred updating @email on list @list.', array(
+        '@email' => $email,
+        '@list' => $list_id,
+      ), WATCHDOG_WARNING);
+    }
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred updating @email on list @list. "%message"', array(
+      '@email' => $email,
+      '@list' => $list_id,
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+  }
+  return $result;
 }
 
 /**
@@ -513,7 +539,7 @@ function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE, $u
 }
 
 /**
- * Wrapper around MCAPI->lists->unsubscribe.
+ * Unsubscribe a member from a list.
  *
  * @param string $list_id
  *   A mailchimp list id.
@@ -534,51 +560,57 @@ function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE, $u
  * @return bool
  *   Indicates whether unsubscribe was successful.
  */
-function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FALSE, $notify = FALSE, $allow_async = TRUE) {
-  $success = FALSE;
+function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FALSE, $notify = FALSE) {
+  $result = FALSE;
 
   if (mailchimp_is_subscribed($list_id, $email)) {
-    if ($allow_async && variable_get('mailchimp_cron', FALSE)) {
-      $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
-      $queue->createQueue();
-      $success = $queue->createItem(array(
-        'function' => 'mailchimp_unsubscribe',
-        'args' => array(
+    if (variable_get('mailchimp_cron', FALSE)) {
+      $result = mailchimp_addto_queue(
+        'mailchimp_unsubscribe_process',
+        array(
           'list_id' => $list_id,
           'email' => $email,
           'delete' => $delete,
           'goodbye' => $goodbye,
           'notify' => $notify,
-        ),
-      ));
-      if (!$success) {
-        watchdog('mailchimp', 'A problem occurred adding a mailchimp unsubscribe to the queue. Email: @email List: @list.', array(
-          '@email' => $email,
-          '@list' => $list_id,
-        ), WATCHDOG_WARNING);
-      }
+        )
+      );
     }
     else {
-      try {
-        $mcapi = mailchimp_get_api_object();
-        $success = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
-        if ($success) {
-          module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
-        }
-        // Clear user cache:
-        mailchimp_cache_clear_member($list_id, $email);
-      }
-      catch (Exception $e) {
-        watchdog('mailchimp', 'An error occurred unsubscribing @email from list @list. "%message"', array(
-          '@email' => $email,
-          '@list' => $list_id,
-          '%message' => $e->getMessage(),
-        ), WATCHDOG_ERROR);
-      }
+      $result = mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $notify);
     }
   }
 
-  return $success;
+  return $result;
+}
+
+/**
+ * Wrapper around Mailchimp_Lists::unsubscribe().
+ *
+ * @see Mailchimp_Lists::unsubscribe()
+ *
+ * @return bool
+ *   Success or failure.
+ */
+function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $notify) {
+  $result = FALSE;
+  try {
+    $mcapi = mailchimp_get_api_object();
+    $result = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
+    if ($result) {
+      module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
+    }
+    // Clear user cache:
+    mailchimp_cache_clear_member($list_id, $email);
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred unsubscribing @email from list @list. "%message"', array(
+      '@email' => $email,
+      '@list' => $list_id,
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+  }
+  return $result;
 }
 
 /**
@@ -1186,8 +1218,6 @@ function mailchimp_cron() {
     $count = 0;
     while ($count < $batch_size) {
       if ($item = $queue->claimItem()) {
-        // Flag the function so it doesn't go back in the queue:
-        $item->data['args'][] = FALSE;
         call_user_func_array($item->data['function'], $item->data['args']);
         $queue->deleteItem($item);
       }
