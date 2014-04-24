@@ -443,19 +443,21 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
       'format' => $format,
       'replace_interests' => $replace_interests,
     );
-    return mailchimp_addto_queue('mailchimp_update_process', $args);
+    return mailchimp_addto_queue('mailchimp_update_member_process', $args);
   }
 
-  return mailchimp_update_process($list_id, $email, $merge_vars, $format, $replace_interests);
+  return mailchimp_update_member_process($list_id, $email, $merge_vars, $format, $replace_interests);
 }
 
 /**
  * Wrapper around Mailchimp_Lists::updateMember().
  *
+ * @see Mailchimp_Lists::updateMember()
+ *
  * @return bool
  *   Success or failure.
  */
-function mailchimp_update_process($list_id, $email, $merge_vars, $format, $replace_interests) {
+function mailchimp_update_member_process($list_id, $email, $merge_vars, $format, $replace_interests) {
   $result = FALSE;
   try {
     $mcapi = $mcapi = mailchimp_get_api_object();
