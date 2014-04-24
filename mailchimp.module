@@ -838,6 +838,32 @@ function mailchimp_get_campaigns_for_email($email) {
 }
 
 /**
+ * Wrapper around MCAPI->helper->listsForEmail().
+ *
+ * Returns all lists a given email address is currently subscribed to.
+ *
+ * @param string $email
+ *   Email address to search.
+ *
+ * @return array
+ *   Campaign structs containing id, web_id, name.
+ */
+function mailchimp_get_lists_for_email($email) {
+  try {
+    $mcapi = mailchimp_get_api_object();
+    $lists = $mcapi->helper->listsForEmail(array('email' => $email));
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred retreiving lists data for @email. "%message"', array(
+      '@email' => $email,
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+    $lists = array();
+  }
+  return $lists;
+}
+
+/**
  * Wrapper around MCAPI->lists->webhooks().
  *
  * @param string $list_id
@@ -921,7 +947,11 @@ function mailchimp_webhook_delete($list_id, $url) {
  */
 function mailchimp_get_lists_by_email($email) {
   $campaigns = mailchimp_get_campaigns_for_email($email);
-  $lists = mailchimp_get_lists();
+  $subscribed_lists = mailchimp_get_lists_for_email($email);
+  $lists = array();
+  foreach ($subscribed_lists as $list) {
+    $lists[$list['id']] = $list;
+  }
   $filtered_lists = array(
     'lists' => array(),
     'campaigns' => array(),
@@ -930,10 +960,12 @@ function mailchimp_get_lists_by_email($email) {
     // Iterate through campaigns, add each campaign's list as array index/value.
     foreach ($campaigns as $campaign) {
       $campaign_data = mailchimp_get_campaign_data($campaign['id']);
-      if ($campaign_data['list_id']) {
-        $filtered_lists['lists'][$campaign_data['list_id']] = $lists[$campaign_data['list_id']];
+      if (isset($lists[$campaign_data['list_id']])) {
+        if ($campaign_data['list_id']) {
+          $filtered_lists['lists'][$campaign_data['list_id']] = $lists[$campaign_data['list_id']];
+        }
+        $filtered_lists['campaigns'][$campaign['id']] = $campaign_data;
       }
-      $filtered_lists['campaigns'][$campaign['id']] = $campaign_data;
     }
   }
 
