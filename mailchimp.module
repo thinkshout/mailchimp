@@ -533,7 +533,7 @@ function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE, $u
 }
 
 /**
- * Wrapper around MCAPI->lists->unsubscribe.
+ * Unsubscribe a member from a list.
  *
  * @param string $list_id
  *   A mailchimp list id.
@@ -554,51 +554,57 @@ function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE, $u
  * @return bool
  *   Indicates whether unsubscribe was successful.
  */
-function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FALSE, $notify = FALSE, $allow_async = TRUE) {
-  $success = FALSE;
+function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FALSE, $notify = FALSE) {
+  $result = FALSE;
 
   if (mailchimp_is_subscribed($list_id, $email)) {
-    if ($allow_async && variable_get('mailchimp_cron', FALSE)) {
-      $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
-      $queue->createQueue();
-      $success = $queue->createItem(array(
-        'function' => 'mailchimp_unsubscribe',
-        'args' => array(
+    if (variable_get('mailchimp_cron', FALSE)) {
+      $result = mailchimp_addto_queue(
+        'mailchimp_unsubscribe_process',
+        array(
           'list_id' => $list_id,
           'email' => $email,
           'delete' => $delete,
           'goodbye' => $goodbye,
           'notify' => $notify,
-        ),
-      ));
-      if (!$success) {
-        watchdog('mailchimp', 'A problem occurred adding a mailchimp unsubscribe to the queue. Email: @email List: @list.', array(
-          '@email' => $email,
-          '@list' => $list_id,
-        ), WATCHDOG_WARNING);
-      }
+        )
+      );
     }
     else {
-      try {
-        $mcapi = mailchimp_get_api_object();
-        $success = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
-        if ($success) {
-          module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
-        }
-        // Clear user cache:
-        mailchimp_cache_clear_member($list_id, $email);
-      }
-      catch (Exception $e) {
-        watchdog('mailchimp', 'An error occurred unsubscribing @email from list @list. "%message"', array(
-          '@email' => $email,
-          '@list' => $list_id,
-          '%message' => $e->getMessage(),
-        ), WATCHDOG_ERROR);
-      }
+      $result = mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $notify);
     }
   }
 
-  return $success;
+  return $result;
+}
+
+/**
+ * Wrapper around Mailchimp_Lists::unsubscribe().
+ *
+ * @see Mailchimp_Lists::unsubscribe()
+ *
+ * @return bool
+ *   Success or failure.
+ */
+function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $notify) {
+  $result = FALSE;
+  try {
+    $mcapi = mailchimp_get_api_object();
+    $result = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
+    if ($result) {
+      module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
+    }
+    // Clear user cache:
+    mailchimp_cache_clear_member($list_id, $email);
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred unsubscribing @email from list @list. "%message"', array(
+      '@email' => $email,
+      '@list' => $list_id,
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+  }
+  return $result;
 }
 
 /**
