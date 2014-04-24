@@ -26,8 +26,9 @@ class MailchimpCampaignsTestCase extends DrupalWebTestCase {
    *
    * Enables dependencies.
    * Sets the mailchimp_api_key to the test-mode key.
+   * Sets test mode to TRUE.
    */
-  public function setUp() {
+  protected function setUp() {
     // Use a profile that contains required modules:
     $prof = drupal_get_profile();
     $this->profile = $prof;
@@ -42,6 +43,17 @@ class MailchimpCampaignsTestCase extends DrupalWebTestCase {
     parent::setUp($enabled_modules);
     variable_set('mailchimp_api_classname', 'MailChimpTest');
     variable_set('mailchimp_api_key', 'MAILCHIMP_TEST_API_KEY');
+    variable_set('mailchimp_test_mode', TRUE);
+  }
+
+  /**
+   * Post-test function.
+   *
+   * Sets test mode to FALSE.
+   */
+  protected function tearDown() {
+    parent::tearDown();
+    variable_set('mailchimp_test_mode', FALSE);
   }
 
   /**
