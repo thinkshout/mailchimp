@@ -75,7 +75,7 @@ function mailchimp_lists_fields_overview_page() {
     if ($field['type'] == 'mailchimp_lists_subscription') {
       foreach ($field['bundles'] as $entity_type => $bundles) {
         foreach ($bundles as $bundle) {
-          $link = 'admin/config/services/mailchimp/lists/update_mergevars/' . $entity_type . '/' . $bundle . '/' . $fields['field_blazer_fans']['field_name'];
+          $link = 'admin/config/services/mailchimp/lists/update_mergevars/' . $entity_type . '/' . $bundle . '/' . $field['field_name'];
           $rows[] = array(
             $entity_type,
             $bundle,
