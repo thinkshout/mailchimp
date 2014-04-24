@@ -19,7 +19,7 @@ function mailchimp_campaign_entity_info() {
       'controller class' => 'MailChimpCampaignController',
       'entity class' => 'MailChimpCampaign',
       'base table' => 'mailchimp_campaigns',
-      'uri callback' => 'mailchimp_campaign_uri',
+      'uri callback' => 'entity_class_uri',
       'fieldable' => FALSE,
       'entity keys' => array(
         'id' => 'mc_campaign_id',

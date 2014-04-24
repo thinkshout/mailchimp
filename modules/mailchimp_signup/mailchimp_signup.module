@@ -197,7 +197,7 @@ function mailchimp_signup_entity_info() {
       'entity class' => 'MailchimpSignup',
       'controller class' => 'EntityAPIControllerExportable',
       'base table' => 'mailchimp_signup',
-      'uri callback' => 'mailchimp_signup_uri',
+      'uri callback' => 'entity_class_uri',
       'fieldable' => FALSE,
       'exportable' => TRUE,
       'label callback' => 'entity_class_label',
