@@ -5,11 +5,38 @@
  * Module file for mailchimp_campaign.
  */
 
-module_load_include('inc', 'mailchimp_campaign', 'includes/mailchimp_campaign.entity');
-
 define('MAILCHIMP_TEST_CAMPAIGN_A', 'mailchimp_test_campaign_a');
 define('MAILCHIMP_TEST_CAMPAIGN_B', 'mailchimp_test_campaign_b');
 define('MAILCHIMP_TEST_CAMPAIGN_C', 'mailchimp_test_campaign_c');
+
+/**
+ * Implements hook_entity_info().
+ */
+function mailchimp_campaign_entity_info() {
+  $return = array(
+    'mailchimp_campaign' => array(
+      'label' => t('MailChimp Campaign'),
+      'controller class' => 'MailChimpCampaignController',
+      'entity class' => 'MailChimpCampaign',
+      'base table' => 'mailchimp_campaigns',
+      'uri callback' => 'mailchimp_campaign_uri',
+      'fieldable' => FALSE,
+      'entity keys' => array(
+        'id' => 'mc_campaign_id',
+      ),
+      'token type' => 'mailchimp_campaign',
+      'module' => 'mailchimp_campaign',
+      'label callback' => 'entity_class_label',
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full Campaign'),
+          'custom settings' => FALSE,
+        ),
+      ),
+    ),
+  );
+  return $return;
+}
 
 /**
  * Implements hook_permission().
@@ -798,4 +825,64 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
   }
 
   return $result['total'];
+}
+
+/**
+ * Saves a campaign.
+ */
+function mailchimp_campaign_save(MailChimpCampaign $campaign) {
+  $campaign->updated = REQUEST_TIME;
+  // Set the creation timestamp if not set.
+  if (!isset($campaign->created) || empty($campaign->created)) {
+    $campaign->created = REQUEST_TIME;
+  }
+
+  return $campaign->save();
+}
+
+/**
+ * Load a campaign by ID.
+ */
+function mailchimp_campaign_load($cid, $reset = FALSE) {
+  $campaign = mailchimp_campaign_load_multiple(array($cid), array(), $reset);
+  return $campaign ? $campaign[$cid] : FALSE;
+}
+
+/**
+ * Loads multiple campaigns.
+ */
+function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions = array(), $reset = FALSE) {
+  if (empty($campaign_ids)) {
+    $campaign_ids = FALSE;
+  }
+  $campaigns = entity_load('mailchimp_campaign', $campaign_ids, $conditions, $reset);
+
+  return $campaigns;
+}
+
+/**
+ * Delete a campaign.
+ */
+function mailchimp_campaign_delete($cid) {
+  return mailchimp_campaign_delete_multiple(array($cid));
+}
+
+/**
+ * Delete multiple campaigns.
+ */
+function mailchimp_campaign_delete_multiple($campaign_ids) {
+  return entity_get_controller('mailchimp_campaign')->delete($campaign_ids);
+}
+
+/**
+ * Display a campaign.
+ *
+ * @param object $campaign
+ *   A fully loaded campaign object.
+ *
+ * @return array
+ *   Renderable elements.
+ */
+function mailchimp_campaign_view($campaign) {
+  return $campaign->view();
 }
