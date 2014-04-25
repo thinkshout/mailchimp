@@ -41,7 +41,7 @@ function mailchimp_admin_settings() {
       '10000' => '10000',
     ),
     '#title' => t('Batch limit'),
-    '#description' => t('Maximum number of entities to process in a single cron run. Mailchimp suggest keeping this below 5000-10000.'),
+    '#description' => t('Maximum number of entities to process in a single cron run. Mailchimp suggest keeping this at 5000 or below. <i>This value is also used for batch Merge Variable updates on the Fields tab (part of mailchimp_lists).</i>'),
     '#default_value' => variable_get('mailchimp_batch_limit', 100),
   );
 
