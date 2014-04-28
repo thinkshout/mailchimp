@@ -60,9 +60,9 @@ function mailchimp_signup_menu() {
       $items[$signup->settings['path']] = array(
         'title' => $signup->title,
         'page callback' => 'mailchimp_signup_page',
-        'page arguments' => array($signup->mcs_id),
+        'page arguments' => array($signup->identifier()),
         'access callback' => 'mailchimp_signup_page_access',
-        'access arguments' => array('mailchimp_signup_form_' . $signup->name),
+        'access arguments' => array('mailchimp_signup_form_' . $signup->identifier()),
         'type' => MENU_SUGGESTED_ITEM,
       );
     }
