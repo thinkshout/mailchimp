@@ -128,13 +128,15 @@ function mailchimp_signup_block_view($delta = '') {
   $len = strlen(MAILCHIMP_SIGNUP_BLOCK_LABEL);
   $mcs_id = substr($delta, $len);
   $signup = mailchimp_signup_load($mcs_id);
-  if (!$signup) {
-    return array();
+  if ($signup) {
+    $block = array(
+      'subject' => $signup->title,
+      'content' => drupal_get_form('mailchimp_signup_subscribe_form', $signup),
+    );
   }
-  $block = array(
-    'subject' => $signup->title,
-    'content' => drupal_get_form('mailchimp_signup_subscribe_form', $signup),
-  );
+  else {
+    $block = FALSE;
+  }
   return $block;
 }
 
@@ -352,5 +354,16 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
   }
   if (!empty($signup->settings['destination'])) {
     $form_state['redirect'] = $signup->settings['destination'];
+  }
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function mailchimp_signup_entity_delete($entity, $type) {
+  if ($type == 'mailchimp_signup') {
+    if ($entity->mode & MAILCHIMP_SIGNUP_PAGE) {
+      menu_rebuild();
+    }
   }
 }
