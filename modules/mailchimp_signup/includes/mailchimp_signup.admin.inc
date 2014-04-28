@@ -35,8 +35,8 @@ function mailchimp_signup_overview_page() {
       $list_labels[] = l($mc_lists[$list_id]['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_lists[$list_id]['web_id']);
     }
     $actions = array(
-      l(t('Edit'), 'admin/config/services/mailchimp/signup/' . $signup->mcs_id . '/edit'),
-      l(t('Delete'), 'admin/config/services/mailchimp/signup/' . $signup->mcs_id . '/delete'),
+      l(t('Edit'), 'admin/config/services/mailchimp/signup/' . $signup->identifier() . '/edit'),
+      l(t('Delete'), 'admin/config/services/mailchimp/signup/' . $signup->identifier() . '/delete'),
     );
     if ($block_only) {
       $access = 'N/A - this form only exists as a block';
@@ -49,7 +49,7 @@ function mailchimp_signup_overview_page() {
       $actions[] = l(t('Permissions'), 'admin/people/permissions', array('fragment' => 'edit-mailchimp-signup-all-forms'));
     }
     $rows[] = array(
-      l($signup->label(), 'admin/config/services/mailchimp/signup/' . $signup->mcs_id . '/edit'),
+      l($signup->label(), 'admin/config/services/mailchimp/signup/' . $signup->identifier() . '/edit'),
       $modes,
       implode(', ', $list_labels),
       $access,
@@ -79,8 +79,8 @@ function mailchimp_signup_overview_page() {
     foreach ($mc_lists as $mc_list) {
       $list_names[] = $mc_list['name'];
     }
-    $caption = 'Currently Available MailChimp lists: <i>';
-    $caption .= implode(', ', $list_names);
+    $caption = t('Currently Available MailChimp lists:');
+    $caption .= ' <i>' . implode(', ', $list_names);
     $caption .= ".</i><br />" . $refresh_link;
     $table['caption'] = $caption;
   }
@@ -89,7 +89,7 @@ function mailchimp_signup_overview_page() {
 }
 
 /**
- * Return a form for adding/editing a mailchimp list.
+ * Return a form for adding/editing a mailchimp signup form.
  */
 function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $signup = NULL) {
   // Store the existing list for updating on submit.
@@ -195,9 +195,6 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
-  $form['mc_lists_config']['instructions'] = array(
-    '#markup' => "Select the lists to display on this form:<br /><br />",
-  );
   $lists = mailchimp_get_lists();
   $options = array();
   foreach ($lists as $mc_list) {
@@ -206,7 +203,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
   $form['mc_lists_config']['mc_lists'] = array(
     '#type' => 'checkboxes',
     '#title' => t('MailChimp Lists'),
-    '#description' => t('Which lists to show on your signup form. You can create additional lists at !MailChimp.',
+    '#description' => t('Select which lists to show on your signup form. You can create additional lists at !MailChimp.',
       array('!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'))),
     '#options' => $options,
     '#default_value' => $signup ? $signup->mc_lists : array(),
@@ -359,7 +356,7 @@ function mailchimp_signup_signup_form_submit($form, &$form_state) {
     $form_state['redirect'] = 'admin/config/services/mailchimp/signup';
   }
   else {
-    drupal_set_message(t('There has been an error saving your list.'), 'error');
+    drupal_set_message(t('There has been an error saving your signup form.'), 'error');
   }
 }
 
@@ -370,7 +367,7 @@ function mailchimp_signup_signup_delete_form($form, &$form_state, $signup) {
   $form_state['signup'] = $signup;
   return confirm_form($form,
     t('Are you sure you want to delete the signup form %name?', array('%name' => $signup->label())),
-    'admin/config/services/mailchimp/signup/' . $signup->mcs_id . '/edit',
+    'admin/config/services/mailchimp/signup/' . $signup->identifier() . '/edit',
     t('This action cannot be undone.'),
     t('Delete Signup form'));
 }
@@ -379,7 +376,7 @@ function mailchimp_signup_signup_delete_form($form, &$form_state, $signup) {
  * Submit function for the delete button on the signup overview and edit forms.
  */
 function mailchimp_signup_signup_delete_submit($form, &$form_state) {
-  $form_state['redirect'] = 'admin/config/services/mailchimp/signup/' . $form_state['signup']->mcs_id . '/delete';
+  $form_state['redirect'] = 'admin/config/services/mailchimp/signup/' . $form_state['signup']->identifier() . '/delete';
 }
 
 /**
@@ -387,7 +384,7 @@ function mailchimp_signup_signup_delete_submit($form, &$form_state) {
  */
 function mailchimp_signup_signup_delete_form_submit($form, &$form_state) {
   $signup = $form_state['signup'];
-  mailchimp_signup_delete_multiple(array($signup->mcs_id));
+  mailchimp_signup_delete_multiple(array($signup->identifier()));
   drupal_set_message(t('%name has been deleted.', array('%name' => $signup->label())));
   $form_state['redirect'] = 'admin/config/services/mailchimp/signup';
 }
