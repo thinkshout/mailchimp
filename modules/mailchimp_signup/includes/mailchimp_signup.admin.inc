@@ -226,8 +226,6 @@ function mailchimp_signup_mergefields_callback($form, $form_state) {
 function mailchimp_signup_form_submit($form, &$form_state) {
   if (isset($form_state['signup'])) {
     $signup = $form_state['signup'];
-    $new = FALSE;
-    $prior_mode = $signup->mode;
     $prior_settings = $signup->settings;
     if (!$form_state['values']['mode'][MAILCHIMP_SIGNUP_PAGE]) {
       $form_state['values']['settings']['path'] = '';
@@ -235,8 +233,6 @@ function mailchimp_signup_form_submit($form, &$form_state) {
   }
   else {
     $signup = mailchimp_signup_create();
-    $new = TRUE;
-    $prior_mode = 0;
     $prior_settings = array();
   }
   $mergefields = $form_state['values']['mergefields'];
@@ -255,11 +251,6 @@ function mailchimp_signup_form_submit($form, &$form_state) {
   $signup->settings['doublein'] = $form_state['values']['doublein'];
   $signup->settings['include_interest_groups'] = $form_state['values']['include_interest_groups'];
   if ($signup->save()) {
-    // For new pages, set appropriate default permissions:
-    if (($signup->mode & MAILCHIMP_SIGNUP_PAGE) && ($new || $prior_mode == MAILCHIMP_SIGNUP_BLOCK)) {
-      user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array('mailchimp_signup_form_' . $signup->name));
-      user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, array('mailchimp_signup_form_' . $signup->name));
-    }
     if (isset($form_state['values']['settings']['path'])) {
       if (!isset($prior_settings['path']) || $prior_settings['path'] != $signup->settings['path'] || !($signup->mode & MAILCHIMP_SIGNUP_PAGE)) {
         // We have a new (or removed) path. Rebuild menus.
