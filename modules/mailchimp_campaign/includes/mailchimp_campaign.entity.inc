@@ -29,7 +29,7 @@ class MailChimpCampaign extends Entity {
     }
 
     // Get the template name:
-    $mc_template = mailchimp_campaign_get_templates($this->mc_data['template_id']);
+    $mc_template = mailchimp_campaign_get_template($this->mc_data['template_id']);
     $mc_template_name = isset($mc_template) ? $mc_template['name'] : '';
 
     $list_segment_name = 'N/A';

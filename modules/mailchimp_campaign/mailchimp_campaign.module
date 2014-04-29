@@ -208,7 +208,7 @@ function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
  */
 function mailchimp_campaign_overview_page() {
   $campaigns = mailchimp_campaign_load_multiple();
-  $templates = mailchimp_campaign_get_templates();
+  $templates = mailchimp_campaign_list_templates();
 
   $rows = array();
   foreach ($campaigns as $campaign) {
@@ -434,15 +434,13 @@ function mailchimp_campaign_delete_campaign($cid) {
 /**
  * Return all available user templates.
  *
- * @param string $template_id
- *   Optional template ID. Set to return a single MailChimp template.
  * @param bool $reset
  *   True if templates should not be loaded from cache.
  *
  * @return mixed
- *   Array of MailChimp templates or a single MailChimp template.
+ *   Array listing existing Mailchimp templates by type.
  */
-function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
+function mailchimp_campaign_list_templates($reset = FALSE) {
   $cache = $reset ? NULL : cache_get('templates', 'cache_mailchimp');
   $all_templates = array();
   // Return cached lists:
@@ -470,30 +468,40 @@ function mailchimp_campaign_get_templates($template_id = NULL, $reset = FALSE) {
 
     cache_set('templates', $all_templates, 'cache_mailchimp', CACHE_TEMPORARY);
   }
+  return $all_templates;
+}
 
-  if (isset($template_id)) {
-    foreach ($all_templates as $type) {
-      if (isset($type[$template_id])) {
-        $template = $type[$template_id];
-        // Get template info from cache or the MailChimp API.
-        $cache = $reset ? NULL : cache_get('template_' . $template_id, 'cache_mailchimp');
-        if ($cache) {
-          $template['info'] = $cache->data;
-        }
-        else {
-          if ($mcapi = mailchimp_get_api_object()) {
-            $template['info'] = $mcapi->templates->info($template_id);
-            cache_set('template_' . $template_id, $template['info'], 'cache_mailchimp', CACHE_TEMPORARY);
-          }
-        }
-        return $template;
+/**
+ * Return full details for a Mailchimp Template.
+ *
+ * @param string $template_id
+ *   Optional template ID. Set to return a single MailChimp template.
+ * @param bool $reset
+ *   True if templates should not be loaded from cache.
+ *
+ * @return mixed
+ *   An array with all configuration and content for a Mailchimp Template.
+ */
+function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
+  $all_templates = mailchimp_campaign_list_templates($reset);
+  foreach ($all_templates as $type) {
+    if (isset($type[$template_id])) {
+      $template = $type[$template_id];
+      // Get template details from cache or the MailChimp API.
+      $cache = $reset ? NULL : cache_get('template_' . $template_id, 'cache_mailchimp');
+      if ($cache) {
+        $template['info'] = $cache->data;
       }
+      else {
+        if ($mcapi = mailchimp_get_api_object()) {
+          $template['info'] = $mcapi->templates->info($template_id);
+          cache_set('template_' . $template_id, $template['info'], 'cache_mailchimp', CACHE_TEMPORARY);
+        }
+      }
+      return $template;
     }
-    return NULL;
   }
-  else {
-    return $all_templates;
-  }
+  return NULL;
 }
 
 /**

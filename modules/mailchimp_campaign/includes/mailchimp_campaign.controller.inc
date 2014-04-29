@@ -28,7 +28,7 @@ class MailChimpCampaignController extends EntityAPIController {
       }
 
       if (isset($campaign->mc_data['template_id']) && $campaign->mc_data['template_id']) {
-        $campaign->mc_template = mailchimp_campaign_get_templates($campaign->mc_data['template_id']);
+        $campaign->mc_template = mailchimp_campaign_get_template($campaign->mc_data['template_id']);
       }
     }
 
