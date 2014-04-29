@@ -43,13 +43,13 @@ class MailChimpCampaignController extends EntityAPIController {
    */
   public function resetCache(array $ids = NULL) {
     parent::resetCache($ids);
-    if ($cached_campaigns = cache_get('mailchimp_campaigns', 'cache_mailchimp')) {
+    if ($cached_campaigns = cache_get('campaigns', 'cache_mailchimp')) {
       foreach ($cached_campaigns->data as $id => $cached_campaign) {
         if (in_array($id, $ids)) {
           unset($cached_campaigns->data[$id]);
         }
       }
-      cache_set('mailchimp_campaign', $cached_campaigns, 'cache_mailchimp');
+      cache_set('campaign', $cached_campaigns, 'cache_mailchimp');
     }
 
     drupal_static_reset('mailchimp_campaign_get_template');
