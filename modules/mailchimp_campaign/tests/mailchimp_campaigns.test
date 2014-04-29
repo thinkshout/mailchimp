@@ -53,7 +53,7 @@ class MailchimpCampaignsTestCase extends DrupalWebTestCase {
    */
   protected function tearDown() {
     parent::tearDown();
-    variable_set('mailchimp_test_mode', FALSE);
+    variable_del('mailchimp_test_mode');
   }
 
   /**
