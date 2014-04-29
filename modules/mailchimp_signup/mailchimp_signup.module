@@ -16,16 +16,6 @@ define('MAILCHIMP_SIGNUP_BOTH', 3);
 function mailchimp_signup_menu() {
   $items = array();
 
-  $items['admin/config/services/mailchimp/signup/add'] = array(
-    'title' => 'Add a Signup Form',
-    'description' => 'Add a new MailChimp Signup Block/Page.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_signup_signup_form'),
-    'access callback' => 'mailchimp_apikey_ready_access',
-    'access arguments' => array('administer mailchimp'),
-    'file' => 'includes/mailchimp_signup.admin.inc',
-    'type' => MENU_LOCAL_ACTION,
-  );
   $items['admin/config/services/mailchimp/signup/%mailchimp_signup/edit'] = array(
     'title' => 'Edit a signup form',
     'description' => 'Edit a Signup form.',
@@ -209,6 +199,13 @@ function mailchimp_signup_entity_info() {
           'custom settings' => FALSE,
         ),
       ),
+      // Enable the entity API's admin UI.
+      'admin ui' => array(
+        'path' => 'admin/config/services/mailchimp/signup',
+        'file' => 'includes/mailchimp_signup.admin.inc',
+        'controller class' => 'MailChimpSignupUIController',
+      ),
+      'access callback' => 'mailchimp_signup_entity_access',
     ),
   );
 
