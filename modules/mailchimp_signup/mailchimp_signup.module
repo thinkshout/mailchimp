@@ -41,8 +41,8 @@ function mailchimp_signup_menu() {
         'title' => $signup->title,
         'page callback' => 'mailchimp_signup_page',
         'page arguments' => array($signup->identifier()),
-        'access callback' => 'mailchimp_signup_page_access',
-        'access arguments' => array('mailchimp_signup_form_' . $signup->identifier()),
+        'access callback' => 'user_access',
+        'access arguments' => array('access mailchimp signup pages'),
         'type' => MENU_SUGGESTED_ITEM,
       );
     }
@@ -51,35 +51,17 @@ function mailchimp_signup_menu() {
 }
 
 /**
- * Access callback for viewing Mailchimp subscription pages.
- */
-function mailchimp_signup_page_access($permission) {
-  if (user_access('mailchimp_signup_all_forms')) {
-    return TRUE;
-  }
-  return user_access($permission);
-}
-
-/**
  * Implements hook_permission().
  */
 function mailchimp_signup_permission() {
   $return = array();
-  $signups = mailchimp_signup_load_multiple();
   $return['administer mailchimp signup entities'] = array(
     'title' => t('Administer Mailchimp Signup Entities.'),
   );
-  $return['mailchimp_signup_all_forms'] = array(
-    'title' => t('Access all Mailchimp Signup Forms.'),
+  $return['access mailchimp signup pages'] = array(
+    'title' => t('Access all Mailchimp Signup Pages.'),
+    'description' => t('This does not effect Signup Blocks: only Pages.'),
   );
-  foreach ($signups as $signup) {
-    if (intval($signup->mode) == MAILCHIMP_SIGNUP_PAGE || intval($signup->mode) == MAILCHIMP_SIGNUP_BOTH) {
-      $return['mailchimp_signup_form_' . $signup->name] = array(
-        'title' => t('Access %title', array('%title' => $signup->title)),
-        'description' => t('Allow users to access the %title Mailchimp signup page (Blocks are not impacted by this setting).', array('%title' => $signup->title)),
-      );
-    }
-  }
 
   return $return;
 }
