@@ -8,11 +8,9 @@
 /**
  * Return a form for adding/editing a mailchimp signup form.
  */
-function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $signup = NULL) {
+function mailchimp_signup_form($form, &$form_state, MailchimpSignup $signup) {
   // Store the existing list for updating on submit.
-  if (isset($signup)) {
-    $form_state['signup'] = $signup;
-  }
+  $form_state['signup'] = $signup;
 
   $form['title'] = array(
     '#type' => 'textfield',
@@ -20,7 +18,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     '#description' => t('The title for this signup form.'),
     '#size' => 35,
     '#maxlength' => 32,
-    '#default_value' => $signup ? $signup->title : '',
+    '#default_value' => $signup->title,
     '#required' => TRUE,
   );
 
@@ -28,7 +26,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
   $status = isset($signup->status) && $signup->mcs_id && (($signup->status & ENTITY_IN_CODE) || ($signup->status & ENTITY_FIXED));
   $form['name'] = array(
     '#type' => 'machine_name',
-    '#default_value' => isset($signup->name) ? $signup->name : '',
+    '#default_value' => $signup->name,
     '#maxlength' => 32,
     '#disabled' => $status,
     '#machine_name' => array(
@@ -40,7 +38,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
   $form['description'] = array(
     '#type' => 'textarea',
     '#title' => 'Description',
-    '#default_value' => $signup ? $signup->settings['description'] : '',
+    '#default_value' => isset($signup->settings['description']) ? $signup->settings['description'] : '',
     '#rows' => 2,
     '#maxlength' => 500,
     '#description' => t('This description will be shown on the signup form below the title. (500 characters or less)'),
@@ -58,7 +56,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
       MAILCHIMP_SIGNUP_BLOCK => 'Block',
       MAILCHIMP_SIGNUP_PAGE => 'Page',
     ),
-    '#default_value' => isset($signup) ? $mode_defaults[$signup->mode] : array(),
+    '#default_value' => !empty($signup->mode) ? $mode_defaults[$signup->mode] : array(),
   );
 
   $form['settings'] = array(
@@ -73,7 +71,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     '#type' => 'textfield',
     '#title' => 'Page URL',
     '#description' => t('Path to the signup page. ie "newsletter/signup".'),
-    '#default_value' => isset($signup) ? $signup->settings['path'] : NULL,
+    '#default_value' => isset($signup->settings['path']) ? $signup->settings['path'] : NULL,
     '#states' => array(
       // Hide unless needed.
       'visible' => array(
@@ -89,21 +87,21 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     '#type' => 'textfield',
     '#title' => 'Submit Button Label',
     '#required' => 'TRUE',
-    '#default_value' => isset($signup) ? $signup->settings['submit_button'] : 'Submit',
+    '#default_value' => isset($signup->settings['submit_button']) ? $signup->settings['submit_button'] : 'Submit',
   );
 
   $form['settings']['confirmation_message'] = array(
     '#type' => 'textfield',
     '#title' => 'Confirmation Message',
     '#description' => 'This message will appear after a successful submission of this form. Leave blank for no message, but make sure you configure a destination in that case unless you really want to confuse your site visitors.',
-    '#default_value' => isset($signup) ? $signup->settings['confirmation_message'] : 'You have been successfully subscribed.',
+    '#default_value' => isset($signup->settings['confirmation_message']) ? $signup->settings['confirmation_message'] : 'You have been successfully subscribed.',
   );
 
   $form['settings']['destination'] = array(
     '#type' => 'textfield',
     '#title' => 'Form destination page',
     '#description' => 'Leave blank to stay on the form page.',
-    '#default_value' => isset($signup) ? $signup->settings['destination'] : NULL,
+    '#default_value' => isset($signup->settings['destination']) ? $signup->settings['destination'] : NULL,
   );
 
   $form['mc_lists_config'] = array(
@@ -123,7 +121,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
     '#description' => t('Select which lists to show on your signup form. You can create additional lists at !MailChimp.',
       array('!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'))),
     '#options' => $options,
-    '#default_value' => $signup ? $signup->mc_lists : array(),
+    '#default_value' => is_array($signup->mc_lists) ? $signup->mc_lists : array(),
     '#required' => TRUE,
     '#ajax' => array(
       'callback' => 'mailchimp_signup_mergefields_callback',
@@ -143,7 +141,7 @@ function mailchimp_signup_signup_form($form, &$form_state, MailchimpSignup $sign
   );
 
   // Show merge fields if changing list field or editing existing list.
-  if (!empty($form_state['values']['mc_lists']) || isset($signup)) {
+  if (!empty($form_state['values']['mc_lists']) || !isset($signup->is_new) || !$signup->is_new) {
     $form['mc_lists_config']['mergefields'] = array(
       '#type' => 'fieldset',
       '#title' => t('Merge Field Display'),
