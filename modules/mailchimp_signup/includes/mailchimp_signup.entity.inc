@@ -28,4 +28,17 @@ class MailchimpSignup extends Entity {
     return $this->title;
   }
 
+  /**
+   * Overrides Entity\Entity::uri().
+   */
+  public function uri() {
+    return array(
+      'path' => 'admin/config/services/mailchimp/signup/manage/' . $this->name,
+      'options' => array(
+        'entity_type' => $this->entityType,
+        'entity' => $this,
+      ),
+    );
+  }
+
 }
