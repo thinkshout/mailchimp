@@ -111,7 +111,7 @@ function mailchimp_signup_block_view($delta = '') {
   if ($signup) {
     $block = array(
       'subject' => $signup->title,
-      'content' => drupal_get_form('mailchimp_signup_subscribe_form', $signup),
+      'content' => drupal_get_form('mailchimp_signup_subscribe_block_' . $signup->name . '_form', $signup, 'mailchimp_signup_block'),
     );
   }
   else {
@@ -227,7 +227,31 @@ function mailchimp_signup_entity_access() {
  */
 function mailchimp_signup_page($signup_id) {
   $signup = mailchimp_signup_load($signup_id);
-  return drupal_get_form('mailchimp_signup_subscribe_form', $signup);
+  return drupal_get_form('mailchimp_signup_subscribe_page_' . $signup_id . '_form', $signup, 'mailchimp_signup_page');
+}
+
+/**
+ * Implements hook_forms().
+ *
+ * This allows each subscription form rendering to have a unique form
+ * ID. If this weren't the case, multiple forms getting rendered on a single
+ * page display would have submit button conflicts.
+ */
+function mailchimp_signup_forms($form_id, $args) {
+  $forms = array();
+  if (isset($args[1])) {
+    if ($args[1] == 'mailchimp_signup_page') {
+      $forms['mailchimp_signup_subscribe_page_' . $args[0]->name . '_form'] = array(
+        'callback' => 'mailchimp_signup_subscribe_form',
+      );
+    }
+    if ($args[1] == 'mailchimp_signup_block') {
+      $forms['mailchimp_signup_subscribe_block_' . $args[0]->name . '_form'] = array(
+        'callback' => 'mailchimp_signup_subscribe_form',
+      );
+    }
+  }
+  return $forms;
 }
 
 /**
@@ -235,7 +259,7 @@ function mailchimp_signup_page($signup_id) {
  *
  * If there are multiple lists, this generates a single form for all of them.
  */
-function mailchimp_signup_subscribe_form($form, &$form_state, $signup) {
+function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
   $form['#attributes'] = array('class' => array('mailchimp-signup-subscribe-form'));
   $form['description'] = array(
     '#markup' => $signup->settings['description'],
