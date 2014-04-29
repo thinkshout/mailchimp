@@ -8,3 +8,4 @@ dependencies[] = entity
 configure = admin/config/services/mailchimp/signup
 
 files[] = includes/mailchimp_signup.entity.inc
+files[] = includes/mailchimp_signup.ui_controller.inc
