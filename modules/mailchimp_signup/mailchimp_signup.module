@@ -16,16 +16,6 @@ define('MAILCHIMP_SIGNUP_BOTH', 3);
 function mailchimp_signup_menu() {
   $items = array();
 
-  $items['admin/config/services/mailchimp/signup'] = array(
-    'title' => 'Signup Forms',
-    'description' => 'Manage MailChimp Signup blocks and pages.',
-    'page callback' => 'mailchimp_signup_overview_page',
-    'access callback' => 'mailchimp_apikey_ready_access',
-    'access arguments' => array('administer mailchimp'),
-    'type' => MENU_LOCAL_TASK,
-    'file' => 'includes/mailchimp_signup.admin.inc',
-    'weight' => 10,
-  );
   $items['admin/config/services/mailchimp/signup/add'] = array(
     'title' => 'Add a Signup Form',
     'description' => 'Add a new MailChimp Signup Block/Page.',
