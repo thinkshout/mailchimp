@@ -200,7 +200,7 @@ function mailchimp_signup_form($form, &$form_state, MailchimpSignup $signup) {
     '#type' => 'submit',
     '#value' => t('Delete'),
     '#access' => isset($signup),
-    '#submit' => array('mailchimp_signup_signup_delete_submit'),
+    '#submit' => array('mailchimp_signup_delete_submit'),
   );
   $form['cancel'] = array(
     '#type' => 'link',
@@ -221,9 +221,9 @@ function mailchimp_signup_mergefields_callback($form, $form_state) {
 }
 
 /**
- * Submit handler for mailchimp_lists_list_form().
+ * Submit handler for mailchimp_signup_form().
  */
-function mailchimp_signup_signup_form_submit($form, &$form_state) {
+function mailchimp_signup_form_submit($form, &$form_state) {
   if (isset($form_state['signup'])) {
     $signup = $form_state['signup'];
     $new = FALSE;
@@ -290,7 +290,7 @@ function mailchimp_signup_signup_delete_form($form, &$form_state, $signup) {
 /**
  * Submit function for the delete button on the signup overview and edit forms.
  */
-function mailchimp_signup_signup_delete_submit($form, &$form_state) {
+function mailchimp_signup_delete_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/config/services/mailchimp/signup/' . $form_state['signup']->identifier() . '/delete';
 }
 
