@@ -66,6 +66,9 @@ function mailchimp_signup_page_access($permission) {
 function mailchimp_signup_permission() {
   $return = array();
   $signups = mailchimp_signup_load_multiple();
+  $return['administer mailchimp signup entities'] = array(
+    'title' => t('Administer Mailchimp Signup Entities.'),
+  );
   $return['mailchimp_signup_all_forms'] = array(
     'title' => t('Access all Mailchimp Signup Forms.'),
   );
@@ -210,6 +213,13 @@ function mailchimp_signup_entity_info() {
   );
 
   return $entities;
+}
+
+/**
+ * Access callback for mailchimp_activity_entity.
+ */
+function mailchimp_signup_entity_access() {
+  return user_access('administer mailchimp signup entities');
 }
 
 /**
