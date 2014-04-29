@@ -108,12 +108,12 @@ function mailchimp_activity_load_entities($name = NULL) {
  *   Associative array of MailChimp member activity.
  */
 function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE) {
-  $cache = $reset ? NULL : cache_get("mailchimp_activity_{$list_id}");
+  $cache = $reset ? NULL : cache_get("activity_{$list_id}_{$email}", 'cache_mailchimp');
   $memberactivity = array();
 
   // Return cached lists:
-  if ($cache && isset($cache->data[$email])) {
-    $memberactivity = $cache->data[$email];
+  if ($cache && isset($cache->data)) {
+    $memberactivity = $cache->data;
   }
   // Query lists from the MailChimp API and store in cache:
   else {
@@ -131,16 +131,7 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
     }
     if ($result['success_count'] > 0) {
       $memberactivity = reset($result['data']);
-      $newcache = array();
-      if ($cache) {
-        $newcache = $cache;
-      }
-      $newcache[$email] = $memberactivity;
-      cache_set(
-        'mailchimp_activity_' . $list_id,
-        $newcache,
-        'cache',
-        CACHE_TEMPORARY);
+      cache_set('activity_' . $list_id . '_' . $email, $result['data'], 'cache_mailchimp', CACHE_TEMPORARY);
     }
     if ($result['error_count'] > 0) {
       foreach ($result['errors'] as $error) {
