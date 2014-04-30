@@ -47,8 +47,7 @@ function mailchimp_lists_field_settings_form($field, $instance, $has_data) {
     '#type' => 'select',
     '#title' => t('MailChimp List'),
     '#multiple' => FALSE,
-    '#description' => t('Available MailChimp lists. If there are no options,
-      make sure you have created a list at !MailChimp first, then !cacheclear.',
+    '#description' => t('Available MailChimp lists. If there are no options, make sure you have created a list at !MailChimp first, then !cacheclear.',
       array(
         '!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'),
         '!cacheclear' => l(t('clear your list cache'),
@@ -113,12 +112,12 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
     if (!$mergevar['req'] || $mergevar['tag'] === 'EMAIL') {
       $form['mergefields'][$mergevar['tag']]['#options'] = $fields;
       if ($mergevar['tag'] === 'EMAIL') {
-        $form['mergefields'][$mergevar['tag']]['#description'] = "Any entity with an empty or invalid email address field value will simply be ignored by the Mailchimp subscription system. <i>This is why the Email field is the only required merge field which can sync to non-required fields.</i>";
+        $form['mergefields'][$mergevar['tag']]['#description'] = t('Any entity with an empty or invalid email address field value will simply be ignored by the Mailchimp subscription system. <em>This is why the Email field is the only required merge field which can sync to non-required fields.</em>');
       }
     }
     else {
       $form['mergefields'][$mergevar['tag']]['#options'] = $required_fields;
-      $form['mergefields'][$mergevar['tag']]['#description'] = "Only 'required' and 'calculated' fields are allowed to be synced with Mailchimp 'required' merge fields.";
+      $form['mergefields'][$mergevar['tag']]['#description'] = t("Only 'required' and 'calculated' fields are allowed to be synced with Mailchimp 'required' merge fields.");
     }
   }
 
