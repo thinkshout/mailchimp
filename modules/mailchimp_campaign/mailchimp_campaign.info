@@ -7,7 +7,6 @@ dependencies[] = mailchimp_lists
 dependencies[] = entity
 
 files[] = includes/mailchimp_campaign.admin.inc
-files[] = includes/mailchimp_campaign.controller.inc
 files[] = includes/mailchimp_campaign.entity.inc
 files[] = tests/mailchimp_campaigns.test
 

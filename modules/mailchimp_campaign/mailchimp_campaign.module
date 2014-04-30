@@ -16,11 +16,12 @@ function mailchimp_campaign_entity_info() {
   $return = array(
     'mailchimp_campaign' => array(
       'label' => t('MailChimp Campaign'),
-      'controller class' => 'MailChimpCampaignController',
       'entity class' => 'MailChimpCampaign',
+      'controller class' => 'EntityAPIController',
       'base table' => 'mailchimp_campaigns',
       'uri callback' => 'entity_class_uri',
       'fieldable' => FALSE,
+      'exportable' => FALSE,
       'entity keys' => array(
         'id' => 'mc_campaign_id',
       ),
