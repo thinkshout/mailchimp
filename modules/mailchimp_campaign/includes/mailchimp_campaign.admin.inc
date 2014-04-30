@@ -124,17 +124,11 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
   }
 
   if (isset($list_id)) {
-    $merge_vars = mailchimp_get_mergevars(array($list_id));
-    if (isset($merge_vars[$list_id])) {
-      $form['content']['merge_vars'] = array(
-        '#type' => 'fieldset',
-        '#title' => 'Merge Tags',
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        '#children' => _mailchimp_campaign_build_merge_vars_html(
-          $merge_vars[$list_id]['merge_vars']),
-      );
-    }
+    $merge_vars_list = mailchimp_get_mergevars(array($list_id));
+    $merge_vars = $merge_vars_list[$list_id]['merge_vars'];
+  }
+  else {
+    $merge_vars = array();
   }
 
   $form['content']['entity_import'] = array(
@@ -223,6 +217,14 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         '#title' => check_plain(drupal_ucfirst($section)),
         '#default_value' => $default_value,
       );
+
+      if (isset($merge_vars)) {
+        $form['content'][$section . '_wrapper']['merge_vars'] = array (
+          '#type' => 'item',
+          '#title' => 'Merge Vars',
+          '#markup' => _mailchimp_campaign_build_merge_vars_html($merge_vars),
+        );
+      }
     }
   }
   else {
