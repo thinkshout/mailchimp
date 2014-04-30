@@ -6,6 +6,7 @@
  */
 
 class MailChimpCampaign extends Entity {
+
   public $mc_campaign_id, $template, $created, $updated, $mc_data, $list, $mc_template;
 
   /**
@@ -109,9 +110,10 @@ class MailChimpCampaign extends Entity {
   }
 
   /**
-   * Overrides parent::defaultLable().
+   * Provide a label based on the campaign title.
    */
-  protected function defaultLabel() {
+  public function label() {
     return $this->mc_data['title'];
   }
+
 }
