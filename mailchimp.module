@@ -263,7 +263,7 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
         foreach ($result['data'] as $list_mergevars) {
           $last_list_id = $list_mergevars['id'];
           $mergevars[$last_list_id] = $list_mergevars;
-          cache_set($last_list_id . '-mergevars', $list_mergevars, 'cache_mailchimp', CACHE_PERMANENT);
+          cache_set($last_list_id . '-mergevars', $list_mergevars, 'cache_mailchimp', CACHE_TEMPORARY);
         }
       }
     }
@@ -317,8 +317,8 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
         '@list' => $list_id,
         '%message' => $e->getMessage(),
       ), WATCHDOG_ERROR);
+      cache_set($list_id . '-' . $email, $memberinfo, 'cache_mailchimp', CACHE_TEMPORARY);
     }
-    cache_set($list_id . '-' . $email, $memberinfo, 'cache_mailchimp', CACHE_PERMANENT);
   }
 
   return $memberinfo;
