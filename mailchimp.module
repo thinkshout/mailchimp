@@ -243,15 +243,17 @@ function _mailchimp_list_cmp($a, $b) {
 function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
   $mergevars = array();
   if (!$reset) {
-    foreach ($list_ids as $list_id) {
-      $cache = $reset ? NULL : cache_get($list_id . '-mergevars', 'cache_mailchimp');
-      // Return cached lists:
+    foreach ($list_ids as $key => $list_id) {
+      $cache = cache_get($list_id . '-mergevars', 'cache_mailchimp');
+      // Get cached data and unset from our remaining lists to query.
       if ($cache) {
         $mergevars[$list_id] = $cache->data;
+        unset($list_ids[$key]);
       }
     }
   }
 
+  // Get the uncached merge vars from MailChimp.
   if (count($list_ids)) {
     $mcapi = mailchimp_get_api_object();
     $last_list_id = NULL;
