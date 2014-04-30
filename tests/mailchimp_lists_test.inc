@@ -4,6 +4,17 @@
 * A virtual MailChimp Lists API implementation for use in testing.
 */
 
+define('MAILCHIMP_LISTS_TEST_LIST_A', 'mailchimp_test_list_a');
+define('MAILCHIMP_LISTS_TEST_LIST_B', 'mailchimp_test_list_b');
+define('MAILCHIMP_LISTS_TEST_LIST_C', 'mailchimp_test_list_c');
+define('MAILCHIMP_LISTS_TEST_LIST_INVALID', 'mailchimp_invalid_list');
+
+define('MAILCHIMP_LISTS_TEST_SEGMENT_A', 1);
+define('MAILCHIMP_LISTS_TEST_SEGMENT_B', 2);
+define('MAILCHIMP_LISTS_TEST_SEGMENT_C', 3);
+
+define('MAILCHIMP_LISTS_TEST_BATCH_QUEUE_CRON', 'mailchimp_test_batch_queue_cron');
+
 class MailChimp_ListsTest extends Mailchimp_Lists {
 
   /** @var string $errorMessage */
