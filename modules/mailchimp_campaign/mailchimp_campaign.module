@@ -80,6 +80,7 @@ function mailchimp_campaign_menu() {
     'page callback' => 'mailchimp_campaign_view',
     'page arguments' => array(5),
     'access arguments' => array('administer mailchimp campaigns'),
+    'load arguments' => array(5),
   );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/view'] = array(
     'title' => 'View',
