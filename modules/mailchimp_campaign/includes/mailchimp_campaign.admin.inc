@@ -301,7 +301,8 @@ function mailchimp_campaign_entity_type_callback($form, $form_state) {
  */
 function mailchimp_campaign_campaign_preview($form, &$form_state) {
   $text = '';
-  $content = mailchimp_campaign_render_template($form_state['values']['content']);
+  $template_content = _mailchimp_campaign_parse_template_content($form_state['values']['content']);
+  $content = mailchimp_campaign_render_template($template_content);
   foreach ($content as $key => $section) {
     $text .= "<h3>$key</h3>" . $section;
   }
@@ -339,21 +340,7 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
     );
   }
 
-  // Parse template content to remove wrapper elements from tree.
-  $template_content = array();
-  $content_keys = array_keys($values['content']);
-  foreach ($content_keys as $content_key) {
-    if (strpos($content_key, '_wrapper') !== FALSE) {
-      // If this element is a wrapper, add the element contained
-      // within the wrapper to the template content.
-      $new_content_key = str_replace('_wrapper', '', $content_key);
-      $template_content[$new_content_key] = $values['content'][$content_key][$new_content_key];
-    }
-    else {
-      // If this element is not a wrapper, add it to the template content.
-      $template_content[$content_key] = $values['content'][$content_key];
-    }
-  }
+  $template_content = _mailchimp_campaign_parse_template_content($values['content']);
 
   $campaign_id = (isset($form_state['campaign']) ? $form_state['campaign']->mc_campaign_id : NULL);
   mailchimp_campaign_save_campaign($template_content, $options, $segment_options, $campaign_id);
@@ -487,6 +474,33 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
       array('attributes' => array('target' => '_blank'))) . '</p>';
 
   return $html;
+}
+
+/**
+ * Parses template content to remove wrapper elements from tree.
+ *
+ * @param $content
+ *   The template content array.
+ *
+ * @return array
+ *   The template content array minus wrapper elements.
+ */
+function _mailchimp_campaign_parse_template_content($content) {
+  $template_content = array();
+  $content_keys = array_keys($content);
+  foreach ($content_keys as $content_key) {
+    if (strpos($content_key, '_wrapper') !== FALSE) {
+      // If this element is a wrapper, add the element contained
+      // within the wrapper to the template content.
+      $new_content_key = str_replace('_wrapper', '', $content_key);
+      $template_content[$new_content_key] = $content[$content_key][$new_content_key];
+    }
+    else {
+      // If this element is not a wrapper, add it to the template content.
+      $template_content[$content_key] = $content[$content_key];
+    }
+  }
+  return $template_content;
 }
 
 /**
