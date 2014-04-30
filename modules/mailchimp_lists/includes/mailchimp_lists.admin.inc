@@ -71,6 +71,7 @@ function mailchimp_lists_overview_page() {
  */
 function mailchimp_lists_fields_overview_page() {
   $fields = field_info_fields();
+  $rows = array();
   foreach ($fields as $field) {
     if ($field['type'] == 'mailchimp_lists_subscription') {
       foreach ($field['bundles'] as $entity_type => $bundles) {
