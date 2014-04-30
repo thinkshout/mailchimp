@@ -1,4 +1,4 @@
-fieldset#entity-import .form-type-select, fieldset#entity-import .form-type-textfield, #content-entity-lookup-wrapper {
+div#entity-import .form-type-select, div#entity-import .form-type-textfield, #content-entity-lookup-wrapper {
     display: inline-block;
     margin-right:10px;
 }
