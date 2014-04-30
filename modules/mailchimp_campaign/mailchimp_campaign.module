@@ -197,7 +197,7 @@ function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
  */
 function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
   $access = FALSE;
-  // only campaigns that haven't been sent can be changed
+  // Only campaigns that haven't been sent can be changed.
   if (user_access('administer mailchimp campaigns') &&
     ($campaign->mc_data['status'] === 'sent') === $sent) {
     $access = TRUE;
@@ -301,7 +301,7 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
   }
   else {
     $content = array(
-      'sections' => mailchimp_campaign_render_template($template)
+      'sections' => mailchimp_campaign_render_template($template),
     );
   }
 
@@ -577,18 +577,18 @@ function mailchimp_campaign_filter_tips($filter, $format, $long) {
 /**
  * Process callback for mailchimp_campaign_filter_info().
  *
- * @param string $text
+ * @string $text
  *   The text string to be filtered.
- * @param $filter
+ * @object object $filter
  *   The filter object containing settings for the given format.
- * @param $format
+ * @string $format
  *   The text format object assigned to the text to be filtered.
- * @param string $langcode
+ * @string $langcode
  *   The language code of the text to be filtered.
- * @param bool $cache
+ * @bool $cache
  *   A Boolean indicating whether the filtered text is going to be cached in
  *   {cache_filter}.
- * @param int $cache_id
+ * @int $cache_id
  *   The ID of the filtered text in {cache_filter}, if $cache is TRUE.
  *
  * @return string
@@ -822,9 +822,7 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
 
   try {
     $result = $mcapi->campaigns->segmentTest($list_id,
-      array(
-        'saved_segment_id' => $list_segment_id,
-      ));
+      array('saved_segment_id' => $list_segment_id));
   }
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
