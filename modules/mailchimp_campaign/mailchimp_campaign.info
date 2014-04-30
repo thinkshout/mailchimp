@@ -8,6 +8,7 @@ dependencies[] = entity
 
 files[] = includes/mailchimp_campaign.admin.inc
 files[] = includes/mailchimp_campaign.entity.inc
+files[] = includes/mailchimp_campaign.controller.inc
 files[] = tests/mailchimp_campaigns.test
 
 configure = admin/config/services/mailchimp/campaigns

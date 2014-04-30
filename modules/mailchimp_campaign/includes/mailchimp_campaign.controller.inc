@@ -54,4 +54,5 @@ class MailChimpCampaignController extends EntityAPIController {
 
     drupal_static_reset('mailchimp_campaign_get_template');
   }
+
 }
