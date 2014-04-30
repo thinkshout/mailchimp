@@ -296,29 +296,28 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
  */
 function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get($list_id . '-' . $email, 'cache_mailchimp');
-  $memberinfo = array();
 
   // Return cached lists:
   if ($cache) {
-    $memberinfo = $cache->data;
+    return $cache->data;
   }
+
   // Query lists from the MCAPI and store in cache:
-  else {
-    $mcapi = mailchimp_get_api_object();
-    try {
-      $result = $mcapi->lists->memberInfo($list_id, array(array('email' => $email)));
-      if ($result['success_count']) {
-        $memberinfo = reset($result['data']);
-      }
-    }
-    catch (Exception $e) {
-      watchdog('mailchimp', 'An error occurred requesting memberinfo for @email in list @list. "%message"', array(
-        '@email' => $email,
-        '@list' => $list_id,
-        '%message' => $e->getMessage(),
-      ), WATCHDOG_ERROR);
+  $memberinfo = array();
+  $mcapi = mailchimp_get_api_object();
+  try {
+    $result = $mcapi->lists->memberInfo($list_id, array(array('email' => $email)));
+    if ($result['success_count']) {
+      $memberinfo = reset($result['data']);
       cache_set($list_id . '-' . $email, $memberinfo, 'cache_mailchimp', CACHE_TEMPORARY);
     }
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred requesting memberinfo for @email in list @list. "%message"', array(
+      '@email' => $email,
+      '@list' => $list_id,
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
   }
 
   return $memberinfo;
@@ -630,24 +629,24 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
  */
 function mailchimp_get_segments($list_id, $reset = NULL) {
   $cache = $reset ? NULL : cache_get($list_id . '-segments', 'cache_mailchimp');
-  $segments = array();
   // Return cached lists:
   if ($cache) {
-    $segments = $cache->data;
+    return $cache->data;
   }
+
   // Query segments from the MCAPI and store in cache:
-  else {
-    try {
-      $mcapi = mailchimp_get_api_object();
-      $segments = $mcapi->lists->segments($list_id);
-      cache_set($list_id . '-segments', $segments, 'cache_mailchimp', CACHE_TEMPORARY);
-    }
-    catch (Exception $e) {
-      watchdog('mailchimp', 'An error occurred requesting list segment information from Mailchimp. "%message"', array(
-        '%message' => $e->getMessage(),
-      ), WATCHDOG_ERROR);
-    }
+  $segments = array();
+  try {
+    $mcapi = mailchimp_get_api_object();
+    $segments = $mcapi->lists->segments($list_id);
+    cache_set($list_id . '-segments', $segments, 'cache_mailchimp', CACHE_TEMPORARY);
   }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred requesting list segment information from Mailchimp. "%message"', array(
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+  }
+
   return $segments;
 }
 
@@ -785,29 +784,28 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
   $campaign_data = FALSE;
   // Return cached lists:
   if ($cache) {
-    $campaign_data = $cache->data;
+    return $campaign_data = $cache->data;
   }
-  else {
+
+  try {
+    $mcapi = mailchimp_get_api_object();
     $filters = array(
       'campaign_id' => $campaign_id,
     );
-    try {
-      $mcapi = mailchimp_get_api_object();
-      $results = $mcapi->campaigns->getList($filters, 0, 1);
-      if (isset($results['total']) && $results['total']) {
-        $campaign_data = $results['data'][0];
-        cache_set('campaign_' . $campaign_id, $campaign_data, 'cache_mailchimp', CACHE_TEMPORARY);
-      }
-      else {
-        $campaign_data = FALSE;
-      }
+    $results = $mcapi->campaigns->getList($filters, 0, 1);
+    if (isset($results['total']) && $results['total']) {
+      $campaign_data = $results['data'][0];
+      cache_set('campaign_' . $campaign_id, $campaign_data, 'cache_mailchimp', CACHE_TEMPORARY);
     }
-    catch (Exception $e) {
-      watchdog('mailchimp', 'An error occurred retrieving campaign data for @campaign. "%message"', array(
-        '@campaign' => $campaign_id,
-        '%message' => $e->getMessage(),
-      ), WATCHDOG_ERROR);
+    else {
+      $campaign_data = FALSE;
     }
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred retrieving campaign data for @campaign. "%message"', array(
+      '@campaign' => $campaign_id,
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
   }
 
   return $campaign_data;
