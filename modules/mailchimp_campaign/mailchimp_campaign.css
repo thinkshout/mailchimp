@@ -1,4 +1,14 @@
-div#entity-import .form-type-select, div#entity-import .form-type-textfield, #content-entity-lookup-wrapper {
+fieldset#entity-import .form-type-select, div#entity-import .form-type-textfield, div#content-entity-lookup-wrapper, div.form-item-entity-id {
     display: inline-block;
-    margin-right:10px;
+    margin-right: 10px!important;
+}
+
+div.form-type-item {
+    clear: both;
+    margin: 5px auto 5px auto!important;
+}
+
+div.filter-guidelines-mailchimp_campaign ul.tips li {
+    list-style-type: none;
+    margin: 0!important;
 }
