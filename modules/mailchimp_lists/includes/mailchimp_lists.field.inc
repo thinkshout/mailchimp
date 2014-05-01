@@ -37,17 +37,25 @@ function mailchimp_lists_field_info() {
 /**
  * Implements hook_field_settings_form().
  */
-function mailchimp_lists_field_settings_form($field, $instance, $has_data) {
+function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) {
   $lists = mailchimp_get_lists();
   $options = array('' => t('-- Select --'));
   foreach ($lists as $mc_list) {
     $options[$mc_list['id']] = $mc_list['name'];
   }
+  $fields = field_info_fields();
+  foreach ($fields as $field) {
+    if ($field['type'] == 'mailchimp_lists_subscription') {
+      if ($field['settings']['mc_list_id'] != $this_field['settings']['mc_list_id']) {
+        unset($options[$field['settings']['mc_list_id']]);
+      }
+    }
+  }
   $form['mc_list_id'] = array(
     '#type' => 'select',
     '#title' => t('MailChimp List'),
     '#multiple' => FALSE,
-    '#description' => t('Available MailChimp lists. If there are no options, make sure you have created a list at !MailChimp first, then !cacheclear.',
+    '#description' => t('Available MailChimp lists which are not already attached to Mailchimp Subscription Fields. If there are no options, make sure you have created a list at !MailChimp first, then !cacheclear.',
       array(
         '!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'),
         '!cacheclear' => l(t('clear your list cache'),
@@ -55,14 +63,14 @@ function mailchimp_lists_field_settings_form($field, $instance, $has_data) {
         array('query' => array('destination' => $_GET['q']))),
       )),
     '#options' => $options,
-    '#default_value' => isset($field['settings']['mc_list_id']) ? $field['settings']['mc_list_id'] : FALSE,
+    '#default_value' => isset($this_field['settings']['mc_list_id']) ? $this_field['settings']['mc_list_id'] : FALSE,
     '#required' => TRUE,
   );
   $form['double_opt_in'] = array(
     '#type' => 'checkbox',
     '#title' => 'Require subscribers to Double Opt-in',
     '#description' => 'New subscribers will be sent a link with an email they must follow to confirm their subscription.',
-    '#default_value' => isset($field['settings']['double_opt_in']) ? $field['settings']['double_opt_in'] : FALSE,
+    '#default_value' => isset($this_field['settings']['double_opt_in']) ? $this_field['settings']['double_opt_in'] : FALSE,
   );
   return $form;
 }
