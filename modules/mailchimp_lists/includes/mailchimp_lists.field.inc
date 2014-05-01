@@ -51,8 +51,8 @@ function mailchimp_lists_field_settings_form($field, $instance, $has_data) {
       array(
         '!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'),
         '!cacheclear' => l(t('clear your list cache'),
-            'admin/config/services/mailchimp/list_cache_clear',
-            array('query' => array('destination' => $_GET['q']))),
+        'admin/config/services/mailchimp/list_cache_clear',
+        array('query' => array('destination' => $_GET['q']))),
       )),
     '#options' => $options,
     '#default_value' => isset($field['settings']['mc_list_id']) ? $field['settings']['mc_list_id'] : FALSE,
