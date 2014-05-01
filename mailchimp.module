@@ -930,49 +930,6 @@ function mailchimp_webhook_delete($list_id, $url) {
 }
 
 /**
- * Returns an array of lists that the user has been a member of.
- *
- * Includes a value indicating whether they are currently a subscribed or not.
- *
- * @param string $email
- *
- * @return array
- *   Containing 2 arrays -- one ('lists') of all lists that have made use of
- * this email address (list_id -> list_data[]). One ('campaigns') of all
- * campaigns that have included this email (campaign_id -> campaign_data[])
- *
- * We include the campaign data because we need it to get accurate list
- * activity history anyway, and we want to keep the data handy to avoid
- * excessive API calls.
- */
-function mailchimp_get_lists_by_email($email) {
-  $campaigns = mailchimp_get_campaigns_for_email($email);
-  $subscribed_lists = mailchimp_get_lists_for_email($email);
-  $lists = array();
-  foreach ($subscribed_lists as $list) {
-    $lists[$list['id']] = $list;
-  }
-  $filtered_lists = array(
-    'lists' => array(),
-    'campaigns' => array(),
-  );
-  if ($campaigns) {
-    // Iterate through campaigns, add each campaign's list as array index/value.
-    foreach ($campaigns as $campaign) {
-      $campaign_data = mailchimp_get_campaign_data($campaign['id']);
-      if (isset($lists[$campaign_data['list_id']])) {
-        if ($campaign_data['list_id']) {
-          $filtered_lists['lists'][$campaign_data['list_id']] = $lists[$campaign_data['list_id']];
-        }
-        $filtered_lists['campaigns'][$campaign['id']] = $campaign_data;
-      }
-    }
-  }
-
-  return $filtered_lists;
-}
-
-/**
  * Clear a mailchimp user memberinfo cache.
  *
  * @string $list_id
