@@ -331,12 +331,13 @@ function mailchimp_lists_field_prepare_view($entity_type, $entities, $field, $in
 
 /**
  * Implements hook_form_FORM_ID_alter().
- *
- * Hide the cardinality setting on the field settings for
- * mailchimp_lists_subscription fields.
  */
 function mailchimp_lists_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
   if ($form['#field']['type'] == 'mailchimp_lists_subscription') {
+    // Disable the list selector on the instance config page:
+    $form['field']['settings']['mc_list_id']['#disabled'] = TRUE;
+    $form['field']['settings']['mc_list_id']['#description'] = t("To alter this list, use the 'Field Settings' tab");
+    // Hide the cardinality setting:
     $form['field']['cardinality']['#default_value'] = 1;
     $form['field']['cardinality']['#access'] = FALSE;
     $form['#validate'][] = 'mailchimp_lists_form_field_ui_field_edit_form_validate';
