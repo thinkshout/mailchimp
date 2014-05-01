@@ -131,7 +131,7 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
     }
     if ($result['success_count'] > 0) {
       $memberactivity = reset($result['data']);
-      cache_set('activity_' . $list_id . '_' . $email, $result['data'], 'cache_mailchimp', CACHE_TEMPORARY);
+      cache_set('activity_' . $list_id . '_' . $email, $memberactivity, 'cache_mailchimp', CACHE_TEMPORARY);
     }
     if ($result['error_count'] > 0) {
       foreach ($result['errors'] as $error) {
