@@ -86,7 +86,7 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
   $form['mergefields'] = array(
     '#type' => 'fieldset',
     '#title' => t('Merge Fields'),
-    '#description' => t('<i>Multi-value fields will only sync their first value to Mailchimp, as Mailchimp does not support multi-value fields.</i>'),
+    '#description' => t('Multi-value fields will only sync their first value to Mailchimp, as Mailchimp does not support multi-value fields.'),
     '#tree' => TRUE,
   );
   $form['unsubscribe_on_delete'] = array(
