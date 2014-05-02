@@ -568,7 +568,8 @@ function mailchimp_campaign_filter_tips($filter, $format, $long) {
     array('%pattern' => '[mailchimp_campaign|entity_type=node|entity_id=1|view_mode=teaser]')
   );
 
-  $tip .= drupal_render(drupal_get_form('_mailchimp_campaign_get_entity_import_form'));
+  $entity_import_form = drupal_get_form('_mailchimp_campaign_get_entity_import_form');
+  $tip .= drupal_render($entity_import_form);
 
   return $tip;
 }
@@ -580,6 +581,8 @@ function _mailchimp_campaign_get_entity_import_form($form, &$form_state) {
   $entity_type = current(array_keys($entity_options));
 
   $entity_view_mode_options = _mailchimp_campaign_build_entity_view_mode_option_list($entity_info[$entity_type]);
+
+  $element_tag = uniqid();
 
   $form['entity_import'] = array(
     '#id' => 'entity-import',
@@ -599,7 +602,7 @@ function _mailchimp_campaign_get_entity_import_form($form, &$form_state) {
       'wrapper' => 'content-entity-lookup-wrapper',
     ),
   );
-  $form['entity_import']['entity_type']['#attributes']['class'][] = 'entity-import-entity-type';
+  $form['entity_import']['entity_type']['#attributes']['id'] = 'entity-import-entity-type-' . $element_tag;
 
   $form['entity_import']['entity_id'] = array(
     '#type' => 'textfield',
@@ -608,7 +611,7 @@ function _mailchimp_campaign_get_entity_import_form($form, &$form_state) {
     '#autocomplete_path' => 'admin/config/services/mailchimp/campaigns/entities/' . $entity_type,
     '#prefix' => '<div id="content-entity-lookup-wrapper">',
   );
-  $form['entity_import']['entity_id']['#attributes']['class'][] = 'entity-import-entity-id';
+  $form['entity_import']['entity_id']['#attributes']['id'] = 'entity-import-entity-id-' . $element_tag;
 
   $form['entity_import']['entity_view_mode'] = array(
     '#type' => 'select',
@@ -616,17 +619,17 @@ function _mailchimp_campaign_get_entity_import_form($form, &$form_state) {
     '#options' => $entity_view_mode_options,
     '#suffix' => '</div>',
   );
-  $form['entity_import']['entity_view_mode']['#attributes']['class'][] = 'entity-import-entity-view-mode';
+  $form['entity_import']['entity_view_mode']['#attributes']['id'] = 'entity-import-entity-view-mode-' . $element_tag;
 
   $form['entity_import']['entity_import_link'] = array(
     '#type' => 'item',
-    '#markup' => '<a id="add-entity-token" href="javascript:void(0);">Add entity token</a>',
+    '#markup' => '<a id="add-entity-token-' . $element_tag . '" class="add-entity-token" href="javascript:void(0);">Add entity token</a>',
   );
   $form['entity_import']['entity_import_link']['#attributes']['class'][] = 'entity-import-entity-import-link';
 
   $form['entity_import']['entity_import_tag'] = array(
     '#type' => 'item',
-    '#markup' => '<div id="entity-import-tag-field"></div>',
+    '#markup' => '<div id="entity-import-tag-field-' . $element_tag. '"></div>',
   );
   $form['entity_import']['entity_import_tag']['#attributes']['class'][] = 'entity-import-entity-import-tag';
 
