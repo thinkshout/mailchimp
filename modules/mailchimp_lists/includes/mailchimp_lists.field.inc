@@ -263,7 +263,7 @@ function mailchimp_lists_field_formatter_settings_form($field, $instance, $view_
 function mailchimp_lists_field_formatter_settings_summary($field, $instance, $view_mode) {
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
-  if ($settings['show_interest_groups']) {
+  if ($settings['show_interest_groups'] && $instance['settings']['show_interest_groups']) {
     $summary = t('Display Interest Groups');
   }
   else {
@@ -302,7 +302,7 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
       '#markup' => $status,
       '#description' => t('@mc_list_description', array('@mc_list_description' => $instance['description'])),
     );
-    if ($display['settings']['show_interest_groups']) {
+    if ($instance['settings']['show_interest_groups'] && $display['settings']['show_interest_groups']) {
       if (is_array($mc_list['intgroups'])) {
         $element['interest_groups'] = array(
           '#type' => 'fieldset',

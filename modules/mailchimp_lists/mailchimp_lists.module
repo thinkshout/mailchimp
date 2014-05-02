@@ -153,7 +153,7 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
     '#default_value' => $instance['required'] || $is_subscribed,
   );
   // Present interest groups:
-  if ($settings['show_interest_groups']) {
+  if ($instance['settings']['show_interest_groups'] && $settings['show_interest_groups']) {
     // Perform test in case error comes back from MCAPI when getting groups:
     if (is_array($mc_list['intgroups'])) {
       $form[$wrapper_key]['interest_groups'] = array(
