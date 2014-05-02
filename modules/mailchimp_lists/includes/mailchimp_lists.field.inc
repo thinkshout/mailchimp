@@ -163,7 +163,7 @@ function mailchimp_lists_field_is_empty($item, $field) {
 function mailchimp_lists_field_widget_info() {
   return array(
     'mailchimp_lists_select' => array(
-      'label' => t('default'),
+      'label' => t('Subscription form'),
       'field types' => array('mailchimp_lists_subscription'),
       'settings' => array(),
       'behaviors' => array(
