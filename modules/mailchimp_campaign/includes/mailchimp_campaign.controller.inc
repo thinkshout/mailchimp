@@ -52,11 +52,10 @@ class MailChimpCampaignController extends EntityAPIController {
           }
         }
       }
-      // Reset all campaigns.
-      else {
-        $cached_campaigns = NULL;
-      }
-      cache_set('campaigns', $cached_campaigns, 'cache_mailchimp');
+
+      $cache_data = (isset($cached_campaigns)) ? $cached_campaigns->data : NULL;
+
+      cache_set('campaigns', $cache_data, 'cache_mailchimp');
     }
   }
 
