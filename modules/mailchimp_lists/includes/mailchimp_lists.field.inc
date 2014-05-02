@@ -197,7 +197,7 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
     '#required' => $instance['required'],
     '#disabled' => $instance['required'],
   );
-  if ($instance['settings']['show_interest_groups']) {
+  if ($instance['settings']['show_interest_groups'] || $form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
     $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
     $element['interest_groups'] = array(
       '#type' => 'fieldset',
@@ -209,6 +209,11 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
         ),
       ),
     );
+    if ($form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
+      $element['interest_groups']['#states']['invisible'] = array(
+        ':input[name="instance[settings][show_interest_groups]"]' => array('checked' => FALSE),
+      );
+    }
     $groups_default = isset($instance['default_value'][0]['interest_groups']) ? $instance['default_value'][0]['interest_groups'] : array();
     $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
   }
