@@ -1073,6 +1073,9 @@ function mailchimp_interest_groups_form_elements($mc_list, $default_values = arr
 
     // Extract the field options:
     $options = array();
+    if ($field_type == 'select') {
+      $options[''] = '-- select --';
+    }
     foreach ($group['groups'] as $option) {
       $options[$option['name']] = $option['name'];
     }
@@ -1110,8 +1113,13 @@ function mailchimp_interest_groups_form_elements($mc_list, $default_values = arr
 function mailchimp_reformat_groupings($interest_groups) {
   $groupings = array();
   foreach ($interest_groups as $key => $groups) {
-    $groups = array_filter($groups);
-    $groupings[] = array('id' => $key, 'groups' => $groups);
+    if (is_array($groups)) {
+      $groups = array_filter($groups);
+      $groupings[] = array('id' => $key, 'groups' => $groups);
+    }
+    else {
+      $groupings[] = array('id' => $key, 'groups' => array($groups => $groups));
+    }
   }
   return $groupings;
 }

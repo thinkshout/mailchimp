@@ -279,6 +279,9 @@ function _mailchimp_lists_subscription_has_changed($instance, $field, $entity) {
           return TRUE;
         }
         $old_interests = $old_settings['interest_groups'][$id];
+        if (!is_array($new_interests)) {
+          $new_interests = array($new_interests => $new_interests);
+        }
         foreach ($new_interests as $index => $new_int) {
           if ($old_interests[$index] !== $new_int) {
             return TRUE;
