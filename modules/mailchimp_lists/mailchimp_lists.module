@@ -242,7 +242,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
         break;
 
       case 'update':
-        if (_mailchimp_lists_subscription_has_changed($instance, $field, $entity)) {
+        if (_mailchimp_lists_subscription_has_changed($instance, $field, $entity, $email, $choices)) {
           $ret = mailchimp_update_member($list_id, $email, $mergevars);
         }
         else {
@@ -266,8 +266,8 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
  * 
  * returns bool
  */
-function _mailchimp_lists_subscription_has_changed($instance, $field, $entity) {
-  if (isset($entity->is_new_revision) && $entity->is_new_revision) {
+function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $email, $choices) {
+  if (isset($entity->original)) {
     $new_entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity);
     $old_entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity->original);
     // First compare Interest Group settings:
@@ -312,6 +312,30 @@ function _mailchimp_lists_subscription_has_changed($instance, $field, $entity) {
       }
     }
   }
+  // We don't have an old entity to compare values so we have to retrieve our
+  // old settings from Mailchimp. This means the only possible change is in our
+  // interest group settings, so we only analyze those:
+  else {
+    $member_info = mailchimp_get_memberinfo($field['settings']['mc_list_id'], $email);
+    foreach ($member_info['merges']['GROUPINGS'] as $grouping) {
+      if (!isset($choices['interest_groups'][$grouping['id']])) {
+        return TRUE;
+      }
+      else {
+        if (!is_array($choices['interest_groups'][$grouping['id']])) {
+          // Standardize formatting of choices:
+          $choices['interest_groups'][$grouping['id']] = array($choices['interest_groups'][$grouping['id']] => $choices['interest_groups'][$grouping['id']]);
+        }
+        foreach ($grouping['groups'] as $group) {
+          $selected = isset($choices['interest_groups'][$grouping['id']][$group['name']]);
+          if (($group['interested'] && !$selected) || (!$group['interested'] && $selected)) {
+            return TRUE;
+          }
+        }
+      }
+    }
+  }
+  // No changes detected:
   return FALSE;
 }
 
