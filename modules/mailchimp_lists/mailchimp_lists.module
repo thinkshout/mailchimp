@@ -267,7 +267,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
  * returns bool
  */
 function _mailchimp_lists_subscription_has_changed($instance, $field, $entity) {
-  if ($entity->is_new_revision) {
+  if (isset($entity->is_new_revision) && $entity->is_new_revision) {
     $new_entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity);
     $old_entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity->original);
     // First compare Interest Group settings:
