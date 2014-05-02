@@ -249,7 +249,9 @@ function mailchimp_lists_field_formatter_settings_form($field, $instance, $view_
   $element['show_interest_groups'] = array(
     '#title' => t('Show Interest Groups'),
     '#type' => 'checkbox',
-    '#default_value' => $settings['show_interest_groups'],
+    '#description' => $instance['settings']['show_interest_groups'] ? t('Check to display interest group membership details.') : t('To display Interest Groups, first enable them in the field instance settings.'),
+    '#default_value' => $instance['settings']['show_interest_groups'] && $settings['show_interest_groups'],
+    '#disabled' => !$instance['settings']['show_interest_groups'],
   );
 
   return $element;
