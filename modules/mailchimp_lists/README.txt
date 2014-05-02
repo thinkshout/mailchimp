@@ -33,6 +33,37 @@ New subscribers will be sent a link with an email from MailChimp that they must
 follow to confirm their subscription, rather than being immediately subscribed
 and send a confirmation message from MailChimp. 
 
+## Rules (and Roles)
+There is a single Rules action to subscribe or unsubscribe Entities with a
+configured Mailchimp Subscription field. This can be used to simply re-create
+the Roles-based auto-subscription functionality in earlier versions of Mailchimp
+Lists. Simply create a Mailchimp Subscription field on Users and hide the field
+from them in the UI, then create a rule that subscribes users to this list when
+they are saved, based on their role.
+
+A sample Rules configuration export is provided here. This assigns based on Role
+"3" and targets a field called field_members:
+
+{ "rules_member_subscriptions" : {
+    "LABEL" : "Member Subscriptions",
+    "PLUGIN" : "reaction rule",
+    "OWNER" : "rules",
+    "REQUIRES" : [ "rules", "mailchimp_lists" ],
+    "ON" : { "user_presave" : [] },
+    "IF" : [
+      { "user_has_role" : { "account" : [ "account" ], "roles" : { "value" : { "3" : "3" } } } }
+    ],
+    "DO" : [
+      { "mailchimp_lists_user_subscribe" : {
+          "entity" : [ "account" ],
+          "field" : [ "account:field-subscribers" ],
+          "subscribe" : 1
+        }
+      }
+    ]
+  }
+}
+
 ## Webhooks
 
 Direct your browser to: admin/config/services/mailchimp 
