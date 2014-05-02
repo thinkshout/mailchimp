@@ -308,16 +308,28 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
       '#description' => t('@mc_list_description', array('@mc_list_description' => $instance['description'])),
     );
     if ($instance['settings']['show_interest_groups'] && $display['settings']['show_interest_groups']) {
-      if (is_array($mc_list['intgroups'])) {
+      $memberinfo = mailchimp_get_memberinfo($field['settings']['mc_list_id'], $email);
+      if (isset($memberinfo['merges']['GROUPINGS'])) {
         $element['interest_groups'] = array(
           '#type' => 'fieldset',
           '#title' => t('Interest Groups'),
           '#weight' => 100,
         );
-        foreach ($mc_list['intgroups'] as $group) {
-          $element['interest_groups'][$group['id']] = array(
-            '#markup' => $group['name'],
-          );
+        foreach ($memberinfo['merges']['GROUPINGS'] as $grouping) {
+          $items = array();
+          foreach ($grouping['groups'] as $interest) {
+            if ($interest['interested']) {
+              $items[] = $interest['name'];
+            }
+          }
+          if (count($items)) {
+            $element['interest_groups'][$grouping['id']] = array(
+              '#title' => $grouping['name'],
+              '#theme' => 'item_list',
+              '#items' => $items,
+              '#type' => 'ul',
+            );
+          }
         }
       }
     }
