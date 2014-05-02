@@ -163,7 +163,7 @@ function mailchimp_lists_field_is_empty($item, $field) {
 function mailchimp_lists_field_widget_info() {
   return array(
     'mailchimp_lists_select' => array(
-      'label' => t('default'),
+      'label' => t('Subscription form'),
       'field types' => array('mailchimp_lists_subscription'),
       'settings' => array(),
       'behaviors' => array(
@@ -278,27 +278,23 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
   $element = array();
   $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
   $email = mailchimp_lists_load_email($instance, $entity, FALSE);
-  if ($display['type'] == 'mailchimp_lists_field_subscribe') {
-    // Display subscription form if accessible.
-    if ($email && entity_access('edit', $entity_type, $entity)) {
-      $field_form_id = 'mailchimp_lists_' . $field['field_name'] . '_form';
-      $element = drupal_get_form($field_form_id, $instance, $display['settings'], $entity, $field);
-    }
-    else {
-      $display['type'] = 'mailchimp_lists_subscribe_default';
-    }
+
+  // Display subscription form if accessible.
+  if ($display['type'] == 'mailchimp_lists_field_subscribe' && $email && entity_access('edit', $entity_type, $entity)) {
+    $field_form_id = 'mailchimp_lists_' . $field['field_name'] . '_form';
+    $element = drupal_get_form($field_form_id, $instance, $display['settings'], $entity, $field);
   }
-  if ($display['type'] == 'mailchimp_lists_subscribe_default') {
+  else {
     if ($email) {
       if (mailchimp_is_subscribed($field['settings']['mc_list_id'], $email)) {
-        $status = "<i>Subscribed</i>";
+        $status = t('Subscribed to %list', array('%list' => $mc_list['name']));
       }
       else {
-        $status = "<i>Not Subscribed</i>";
+        $status = t('Not subscribed to %list', array('%list' => $mc_list['name']));
       }
     }
     else {
-      $status = "<i>No Valid Email Address</i>";
+      $status = t('Invalid email configuration.');
     }
     $element['status'] = array(
       '#markup' => $status,
@@ -319,6 +315,7 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
       }
     }
   }
+
   return array($element);
 }
 
