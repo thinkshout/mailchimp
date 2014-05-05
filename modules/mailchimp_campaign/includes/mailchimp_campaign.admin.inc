@@ -364,6 +364,8 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
  *   Array of item data containing 'id' and 'name' properties.
  * @param string $no_selection_label
  *   The option value to display when no option is selected.
+ * @param array $labels
+ *   Optional associative array of list indexes to custom labels.
  *
  * @return array
  *   Associative array of item IDs to name.
@@ -400,8 +402,6 @@ function mailchimp_campaign_entity_type_callback($form, $form_state) {
   $html = '<div id="' . $entity_import_wrapper . '" class="content-entity-lookup-wrapper">';
   $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_id']);
   $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_view_mode']);
-  // $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_import_tag']);
-  // $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_import_link']);
   $html .= '</div>';
 
   $commands[] = ajax_command_replace('#' . $entity_import_wrapper, $html);
