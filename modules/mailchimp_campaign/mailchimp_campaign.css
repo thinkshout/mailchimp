@@ -1,6 +1,10 @@
-fieldset#entity-import .form-type-select, div#entity-import .form-type-textfield, div#content-entity-lookup-wrapper, div.form-item-entity-id {
+fieldset#entity-import .form-type-select, fieldset#entity-import .form-type-textfield, div.content-entity-lookup-wrapper {
     display: inline-block;
     margin-right: 10px!important;
+}
+
+fieldset#entity-import .form-item {
+    padding: 0!important;
 }
 
 div.form-type-item {

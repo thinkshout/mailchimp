@@ -138,7 +138,7 @@ function mailchimp_campaign_menu() {
  *   The entity type to limit search to.
  * @param string $string
  *   The string to search entity titles for.
- * 
+ *
  * @return array
  *   Entities with titles matching search string.
  */
@@ -182,7 +182,7 @@ function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
 
 /**
  * Access callback for campaigns.
- * 
+ *
  * Provides access to features based on whether or not a campaign has been sent.
  *
  * @param MailChimpCampaign $campaign
@@ -568,133 +568,7 @@ function mailchimp_campaign_filter_tips($filter, $format, $long) {
     array('%pattern' => '[mailchimp_campaign|entity_type=node|entity_id=1|view_mode=teaser]')
   );
 
-  $entity_import_form = drupal_get_form('_mailchimp_campaign_get_entity_import_form');
-  $tip .= drupal_render($entity_import_form);
-
   return $tip;
-}
-
-function _mailchimp_campaign_get_entity_import_form($form, &$form_state) {
-  $entity_info = _mailchimp_campaign_get_entities_for_content_import();
-  $entity_options = _mailchimp_campaign_build_entity_option_list($entity_info);
-  reset($entity_options);
-  $entity_type = current(array_keys($entity_options));
-
-  $entity_view_mode_options = _mailchimp_campaign_build_entity_view_mode_option_list($entity_info[$entity_type]);
-
-  $element_tag = uniqid();
-
-  $form['entity_import'] = array(
-    '#id' => 'entity-import',
-    '#type' => 'fieldset',
-    '#title' => t('Site content import'),
-    '#collapsible' => FALSE,
-  );
-
-  $form['entity_import']['entity_type'] = array(
-    '#type' => 'select',
-    '#title' => t('Entity Type'),
-    '#options' => $entity_options,
-    '#default_value' => $entity_type,
-    '#ajax' => array(
-      'callback' => 'mailchimp_campaign_entity_type_callback',
-      'method' => 'replace',
-      'wrapper' => 'content-entity-lookup-wrapper',
-    ),
-  );
-  $form['entity_import']['entity_type']['#attributes']['id'] = 'entity-import-entity-type-' . $element_tag;
-
-  $form['entity_import']['entity_id'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Entity Title'),
-    // Pass entity type as first parameter to entity autocomplete callback.
-    '#autocomplete_path' => 'admin/config/services/mailchimp/campaigns/entities/' . $entity_type,
-    '#prefix' => '<div id="content-entity-lookup-wrapper">',
-  );
-  $form['entity_import']['entity_id']['#attributes']['id'] = 'entity-import-entity-id-' . $element_tag;
-
-  $form['entity_import']['entity_view_mode'] = array(
-    '#type' => 'select',
-    '#title' => t('View Mode'),
-    '#options' => $entity_view_mode_options,
-    '#suffix' => '</div>',
-  );
-  $form['entity_import']['entity_view_mode']['#attributes']['id'] = 'entity-import-entity-view-mode-' . $element_tag;
-
-  $form['entity_import']['entity_import_link'] = array(
-    '#type' => 'item',
-    '#markup' => '<a id="add-entity-token-' . $element_tag . '" class="add-entity-token" href="javascript:void(0);">Add entity token</a>',
-  );
-  $form['entity_import']['entity_import_link']['#attributes']['class'][] = 'entity-import-entity-import-link';
-
-  $form['entity_import']['entity_import_tag'] = array(
-    '#type' => 'item',
-    '#markup' => '<div id="entity-import-tag-field-' . $element_tag. '"></div>',
-  );
-  $form['entity_import']['entity_import_tag']['#attributes']['class'][] = 'entity-import-entity-import-tag';
-
-  return $form;
-}
-
-/**
- * Returns an array of entities based on data from entity_get_info().
- *
- * Filters out entities that do not contain a title field, as they cannot
- * be used to import content into templates.
- *
- * @return array
- *   Filtered entities from entity_get_info().
- */
-function _mailchimp_campaign_get_entities_for_content_import() {
-  $entity_info = entity_get_info();
-
-  $filtered_entities = array();
-  foreach ($entity_info as $key => $entity) {
-    if (in_array('title', $entity['schema_fields_sql']['base table'])) {
-      $filtered_entities[$key] = $entity;
-    }
-  }
-
-  return $filtered_entities;
-}
-
-/**
- * Returns an options list of entities based on data from entity_get_info().
- *
- * Filters out entities that do not contain a title field, as they cannot
- * be used to import content into templates.
- *
- * @param array $entity_info
- *   Array of entities as returned by entity_get_info().
- *
- * @return array
- *   Associative array of entity IDs to name.
- */
-function _mailchimp_campaign_build_entity_option_list($entity_info) {
-  $options = array();
-  foreach ($entity_info as $entity_id => $entity_data) {
-    $options[$entity_id] = $entity_data['label'];
-  }
-
-  return $options;
-}
-
-/**
- * Returns an options list of entity view modes.
- *
- * @param array $entity
- *   Array of entity data as returned by entity_get_info().
- *
- * @return array
- *   Associative array of view mode IDs to name.
- */
-function _mailchimp_campaign_build_entity_view_mode_option_list(array $entity) {
-  $options = array();
-  foreach ($entity['view modes'] as $view_mode_id => $view_mode_data) {
-    $options[$view_mode_id] = $view_mode_data['label'];
-  }
-
-  return $options;
 }
 
 /**

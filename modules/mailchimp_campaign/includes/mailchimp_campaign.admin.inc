@@ -157,6 +157,87 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         '#default_value' => $default_value,
       );
 
+      $entity_type = isset($form_state['values']['content'][ $section . '_wrapper']['entity_import']['entity_type']) ?
+        $form_state['values']['content'][ $section . '_wrapper']['entity_import']['entity_type'] : NULL;
+
+      // Get available entity types.
+      $entity_info = _mailchimp_campaign_get_entities_for_content_import();
+      $entity_options = _mailchimp_campaign_build_entity_option_list($entity_info);
+
+      $form['content'][$section . '_wrapper']['entity_import'] = array(
+        '#id' => 'entity-import',
+        '#type' => 'fieldset',
+        '#title' => t('Site Content Import'),
+        '#collapsible' => FALSE,
+        '#states' => array(
+          'visible' => array(
+            ':input[name="content[' . $section . '_wrapper][' . $section . '][format]"]' =>
+              array('value' => 'mailchimp_campaign'),
+          ),
+        ),
+      );
+
+      $form['content'][$section . '_wrapper']['entity_import']['entity_type'] = array(
+        '#type' => 'select',
+        '#title' => t('Entity Type'),
+        '#options' => $entity_options,
+        '#default_value' => $entity_type,
+        '#ajax' => array(
+          'callback' => 'mailchimp_campaign_entity_type_callback',
+          'wrapper' => $section . '-content-entity-lookup-wrapper',
+        ),
+      );
+      $form['content'][$section . '_wrapper']['entity_import']['entity_type']['#attributes']['class'][] = $section . '-entity-import-entity-type';
+
+      $form['content'][$section . '_wrapper']['entity_import']['entity_import_wrapper'] = array(
+        '#type' => 'item',
+        '#prefix' => '<div id="' . $section . '-content-entity-lookup-wrapper">',
+        '#suffix' => '</div>',
+      );
+
+      if ($entity_type != NULL) {
+        // Get available entity view modes.
+        $entity_view_mode_options = _mailchimp_campaign_build_entity_view_mode_option_list($entity_info[$entity_type]);
+
+        $form['content'][$section . '_wrapper']['entity_import']['entity_id'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Entity Title'),
+          // Pass entity type as first parameter to entity autocomplete callback.
+          '#autocomplete_path' => 'admin/config/services/mailchimp/campaigns/entities/' . $entity_type,
+        );
+        $form['content'][$section . '_wrapper']['entity_import']['entity_id']['#attributes']['id'] = $section . '-entity-import-entity-id';
+
+        $form['content'][$section . '_wrapper']['entity_import']['entity_view_mode'] = array(
+          '#type' => 'select',
+          '#title' => t('View Mode'),
+          '#options' => $entity_view_mode_options,
+        );
+        $form['content'][$section . '_wrapper']['entity_import']['entity_view_mode']['#attributes']['id'] = $section . '-entity-import-entity-view-mode';
+      }
+
+      $form['content'][$section . '_wrapper']['entity_import']['entity_import_link'] = array(
+        '#type' => 'item',
+        '#markup' => '<a id="' . $section . '-add-entity-token-link" class="add-entity-token-link" href="javascript:void(0);">Add entity token test</a>',
+        '#states' => array(
+          'invisible' => array(
+            ':input[name="content[' . $section . '_wrapper][entity_import][entity_type]"]' =>
+              array('value' => ''),
+          ),
+        ),
+      );
+
+      $form['content'][$section . '_wrapper']['entity_import']['entity_import_tag'] = array(
+        '#type' => 'item',
+        '#markup' => '<div id="' . $section . '-entity-import-tag-field" class="' . $section . '-entity-import-tag-field"></div>',
+        '#states' => array(
+          'invisible' => array(
+            ':input[name="content[' . $section . '_wrapper][entity_import][entity_type]"]' =>
+              array('value' => ''),
+          ),
+        ),
+      );
+      $form['content'][$section . '_wrapper']['entity_import']['entity_import_tag']['#attributes']['class'][] = 'entity-import-entity-import-tag';
+
       $form['content'][$section . '_wrapper']['merge_vars'] = array(
         '#type' => 'item',
         '#title' => 'Merge Vars',
@@ -220,19 +301,6 @@ function mailchimp_campaign_template_callback($form, $form_state) {
  */
 function mailchimp_campaign_list_segment_callback($form, $form_state) {
   return $form['list_segment_id'];
-}
-
-/**
- * AJAX callback when changing entity type.
- *
- * @return array
- *   Entity form elements array.
- */
-function mailchimp_campaign_entity_type_callback($form, $form_state) {
-  return array(
-    $form['content']['entity_import']['entity_id'],
-    $form['content']['entity_import']['entity_view_mode'],
-  );
 }
 
 /**
@@ -321,6 +389,88 @@ function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- 
 }
 
 /**
+ * AJAX callback when changing entity type.
+ */
+function mailchimp_campaign_entity_type_callback($form, $form_state) {
+  $commands = array();
+
+  $content_wrapper = $form_state['triggering_element']['#parents'][1];
+  $entity_import_wrapper = $form_state['triggering_element']['#ajax']['wrapper'];
+
+  $html = '<div id="' . $entity_import_wrapper . '" class="content-entity-lookup-wrapper">';
+  $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_id']);
+  $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_view_mode']);
+  // $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_import_tag']);
+  // $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_import_link']);
+  $html .= '</div>';
+
+  $commands[] = ajax_command_replace('#' . $entity_import_wrapper, $html);
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+/**
+ * Returns an array of entities based on data from entity_get_info().
+ *
+ * Filters out entities that do not contain a title field, as they cannot
+ * be used to import content into templates.
+ *
+ * @return array
+ *   Filtered entities from entity_get_info().
+ */
+function _mailchimp_campaign_get_entities_for_content_import() {
+  $entity_info = entity_get_info();
+
+  foreach ($entity_info as $key => $entity) {
+    if (in_array('title', $entity['schema_fields_sql']['base table'])) {
+      $filtered_entities[$key] = $entity;
+    }
+  }
+
+  return $filtered_entities;
+}
+
+/**
+ * Returns an options list of entities based on data from entity_get_info().
+ *
+ * Filters out entities that do not contain a title field, as they cannot
+ * be used to import content into templates.
+ *
+ * @param array $entity_info
+ *   Array of entities as returned by entity_get_info().
+ *
+ * @return array
+ *   Associative array of entity IDs to name.
+ */
+function _mailchimp_campaign_build_entity_option_list($entity_info) {
+  $options = array(
+    '' => '-- Select --',
+  );
+  foreach ($entity_info as $entity_id => $entity_data) {
+    $options[$entity_id] = $entity_data['label'];
+  }
+
+  return $options;
+}
+
+/**
+ * Returns an options list of entity view modes.
+ *
+ * @param array $entity
+ *   Array of entity data as returned by entity_get_info().
+ *
+ * @return array
+ *   Associative array of view mode IDs to name.
+ */
+function _mailchimp_campaign_build_entity_view_mode_option_list(array $entity) {
+  $options = array();
+  foreach ($entity['view modes'] as $view_mode_id => $view_mode_data) {
+    $options[$view_mode_id] = $view_mode_data['label'];
+  }
+
+  return $options;
+}
+
+/**
  * Builds a HTML string used to render merge vars on the campaign form.
  *
  * @param array $merge_vars
@@ -401,7 +551,7 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
   if (mailchimp_campaign_delete_campaign($campaign->mc_campaign_id)) {
     drupal_set_message(t('Campaign %name has been deleted.',
-      array('%name' => $campaign->label()))
+        array('%name' => $campaign->label()))
     );
   }
   drupal_goto('admin/config/services/mailchimp/campaigns');
