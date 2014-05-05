@@ -171,8 +171,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         '#collapsible' => FALSE,
         '#states' => array(
           'visible' => array(
-            ':input[name="content[' . $section . '_wrapper][' . $section . '][format]"]' =>
-              array('value' => 'mailchimp_campaign'),
+            ':input[name="content[' . $section . '_wrapper][' . $section . '][format]"]' => array('value' => 'mailchimp_campaign'),
           ),
         ),
       );
@@ -202,7 +201,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         $form['content'][$section . '_wrapper']['entity_import']['entity_id'] = array(
           '#type' => 'textfield',
           '#title' => t('Entity Title'),
-          // Pass entity type as first parameter to entity autocomplete callback.
+          // Pass entity type as first parameter to autocomplete callback.
           '#autocomplete_path' => 'admin/config/services/mailchimp/campaigns/entities/' . $entity_type,
         );
         $form['content'][$section . '_wrapper']['entity_import']['entity_id']['#attributes']['id'] = $section . '-entity-import-entity-id';
@@ -220,8 +219,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         '#markup' => '<a id="' . $section . '-add-entity-token-link" class="add-entity-token-link" href="javascript:void(0);">Add entity token test</a>',
         '#states' => array(
           'invisible' => array(
-            ':input[name="content[' . $section . '_wrapper][entity_import][entity_type]"]' =>
-              array('value' => ''),
+            ':input[name="content[' . $section . '_wrapper][entity_import][entity_type]"]' => array('value' => ''),
           ),
         ),
       );
@@ -231,8 +229,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         '#markup' => '<div id="' . $section . '-entity-import-tag-field" class="' . $section . '-entity-import-tag-field"></div>',
         '#states' => array(
           'invisible' => array(
-            ':input[name="content[' . $section . '_wrapper][entity_import][entity_type]"]' =>
-              array('value' => ''),
+            ':input[name="content[' . $section . '_wrapper][entity_import][entity_type]"]' => array('value' => ''),
           ),
         ),
       );
