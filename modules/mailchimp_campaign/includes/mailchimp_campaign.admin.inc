@@ -502,7 +502,7 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
 /**
  * Parses template content to remove wrapper elements from tree.
  *
- * @param $content
+ * @param array $content
  *   The template content array.
  *
  * @return array
