@@ -167,7 +167,8 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
       $form['content'][$section . '_wrapper']['entity_import'] = array(
         '#id' => 'entity-import',
         '#type' => 'fieldset',
-        '#title' => t('Site Content Import'),
+        '#title' => t('Insert site content'),
+        '#description' => t('You can insert an entity of a given type and pick the view mode that will be rendered within this campaign section.'),
         '#collapsible' => FALSE,
         '#states' => array(
           'visible' => array(
