@@ -447,7 +447,10 @@ function _mailchimp_campaign_build_entity_option_list($entity_info) {
     '' => '-- Select --',
   );
   foreach ($entity_info as $entity_id => $entity_data) {
-    $options[$entity_id] = $entity_data['label'];
+    // Exclude MailChimp entities.
+    if (strpos($entity_id, 'mailchimp') === FALSE) {
+      $options[$entity_id] = $entity_data['label'];
+    }
   }
 
   return $options;
