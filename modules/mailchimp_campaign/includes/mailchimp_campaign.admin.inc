@@ -319,13 +319,14 @@ function mailchimp_campaign_get_entity_import_form_elements($entity_type, $secti
     '#id' => 'entity-import',
     '#type' => 'fieldset',
     '#title' => t('Insert site content'),
-    '#description' => t('You can insert an entity of a given type and pick the view mode that will be rendered within this campaign section.'),
-    '#collapsible' => FALSE,
-    '#states' => array(
-      'visible' => array(
-        ':input[name="content[' . $section . '_wrapper][' . $section . '][format]"]' => array('value' => 'mailchimp_campaign'),
-      ),
-    ),
+    '#description' => t('<b>For use only with text filters that use the MailChimp Campaign filter</b><br />You can insert an entity of a given type and pick the view mode that will be rendered within this campaign section.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    // '#states' => array(
+    //   'visible' => array(
+    //     ':input[name="content[' . $section . '_wrapper][' . $section . '][format]"]' => array('value' => 'mailchimp_campaign'),
+    //   ),
+    // ),
   );
 
   $form['entity_import']['entity_type'] = array(

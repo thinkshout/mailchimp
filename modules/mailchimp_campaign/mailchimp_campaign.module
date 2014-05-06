@@ -564,7 +564,7 @@ function mailchimp_campaign_filter_info() {
  *   Translated text to display as a tip.
  */
 function mailchimp_campaign_filter_tips($filter, $format, $long) {
-  $tip = t('Converts content tokens in the format %pattern into the appropriate rendered content and makes all paths absolute.',
+  $tip = t('Converts content tokens in the format %pattern into the appropriate rendered content and makes all paths absolute. Use the "Insert Site Content" widget below to generate tokens.',
     array('%pattern' => '[mailchimp_campaign|entity_type=node|entity_id=1|view_mode=teaser]')
   );
 
