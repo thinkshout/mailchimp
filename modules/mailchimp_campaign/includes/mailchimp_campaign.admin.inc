@@ -495,14 +495,15 @@ function _mailchimp_campaign_build_entity_view_mode_option_list(array $entity) {
  */
 function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
   if (!empty($merge_vars)) {
+    $rows = array();
     foreach ($merge_vars as $var) {
       $rows[] = array(
         $var['name'],
         '<a id="merge-var-' . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a>',
       );
     }
-    $table = array('rows' => $rows);
-    return render(theme('table', $table));
+    $table = theme('table', array('rows' => $rows));
+    return render($table);
   }
   else {
     return t('No custom merge vars exist for the current list.');
