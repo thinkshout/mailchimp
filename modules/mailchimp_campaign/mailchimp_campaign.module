@@ -385,7 +385,7 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     watchdog('mailchimp_campaign', 'MailChimp campaign %name has been sent.',
       array('%name' => $campaign->label())
     );
-    cache_clear_all('mailchimp_campaigns', 'cache_mailchimp');
+    entity_get_controller('mailchimp_campaign')->resetCache(array($campaign->identifier()));
     return TRUE;
   }
   elseif (isset($result['status']) && ($result['status'] == 'error')) {
