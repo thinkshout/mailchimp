@@ -220,7 +220,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
 
       $form['content'][$section . '_wrapper']['entity_import']['entity_import_link'] = array(
         '#type' => 'item',
-        '#markup' => '<a id="' . $section . '-add-entity-token-link" class="add-entity-token-link" href="javascript:void(0);">Add entity token test</a>',
+        '#markup' => '<a id="' . $section . '-add-entity-token-link" class="add-entity-token-link" href="javascript:void(0);">' . t('Insert entity token') . '</a>',
         '#states' => array(
           'invisible' => array(
             ':input[name="content[' . $section . '_wrapper][entity_import][entity_type]"]' => array('value' => ''),
