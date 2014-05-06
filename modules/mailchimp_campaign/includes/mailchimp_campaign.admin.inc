@@ -157,8 +157,8 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         '#default_value' => $default_value,
       );
 
-      $entity_type = isset($form_state['values']['content'][ $section . '_wrapper']['entity_import']['entity_type']) ?
-        $form_state['values']['content'][ $section . '_wrapper']['entity_import']['entity_type'] : NULL;
+      $entity_type = isset($form_state['values']['content'][$section . '_wrapper']['entity_import']['entity_type']) ?
+        $form_state['values']['content'][$section . '_wrapper']['entity_import']['entity_type'] : NULL;
 
       // Get available entity types.
       $entity_info = _mailchimp_campaign_get_entities_for_content_import();
