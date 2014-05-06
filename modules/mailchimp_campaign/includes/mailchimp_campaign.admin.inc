@@ -230,7 +230,17 @@ function mailchimp_campaign_template_callback($form, $form_state) {
  * AJAX callback when changing list ID.
  */
 function mailchimp_campaign_list_segment_callback($form, $form_state) {
-  return $form['list_segment_id'];
+  $commands = array();
+
+  $list_segment_html = drupal_render($form['list_segment_id']);
+  $commands[] = ajax_command_replace('#list-segments-wrapper', $list_segment_html);
+
+  if (isset($form['content']['html_wrapper']['merge_vars'])) {
+    $merge_vars_html = drupal_render($form['content']['html_wrapper']['merge_vars']);
+    $commands[] = ajax_command_replace('.merge-vars-wrapper', $merge_vars_html);
+  }
+
+  return array('#type' => 'ajax', '#commands' => $commands);
 }
 
 /**
@@ -400,6 +410,15 @@ function mailchimp_campaign_get_merge_vars_form_elements($merge_vars, $list_name
   $form = array();
 
   $form['merge_vars'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array(
+        'merge-vars-wrapper'
+      ),
+    ),
+  );
+
+  $form['merge_vars']['content'] = array(
     '#type' => 'item',
     '#title' => 'MailChimp merge variables',
     '#markup' => _mailchimp_campaign_build_merge_vars_html($merge_vars),
