@@ -212,8 +212,10 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
           '#type' => 'select',
           '#title' => t('View Mode'),
           '#options' => $entity_view_mode_options,
+          '#attributes' => array(
+            'id' => $section . '-entity-import-entity-view-mode',
+          ),
         );
-        $form['content'][$section . '_wrapper']['entity_import']['entity_view_mode']['#attributes']['id'] = $section . '-entity-import-entity-view-mode';
       }
 
       $form['content'][$section . '_wrapper']['entity_import']['entity_import_link'] = array(
