@@ -501,7 +501,8 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
         '<a id="merge-var-' . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a>',
       );
     }
-    return render(theme('table', array('rows' => $rows)));
+    $table = array('rows' => $rows);
+    return render(theme('table', $table));
   }
   else {
     return t('No custom merge vars exist for the current list.');
