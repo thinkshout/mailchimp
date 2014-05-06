@@ -477,28 +477,18 @@ function _mailchimp_campaign_build_entity_view_mode_option_list(array $entity) {
  *   HTML string containing formatted merge vars.
  */
 function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
-  $html = '';
-
   if (!empty($merge_vars)) {
-    $html .= '<table>';
     foreach ($merge_vars as $var) {
-      $html .= '<tr>'
-        . '<td>' . $var['name'] . '</td>'
-        . '<td><a id="merge-var-'
-        . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a></td>'
-        . '</tr>';
+      $rows[] = array(
+        $var['name'],
+        '<a id="merge-var-' . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a>',
+      );
     }
-    $html .= '</table>';
+    return render(theme('table', array('rows' => $rows)));
   }
   else {
-    $html .= t('No custom merge vars exist for the current list.');
+    return t('No custom merge vars exist for the current list.');
   }
-
-  $html .= '<p>' . l(t('Standard MailChimp merge tags are available.'),
-      'http://kb.mailchimp.com/article/all-the-merge-tags-cheatsheet',
-      array('attributes' => array('target' => '_blank'))) . '</p>';
-
-  return $html;
 }
 
 /**
