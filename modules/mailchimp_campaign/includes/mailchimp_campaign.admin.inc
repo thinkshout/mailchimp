@@ -26,11 +26,12 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
     '#required' => TRUE,
     '#default_value' => ($campaign) ? $campaign->mc_data['subject'] : '',
   );
+  $mailchimp_lists = mailchimp_get_lists();
   $form['list_id'] = array(
     '#type' => 'select',
     '#title' => t('List'),
     '#description' => t('Select the list this campaign should be sent to.'),
-    '#options' => _mailchimp_campaign_build_option_list(mailchimp_get_lists()),
+    '#options' => _mailchimp_campaign_build_option_list($mailchimp_lists),
     '#default_value' => ($campaign) ? $campaign->mc_data['list_id'] : -1,
     '#required' => TRUE,
     '#ajax' => array(
@@ -241,8 +242,17 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
 
       $form['content'][$section . '_wrapper']['merge_vars'] = array(
         '#type' => 'item',
-        '#title' => 'Merge Vars',
+        '#title' => 'MailChimp merge variables',
         '#markup' => _mailchimp_campaign_build_merge_vars_html($merge_vars),
+        '#description' => t(
+          'Insert merge variables from the the %list_name list or one of the !standard_link.',
+          array(
+            '%list_name' => $mailchimp_lists[$list_id]['name'],
+            '!standard_link' => l(
+              t('standard MailChimp merge variables'), 'http://kb.mailchimp.com/article/all-the-merge-tags-cheatsheet',
+              array('attributes' => array('target' => '_blank'))),
+          )
+        ),
       );
     }
   }
