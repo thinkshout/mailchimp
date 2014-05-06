@@ -190,9 +190,10 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
       $form['content'][$section . '_wrapper']['entity_import']['entity_type']['#attributes']['class'][] = $section . '-entity-import-entity-type';
 
       $form['content'][$section . '_wrapper']['entity_import']['entity_import_wrapper'] = array(
-        '#type' => 'item',
-        '#prefix' => '<div id="' . $section . '-content-entity-lookup-wrapper">',
-        '#suffix' => '</div>',
+        '#type' => 'container',
+        '#attributes' => array(
+          'id' => $section . '-content-entity-lookup-wrapper',
+        ),
       );
 
       if ($entity_type != NULL) {
