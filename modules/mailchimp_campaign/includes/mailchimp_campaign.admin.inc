@@ -229,17 +229,6 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         ),
       );
 
-      $form['content'][$section . '_wrapper']['entity_import']['entity_import_tag'] = array(
-        '#type' => 'item',
-        '#markup' => '<div id="' . $section . '-entity-import-tag-field" class="' . $section . '-entity-import-tag-field"></div>',
-        '#states' => array(
-          'invisible' => array(
-            ':input[name="content[' . $section . '_wrapper][entity_import][entity_type]"]' => array('value' => ''),
-          ),
-        ),
-      );
-      $form['content'][$section . '_wrapper']['entity_import']['entity_import_tag']['#attributes']['class'][] = 'entity-import-entity-import-tag';
-
       $form['content'][$section . '_wrapper']['merge_vars'] = array(
         '#type' => 'item',
         '#title' => 'MailChimp merge variables',
