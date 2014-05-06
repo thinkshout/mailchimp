@@ -59,4 +59,15 @@ class MailChimpCampaignController extends EntityAPIController {
     }
   }
 
+  /**
+   * Overrides EntityAPIController::buildQuery().
+   *
+   * Implement to order by created date since our IDs are not numeric.
+   */
+  protected function buildQuery($ids, $conditions = array(), $revision_id = FALSE) {
+    $query = parent::buildQuery($ids, $conditions, $revision_id);
+    $query->orderBy('created', 'DESC');
+    return $query;
+  }
+
 }
