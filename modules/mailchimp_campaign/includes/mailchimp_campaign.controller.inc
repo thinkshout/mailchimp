@@ -22,7 +22,7 @@ class MailChimpCampaignController extends EntityAPIController {
     foreach ($campaigns as $mc_campaign_id => $campaign) {
       $campaign->mc_data = $mc_campaigns[$mc_campaign_id];
 
-      // Lists are cachced separately, but we want to load them here.
+      // Lists are cached separately, but we want to load them here.
       if (isset($campaign->mc_data['list_id']) && $campaign->mc_data['list_id']) {
         $campaign->list = mailchimp_get_list($campaign->mc_data['list_id']);
       }
@@ -52,12 +52,22 @@ class MailChimpCampaignController extends EntityAPIController {
           }
         }
       }
-      // Reset all campaigns.
-      else {
-        $cached_campaigns = NULL;
-      }
-      cache_set('campaigns', $cached_campaigns, 'cache_mailchimp');
+
+      $cache_data = (isset($cached_campaigns)) ? $cached_campaigns->data : NULL;
+
+      cache_set('campaigns', $cache_data, 'cache_mailchimp');
     }
+  }
+
+  /**
+   * Overrides EntityAPIController::buildQuery().
+   *
+   * Implement to order by created date since our IDs are not numeric.
+   */
+  protected function buildQuery($ids, $conditions = array(), $revision_id = FALSE) {
+    $query = parent::buildQuery($ids, $conditions, $revision_id);
+    $query->orderBy('created', 'DESC');
+    return $query;
   }
 
 }

@@ -71,4 +71,5 @@ class MailchimpCampaignsTestCase extends DrupalWebTestCase {
 
     $this->assertEqual($campaign['id'], $campaign_id);
   }
+
 }

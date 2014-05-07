@@ -12,9 +12,6 @@
    */
   Drupal.behaviors.mailchimp_campaign_utils = {
     attach: function(context, settings) {
-      // Start with import tag field hidden.
-      $('#edit-content-entity-import-entity-import-tag').hide();
-
       // Keep track of which textfield was last selected/focused.
       $('textarea', context).focus(function() {
         Drupal.settings.mailchimpCampaignFocusedField = this;
@@ -24,13 +21,19 @@
       /**
        * Add entity token click handler.
        */
-      $('#add-entity-token', context).unbind('click').bind('click', function() {
+      $('.add-entity-token-link', context).unbind('click').bind('click', function() {
+        var element_id = $(this).attr('id');
+        var section = element_id.replace('-add-entity-token-link', '');
+
+        // Start with import tag field hidden.
+        $('#' + section + '-entity-import-tag-field').hide();
+
         // Get the last selected text field.
         var target_element = Drupal.settings.mailchimpCampaignFocusedField;
 
         // Get the selected entity ID.
         var entity_id = '';
-        var entity_value = $('.entity-import-entity-id').val();
+        var entity_value = $('#' + section + '-entity-import-entity-id').val();
         if ((entity_value) && (entity_value.length > 0)) {
           var entity_parts = entity_value.split(' ');
           var entity_id_string = entity_parts[entity_parts.length - 1];
@@ -44,8 +47,8 @@
         }
 
         // Generate token based on user input.
-        var entity_type = $('.entity-import-entity-type').val();
-        var view_mode = $('.entity-import-entity-view-mode').val();
+        var entity_type = $('.' + section + '-entity-import-entity-type').val();
+        var view_mode = $('#' + section + '-entity-import-entity-view-mode').val();
 
         var token = '[mailchimp_campaign'
           + '|entity_type=' + entity_type
@@ -60,9 +63,10 @@
           Drupal.behaviors.mailchimp_campaign_utils.addTokenToElement(target_element, token);
         }
         else {
-          // Insert token into token field, where it can be manually copied by the user.
-          $('#entity-import-tag-field').html(token);
-          $('#edit-content-entity-import-entity-import-tag').show();
+          // Missing a selected text field. Insert token into token field,
+          // where it can be manually copied by the user.
+          $('#' + section + '-entity-import-tag-field').html(token);
+          $('#' + section + '-entity-import-tag-field').show();
         }
 
         // Unset last focused field.

@@ -138,7 +138,7 @@ function mailchimp_campaign_menu() {
  *   The entity type to limit search to.
  * @param string $string
  *   The string to search entity titles for.
- * 
+ *
  * @return array
  *   Entities with titles matching search string.
  */
@@ -182,7 +182,7 @@ function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
 
 /**
  * Access callback for campaigns.
- * 
+ *
  * Provides access to features based on whether or not a campaign has been sent.
  *
  * @param MailChimpCampaign $campaign
@@ -385,7 +385,7 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     watchdog('mailchimp_campaign', 'MailChimp campaign %name has been sent.',
       array('%name' => $campaign->label())
     );
-    cache_clear_all('mailchimp_campaigns', 'cache_mailchimp');
+    entity_get_controller('mailchimp_campaign')->resetCache(array($campaign->identifier()));
     return TRUE;
   }
   elseif (isset($result['status']) && ($result['status'] == 'error')) {
@@ -564,9 +564,11 @@ function mailchimp_campaign_filter_info() {
  *   Translated text to display as a tip.
  */
 function mailchimp_campaign_filter_tips($filter, $format, $long) {
-  return t('Converts macros in the format %pattern into the appropriate rendered content and makes all paths absolute.',
+  $tip = t('Converts content tokens in the format %pattern into the appropriate rendered content and makes all paths absolute. Use the "Insert Site Content" widget below to generate tokens.',
     array('%pattern' => '[mailchimp_campaign|entity_type=node|entity_id=1|view_mode=teaser]')
   );
+
+  return $tip;
 }
 
 /**
