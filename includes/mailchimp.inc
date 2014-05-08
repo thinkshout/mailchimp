@@ -58,6 +58,11 @@ class DrupalMailchimp extends Mailchimp {
   }
 
   /**
+   * Override the parent to eliminate the call to curl_close().
+   */
+  public function __destruct() {}
+
+  /**
    * Override MCAPI::callServer() to leverage Drupal's core HTTP handling.
    */
   public function call($url, $params) {
