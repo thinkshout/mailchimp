@@ -46,7 +46,7 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
   $fields = field_info_fields();
   foreach ($fields as $field) {
     if ($field['type'] == 'mailchimp_lists_subscription') {
-      if ($field['settings']['mc_list_id'] != $this_field['settings']['mc_list_id']) {
+      if ($field['id'] != $this_field['id']) {
         unset($options[$field['settings']['mc_list_id']]);
       }
     }
