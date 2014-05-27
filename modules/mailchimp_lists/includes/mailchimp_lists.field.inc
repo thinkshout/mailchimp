@@ -191,7 +191,7 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
     '#type' => 'fieldset',
   );
   $element['subscribe'] = array(
-    '#title' => 'Subscribe',
+    '#title' => t('Subscribe'),
     '#type' => 'checkbox',
     '#default_value' => $default || $instance['required'],
     '#required' => $instance['required'],
@@ -340,7 +340,7 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
 
 /**
  * Implements hook_field_prepare_view().
- * 
+ *
  * Our field has no actual data in the database, so we have to push a dummy
  * value into $items, or the render system will assume we have nothing to
  * display. See https://api.drupal.org/comment/48043#comment-48043
@@ -427,7 +427,7 @@ function mailchimp_lists_field_get($entity, array $options, $name, $entity_type,
 
 /**
  * Implements hook_field_presave().
- * 
+ *
  * If we have any mailchimp_lists_subscription fields, we handle any changes to
  * them by making appropriate subscription calls.
  */
