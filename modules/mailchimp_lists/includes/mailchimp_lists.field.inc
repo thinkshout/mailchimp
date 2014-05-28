@@ -15,6 +15,7 @@ function mailchimp_lists_field_info() {
       'description' => t('Allows an entity to be subscribed to a Mailchimp list.'),
       'mc_list_id' => NULL,
       'double_opt_in' => FALSE,
+      'send_welcome' => TRUE,
       'instance_settings' => array(
         'show_interest_groups' => FALSE,
         'interest_groups_title' => NULL,
@@ -71,6 +72,12 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
     '#title' => 'Require subscribers to Double Opt-in',
     '#description' => 'New subscribers will be sent a link with an email they must follow to confirm their subscription.',
     '#default_value' => isset($this_field['settings']['double_opt_in']) ? $this_field['settings']['double_opt_in'] : FALSE,
+  );
+  $form['send_welcome'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Send a welcome email to new subscribers',
+    '#description' => 'New subscribers will be sent a welcome email once they are confirmed.',
+    '#default_value' => isset($this_field['settings']['send_welcome']) ? $this_field['settings']['send_welcome'] : FALSE,
   );
   return $form;
 }
