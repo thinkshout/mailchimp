@@ -72,3 +72,14 @@ function mailchimp_signup_schema() {
 
   return $schema;
 }
+
+/**
+ * Add default Confirmation Email setting to existing Signup Forms.
+ */
+function mailchimp_signup_update_7000(&$sandbox) {
+  $signups = entity_load('mailchimp_signup');
+  foreach ($signups as $signup) {
+    $signup->settings['send_welcome'] = TRUE;
+    $signup->save();
+  }
+}
