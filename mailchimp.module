@@ -356,7 +356,7 @@ function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
  * @return bool
  *   True on success.
  */
-function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE) {
+function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $confirm = TRUE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE) {
   if (variable_get('mailchimp_cron', FALSE)) {
     $args = array(
       'list_id' => $list_id,
