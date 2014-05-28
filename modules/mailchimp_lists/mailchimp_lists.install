@@ -13,3 +13,16 @@ function mailchimp_lists_uninstall() {
   $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
   $queue->deleteQueue();
 }
+
+/**
+ * Add default Confirmation Email setting to existing Subscription fields.
+ */
+function mailchimp_lists_update_7000(&$sandbox) {
+  $fields = field_info_fields();
+  foreach ($fields as $field) {
+    if ($field['type'] == 'mailchimp_lists_subscription') {
+      $field['settings']['send_welcome'] = TRUE;
+      field_update_field($field);
+    }
+  }
+}
