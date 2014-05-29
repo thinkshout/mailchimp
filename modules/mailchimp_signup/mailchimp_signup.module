@@ -221,7 +221,7 @@ function mailchimp_signup_page($signup_id) {
  */
 function mailchimp_signup_forms($form_id, $args) {
   $forms = array();
-  if (isset($args[1])) {
+  if (strpos($form_id, 'mailchimp_') === 0 && isset($args[1])) {
     if ($args[1] == 'mailchimp_signup_page') {
       $forms['mailchimp_signup_subscribe_page_' . $args[0]->name . '_form'] = array(
         'callback' => 'mailchimp_signup_subscribe_form',
