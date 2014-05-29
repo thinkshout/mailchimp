@@ -166,7 +166,7 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
           ),
         ),
       );
-      $form[$wrapper_key]['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $instance['default_value'][0]['options']['interest_groups'], $email);
+      $form[$wrapper_key]['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $instance['default_value'][0]['interest_groups'], $email);
     }
   }
   $form['submit'] = array(
@@ -327,7 +327,7 @@ function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $
           $choices['interest_groups'][$grouping['id']] = array($choices['interest_groups'][$grouping['id']] => $choices['interest_groups'][$grouping['id']]);
         }
         foreach ($grouping['groups'] as $group) {
-          $selected = isset($choices['interest_groups'][$grouping['id']][$group['name']]);
+          $selected = isset($choices['interest_groups'][$grouping['id']][$group['name']]) && $choices['interest_groups'][$grouping['id']][$group['name']];
           if (($group['interested'] && !$selected) || (!$group['interested'] && $selected)) {
             return TRUE;
           }
