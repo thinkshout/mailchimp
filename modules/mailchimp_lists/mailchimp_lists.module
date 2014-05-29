@@ -454,7 +454,7 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
         $context['results']['update_queue'][] = array(
           'email' => array('email' => $merge_vars['EMAIL']),
           // Preserve subscribers's email type selection:
-          'email_type' => $context['results']['subscribers'][$merge_vars['EMAIL']]['email_type'],
+          'email_type' => $context['results']['subscribers'][strtolower($merge_vars['EMAIL'])]['email_type'],
           'merge_vars' => $merge_vars,
         );
       }
