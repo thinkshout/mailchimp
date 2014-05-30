@@ -19,7 +19,7 @@ class MailChimpSignupUIController extends EntityDefaultUIController {
     $items[$this->path]['description'] = 'Manage MailChimp Signup blocks and pages.';
     $items[$this->path]['type'] = MENU_LOCAL_TASK;
     $items[$this->path]['weight'] = 10;
-    $items[$this->path]['access callback'] = 'mailchimp_apikey_ready_access';
+    $items[$this->path]['access callback'] = 'mailchimp_signup_entity_access';
 
     return $items;
   }

@@ -42,7 +42,7 @@ function mailchimp_activity_entity_info() {
  * Access callback for mailchimp_activity_entity.
  */
 function mailchimp_activity_entity_access() {
-  return user_access('administer mailchimp activity');
+  return mailchimp_apikey_ready_access('administer mailchimp activity');
 }
 
 /**
