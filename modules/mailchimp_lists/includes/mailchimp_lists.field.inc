@@ -222,7 +222,9 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
       );
     }
     $groups_default = isset($instance['default_value'][0]['interest_groups']) ? $instance['default_value'][0]['interest_groups'] : array();
-    $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
+    if ($mc_list['stats']['group_count']) {
+      $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
+    }
   }
   return $element;
 }
