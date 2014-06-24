@@ -307,6 +307,21 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
 }
 
 /**
+ * Validation handler for mailchimp_signup_subscribe_form.
+ */
+function mailchimp_signup_subscribe_form_validate($form, &$form_state) {
+  $signup = reset($form_state['build_info']['args']);
+  if (count($signup->mc_lists) > 1) {
+    foreach ($form_state['values']['mailchimp_lists'] as $list) {
+      if ($list['subscribe']) {
+        return;
+      }
+    }
+    form_set_error('mailchimp_lists', t("Please select at least one list to subscribe to."));
+  }
+}
+
+/**
  * Submit handler to add users to lists on subscription form submission.
  */
 function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
