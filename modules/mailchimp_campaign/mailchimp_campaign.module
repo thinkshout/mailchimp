@@ -628,6 +628,10 @@ function mailchimp_campaign_process_callback($matches = array()) {
   $entities = entity_load($entity_type, array($entity_id));
   if (!empty($entities)) {
     $render_array = entity_view($entity_type, $entities, $view_mode, NULL, TRUE);
+    // Remove contextual links.
+    if (isset($render_array[$entity_type][$entity_id]['#contextual_links'])) {
+      unset($render_array[$entity_type][$entity_id]['#contextual_links']);
+    }
     $content = render($render_array);
   }
 
