@@ -140,7 +140,7 @@ function mailchimp_lists_list_form($form, &$form_state, MailchimpList $list = NU
     '#type' => 'fieldset',
     '#title' => t('Form & Subscribe Block Options'),
   );
- 
+
   $lists = mailchimp_get_lists();
   $options = array('' => t('-- Select --'));
   foreach ($lists as $mc_list) {
@@ -458,7 +458,19 @@ function mailchimp_lists_list_form_submit($form, &$form_state) {
     if ($form_state['values']['webhooks']) {
       $webhook_ret = $mcapi->listWebhookAdd($list->mc_list_id,
         mailchimp_webhook_url(),
-        array('unsubscribe', 'profile', 'cleaned', 'upemail')
+        array(
+          'subscribe' => FALSE,
+          'unsubscribe' => TRUE,
+          'profile' => TRUE,
+          'cleaned' => TRUE,
+          'upemail' => TRUE,
+          'campaign' => FALSE,
+        ),
+        array(
+          'user' => TRUE,
+          'admin' => TRUE,
+          'api' => TRUE,
+        )
       );
 
       // Handle errors in setting webooks:
