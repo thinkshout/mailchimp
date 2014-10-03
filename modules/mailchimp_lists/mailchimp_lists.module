@@ -1000,9 +1000,11 @@ function mailchimp_lists_queue_existing($list, $queue_removals = FALSE) {
   foreach ($users as $user) {
     $intersect = array_intersect(array_keys($user->roles), $list->settings['roles']);
     if (!empty($intersect)) {
-      $merge_vars = mailchimp_lists_load_user_mergevars($user, $list);
-      mailchimp_lists_execute_change('add', $list, $user->mail, $merge_vars, $user, NULL, $queue);
-      $count++;
+      if ($list->settings['required']) {
+        $merge_vars = mailchimp_lists_load_user_mergevars($user, $list);
+        mailchimp_lists_execute_change('add', $list, $user->mail, $merge_vars, $user, NULL, $queue);
+        $count++;
+      }
     }
     elseif ($queue_removals) {
       if (mailchimp_is_subscribed($list->mc_list_id, $user->mail)) {
