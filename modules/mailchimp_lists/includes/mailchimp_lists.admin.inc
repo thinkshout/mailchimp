@@ -348,10 +348,8 @@ function mailchimp_lists_list_form($form, &$form_state, MailchimpList $list = NU
     '#states' => array(
       // Hide for required lists.
       'disabled' => array(
-        ':input[name="show_register_form"]' => array('checked' => FALSE),
-      ),
-      'checked' => array(
-        ':input[name="required"]' => array('checked' => TRUE),
+        array(':input[name="show_register_form"]' => array('checked' => FALSE)),
+        array(':input[name="required"]' => array('checked' => TRUE)),
       ),
     ),
   );
