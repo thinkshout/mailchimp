@@ -756,7 +756,11 @@ function mailchimp_lists_load_user_mergevars($account, $list, $interest_groups =
     foreach ($mergevars as $name => $token) {
       // Match with token values:
       $replaced = module_invoke_all('mailchimp_lists_merge_values', array($token => $name), $account, $list);
-      $values[$name] = $replaced[$name];
+      // Only populate our merge variables if the replacement was successful,
+      // some configured tokens might not always be available.
+      if (isset($replaced[$name])) {
+        $values[$name] = $replaced[$name];
+      }
     }
     // Always add email:
     $values += array(
