@@ -91,3 +91,17 @@ function mailchimp_update_7201() {
   variable_del('mailchimp_unsubscribe_page_description');
   variable_del('mailchimp_unsubscribe_page_title');
 }
+
+/**
+ * Implements hook_update_N()
+ *   Delete corrupt watchdog entries.
+ */
+function mailchimp_update_7202() {
+  $query = 'DELETE FROM {watchdog} WHERE type = :type AND message = :message AND variables = :variables';
+
+  db_query($query, array(
+    ':type' => 'mailchimp',
+    ':message' => 'Failed to load MailChimp PHP library. Please refer to the installation requirements.',
+    ':variables' => serialize(3),
+  ));
+}
