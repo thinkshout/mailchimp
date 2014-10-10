@@ -390,3 +390,46 @@ function mailchimp_signup_entity_delete($entity, $type) {
     }
   }
 }
+
+/**
+ * Implements hook_feeds_node_processor_targets_alter().
+ */
+function mailchimp_signup_feeds_processor_targets_alter(&$targets, $type, $bundle) {
+  // Create target for all MailChimp list subscription fields.
+  $field_info = field_info_field_types('mailchimp_lists_subscription');
+  $field_instances = field_info_instances($type, $bundle);
+  foreach ($field_instances as $field_name => $field) {
+    if ($field['widget']['type'] == $field_info['default_widget']) {
+      $targets[$field_name . ':subscribe'] = array(
+        'name' => t($field['label']),
+        'description' => t('MailChimp subscription field.'),
+        'callback' => 'mailchimp_signup_set_target',
+      );
+    }
+  }
+}
+
+/**
+ * Mapping callback.
+ */
+function mailchimp_signup_set_target($source, $entity, $target, $value, $mapping) {
+  list($field_name, $option) = explode(':', $target . ':value');
+
+  $field = isset($entity->$field_name) ? $entity->$field_name : array('und' => array());
+
+  $delta = 0;
+  if (is_array($value)) {
+    foreach ($value as $each_value) {
+      if (is_object($each_value) && ($each_value instanceof FeedsElement)) {
+        $each_value = $value->getValue();
+        $field['und'][$delta] = array($option => $each_value);
+      }
+      $delta++;
+    }
+  }
+  else {
+    $field['und'][$delta] = array($option => $value);
+  }
+
+  $entity->$field_name = $field;
+}
