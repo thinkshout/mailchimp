@@ -248,10 +248,14 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
   );
   $form['mailchimp_lists'] = array('#tree' => TRUE);
   $lists = mailchimp_get_lists($signup->mc_lists);
-  $multiple_lists = (count($lists) != 1);
+  $lists_count = (!empty($lists)) ? count($lists) : 0;
+
+  if (empty($lists)) {
+    drupal_set_message('The subscription service is currently unavailable. Please try again later.', 'warning');
+  }
 
   $list = array();
-  if ($multiple_lists) {
+  if ($lists_count > 0) {
     foreach ($lists as $list) {
       // Wrap in a div:
       $wrapper_key = 'mailchimp_' . $list['web_id'];
@@ -294,6 +298,9 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
   foreach ($signup->settings['mergefields'] as $tag => $mergevar) {
     if (!empty($mergevar)) {
       $form['mergevars'][$tag] = mailchimp_insert_drupal_form_tag($mergevar);
+      if (empty($lists)) {
+        $form['mergevars'][$tag]['#disabled'] = TRUE;
+      }
     }
   }
 
@@ -301,6 +308,7 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
     '#type' => 'submit',
     '#weight' => 10,
     '#value' => $signup->settings['submit_button'],
+    '#disabled' => (empty($lists)),
   );
 
   return $form;
