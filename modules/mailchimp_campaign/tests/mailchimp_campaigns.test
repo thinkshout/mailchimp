@@ -46,6 +46,9 @@ class MailchimpCampaignsTestCase extends DrupalWebTestCase {
     variable_set('mailchimp_test_mode', TRUE);
 
     // Load API object to ensure test constants are defined.
+    libraries_load('mailchimp');
+    require_once drupal_get_path('module', 'mailchimp') . '/tests/mailchimp_test.inc';
+
     mailchimp_get_api_object();
   }
 
