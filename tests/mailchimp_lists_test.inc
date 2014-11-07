@@ -15,8 +15,6 @@ define('MAILCHIMP_LISTS_TEST_SEGMENT_C', 3);
 
 define('MAILCHIMP_LISTS_TEST_BATCH_QUEUE_CRON', 'mailchimp_test_batch_queue_cron');
 
-require_once libraries_get_path('mailchimp') . '/src/Mailchimp/Lists.php';
-
 class MailChimp_ListsTest extends Mailchimp_Lists {
 
   /** @var string $errorMessage */
