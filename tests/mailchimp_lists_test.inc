@@ -15,13 +15,12 @@ define('MAILCHIMP_LISTS_TEST_SEGMENT_C', 3);
 
 define('MAILCHIMP_LISTS_TEST_BATCH_QUEUE_CRON', 'mailchimp_test_batch_queue_cron');
 
-class MailChimp_ListsTest extends Mailchimp_Lists {
+class MailChimp_ListsTest {
 
   /** @var string $errorMessage */
   public $errorMessage;
 
   public function __construct(MailChimpTest $master) {
-    parent::__construct($master);
   }
 
   /**

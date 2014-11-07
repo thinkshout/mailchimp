@@ -8,9 +8,8 @@ define('MAILCHIMP_TEST_CAMPAIGN_A', 'mailchimp_test_campaign_a');
 define('MAILCHIMP_TEST_CAMPAIGN_B', 'mailchimp_test_campaign_b');
 define('MAILCHIMP_TEST_CAMPAIGN_C', 'mailchimp_test_campaign_c');
 
-class MailChimp_CampaignsTest extends Mailchimp_Campaigns {
+class MailChimp_CampaignsTest {
   public function __construct(MailChimpTest $master) {
-    parent::__construct($master);
   }
 
   /**

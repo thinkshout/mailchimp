@@ -111,8 +111,13 @@ function mailchimp_get_api_object() {
     return $mailchimp;
   }
 
+  // We allow the class name to be overridden, following the example of core's
+  // mailsystem, in order to use alternate MailChimp classes. The bundled tests
+  // use this approach to extend the MailChimp class with a test server.
+  $classname = variable_get('mailchimp_api_classname', 'DrupalMailchimp');
+
   $library = libraries_load('mailchimp');
-  if (!$library['installed']) {
+  if (!$library['installed'] && ($classname != 'MailChimpTest')) {
     $msg = t('Failed to load MailChimp PHP library. Please refer to the installation requirements.');
     watchdog('mailchimp', $msg, NULL, WATCHDOG_ERROR);
     drupal_set_message($msg, 'error');
@@ -127,10 +132,6 @@ function mailchimp_get_api_object() {
   // Set the timeout to something that won't take down the Drupal site:
   $options = array('timeout' => 60);
 
-  // We allow the class name to be overridden, following the example of core's
-  // mailsystem, in order to use alternate MailChimp classes. The bundled tests
-  // use this approach to extend the MailChimp class with a test server.
-  $classname = variable_get('mailchimp_api_classname', 'DrupalMailchimp');
   $mailchimp = new $classname($api_key, $options);
 
   return $mailchimp;
