@@ -805,3 +805,19 @@ function mailchimp_lists_add_to_segment_action_views_bulk_operations_form($optio
   );
   return $form;
 }
+
+/**
+ * Gets an array of default MailChimp webhook names.
+ *
+ * @return array
+ *   Default webhook names, indexed by the IDs used by the MailChimp API.
+ */
+function mailchimp_lists_default_webhooks() {
+  return array(
+    'subscribe' => 'Subscribes',
+    'unsubscribe' => 'Unsubscribes',
+    'profile' => 'Profile Updates',
+    'cleaned' => 'Cleaned Emails',
+    'upemail' => 'Email Address Changes',
+  );
+}
