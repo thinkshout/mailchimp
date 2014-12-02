@@ -9,23 +9,28 @@
  * Administrative display showing existing lists and allowing edits/adds.
  */
 function mailchimp_lists_overview_page() {
-  $total_webhooks = count(mailchimp_lists_default_webhooks());
+  $total_webhook_actions = count(mailchimp_lists_default_webhook_actions());
 
   $mc_lists = mailchimp_get_lists();
   $rows = array();
   $webhook_url = mailchimp_webhook_url();
   foreach ($mc_lists as $mc_list) {
-    $enabled_webhooks = 0;
+    $enabled_webhook_actions = 0;
     $webhooks = mailchimp_webhook_get($mc_list['id']);
     if ($webhooks) {
       foreach ($webhooks as $webhook) {
+        $enabled_webhook_actions = 0;
         if ($webhook_url == $webhook['url']) {
-          $enabled_webhooks++;
+          foreach ($webhook['actions'] as $action => $enabled) {
+            if ($enabled) {
+              $enabled_webhook_actions++;
+            }
+          }
         }
       }
     }
 
-    $webhook_status = $enabled_webhooks . ' of ' . $total_webhooks . ' enabled (' . l(t('update'), 'admin/config/services/mailchimp/lists/' . $mc_list['id'] . '/webhook') . ')';
+    $webhook_status = $enabled_webhook_actions . ' of ' . $total_webhook_actions . ' enabled (' . l(t('update'), 'admin/config/services/mailchimp/lists/' . $mc_list['id'] . '/webhook') . ')';
 
     $rows[] = array(
       l($mc_list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id']),
@@ -113,7 +118,7 @@ function mailchimp_lists_webhook_form($form, &$form_state, $list_id) {
   $form_state['list'] = $list;
 
   if ($list) {
-    $default_webhooks = mailchimp_lists_default_webhooks();
+    $default_webhook_actions = mailchimp_lists_default_webhook_actions();
 
     $form = array();
 
@@ -126,10 +131,10 @@ function mailchimp_lists_webhook_form($form, &$form_state, $list_id) {
       '#tree' => TRUE,
     );
 
-    foreach ($default_webhooks as $webhook_id => $webhook_name) {
-      $form['webhooks'][$webhook_id] = array(
+    foreach ($default_webhook_actions as $action => $name) {
+      $form['webhooks'][$action] = array(
         '#type' => 'checkbox',
-        '#title' => $webhook_name,
+        '#title' => $name,
         '#default_value' => TRUE,
       );
     }
