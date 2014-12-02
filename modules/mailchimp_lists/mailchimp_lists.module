@@ -33,10 +33,10 @@ function mailchimp_lists_menu() {
     'file' => 'includes/mailchimp_lists.admin.inc',
     'weight' => 10,
   );
-  $items['admin/config/services/mailchimp/lists/%/webhook/%'] = array(
+  $items['admin/config/services/mailchimp/lists/%/webhook'] = array(
     'title' => 'Enable/disable Webhooks',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_lists_webhook_form', 5, 7),
+    'page arguments' => array('mailchimp_lists_webhook_form', 5),
     'access callback' => 'mailchimp_apikey_ready_access',
     'access arguments' => array('administer mailchimp'),
     'file' => 'includes/mailchimp_lists.admin.inc',
