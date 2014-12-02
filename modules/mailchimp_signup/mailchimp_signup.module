@@ -255,7 +255,7 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
   }
 
   $list = array();
-  if ($lists_count > 0) {
+  if ($lists_count > 1) {
     foreach ($lists as $list) {
       // Wrap in a div:
       $wrapper_key = 'mailchimp_' . $list['web_id'];
