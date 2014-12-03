@@ -15,7 +15,7 @@ function mailchimp_lists_overview_page() {
   $rows = array();
 
   foreach ($mc_lists as $mc_list) {
-    $enabled_webhook_actions = count(mailchimp_lists_get_enabled_webhook_actions($mc_list['id']));
+    $enabled_webhook_actions = count(mailchimp_lists_enabled_webhook_actions($mc_list['id']));
     $webhook_status = $enabled_webhook_actions . ' of ' . $total_webhook_actions . ' enabled (' . l(t('update'), 'admin/config/services/mailchimp/lists/' . $mc_list['id'] . '/webhook') . ')';
 
     $rows[] = array(
@@ -104,6 +104,7 @@ function mailchimp_lists_webhook_form($form, &$form_state, $list_id) {
 
   if ($list) {
     $default_webhook_actions = mailchimp_lists_default_webhook_actions();
+    $enabled_webhook_actions = mailchimp_lists_enabled_webhook_actions($list_id);
 
     $form = array();
 
@@ -120,7 +121,7 @@ function mailchimp_lists_webhook_form($form, &$form_state, $list_id) {
       $form['webhooks'][$action] = array(
         '#type' => 'checkbox',
         '#title' => $name,
-        '#default_value' => TRUE,
+        '#default_value' => in_array($action, $enabled_webhook_actions),
       );
     }
 
@@ -229,7 +230,7 @@ function mailchimp_lists_update_mergevars_form_submit($form, &$form_state) {
  * @return array
  *   An array of enabled webhook action names.
  */
-function mailchimp_lists_get_enabled_webhook_actions($list_id) {
+function mailchimp_lists_enabled_webhook_actions($list_id) {
   $enabled_actions = array();
 
   $webhook_url = mailchimp_webhook_url();
