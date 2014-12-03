@@ -13,23 +13,9 @@ function mailchimp_lists_overview_page() {
 
   $mc_lists = mailchimp_get_lists();
   $rows = array();
-  $webhook_url = mailchimp_webhook_url();
-  foreach ($mc_lists as $mc_list) {
-    $enabled_webhook_actions = 0;
-    $webhooks = mailchimp_webhook_get($mc_list['id']);
-    if ($webhooks) {
-      foreach ($webhooks as $webhook) {
-        $enabled_webhook_actions = 0;
-        if ($webhook_url == $webhook['url']) {
-          foreach ($webhook['actions'] as $action => $enabled) {
-            if ($enabled) {
-              $enabled_webhook_actions++;
-            }
-          }
-        }
-      }
-    }
 
+  foreach ($mc_lists as $mc_list) {
+    $enabled_webhook_actions = count(mailchimp_lists_get_enabled_webhook_actions($mc_list['id']));
     $webhook_status = $enabled_webhook_actions . ' of ' . $total_webhook_actions . ' enabled (' . l(t('update'), 'admin/config/services/mailchimp/lists/' . $mc_list['id'] . '/webhook') . ')';
 
     $rows[] = array(
@@ -37,7 +23,6 @@ function mailchimp_lists_overview_page() {
       $mc_list['stats']['member_count'],
       $webhook_status,
     );
-
   }
   $table = array(
     'header' => array(
@@ -233,4 +218,34 @@ function mailchimp_lists_update_mergevars_form($form, &$form_state, $entity_type
 function mailchimp_lists_update_mergevars_form_submit($form, &$form_state) {
   mailchimp_lists_update_member_merge_values($form_state['entity_type'], $form_state['bundle_name'], $form_state['field']);
   $form_state['redirect'] = 'admin/config/services/mailchimp/fields';
+}
+
+/**
+ * Returns an array of enabled webhook actions.
+ *
+ * @param $list_id
+ *   The MailChimp list ID to return webhook actions for.
+ *
+ * @return array
+ *   An array of enabled webhook action names.
+ */
+function mailchimp_lists_get_enabled_webhook_actions($list_id) {
+  $enabled_actions = array();
+
+  $webhook_url = mailchimp_webhook_url();
+
+  $webhooks = mailchimp_webhook_get($list_id);
+  if ($webhooks) {
+    foreach ($webhooks as $webhook) {
+      if ($webhook_url == $webhook['url']) {
+        foreach ($webhook['actions'] as $action => $enabled) {
+          if ($enabled) {
+            $enabled_actions[] = $action;
+          }
+        }
+      }
+    }
+  }
+
+  return $enabled_actions;
 }
