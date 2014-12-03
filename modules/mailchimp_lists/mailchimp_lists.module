@@ -89,7 +89,22 @@ function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
     }
     return FALSE;
   }
-  $email = $entity_wrapper->{$instance['settings']['mergefields']['EMAIL']}->value();
+
+  // Account for email mergefield contained within an entity field.
+  $elements = explode(':', $instance['settings']['mergefields']['EMAIL']);
+  $object = $entity_wrapper;
+  foreach ($elements as $element) {
+    if ($object instanceof EntityListWrapper) {
+      $object = $object[0];
+    }
+    if ($object->value() === NULL || !isset($object->{$element})) {
+      $object = NULL;
+      break;
+    }
+    $object = $object->{$element};
+  }
+  $email = $object->value();
+
   if (valid_email_address($email)) {
     return $email;
   }
