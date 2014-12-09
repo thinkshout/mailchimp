@@ -150,12 +150,8 @@ function mailchimp_lists_webhook_form_submit($form, &$form_state) {
 
   $result = FALSE;
 
-  // Disable existing webhooks first. We're using a single callback URL,
-  // so it's not possible to selectively disable webhooks.
-  $webhook_url = mailchimp_webhook_url();
-  //mailchimp_webhook_delete($list_id, $webhook_url);
+  // Enable all checked webhooks for the list.
   if (count($enabled_webhooks) > 0) {
-    // Enable all checked webhooks for the list.
     $result = mailchimp_webhook_add(
       $list_id,
       mailchimp_webhook_url(),
