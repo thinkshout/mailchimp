@@ -372,7 +372,7 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
       $successes[] = $list_details[$list_id]['name'];
     }
   }
-  if (count($successes) && strlen($signup->settings['confirmation_message'])) {
+  if (count($successes) && isset($signup->settings['confirmation_message']) && strlen($signup->settings['confirmation_message'])) {
     drupal_set_message($signup->settings['confirmation_message'], 'status');
   }
   if (!empty($signup->settings['destination'])) {
