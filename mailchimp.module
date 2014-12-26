@@ -1225,3 +1225,40 @@ function mailchimp_cron() {
     }
   }
 }
+
+/**
+ * Implements hook_variable_group_info().
+ */
+function mailchimp_variable_group_info() {
+  $groups['mailchimp'] = array(
+    'title' => t('Mailchimp'),
+    'description' => t('Settings related to Mailchimp.'),
+    'access' => 'administer mailchimp',
+    'path' => array('admin/config/services/mailchimp'),
+  );
+  return $groups;
+}
+
+/**
+ * Implements hook_variable_info().
+ */
+function mailchimp_variable_info($options) {
+  $variable['mailchimp_api_key'] = array(
+    'title' => t('Mailchimp API Key', array(), $options),
+    'group' => 'mailchimp',
+  );
+  $variable['mailchimp_cron'] = array(
+    'title' => t('Use batch processing', array(), $options),
+    'type' => 'boolean',
+    'group' => 'mailchimp',
+    'default' => FALSE,
+  );
+  $variable['mailchimp_batch_limit'] = array(
+    'title' => t('Batch limit', array(), $options),
+    'type' => 'number',
+    'group' => 'mailchimp',
+    'default' => 100,
+  );
+
+  return $variable;
+}
