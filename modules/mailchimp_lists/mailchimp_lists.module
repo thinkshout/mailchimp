@@ -78,6 +78,14 @@ function mailchimp_lists_entity_delete($entity, $type) {
  * Returns an email address or FALSE.
  */
 function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
+  // Load original email if it exists.
+  if (isset($entity->original)) {
+    $email = mailchimp_lists_load_email($instance, $entity->original, $log_errors);
+    if ($email) {
+      return $email;
+    }
+  }
+
   $entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity);
   if (!isset($instance['settings']['mergefields']['EMAIL'])) {
     if ($log_errors) {
