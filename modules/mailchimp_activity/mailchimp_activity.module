@@ -122,6 +122,9 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
     $emails = array();
     $emails[] = array('email' => $email);
     try {
+      if (!$mcapi) {
+        throw new MailchimpException('Cannot get member activity without Mailchimp API. Check API key has been entered.');
+      }
       $result = $mcapi->lists->memberActivity($list_id, $emails);
     }
     catch (Mailchimp_Error $e) {
