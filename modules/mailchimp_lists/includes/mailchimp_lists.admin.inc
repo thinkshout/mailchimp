@@ -141,21 +141,19 @@ function mailchimp_lists_webhook_form($form, &$form_state, $list_id) {
 function mailchimp_lists_webhook_form_submit($form, &$form_state) {
   $list_id = $form_state['list']['id'];
 
-  $enabled_webhooks = array();
+  $actions = array();
   foreach ($form_state['values']['webhooks'] as $webhook_id => $enable) {
-    if ($enable === 1) {
-      $enabled_webhooks[$webhook_id] = ($enable === 1);
-    }
+    $actions[$webhook_id] = ($enable === 1);
   }
 
   $result = FALSE;
 
   // Enable all checked webhooks for the list.
-  if (count($enabled_webhooks) > 0) {
+  if (count($actions) > 0) {
     $result = mailchimp_webhook_add(
       $list_id,
       mailchimp_webhook_url(),
-      $enabled_webhooks
+      $actions
     );
   }
 
