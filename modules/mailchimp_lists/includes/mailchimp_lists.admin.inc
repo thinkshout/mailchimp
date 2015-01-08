@@ -148,8 +148,11 @@ function mailchimp_lists_webhook_form_submit($form, &$form_state) {
 
   $result = FALSE;
 
-  // Enable all checked webhooks for the list.
   if (count($actions) > 0) {
+    // Remove existing webhook.
+    mailchimp_webhook_delete($list_id, mailchimp_webhook_url());
+
+    // Create webhook actions for the list.
     $result = mailchimp_webhook_add(
       $list_id,
       mailchimp_webhook_url(),
