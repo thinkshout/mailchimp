@@ -449,7 +449,7 @@ function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance,
       $entity->is_new = (($entity_wrapper->getIdentifier() === FALSE) || ($entity_wrapper->getIdentifier() === NULL));
     }
 
-    if ($entity->is_new) {
+    if ($entity->is_new && empty($choices)) {
       $choices = $instance['default_value'][0];
     }
 
