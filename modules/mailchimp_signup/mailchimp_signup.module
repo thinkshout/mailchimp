@@ -167,7 +167,7 @@ function mailchimp_signup_entity_info() {
       'uri callback' => 'entity_class_uri',
       'fieldable' => FALSE,
       'exportable' => TRUE,
-      'label callback' => 'entity_class_label',
+      'label callback' => 'mailchimp_signup_entity_info_label',
       'module' => 'mailchimp_signup',
       'entity keys' => array(
         'id' => 'mcs_id',
@@ -195,6 +195,13 @@ function mailchimp_signup_entity_info() {
   );
 
   return $entities;
+}
+
+/**
+ * Entity label callback.
+ */
+function mailchimp_signup_entity_info_label($entity, $entity_type) {
+  return empty($entity) ? 'New MailChimp Signup' : $entity->title;
 }
 
 /**
