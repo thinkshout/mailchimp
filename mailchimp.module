@@ -77,18 +77,6 @@ function mailchimp_menu() {
 }
 
 /**
- * Implements hook_permission().
- */
-function mailchimp_permission() {
-  return array(
-    'administer mailchimp' => array(
-      'title' => t('administer mailchimp'),
-      'description' => t('Access the mailchimp configuration options.'),
-    ),
-  );
-}
-
-/**
  * Access callback for mailchimp submodule menu items.
  */
 function mailchimp_apikey_ready_access($permission) {

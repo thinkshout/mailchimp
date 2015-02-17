@@ -1,0 +1,5 @@
+
+administer mailchimp:
+  title: 'administer mailchimp'
+  description: 'Access the mailchimp configuration options.'
+  restrict access: TRUE
