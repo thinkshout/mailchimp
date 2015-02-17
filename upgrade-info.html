@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:600italic,400,700,600' rel='stylesheet' type='text/css' />
+    <style type="text/css">
+    <!--
+
+body {
+  width: 80%;
+  color: #343434;
+  margin: 1em auto;
+  font-family: 'Open Sans', Verdana, sans-serif;
+}
+
+details {
+  font-size: 18px;
+  line-height: 25px;
+  margin-bottom: 2em;
+  display: block;
+}
+
+details summary {
+  padding: 1em;
+  margin-bottom: 1em;
+  display: block;
+}
+
+details.error summary {
+  background-color: #ffd5d5;
+}
+
+details.warning summary {
+  background-color: #fff3bb;
+}
+
+a {
+  color: #095cb1;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+h5 {
+  font-size: 1em;
+}
+
+aside {
+  font-style: italic;
+  line-height: 20px;
+  font-size: 15px;
+}
+
+.group {
+  border: 1px solid #ececec;
+  padding: 1em;
+  display: block;
+}
+
+.group > summary {
+  padding: 0;
+  color: #c8c8c8;
+  margin-bottom: 0;;
+  font-weight: bold;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  display: block;
+}
+
+.group[open] > summary {
+  margin-bottom: 1em;
+}
+
+.group > details:last-child {
+  margin-bottom: 0;
+}
+
+    -->
+    </style>
+  </head>
+  <body>
+      <details open="true" class="group">
+      <summary>Caching</summary>
+          <details class="error">
+      <summary>The caching system has been rewritten.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1884796">Drupal 8 Cache API</a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/1272696">New cache API</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 940</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 949</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 958</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 295</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:cache_clear_all</aside>    </details>
+    <details class="error">
+      <summary>The caching system has been rewritten.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1884796">Drupal 8 Cache API</a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/1272696">New cache API</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 166</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 248</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 299</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 632</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 784</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.controller.inc, line 46</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:cache_get</aside>    </details>
+    <details class="error">
+      <summary>The caching system has been rewritten.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1884796">Drupal 8 Cache API</a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/1272696">New cache API</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 192</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 267</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 313</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 643</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 799</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.controller.inc, line 58</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:cache_set</aside>    </details>
+
+    </details>
+      <details open="true" class="group">
+      <summary>Configuration</summary>
+          <details class="error">
+      <summary><code>variable_del()</code> has been removed.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2183531">The Variable API has been removed</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/tests/mailchimp_lists.test, line 62</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.install, line 70</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.install, line 71</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/tests/mailchimp_campaigns.test, line 62</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:variable_del</aside>    </details>
+    <details class="error">
+      <summary><code>variable_get()</code> has been removed.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2183531">The Variable API has been removed</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 117</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 127</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 361</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 400</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 448</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 571</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 1216</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/tests/mailchimp_lists_test.inc, line 359</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/tests/mailchimp_campaigns_test.inc, line 49</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/includes/mailchimp.drush.inc, line 34</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 78</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 87</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/includes/mailchimp.admin.inc, line 16</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/includes/mailchimp.admin.inc, line 23</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/includes/mailchimp.admin.inc, line 45</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:variable_get</aside>    </details>
+    <details class="error">
+      <summary><code>variable_set()</code> has been removed.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2183531">The Variable API has been removed</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/tests/mailchimp_lists_test.inc, line 483</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/tests/mailchimp_lists.test, line 44</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/tests/mailchimp_lists.test, line 45</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/tests/mailchimp_lists.test, line 46</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/tests/mailchimp_campaigns.test, line 44</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/tests/mailchimp_campaigns.test, line 45</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/tests/mailchimp_campaigns.test, line 46</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/tests/mailchimp_campaigns_test.inc, line 91</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/includes/mailchimp.drush.inc, line 35</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/includes/mailchimp.drush.inc, line 39</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:variable_set</aside>    </details>
+    <details class="warning">
+      <summary>Default configuration is deleted automatically.</summary>
+
+      
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.install, line 70</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.install, line 71</li>
+            </ul>
+      
+      <aside>Flagged by hook_uninstall</aside>    </details>
+
+    </details>
+      <details open="true" class="group">
+      <summary>Entity API</summary>
+          <details class="error">
+      <summary><code>entity_create()</code> is now a method of <code>EntityInterface</code>.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2266845"><code>entity_create()</code> replaced by <code>EntityInterface::create()</code></a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_activity/includes/mailchimp_activity.admin.inc, line 167</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_activity/includes/mailchimp_activity.admin.inc, line 178</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:entity_create</aside>    </details>
+    <details class="error">
+      <summary><code>entity_get_info()</code> is now a method of the EntityManager service.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1929006"><code>entity_get_info()</code> is deprecated</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_activity/includes/mailchimp_activity.admin.inc, line 51</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_activity/includes/mailchimp_activity.admin.inc, line 79</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_activity/includes/mailchimp_activity.admin.inc, line 168</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_activity/includes/mailchimp_activity.admin.inc, line 217</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 501</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:entity_get_info</aside>    </details>
+    <details class="error">
+      <summary><code>entity_load()</code> has been removed.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2266845">Entities are now classed objects implementing <code>EntityInterface</code></a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_activity/includes/mailchimp_activity.admin.inc, line 144</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:entity_load</aside>    </details>
+
+    </details>
+      <details open="true" class="group">
+      <summary>Field API</summary>
+          <details class="error">
+      <summary>The Field API CRUD functions have been removed.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2012896">Fields and field instances are now entities</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.admin.inc, line 73</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.field.inc, line 47</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:field_info_fields</aside>    </details>
+
+    </details>
+      <details open="true" class="group">
+      <summary>Form API</summary>
+          <details class="error">
+      <summary><code>drupal_get_form()</code> has moved into the FormBuilder service.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2121003">Form generation functions moved into FormBuilder service</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.field.inc, line 301</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:drupal_get_form</aside>    </details>
+    <details class="error">
+      <summary><code>form_set_error()</code> is now a method of <code>FormStateInterface</code>.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2121003">Form functions moved into <code>FormStateInterface</code></a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_activity/includes/mailchimp_activity.admin.inc, line 152</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 266</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.field.inc, line 388</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:form_set_error</aside>    </details>
+
+    </details>
+      <details open="true" class="group">
+      <summary>Info File</summary>
+          <details class="error">
+      <summary>Module info files' <code>core</code> key must have a value of <code>8.x</code>.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1935708"><code>.info</code> files are now <code>.info.yml</code> files</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.info</li>
+            </ul>
+      
+      <aside>Flagged by info</aside>    </details>
+    <details class="error">
+      <summary>Info files must contain a <code>type</code> key.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1935708#type"><code>.info</code> files are now <code>.info.yml</code> files</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.info</li>
+            </ul>
+      
+      <aside>Flagged by info</aside>    </details>
+    <details class="error">
+      <summary>Many common dependencies have moved into core.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1935708"><code>.info</code> files are now <code>.info.yml</code> files</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.info</li>
+            </ul>
+      
+      <aside>Flagged by info</aside>    </details>
+    <details class="error">
+      <summary>Modules no longer declare classes in their info file.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1935708#files"><code>.info</code> files are now <code>.info.yml</code> files</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.info</li>
+            </ul>
+      
+      <aside>Flagged by info</aside>    </details>
+    <details class="error">
+      <summary>Module info files' <code>configure</code> key must be a route name, not a path.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1935708#configure"><code>.info</code> files are now <code>.info.yml</code> files</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.info</li>
+            </ul>
+      
+      <aside>Flagged by info</aside>    </details>
+
+    </details>
+      <details open="true" class="group">
+      <summary>Menu/Routing</summary>
+          <details class="error">
+      <summary><code>hook_menu()</code> has been removed from Drupal 8.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1800686">All functionality of <code>hook_menu()</code> replaced</a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/2177901">Dynamic routes are now defined in <code>MODULE.routing.yml</code></a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/2119699">Page callbacks have been converted to controller classes</a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/2089605">Route naming convention</a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/2165243">Contextual links are now plugins defined in <code>MODULE.links.contextual.yml</code></a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/2007444">Local actions are now plugins defined in <code>MODULE.links.action.yml</code></a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/2044515">Local tasks and now plugins defined in <code>MODULE.links.task.yml</code></a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/2228089">Menu links are now defined in <code>MODULE.links.menu.yml</code></a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 39</li>
+            </ul>
+      
+      <aside>Flagged by _flag_hook:menu</aside>    </details>
+
+    </details>
+      <details open="true" class="group">
+      <summary>Miscellaneous</summary>
+          <details class="warning">
+      <summary>Many common functions, shared variables, and constants have been renamed.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2324935">The global theme variables have been replaced by an ActiveTheme object</a></li>
+              </ul>
+      
+      
+          </details>
+    <details class="error">
+      <summary>Classes must be PSR-4 compliant.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2246699">PSR-4 compatible class loader in Drupal core</a></li>
+              </ul>
+      
+      
+          </details>
+    <details class="error">
+      <summary>Automated web tests must be in a PSR-4 namespace, and unit tests must be converted to PHPUnit.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1543796">Namespacing of automated tests has changed</a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/2301125"><code>getInfo()</code> in test classes replaced by doc comments</a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/1710766">Test classes should define a <code>$modules</code> property declaring dependencies</a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/1911318">SimpleTest tests now use empty &quot;testing&quot; profile by default</a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/1829160">New <code>KernelTestBase</code> class for API-level integration tests</a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/2012184">PHPUnit added to Drupal core</a></li>
+              </ul>
+      
+      
+          </details>
+
+    </details>
+      <details open="true" class="group">
+      <summary>Rendering</summary>
+          <details class="error">
+      <summary><code>drupal_add_css()</code> has been removed.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2169605"><code>drupal_add_css()</code>, <code>drupal_add_js()</code> and <code>drupal_add_library()</code> removed in favor of <code>#attached</code></a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/2408597"><code>AssetResolverInterface</code> and <code>AttachedAssetsInterface</code> replace internal Asset API functions</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 13</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:drupal_add_css</aside>    </details>
+    <details class="error">
+      <summary><code>drupal_add_js()</code> has been removed.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2169605"><code>drupal_add_css()</code>, <code>drupal_add_js()</code> and <code>drupal_add_library()</code> removed in favor of <code>#attached</code></a></li>
+                <li><a target="_blank" href="https://www.drupal.org/node/2408597"><code>AssetResolverInterface</code> and <code>AttachedAssetsInterface</code> replace internal Asset API functions</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 12</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:drupal_add_js</aside>    </details>
+
+    </details>
+      <details open="true" class="group">
+      <summary>System</summary>
+          <details class="error">
+      <summary><code>drupal_goto()</code> has been removed.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2023537"><code>drupal_goto()</code> removed</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 632</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 657</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:drupal_goto</aside>    </details>
+    <details class="error">
+      <summary><code>drupal_http_request()</code> has been replaced by Guzzle.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1862446">Guzzle HTTP client in Drupal core</a></li>
+                <li><a target="_blank" href="http://docs.guzzlephp.org/en/latest">Guzzle documentation</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/includes/mailchimp.inc, line 72</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:drupal_http_request</aside>    </details>
+    <details class="error">
+      <summary><code>drupal_json_decode()</code> has moved into the Serialization component.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2219113"><code>drupal_json_decode()</code> moved into Serialization component</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/includes/mailchimp.inc, line 90</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:drupal_json_decode</aside>    </details>
+    <details class="error">
+      <summary><code>drupal_json_encode()</code> has moved into the Serialization component.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2219113"><code>drupal_json_encode()</code> moved into Serialization component</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/includes/mailchimp.inc, line 70</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:drupal_json_encode</aside>    </details>
+    <details class="error">
+      <summary><code>l()</code> has been removed.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2346779"><code>l()</code> replaced by URL generation API</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_signup/includes/mailchimp_signup.ui_controller.inc, line 39</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_signup/includes/mailchimp_signup.ui_controller.inc, line 44</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_signup/includes/mailchimp_signup.ui_controller.inc, line 48</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_signup/includes/mailchimp_signup.ui_controller.inc, line 48</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_signup/includes/mailchimp_signup.ui_controller.inc, line 54</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_signup/includes/mailchimp_signup.ui_controller.inc, line 64</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_activity/includes/mailchimp_activity.admin.inc, line 156</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 430</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.admin.inc, line 28</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.admin.inc, line 31</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.admin.inc, line 34</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.admin.inc, line 48</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.admin.inc, line 54</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.admin.inc, line 84</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.field.inc, line 61</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.field.inc, line 62</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_signup/includes/mailchimp_signup.admin.inc, line 122</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/includes/mailchimp.admin.inc, line 17</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.entity.inc, line 54</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.entity.inc, line 93</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:l</aside>    </details>
+    <details class="error">
+      <summary><code>module_invoke_all()</code> is now a method of the <code>module_handler</code> service.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1894902"><code>module_invoke_all()</code> replaced by <code>module_handler</code> service</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 392</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 605</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 1005</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:module_invoke_all</aside>    </details>
+    <details class="error">
+      <summary><code>get_t()</code> has been removed.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2021435"><code>get_t()</code> replaced by <code>t()</code></a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.install, line 24</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:get_t</aside>    </details>
+    <details class="error">
+      <summary><code>user_access()</code> is now <code>AccountInterface::hasPermission()</code>.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2049309"><code>user_access()</code> got converted to a method on the user/account interface</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 95</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:user_access</aside>    </details>
+    <details class="error">
+      <summary><code>watchdog()</code> has been removed.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2270941"><code>watchdog()</code> is deprecated</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 122</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 129</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 195</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 272</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 317</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 395</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 401</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 409</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 476</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 484</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 491</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 514</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 538</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 611</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 646</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 685</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 730</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 761</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 806</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 832</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 858</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 882</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 903</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 924</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 1008</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:watchdog</aside>    </details>
+    <details class="warning">
+      <summary>Static permissions are now defined in <code>MODULE.permissions.yml</code>.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2311427">Defining permissions in <code>MODULE.permissions.yml</code></a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 79</li>
+            </ul>
+      
+      <aside>Flagged by hook_permission</aside>    </details>
+
+    </details>
+      <details open="true" class="group">
+      <summary>Theme System</summary>
+          <details class="error">
+      <summary><code>theme()</code> has been renamed to <code>_theme()</code>, and should never be called directly.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/2195739"><code>theme()</code> renamed to <code>_theme()</code> and should not be called directly</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 574</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.admin.inc, line 66</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_lists/includes/mailchimp_lists.admin.inc, line 108</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:theme</aside>    </details>
+
+    </details>
+      <details open="true" class="group">
+      <summary>Utilities</summary>
+          <details class="error">
+      <summary><code>drupal_hash_base64()</code> has moved into the Crypt component.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1984806"><code>drupal_hash_base64()</code> moved into <code>\Drupal\Component\Utility\Crypt</code></a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/mailchimp.module, line 1023</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:drupal_hash_base64</aside>    </details>
+    <details class="error">
+      <summary><code>drupal_ucfirst()</code> has been moved into the Unicode utility class.</summary>
+
+      
+            <h5>Documentation</h5>
+      <ul>
+                <li><a target="_blank" href="https://www.drupal.org/node/1992584"><code>drupal_ucfirst()</code> moved into Unicode component</a></li>
+              </ul>
+      
+            <h5>Files Affected</h5>
+      <ul>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 150</li>
+              <li>profiles/mailchimp_dev/modules/mailchimp/mailchimp/modules/mailchimp_campaign/includes/mailchimp_campaign.admin.inc, line 157</li>
+            </ul>
+      
+      <aside>Flagged by _function_call:drupal_ucfirst</aside>    </details>
+
+    </details>
+    </body>
+</html>
