@@ -1,7 +1,8 @@
-name = MailChimp
-description = MailChimp email service integration.
-package = MailChimp
-core = 8.x
+name: MailChimp
+type: module
+description: MailChimp email service integration.
+package: MailChimp
+core: 8.x
 
 files:
  - includes/mailchimp.inc
