@@ -1,0 +1,8 @@
+mailchimp.admin:
+  path: 'admin/config/services/mailchimp'
+  defaults:
+    _form: '\Drupal\mailchimp\Form\MailchimpAdminSettingsForm'
+    _title: 'Mailchimp'
+  requirements:
+    _permission: 'administer mailchimp'
+
