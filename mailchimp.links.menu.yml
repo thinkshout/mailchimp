@@ -1,4 +1,4 @@
 mailchimp.admin:
   route_name: mailchimp.admin
   title: 'Mailchimp'
-  base_route: system.admin_config_services
+  parent: system.admin_config_services
