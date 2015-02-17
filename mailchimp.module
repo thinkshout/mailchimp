@@ -5,6 +5,9 @@
  * Mailchimp module.
  */
 
+use Drupal\Core\Site\Settings;
+use Drupal\Component\Utility\Crypt;
+
 define('MAILCHIMP_QUEUE_CRON', 'mailchimp');
 define('MAILCHIMP_BATCH_QUEUE_CRON', 'mailchimp_batch');
 
@@ -1008,7 +1011,7 @@ function mailchimp_process_webhook() {
  *   The key.
  */
 function mailchimp_webhook_key() {
-  return drupal_hash_base64($GLOBALS['base_url'] . drupal_get_private_key() . drupal_get_hash_salt());
+  return Crypt::hashBase64($GLOBALS['base_url'] . Drupal::service('private_key')->get() . Settings::getHashSalt());
 }
 
 /**
