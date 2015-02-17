@@ -1,0 +1,13 @@
+name = MailChimp
+description = MailChimp email service integration.
+package = MailChimp
+core = 8.x
+
+files:
+ - includes/mailchimp.inc
+ - tests/mailchimp_test.inc
+
+dependencies:
+ - libraries
+
+# configure: action.admin.config.services.mailchimp
