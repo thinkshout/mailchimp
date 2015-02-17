@@ -3,6 +3,7 @@ type: module
 description: MailChimp email service integration.
 package: MailChimp
 core: 8.x
+configure: mailchimp.admin
 
 files:
  - includes/mailchimp.inc
