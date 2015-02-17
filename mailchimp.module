@@ -40,46 +40,6 @@ function mailchimp_libraries_info() {
 }
 
 /**
- * Implements hook_menu().
- */
-function mailchimp_menu() {
-  $items = array();
-
-  $items['admin/config/services/mailchimp'] = array(
-    'title' => 'MailChimp',
-    'description' => 'Manage MailChimp Settings.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_admin_settings'),
-    'access arguments' => array('administer mailchimp'),
-    'file' => 'includes/mailchimp.admin.inc',
-    'type' => MENU_NORMAL_ITEM,
-  );
-  $items['admin/config/services/mailchimp/global'] = array(
-    'title' => 'Global Settings',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-  );
-  $items['admin/config/services/mailchimp/list_cache_clear'] = array(
-    'title' => 'MailChimp webhooks endpoint',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_clear_list_cache_form'),
-    'access callback' => 'mailchimp_apikey_ready_access',
-    'access arguments' => array('administer mailchimp'),
-    'file' => 'includes/mailchimp.admin.inc',
-    'type' => MENU_CALLBACK,
-  );
-  $items['mailchimp/webhook'] = array(
-    'title' => 'MailChimp webhooks endpoint',
-    'page callback' => 'mailchimp_process_webhook',
-    'access callback' => 'mailchimp_process_webhook_access',
-    'access arguments' => array(2),
-    'type' => MENU_CALLBACK,
-  );
-
-  return $items;
-}
-
-/**
  * Access callback for mailchimp submodule menu items.
  */
 function mailchimp_apikey_ready_access($permission) {
