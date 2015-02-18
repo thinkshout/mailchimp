@@ -2,7 +2,7 @@
 
 mailchimp.settings:
   type: mapping
-  label: 'Mailchimy settings'
+  label: 'Mailchimp settings'
   mapping:
     api_key:
       type: string
