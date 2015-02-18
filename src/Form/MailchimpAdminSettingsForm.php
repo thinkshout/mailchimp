@@ -32,46 +32,42 @@ class MailchimpAdminSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('mailchimp.settings');
 
-    $form['general'] = array(
-      '#type' => 'details',
-      '#title' => t('General settings'),
-      '#open' => TRUE,
-    );
-
-    $form['general']['google_analytics_account'] = array(
-      '#default_value' => $config->get('account'),
-      '#description' => t('This ID is unique to each site you want to track separately, and is in the form of UA-xxxxxxx-yy. To get a Web Property ID, <a href="@analytics">register your site with Google Analytics</a>, or if you already have registered your site, go to your Google Analytics Settings page to see the ID next to every site profile. <a href="@webpropertyid">Find more information in the documentation</a>.', array('@analytics' => 'http://www.google.com/analytics/', '@webpropertyid' => Url::fromUri('https://developers.google.com/analytics/resources/concepts/gaConceptsAccounts', array('fragment' => 'webProperty'))->toString())),
-      '#maxlength' => 20,
-      '#placeholder' => 'UA-',
-      '#required' => TRUE,
-      '#size' => 15,
-      '#title' => t('Web Property ID'),
+    $mc_api_url = Url::fromUri('http://admin.mailchimp.com/account/api');
+    $form['api_key'] = array(
       '#type' => 'textfield',
+      '#title' => t('Mailchimp API Key'),
+      '#required' => TRUE,
+      '#default_value' => $config->get('api_key'),
+      '#description' => t('The API key for your MailChimp account. Get or generate a valid API key at your !apilink.',
+        array('!apilink' => \Drupal::l(t('MailChimp API Dashboard'), $mc_api_url))),
     );
-
-    $form['tracking']['domain_tracking'] = array(
-      '#type' => 'details',
-      '#title' => t('Domains'),
-      '#group' => 'tracking_scope',
-    );
-
-
-    $form['tracking']['domain_tracking']['google_analytics_domain_mode'] = array(
-      '#type' => 'radios',
-      '#title' => t('What are you tracking?'),
-      '#options' => array(
-        0 => t('A single domain (default)') . '<div class="description">' . t('Domain: @domain', array('@domain' => $_SERVER['HTTP_HOST'])) . '</div>',
-        1 => t('One domain with multiple subdomains') . '<div class="description">' . t('Examples: @domains', array('@domains' => implode(', ', $multiple_sub_domains))) . '</div>',
-        2 => t('Multiple top-level domains') . '<div class="description">' . t('Examples: @domains', array('@domains' => implode(', ', $multiple_toplevel_domains))) . '</div>',
-      ),
-      '#default_value' => $config->get('domain_mode'),
-    );
-
-    $form['advanced']['google_analytics_debug'] = array(
+    $form['cron'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Enable debugging'),
-      '#description' => t('If checked, the Google Universal Analytics debugging script will be loaded. You should not enable your production site to use this version of the JavaScript. The analytics_debug.js script is larger than the analytics.js tracking code and it is not typically cached. Using it in your production site will slow down your site for all of your users. Again, this is only for your own testing purposes. Debug messages are printed to the <code>window.console</code> object.'),
-      '#default_value' => $config->get('debug'),
+      '#title' => 'Use batch processing.',
+      '#description' => 'Puts all Mailchimp subscription operations into the cron queue. (Includes subscribe, update, and unsubscribe operations.) <i>Note: May cause confusion if caches are cleared, as requested changes will appear to have failed until cron is run.</i>',
+      '#default_value' => $config->get('cron'),
+    );
+    $form['batch_limit'] = array(
+      '#type' => 'select',
+      '#options' => array(
+        '1' => '1',
+        '10' => '10',
+        '25' => '25',
+        '50' => '50',
+        '75' => '75',
+        '100' => '100',
+        '250' => '250',
+        '500' => '500',
+        '750' => '750',
+        '1000' => '1000',
+        '2500' => '2500',
+        '5000' => '5000',
+        '7500' => '7500',
+        '10000' => '10000',
+      ),
+      '#title' => t('Batch limit'),
+      '#description' => t('Maximum number of entities to process in a single cron run. Mailchimp suggest keeping this at 5000 or below. <i>This value is also used for batch Merge Variable updates on the Fields tab (part of mailchimp_lists).</i>'),
+      '#default_value' => $config->get('batch_limit'),
     );
 
     return parent::buildForm($form, $form_state);
@@ -90,8 +86,9 @@ class MailchimpAdminSettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config('mailchimp.settings');
     $config
-      ->set('account', $form_state->getValue('google_analytics_account'))
-      ->set('visibility.custom', $form_state->getValue('google_analytics_custom'))
+      ->set('api_key', $form_state->getValue('api_key'))
+      ->set('cron', $form_state->getValue('cron'))
+      ->set('batch_limit', $form_state->getValue('batch_limit'))
       ->save();
 
     parent::submitForm($form, $form_state);
