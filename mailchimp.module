@@ -61,12 +61,11 @@ function mailchimp_get_api_object() {
   if (isset($mailchimp)) {
     return $mailchimp;
   }
-
+  $config = $this->config('mailchimp.settings');
   // We allow the class name to be overridden, following the example of core's
   // mailsystem, in order to use alternate MailChimp classes. The bundled tests
   // use this approach to extend the MailChimp class with a test server.
-  $classname = variable_get('mailchimp_api_classname', 'DrupalMailchimp');
-
+  $classname = $config->get('api_classname');
   $library = libraries_load('mailchimp');
   if (!$library['installed'] && ($classname != 'MailChimpTest')) {
     $msg = t('Failed to load MailChimp PHP library. Please refer to the installation requirements.');
@@ -75,7 +74,7 @@ function mailchimp_get_api_object() {
     return NULL;
   }
 
-  $api_key = variable_get('mailchimp_api_key', '');
+  $api_key = $config->get('api_key');
   if (!strlen($api_key)) {
     watchdog('mailchimp', 'Mailchimp Error: API Key cannot be blank.', NULL, WATCHDOG_ERROR);
     return NULL;
@@ -309,7 +308,7 @@ function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
  *   True on success.
  */
 function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $confirm = TRUE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE) {
-  if (variable_get('mailchimp_cron', FALSE)) {
+  if ($this->config('mailchimp.settings')->get('cron')) {
     $args = array(
       'list_id' => $list_id,
       'email' => $email,
@@ -348,7 +347,7 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $doub
       );
     }
     else {
-      if (!variable_get('mailchimp_test_mode')) {
+      if (!$this->config('mailchimp.settings')->get('test_mode')) {
         watchdog('mailchimp', 'A problem occurred subscribing @email to list @list.', array(
           '@email' => $email,
           '@list' => $list_id,
@@ -396,7 +395,7 @@ function mailchimp_addto_queue($function, $args) {
  *   Success or failure.
  */
 function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE) {
-  if (variable_get('mailchimp_cron', FALSE)) {
+  if ($this->config('mailchimp.settings')->get('cron')) {
     $args = array(
       'list_id' => $list_id,
       'email' => $email,
@@ -519,7 +518,7 @@ function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FAL
   $result = FALSE;
 
   if (mailchimp_is_subscribed($list_id, $email)) {
-    if (variable_get('mailchimp_cron', FALSE)) {
+    if ($this->config('mailchimp.settings')->get('cron')) {
       $result = mailchimp_addto_queue(
         'mailchimp_unsubscribe_process',
         array(
@@ -1164,7 +1163,7 @@ function mailchimp_cron() {
   $queue->createQueue();
   $queue_count = $queue->numberOfItems();
   if ($queue_count > 0) {
-    $batch_limit = variable_get('mailchimp_batch_limit', 100);
+    $batch_limit = $this->config('mailchimp.settings')->get('batch_limit', 100);
     $batch_size = ($queue_count < $batch_limit) ? $queue_count : $batch_limit;
     $count = 0;
     while ($count < $batch_size) {
