@@ -13,3 +13,9 @@ mailchimp.settings:
     batch_limit:
       type: integer
       label: 'Batch limit'
+    api_classname:
+      type: string
+      label: 'Mailchimp API Class Name'
+    test_mode:
+      type: boolean
+      label: 'Whether mailchimp send is currently in test mode'
