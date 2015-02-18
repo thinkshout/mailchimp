@@ -5,6 +5,8 @@
  * Wrapper class around the Mailchimp API.
  */
 
+use Drupal\Component\Serialization\Json;
+
 /**
  * Class DrupalMailchimp
  *
@@ -63,31 +65,31 @@ class DrupalMailchimp extends Mailchimp {
   public function __destruct() {}
 
   /**
-   * Override MCAPI::callServer() to leverage Drupal's core HTTP handling.
+   * Override MCAPI::call() to leverage Drupal's core HTTP handling.
    */
   public function call($url, $params) {
+    // @todo this is totally untested
     $params['apikey'] = $this->apikey;
-    $params = drupal_json_encode($params);
-
-    $response = drupal_http_request(
-      $this->root . $url . '.json',
-      array(
-        'method' => 'POST',
-        'data' => $params,
-        'headers' => array(
-          'Content-type' => 'application/json',
-          'Accept-Language' => language_default()->language,
-          'User-Agent' => $this->userAgent,
-        ),
-        'timeout' => $this->timeout,
-      )
+    $params = Json::decode($params);
+    $post_options = array(
+      'body' => $params,
+      'headers' => array(
+        'Content-type' => 'application/json',
+        'Accept-Language' => language_default()->language,
+        'User-Agent' => $this->userAgent,
+      ),
+      'timeout' => $this->timeout,
     );
-
-    if (!empty($response->error)) {
+    try {
+      $response = Drupal::httpClient()->post($this->root . $url . '.json', $post_options);
+      // Expected result.
+      $data = $response->getBody(TRUE);
+    }
+    catch (Exception $e) {
       throw new Mailchimp_HttpError(t("MailChimp API call to %url failed: @msg", array('%url' => $url, '@msg' => $response->error)));
     }
 
-    $result = drupal_json_decode($response->data);
+    $result = Json::decode($data);
 
     if (floor($response->code / 100) >= 4) {
       throw $this->castError($result);
