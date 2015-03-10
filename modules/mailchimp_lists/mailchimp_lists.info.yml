@@ -1,0 +1,13 @@
+name: MailChimp Lists
+type: module
+description: Manage and integrate MailChimp lists.
+package: MailChimp
+core: 8.x
+configure: mailchimp.admin
+
+files:
+ - tests/mailchimp_lists.test
+
+dependencies:
+ - mailchimp
+ - options
