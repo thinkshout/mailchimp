@@ -1,10 +1,10 @@
 <?php
 /**
  * @file
- * Contains \Drupal\mailchimp\Form\MailchimpListsAdminSettingsForm.
+ * Contains \Drupal\mailchimp_lists\Form\MailchimpListsAdminSettingsForm.
  */
 
-namespace Drupal\mailchimp\Form;
+namespace Drupal\mailchimp_lists\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
