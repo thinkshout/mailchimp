@@ -1,0 +1,12 @@
+# Schema for the configuration files of the mailchimp_signup module.
+
+mailchimp_signup.mailchimp_signup.*:
+  type: config_entity
+  label: 'Mailchimp Signup config'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+        type: label
+        label: 'Label'
