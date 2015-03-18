@@ -113,11 +113,12 @@ function mailchimp_get_list($list_id) {
  *   An array of list arrays.
  */
 function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
-  $cache = $reset ? NULL : cache_get('lists', 'cache_mailchimp');
   $lists = array();
+  $cache = \Drupal::cache('mailchimp');
+  $cached_data = $reset ? NULL : $cache->get('lists');
   // Return cached lists:
-  if ($cache) {
-    $lists = $cache->data;
+  if ($cached_data) {
+    $lists = $cached_data->data;
   }
   // Query lists from the MCAPI and store in cache:
   else {
@@ -139,7 +140,7 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
         }
       }
       uasort($lists, '_mailchimp_list_cmp');
-      cache_set('lists', $lists, 'cache_mailchimp', CACHE_TEMPORARY);
+      $cache->set('lists', $lists, CACHE_TEMPORARY);
     }
     catch (Exception $e) {
       watchdog('mailchimp', 'An error occurred requesting list information from Mailchimp. "%message"', array(
@@ -193,12 +194,13 @@ function _mailchimp_list_cmp($a, $b) {
  */
 function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
   $mergevars = array();
+  $cache = \Drupal::cache('mailchimp');
   if (!$reset) {
     foreach ($list_ids as $key => $list_id) {
-      $cache = cache_get($list_id . '-mergevars', 'cache_mailchimp');
+      $cached_data = $cache->get($list_id . '-mergevars');
       // Get cached data and unset from our remaining lists to query.
-      if ($cache) {
-        $mergevars[$list_id] = $cache->data;
+      if ($cached_data) {
+        $mergevars[$list_id] = $cached_data->data;
         unset($list_ids[$key]);
       }
     }
@@ -214,7 +216,7 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
         foreach ($result['data'] as $list_mergevars) {
           $last_list_id = $list_mergevars['id'];
           $mergevars[$last_list_id] = $list_mergevars;
-          cache_set($last_list_id . '-mergevars', $list_mergevars, 'cache_mailchimp', CACHE_TEMPORARY);
+          $cache->set($last_list_id . '-mergevars', $list_mergevars, CACHE_TEMPORARY);
         }
       }
     }
@@ -246,11 +248,13 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
  *   Member info array, empty if there is no valid info.
  */
 function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
-  $cache = $reset ? NULL : cache_get($list_id . '-' . $email, 'cache_mailchimp');
+  $cache = \Drupal::cache('mailchimp');
+  if (!$reset) {
+    $cached_data = $cache->get($list_id . '-' . $email);
 
-  // Return cached lists:
-  if ($cache) {
-    return $cache->data;
+    if ($cached_data) {
+      return $cached_data->data;
+    }
   }
 
   // Query lists from the MCAPI and store in cache:
@@ -260,7 +264,7 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
     $result = $mcapi->lists->memberInfo($list_id, array(array('email' => $email)));
     if ($result['success_count']) {
       $memberinfo = reset($result['data']);
-      cache_set($list_id . '-' . $email, $memberinfo, 'cache_mailchimp', CACHE_TEMPORARY);
+      $cache->set($list_id . '-' . $email, $memberinfo, CACHE_TEMPORARY);
     }
   }
   catch (Exception $e) {
@@ -579,10 +583,12 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
  *   Array of segments details.
  */
 function mailchimp_get_segments($list_id, $reset = NULL) {
-  $cache = $reset ? NULL : cache_get($list_id . '-segments', 'cache_mailchimp');
-  // Return cached lists:
-  if ($cache) {
-    return $cache->data;
+  $cache = \Drupal::cache('mailchimp');
+  if (!$reset) {
+    $cached_data = $cache->get($list_id . '-segments');
+    if ($cached_data) {
+      return $cached_data->data;
+    }
   }
 
   // Query segments from the MCAPI and store in cache:
@@ -590,7 +596,7 @@ function mailchimp_get_segments($list_id, $reset = NULL) {
   try {
     $mcapi = mailchimp_get_api_object();
     $segments = $mcapi->lists->segments($list_id);
-    cache_set($list_id . '-segments', $segments, 'cache_mailchimp', CACHE_TEMPORARY);
+    $cache->set($list_id . '-segments', $segments, CACHE_TEMPORARY);
   }
   catch (Exception $e) {
     watchdog('mailchimp', 'An error occurred requesting list segment information from Mailchimp. "%message"', array(
@@ -731,11 +737,12 @@ function mailchimp_segment_batch_add_subscribers($list_id, $segment_id, $batch) 
  *   Array of campaign data or FALSE if not found.
  */
 function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
-  $cache = $reset ? NULL : cache_get('campaign_' . $campaign_id, 'cache_mailchimp');
-  $campaign_data = FALSE;
-  // Return cached lists:
-  if ($cache) {
-    return $campaign_data = $cache->data;
+  $cache = \Drupal::cache('mailchimp');
+  if (!$reset) {
+    $cached_data = $cache->get('campaign_' . $campaign_id);
+    if ($cached_data) {
+      return $cached_data->data;
+    }
   }
 
   try {
@@ -746,7 +753,7 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
     $results = $mcapi->campaigns->getList($filters, 0, 1);
     if (isset($results['total']) && $results['total']) {
       $campaign_data = $results['data'][0];
-      cache_set('campaign_' . $campaign_id, $campaign_data, 'cache_mailchimp', CACHE_TEMPORARY);
+      $cache->set('campaign_' . $campaign_id, $campaign_data, CACHE_TEMPORARY);
     }
     else {
       $campaign_data = FALSE;
