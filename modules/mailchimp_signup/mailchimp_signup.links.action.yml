@@ -1,0 +1,5 @@
+mailchimp_signup.add:
+  route_name: 'mailchimp_signup.add'
+  title: 'Add Signup Form'
+  appears_on:
+    - mailchimp_signup.admin
