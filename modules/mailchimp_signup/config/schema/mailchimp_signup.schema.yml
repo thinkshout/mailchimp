@@ -4,9 +4,25 @@ mailchimp_signup.mailchimp_signup.*:
   type: config_entity
   label: 'Mailchimp Signup config'
   mapping:
-    id:
-      type: string
+    mcs_id:
+      type: int
       label: 'ID'
-    label:
-        type: label
-        label: 'Label'
+    name:
+      type: string
+      label: 'Machine Name'
+    mc_lists:
+      type: blob
+      label: 'Mailchimp List(s)'
+    mode:
+      type: int
+      label: 'Mode'
+    title:
+      type: string
+      label: 'Title'
+    settings:
+      type: blog
+      label: 'Settings'
+    status:
+      type: boolean
+      label: 'Status'
+    
