@@ -292,7 +292,8 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
   $campaign_id = (isset($form_state['campaign']) ? $form_state['campaign']->mc_campaign_id : NULL);
   mailchimp_campaign_save_campaign($template_content, $options, $segment_options, $campaign_id);
 
-  cache_clear_all('mailchimp_campaign_campaigns', 'cache');
+  $cache = \Drupal::cache('mailchimp');
+  $cache->deleteAll('mailchimp_campaign_campaigns');
 
   $form_state['redirect'][] = 'admin/config/services/mailchimp/campaigns';
 }
