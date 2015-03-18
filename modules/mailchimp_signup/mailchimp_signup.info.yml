@@ -1,0 +1,11 @@
+name: MailChimp Signup
+type: module
+description: MailChimp signup blocks and pages
+package: MailChimp
+core: 8.x
+configure: mailchimp.admin.signup
+
+dependencies:
+- mailchimp
+
+# configure: action.admin.config.services.mailchimp.signup
