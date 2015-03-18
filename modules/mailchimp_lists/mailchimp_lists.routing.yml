@@ -1,0 +1,7 @@
+mailchimp_lists.admin:
+  path: 'admin/config/services/mailchimp/lists'
+  defaults:
+    _form: '\Drupal\mailchimp\Form\MailchimpListsAdminSettingsForm'
+    _title: 'Mailchimp Lists'
+  requirements:
+    _permission: 'administer mailchimp'

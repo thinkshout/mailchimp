@@ -1,0 +1,4 @@
+mailchimp_lists.admin:
+  route_name: mailchimp_lists.admin
+  title: 'Mailchimp Lists'
+  parent: mailchimp.admin
