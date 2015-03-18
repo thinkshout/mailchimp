@@ -438,7 +438,7 @@ function mailchimp_campaign_delete_campaign($cid) {
  *   Array listing existing Mailchimp templates by type.
  */
 function mailchimp_campaign_list_templates($reset = FALSE) {
-  $cache = \Drupal::cache('cache_mailchimp');
+  $cache = \Drupal::cache('mailchimp');
   $cache = $reset ? NULL : $cache->get('templates');
 
   $all_templates = array();
@@ -482,7 +482,7 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
  *   An array with all configuration and content for a Mailchimp Template.
  */
 function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
-  $cache = \Drupal::cache('cache_mailchimp');
+  $cache = \Drupal::cache('mailchimp');
   $all_templates = mailchimp_campaign_list_templates($reset);
   foreach ($all_templates as $type) {
     if (isset($type[$template_id])) {
@@ -747,7 +747,7 @@ function mailchimp_campaign_render_template($template) {
  *   Associative array of MailChimp campaigns indexed by campaign ID.
  */
 function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
-  $cache = \Drupal::cache('cache_mailchimp');
+  $cache = \Drupal::cache('mailchimp');
   $mc_campaigns = array();
   $cached_campaigns = $cache->get('campaigns');
   foreach ($mc_campaign_ids as $id) {

@@ -108,7 +108,7 @@ function mailchimp_activity_load_entities($name = NULL) {
  *   Associative array of MailChimp member activity.
  */
 function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE) {
-  $cache = \Drupal::cache('cache_mailchimp');
+  $cache = \Drupal::cache('mailchimp');
   $cache = $reset ? NULL : $cache->get("activity_{$list_id}_{$email}");
 
   $memberactivity = array();
