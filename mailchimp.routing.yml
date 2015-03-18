@@ -6,3 +6,9 @@ mailchimp.admin:
   requirements:
     _permission: 'administer mailchimp'
 
+mailchimp.webhook_endpoint:
+  path: 'mailchimp/webhook'
+  defaults:
+    _title: 'Mailchimp Webhook Endpoint'
+  requirements:
+   _permission: 'access content'
