@@ -69,14 +69,14 @@ function mailchimp_get_api_object() {
   $library = libraries_load('mailchimp');
   if (!$library['installed'] && ($classname != 'MailChimpTest')) {
     $msg = t('Failed to load MailChimp PHP library. Please refer to the installation requirements.');
-    watchdog('mailchimp', $msg, NULL, WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error($msg);
     drupal_set_message($msg, 'error');
     return NULL;
   }
 
   $api_key = $config->get('api_key');
   if (!strlen($api_key)) {
-    watchdog('mailchimp', 'Mailchimp Error: API Key cannot be blank.', NULL, WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('Mailchimp Error: API Key cannot be blank.');
     return NULL;
   }
   // Set the timeout to something that won't take down the Drupal site:
@@ -143,9 +143,8 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
       $cache->set('lists', $lists, CACHE_TEMPORARY);
     }
     catch (Exception $e) {
-      watchdog('mailchimp', 'An error occurred requesting list information from Mailchimp. "%message"', array(
-        '%message' => $e->getMessage(),
-      ), WATCHDOG_ERROR);
+      \Drupal::logger('mailchimp')->error('An error occurred requesting list information from Mailchimp. "{message}"', array(
+        'message' => $e->getMessage()));
     }
   }
   // Filter by given ids:
@@ -221,10 +220,10 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
       }
     }
     catch (Exception $e) {
-      watchdog('mailchimp', 'An error occurred requesting mergevars for list @list. "%message"', array(
-        '@list' => $last_list_id,
-        '%message' => $e->getMessage(),
-      ), WATCHDOG_ERROR);
+      \Drupal::logger('mailchimp')->error('An error occurred requesting mergevars for list {list}. "{message}"', array(
+        'list' => $last_list_id,
+        'message' => $e->getMessage()
+      ));
     }
   }
 
@@ -268,11 +267,11 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
     }
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred requesting memberinfo for @email in list @list. "%message"', array(
+    \Drupal::logger('mailchimp')->error('An error occurred requesting memberinfo for {email} in list {list}. "{message}"', array(
       '@email' => $email,
       '@list' => $list_id,
       '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    ));
   }
 
   return $memberinfo;
@@ -346,25 +345,26 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $doub
       module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
       // Clear user cache, just in case there's some cruft leftover:
       mailchimp_cache_clear_member($list_id, $email);
-      watchdog('mailchimp', '@email was subscribed to list @list.',
-        array('@email' => $merge_vars['EMAIL'], '@list' => $list_id), WATCHDOG_NOTICE
-      );
+      \Drupal::logger('mailchimp')->error('{email} was subscribed to list {list}.', array(
+        'email' => $merge_vars['EMAIL'],
+        'list' => $list_id,
+      ));
     }
     else {
       if (!$this->config('mailchimp.settings')->get('test_mode')) {
-        watchdog('mailchimp', 'A problem occurred subscribing @email to list @list.', array(
-          '@email' => $email,
-          '@list' => $list_id,
-        ), WATCHDOG_WARNING);
+        \Drupal::logger('mailchimp')->warning('A problem occurred subscribing {email} to list {list}.', array(
+          'email' => $email,
+          'list' => $list_id,
+        ));
       }
     }
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred subscribing @email to list @list. "%message"', array(
-      '@email' => $email,
-      '@list' => $list_id,
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred subscribing {email} to list {list}. "{message}"', array(
+      'email' => $email,
+      'list' => $list_id,
+      'message' => $e->getMessage(),
+    ));
   }
 
   return $result;
@@ -427,26 +427,26 @@ function mailchimp_update_member_process($list_id, $email, $merge_vars, $format,
     $mcapi = $mcapi = mailchimp_get_api_object();
     $result = $mcapi->lists->updateMember($list_id, array('email' => $email), $merge_vars, $format, $replace_interests);
     if (isset($result['email'])) {
-      watchdog('mailchimp', '@email was updated in list @list_id.', array(
-        '@email' => $email,
-        '@list' => $list_id,
-      ), WATCHDOG_NOTICE);
+      \Drupal::logger('mailchimp')->notice('{email} was updated in list {list_id}.', array(
+        'email' => $email,
+        'list' => $list_id,
+      ));
       // Clear user cache:
       mailchimp_cache_clear_member($list_id, $email);
     }
     else {
-      watchdog('mailchimp', 'A problem occurred updating @email on list @list.', array(
-        '@email' => $email,
-        '@list' => $list_id,
-      ), WATCHDOG_WARNING);
+      \Drupal::logger('mailchimp')->warning('A problem occurred updating {email} on list {list}.', array(
+        'email' => $email,
+        'list' => $list_id,
+      ));
     }
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred updating @email on list @list. "%message"', array(
-      '@email' => $email,
-      '@list' => $list_id,
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred updating {email} on list {list}. "{message}"', array(
+      'email' => $email,
+      'list' => $list_id,
+      'message' => $e->getMessage(),
+    ));
   }
   return $result;
 }
@@ -465,9 +465,8 @@ function mailchimp_get_members($list_id, $status = 'subscribed', $options = arra
       $results = $mcapi->lists->members($list_id, $status, $options);
     }
     catch (Exception $e) {
-      watchdog('mailchimp', 'An error occurred pulling member info for a list. "%message"', array(
-        '%message' => $e->getMessage(),
-      ), WATCHDOG_ERROR);
+      \Drupal::logger('mailchimp')->error('An error occurred pulling member info for a list. "{message}"', array(
+        'message' => $e->getMessage()));
     }
     lock_release('mailchimp_get_members');
   }
@@ -489,9 +488,8 @@ function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE, $u
     $results = $mcapi->lists->batchSubscribe($list_id, $batch, $double_in, $update_existing, $replace_interests);
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred performing batch subscribe/update. "%message"', array(
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred performing batch subscribe/update. "{message}"', array(
+      'message' => $e->getMessage()));
   }
   return $results;
 }
@@ -562,11 +560,11 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
     mailchimp_cache_clear_member($list_id, $email);
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred unsubscribing @email from list @list. "%message"', array(
-      '@email' => $email,
-      '@list' => $list_id,
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred unsubscribing {email} from list {list}. "{message}"', array(
+      'email' => $email,
+      'list' => $list_id,
+      'message' => $e->getMessage(),
+    ));
   }
   return $result;
 }
@@ -599,9 +597,8 @@ function mailchimp_get_segments($list_id, $reset = NULL) {
     $cache->set($list_id . '-segments', $segments, CACHE_TEMPORARY);
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred requesting list segment information from Mailchimp. "%message"', array(
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred requesting list segment information from Mailchimp. "{message}"', array(
+      'message' => $e->getMessage()));
   }
 
   return $segments;
@@ -638,11 +635,11 @@ function mailchimp_segment_create($list_id, $name, $type, $segment_options = NUL
     mailchimp_get_segments($list_id, TRUE);
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred creating segment @segment for list @list. "%message"', array(
-      '@segment' => $name,
-      '@list' => $list_id,
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred creating segment {segment} for list {list}. "{message}"', array(
+      'segment' => $name,
+      'list' => $list_id,
+      'message' => $e->getMessage(),
+    ));
   }
 
   return $segment_id;
@@ -683,11 +680,11 @@ function mailchimp_segment_add_subscriber($list_id, $segment_id, $email, $batch 
       'item' => $item,
     ));
     if (!$success) {
-      watchdog('mailchimp', 'A problem occurred adding a mailchimp segment subscribe to the queue. Email: @email List: @list Segment: @segment.', array(
-        '@email' => $email,
-        '@list' => $list_id,
-        '@segment' => $segment_id,
-      ), WATCHDOG_WARNING);
+      \Drupal::logger('mailchimp')->error('A problem occurred adding a mailchimp segment subscribe to the queue. Email: {email} List: {list} Segment: {segment}.', array(
+        'email' => $email,
+        'list' => $list_id,
+        'segment' => $segment_id,
+      ));
     }
   }
   return $success;
@@ -714,11 +711,11 @@ function mailchimp_segment_batch_add_subscribers($list_id, $segment_id, $batch) 
     $count = isset($results['success_count']) ? $results['success_count'] : 0;
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred on batch segment add. List: @list_id Segment: @segment_id. "%message"', array(
-      '@list_id' => $list_id,
-      '@segment_id' => $segment_id,
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred on batch segment add. List: {list_id} Segment: {segment_id}. "{message}"', array(
+      'list_id' => $list_id,
+      'segment_id' => $segment_id,
+      'message' => $e->getMessage(),
+    ));
   }
   return $count;
 }
@@ -760,10 +757,10 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
     }
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred retrieving campaign data for @campaign. "%message"', array(
-      '@campaign' => $campaign_id,
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred retrieving campaign data for {campaign}. "{message}"', array(
+      'campaign' => $campaign_id,
+      'message' => $e->getMessage(),
+    ));
   }
 
   return $campaign_data;
@@ -786,10 +783,10 @@ function mailchimp_get_campaigns_for_email($email) {
     $campaign_list = $mcapi->helper->campaignsForEmail(array('email' => $email));
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred retreiving campaign data for @email. "%message"', array(
-      '@email' => $email,
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred retreiving campaign data for {email}. "{message}"', array(
+      'email' => $email,
+      'message' => $e->getMessage(),
+    ));
     $campaign_list = array();
   }
   return $campaign_list;
@@ -812,10 +809,10 @@ function mailchimp_get_lists_for_email($email) {
     $lists = $mcapi->helper->listsForEmail(array('email' => $email));
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred retreiving lists data for @email. "%message"', array(
-      '@email' => $email,
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred retreiving lists data for {email}. "{message}"', array(
+      'email' => $email,
+      'message' => $e->getMessage(),
+    ));
     $lists = array();
   }
   return $lists;
@@ -836,10 +833,10 @@ function mailchimp_webhook_get($list_id) {
     $result = $mcapi->lists->webhooks($list_id);
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred reading webhooks for list @list. "%message"', array(
-      '@list' => $list_id,
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred reading webhooks for list {list}. "{message}"', array(
+      'list' => $list_id,
+      'message' => $e->getMessage(),
+    ));
     return FALSE;
   }
   return $result;
@@ -857,10 +854,10 @@ function mailchimp_webhook_add($list_id, $url, $actions = array(), $sources = ar
     $result = $mcapi->lists->webhookAdd($list_id, $url, $actions, $sources);
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred adding webhook for list @list. "%message"', array(
-      '@list' => $list_id,
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred adding webhook for list {list}. "{message}"', array(
+      'list' => $list_id,
+      'message' => $e->getMessage(),
+    ));
     return FALSE;
   }
   return $result['id'];
@@ -878,10 +875,10 @@ function mailchimp_webhook_delete($list_id, $url) {
     $result = $mcapi->lists->webhookDel($list_id, $url);
   }
   catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred deleting webhook for list @list. "%message"', array(
-      '@list' => $list_id,
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
+    \Drupal::logger('mailchimp')->error('An error occurred deleting webhook for list {list}. "{message}"', array(
+      'list' => $list_id,
+      'message' => $e->getMessage(),
+    ));
     return FALSE;
   }
   return $result['complete'];
@@ -965,9 +962,9 @@ function mailchimp_process_webhook() {
   module_invoke_all('mailchimp_process_webhook', $type, $data);
 
   // Log event:
-  watchdog('mailchimp', 'Webhook type @type has been processed.',
-    array('@type' => $type), WATCHDOG_INFO
-  );
+  \Drupal::logger('mailchimp')->info('Webhook type {type} has been processed.', array(
+    'type' => $type));
+
   return NULL;
 }
 

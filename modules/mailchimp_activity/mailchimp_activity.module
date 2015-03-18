@@ -128,7 +128,8 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
     }
     catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
-      watchdog('mailchimp_campaign', 'An error occurred while getting activity: ' . $e->getMessage(), WATCHDOG_ERROR);
+      \Drupal::logger('mailchimp_activity')->error('An error occurred while getting activity. "{message}"', array(
+        'message' => $e->getMessage()));
       return NULL;
     }
     if ($result['success_count'] > 0) {
@@ -137,8 +138,10 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
     }
     if ($result['error_count'] > 0) {
       foreach ($result['errors'] as $error) {
-        watchdog('mailchimp_activity',
-          'An error occurred getting activity for email "' . $error['email'] . '": ' . $error['error'], WATCHDOG_ERROR);
+        \Drupal::logger('mailchimp_activity')->error('An error occurred getting activity for email "{email}": {error}', array(
+          'email' => $error['email'],
+          'error' => $error['error'],
+        ));
       }
     }
 
