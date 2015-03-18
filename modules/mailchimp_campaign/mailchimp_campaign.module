@@ -438,7 +438,9 @@ function mailchimp_campaign_delete_campaign($cid) {
  *   Array listing existing Mailchimp templates by type.
  */
 function mailchimp_campaign_list_templates($reset = FALSE) {
-  $cache = $reset ? NULL : cache_get('templates', 'cache_mailchimp');
+  $cache = \Drupal::cache('mailchimp');
+  $cache = $reset ? NULL : $cache->get('templates');
+
   $all_templates = array();
   // Return cached lists:
   if ($cache) {
@@ -463,7 +465,7 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
       }
     }
 
-    cache_set('templates', $all_templates, 'cache_mailchimp', CACHE_TEMPORARY);
+    $cache->set('templates', $all_templates, CACHE_TEMPORARY);
   }
   return $all_templates;
 }
@@ -480,19 +482,20 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
  *   An array with all configuration and content for a Mailchimp Template.
  */
 function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
+  $cache = \Drupal::cache('mailchimp');
   $all_templates = mailchimp_campaign_list_templates($reset);
   foreach ($all_templates as $type) {
     if (isset($type[$template_id])) {
       $template = $type[$template_id];
       // Get template details from cache or the MailChimp API.
-      $cache = $reset ? NULL : cache_get('template_' . $template_id, 'cache_mailchimp');
+      $cache = $reset ? NULL : $cache->get('template_' . $template_id);
       if ($cache) {
         $template['info'] = $cache->data;
       }
       else {
         if ($mcapi = mailchimp_get_api_object()) {
           $template['info'] = $mcapi->templates->info($template_id);
-          cache_set('template_' . $template_id, $template['info'], 'cache_mailchimp', CACHE_TEMPORARY);
+          $cache->set('template_' . $template_id, $template['info'], CACHE_TEMPORARY);
         }
       }
       return $template;
@@ -744,8 +747,9 @@ function mailchimp_campaign_render_template($template) {
  *   Associative array of MailChimp campaigns indexed by campaign ID.
  */
 function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
+  $cache = \Drupal::cache('mailchimp');
   $mc_campaigns = array();
-  $cached_campaigns = cache_get('campaigns', 'cache_mailchimp');
+  $cached_campaigns = $cache->get('campaigns');
   foreach ($mc_campaign_ids as $id) {
     if (!isset($cached_campaigns->data[$id])
       || ($cached_campaigns->data[$id]['status'] == MAILCHIMP_STATUS_SENDING)
@@ -774,7 +778,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
       }
     }
 
-    cache_set('campaigns', $mc_campaigns, 'cache_mailchimp');
+    $cache->set('campaigns', $mc_campaigns);
   }
 
   return $mc_campaigns;

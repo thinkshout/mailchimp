@@ -5,6 +5,8 @@
  * Mailchimp lists module.
  */
 
+use Drupal\mailchimp\Library\DrupalMailchimpLibrary;
+
 module_load_include('inc', 'mailchimp_lists', 'includes/mailchimp_lists.field');
 
 /**

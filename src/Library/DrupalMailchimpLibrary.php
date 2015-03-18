@@ -5,16 +5,16 @@
  * Wrapper class around the Mailchimp API.
  */
 
-namespace Drupal\mailchimp_lists;
+namespace Drupal\mailchimp\Library;
 
 use Drupal\Component\Serialization\Json;
 
 /**
- * Class DrupalMailchimp
+ * Class DrupalMailchimpLibrary
  *
  * Extend the MailChimp class to add some Drupalisms.
  */
-class DrupalMailchimp extends Mailchimp {
+class DrupalMailchimpLibrary extends Mailchimp {
 
   protected $timeout;
   protected $userAgent = 'MailChimp-PHP/2.0.4';

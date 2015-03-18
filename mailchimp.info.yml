@@ -5,10 +5,6 @@ package: MailChimp
 core: 8.x
 configure: mailchimp.admin
 
-files:
- - includes/mailchimp.inc
- - tests/mailchimp_test.inc
-
 dependencies:
  - libraries
 

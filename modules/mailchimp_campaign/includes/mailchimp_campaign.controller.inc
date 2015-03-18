@@ -43,7 +43,8 @@ class MailChimpCampaignController extends EntityAPIController {
    */
   public function resetCache(array $ids = NULL) {
     parent::resetCache($ids);
-    if ($cached_campaigns = cache_get('campaigns', 'cache_mailchimp')) {
+    $cache = \Drupal::cache('mailchimp');
+    if ($cached_campaigns = $cache->get('campaigns')) {
       // Reset granular campaigns.
       if (isset($ids)) {
         foreach ($cached_campaigns->data as $id => $cached_campaign) {
@@ -55,7 +56,7 @@ class MailChimpCampaignController extends EntityAPIController {
 
       $cache_data = (isset($cached_campaigns)) ? $cached_campaigns->data : NULL;
 
-      cache_set('campaigns', $cache_data, 'cache_mailchimp');
+      $cache->set('campaigns', $cache_data);
     }
   }
 
