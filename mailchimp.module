@@ -894,7 +894,8 @@ function mailchimp_webhook_delete($list_id, $url) {
  * @string $email
  */
 function mailchimp_cache_clear_member($list_id, $email) {
-  cache_clear_all($list_id . '-' . $email, 'cache_mailchimp');
+  $cache = \Drupal::cache('mailchimp');
+  $cache->deleteAll($list_id . '-' . $email);
 }
 
 /**
@@ -903,7 +904,8 @@ function mailchimp_cache_clear_member($list_id, $email) {
  * @string $list_id
  */
 function mailchimp_cache_clear_list_activity($list_id) {
-  cache_clear_all('mailchimp_activity_' . $list_id, 'cache_mailchimp');
+  $cache = \Drupal::cache('mailchimp');
+  $cache->deleteAll('mailchimp_activity_' . $list_id);
 }
 
 /**
@@ -912,14 +914,15 @@ function mailchimp_cache_clear_list_activity($list_id) {
  * @string $list_id
  */
 function mailchimp_cache_clear_campaign($campaign_id) {
-  cache_clear_all('mailchimp_campaign_' . $campaign_id, 'cache_mailchimp');
+  $cache = \Drupal::cache('mailchimp');
+  $cache->deleteAll('mailchimp_campaign_' . $campaign_id);
 }
 
 /**
  * Implements hook_flush_caches().
  */
 function mailchimp_flush_caches() {
-  return array('cache_mailchimp');
+  return array('mailchimp');
 }
 
 /**
