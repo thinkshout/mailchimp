@@ -52,8 +52,8 @@ function mailchimp_apikey_ready_access($permission) {
 /**
  * Get a Mailchimp API object for communication with the mailchimp server.
  *
- * @return DrupalMailchimp
- *   The default return value is an instance of DrupalMailchimp, although that
+ * @return DrupalMailchimpLibrary
+ *   The default return value is an instance of DrupalMailchimpLibrary, although that
  *   can be overridden.
  */
 function mailchimp_get_api_object() {

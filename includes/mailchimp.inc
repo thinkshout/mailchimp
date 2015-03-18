@@ -5,6 +5,8 @@
  * Wrapper class around the Mailchimp API.
  */
 
+namespace Drupal\mailchimp_lists;
+
 use Drupal\Component\Serialization\Json;
 
 /**
