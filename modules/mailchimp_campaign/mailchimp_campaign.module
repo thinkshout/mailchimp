@@ -641,13 +641,33 @@ function mailchimp_campaign_process_callback($matches = array()) {
   if (!empty($entities)) {
     $render_array = entity_view($entity_type, $entities, $view_mode, NULL, TRUE);
     // Remove contextual links.
-    if (isset($render_array[$entity_type][$entity_id]['#contextual_links'])) {
-      unset($render_array[$entity_type][$entity_id]['#contextual_links']);
-    }
+    _mailchimp_campaign_recursive_unset($render_array[$entity_type][$entity_id], '#contextual_links');
     $content = render($render_array);
   }
 
   return $content;
+}
+
+/**
+ * Helper function to recursively unset a given key from an array.
+ *
+ * Used here by mailchimp_campaign_process_callback() to remove all contextual
+ * links, even from nested entity objects.
+ *
+ * @param array $array Array that needs keys removed.
+ * @param string $unwanted_key Key that needs to be removed.
+ */
+function _mailchimp_campaign_recursive_unset(&$array, $unwanted_key) {
+  // Remove key from top level of array.
+  if (isset($array[$unwanted_key])) {
+    unset($array[$unwanted_key]);
+  }
+  // Recurse through any remaining keys that may themselves be arrays.
+  foreach ($array as &$value) {
+    if (is_array($value)) {
+      _mailchimp_campaign_recursive_unset($value, $unwanted_key);
+    }
+  }
 }
 
 /**
