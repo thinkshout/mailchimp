@@ -1029,7 +1029,7 @@ function mailchimp_process_webhook_access($key) {
  * Process a webhook post from MailChimp.
  */
 function mailchimp_process_webhook() {
-  if (!isset($_POST)) {
+  if (empty($_POST)) {
     return "Mailchimp Webhook Endpoint.";
   }
   $data = $_POST['data'];
