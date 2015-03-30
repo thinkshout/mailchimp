@@ -1165,20 +1165,20 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
  * a lot of options here. Instead, we will provide VBO functions to perform
  * large unsubscribes and subscribes and specifically call the batch functions.
  */
-function mailchimp_cron() {
-  $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
-  $queue->createQueue();
-  $queue_count = $queue->numberOfItems();
-  if ($queue_count > 0) {
-    $batch_limit = $this->config('mailchimp.settings')->get('batch_limit', 100);
-    $batch_size = ($queue_count < $batch_limit) ? $queue_count : $batch_limit;
-    $count = 0;
-    while ($count < $batch_size) {
-      if ($item = $queue->claimItem()) {
-        call_user_func_array($item->data['function'], $item->data['args']);
-        $queue->deleteItem($item);
-      }
-      $count++;
-    }
-  }
-}
+//function mailchimp_cron() {
+//  $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+//  $queue->createQueue();
+//  $queue_count = $queue->numberOfItems();
+//  if ($queue_count > 0) {
+//    $batch_limit = $this->config('mailchimp.settings')->get('batch_limit', 100);
+//    $batch_size = ($queue_count < $batch_limit) ? $queue_count : $batch_limit;
+//    $count = 0;
+//    while ($count < $batch_size) {
+//      if ($item = $queue->claimItem()) {
+//        call_user_func_array($item->data['function'], $item->data['args']);
+//        $queue->deleteItem($item);
+//      }
+//      $count++;
+//    }
+//  }
+//}
