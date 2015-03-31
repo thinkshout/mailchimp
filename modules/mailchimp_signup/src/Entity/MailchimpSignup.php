@@ -11,11 +11,12 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\mailchimp_signup\MailchimpSignupInterface;
 
 /**
- * Defines the Example entity.
+ * Defines the MailchimpSignup entity.
  *
  * @ConfigEntityType(
  *   id = "mailchimp_signup",
  *   label = @Translation("Mailchimp Signup Form"),
+ *   fieldable = FALSE,
  *   handlers = {
  *     "list_builder" = "Drupal\mailchimp_signup\Controller\MailchimpSignupListBuilder",
  *     "form" = {
@@ -39,18 +40,53 @@ use Drupal\mailchimp_signup\MailchimpSignupInterface;
 class MailchimpSignup extends ConfigEntityBase implements MailchimpSignupInterface {
 
   /**
-   * The Example ID.
+   * The Signup ID.
    *
-   * @var string
+   * @var int
    */
-  public $id;
+  public $mcs_id;
 
   /**
-   * The Example label.
+   * The Signup Form Machine Name.
    *
    * @var string
    */
-  public $label;
+  public $name;
+
+  /**
+   * The Signup Form Title.
+   *
+   * @var string
+   */
+  public $title;
+
+  /**
+   * The Signup Form Mailchimp Lists.
+   *
+   * @var array
+   */
+  public $mc_lists;
+
+  /**
+   * The Signup Form Mode (Block, Page, or Both).
+   *
+   * @var int
+   */
+  public $mode;
+
+  /**
+   * The Signup Form Settings array.
+   *
+   * @var array
+   */
+  public $settings;
+
+  /**
+   * The Signup Form Status.
+   *
+   * @var boolean
+   */
+  public $status;
 
   // Your specific configuration property get/set methods go here,
   // implementing the interface.
