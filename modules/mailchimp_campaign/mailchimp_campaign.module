@@ -465,7 +465,7 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
       }
     }
 
-    $cache->set('templates', $all_templates, CACHE_TEMPORARY);
+    $cache->set('templates', $all_templates);
   }
   return $all_templates;
 }
@@ -495,7 +495,7 @@ function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
       else {
         if ($mcapi = mailchimp_get_api_object()) {
           $template['info'] = $mcapi->templates->info($template_id);
-          $cache->set('template_' . $template_id, $template['info'], CACHE_TEMPORARY);
+          $cache->set('template_' . $template_id, $template['info']);
         }
       }
       return $template;
