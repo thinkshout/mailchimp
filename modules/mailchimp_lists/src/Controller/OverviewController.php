@@ -39,29 +39,13 @@ class OverviewController extends ControllerBase {
     );
 
     $mc_lists = mailchimp_get_lists();
-    $webhook_url = mailchimp_webhook_url();
+    $total_webhook_actions = count(mailchimp_lists_default_webhook_actions());
 
     foreach ($mc_lists as $mc_list) {
-      $webhooks = mailchimp_webhook_get($mc_list['id']);
-      $enabled = FALSE;
-      if ($webhooks) {
-        foreach ($webhooks as $webhook) {
-          if ($webhook_url == $webhook['url']) {
-            $enabled = TRUE;
-            continue;
-          }
-        }
-      }
+      $enabled_webhook_actions = count(mailchimp_lists_enabled_webhook_actions($mc_list['id']));
+      $webhook_url = Url::fromRoute('mailchimp_lists.webhook', array('list_id' => $mc_list['id']));
 
-      $enable_url = Url::fromRoute('mailchimp_lists.webhook.enable', array('list_id' => $mc_list['id']));
-      $disable_url = Url::fromRoute('mailchimp_lists.webhook.disable', array('list_id' => $mc_list['id']));
-
-      if ($enabled) {
-        $webhook_status = "ENABLED (" . \Drupal::l(t('disable'), $disable_url) . ')';
-      }
-      else {
-        $webhook_status = "disabled (" . \Drupal::l(t('enable'), $enable_url) . ')';
-      }
+      $webhook_status = $enabled_webhook_actions . ' of ' . $total_webhook_actions . ' enabled (' . \Drupal::l(t('update'), $webhook_url) . ')';
 
       $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id']);
 
@@ -83,13 +67,6 @@ class OverviewController extends ControllerBase {
     );
 
     return $content;
-  }
-
-  /**
-   * Refreshes lists from MailChimp.
-   */
-  public function refresh() {
-    // TODO: Refresh lists from MailChimp.
   }
 
 }
