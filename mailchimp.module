@@ -116,7 +116,7 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
         }
       }
       uasort($lists, '_mailchimp_list_cmp');
-      $cache->set('lists', $lists, CACHE_TEMPORARY);
+      $cache->set('lists', $lists);
     }
     catch (Exception $e) {
       \Drupal::logger('mailchimp')->error('An error occurred requesting list information from Mailchimp. "{message}"', array(
@@ -191,7 +191,7 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
         foreach ($result['data'] as $list_mergevars) {
           $last_list_id = $list_mergevars['id'];
           $mergevars[$last_list_id] = $list_mergevars;
-          $cache->set($last_list_id . '-mergevars', $list_mergevars, CACHE_TEMPORARY);
+          $cache->set($last_list_id . '-mergevars', $list_mergevars);
         }
       }
     }
@@ -239,7 +239,7 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
     $result = $mcapi->lists->memberInfo($list_id, array(array('email' => $email)));
     if ($result['success_count']) {
       $memberinfo = reset($result['data']);
-      $cache->set($list_id . '-' . $email, $memberinfo, CACHE_TEMPORARY);
+      $cache->set($list_id . '-' . $email, $memberinfo);
     }
   }
   catch (Exception $e) {
@@ -570,7 +570,7 @@ function mailchimp_get_segments($list_id, $reset = NULL) {
   try {
     $mcapi = mailchimp_get_api_object();
     $segments = $mcapi->lists->segments($list_id);
-    $cache->set($list_id . '-segments', $segments, CACHE_TEMPORARY);
+    $cache->set($list_id . '-segments', $segments);
   }
   catch (Exception $e) {
     \Drupal::logger('mailchimp')->error('An error occurred requesting list segment information from Mailchimp. "{message}"', array(
@@ -726,7 +726,7 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
     $results = $mcapi->campaigns->getList($filters, 0, 1);
     if (isset($results['total']) && $results['total']) {
       $campaign_data = $results['data'][0];
-      $cache->set('campaign_' . $campaign_id, $campaign_data, CACHE_TEMPORARY);
+      $cache->set('campaign_' . $campaign_id, $campaign_data);
     }
     else {
       $campaign_data = FALSE;
