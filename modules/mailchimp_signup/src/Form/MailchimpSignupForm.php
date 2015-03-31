@@ -6,9 +6,11 @@
 
 namespace Drupal\mailchimp_signup\Form;
 
+use Drupal\Component\Utility\String;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -138,66 +140,67 @@ class MailchimpSignupForm extends EntityForm {
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     );
-//    $lists = mailchimp_get_lists();
-//    $options = array();
-//    foreach ($lists as $mc_list) {
-//      $options[$mc_list['id']] = $mc_list['name'];
-//    }
-//    $form['mc_lists_config']['mc_lists'] = array(
-//      '#type' => 'checkboxes',
-//      '#title' => t('MailChimp Lists'),
-//      '#description' => t('Select which lists to show on your signup form. You can create additional lists at !MailChimp.',
-//        array('!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'))),
-//      '#options' => $options,
-//      '#default_value' => is_array($signup->mc_lists) ? $signup->mc_lists : array(),
-//      '#required' => TRUE,
-//      '#ajax' => array(
-//        'callback' => 'mailchimp_signup_mergefields_callback',
-//        'wrapper' => 'mergefields-wrapper',
-//        'method' => 'replace',
-//        'effect' => 'fade',
-//        'progress' => array(
-//          'type' => 'throbber',
-//          'message' => t('Retrieving merge fields for this list.'),
-//        ),
-//      ),
-//    );
-//
-//    $form['mc_lists_config']['mergefields'] = array(
-//      '#prefix' => '<div id="mergefields-wrapper">',
-//      '#suffix' => '</div>',
-//    );
-//
-//    // Show merge fields if changing list field or editing existing list.
-//    if (!empty($form_state['values']['mc_lists']) || !isset($signup->is_new) || !$signup->is_new) {
-//      $form['mc_lists_config']['mergefields'] = array(
-//        '#type' => 'fieldset',
-//        '#title' => t('Merge Field Display'),
-//        '#description' => t('Select the merge fields to show on registration forms. Required fields are automatically displayed.'),
-//        '#id' => 'mergefields-wrapper',
-//        '#tree' => TRUE,
-//        '#weight' => 20,
-//      );
-//      $mc_lists = !empty($form_state['values']['mc_lists']) ? $form_state['values']['mc_lists'] : $signup->mc_lists;
-//      $mergevar_settings = mailchimp_get_mergevars(array_filter($mc_lists));
-//      $form_state['mergevar_options'] = array();
-//      foreach ($mergevar_settings as $list_mergevars) {
-//        foreach ($list_mergevars['merge_vars'] as $mergevar) {
-//          if ($mergevar['public']) {
-//            $form_state['mergevar_options'][$mergevar['tag']] = $mergevar;
-//          }
-//        }
-//      }
-//      foreach ($form_state['mergevar_options'] as $mergevar) {
-//        $form['mc_lists_config']['mergefields'][$mergevar['tag']] = array(
-//          '#type' => 'checkbox',
-//          '#title' => check_plain($mergevar['name']),
-//          '#default_value' => isset($signup->settings['mergefields'][$mergevar['tag']]) ? !empty($signup->settings['mergefields'][$mergevar['tag']]) : TRUE,
-//          '#required' => $mergevar['req'],
-//          '#disabled' => $mergevar['req'],
-//        );
-//      }
-//    }
+    $lists = mailchimp_get_lists();
+    $options = array();
+    foreach ($lists as $mc_list) {
+      $options[$mc_list['id']] = $mc_list['name'];
+    }
+    $mc_admin_url = Url::fromUri('https://admin.mailchimp.com');
+    $form['mc_lists_config']['mc_lists'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('MailChimp Lists'),
+      '#description' => t('Select which lists to show on your signup form. You can create additional lists at !MailChimp.',
+        array('!MailChimp' => \Drupal::l(t('MailChimp'), $mc_admin_url))),
+      '#options' => $options,
+      '#default_value' => is_array($signup->mc_lists) ? $signup->mc_lists : array(),
+      '#required' => TRUE,
+      '#ajax' => array(
+        'callback' => '::mergefields_callback',
+        'wrapper' => 'mergefields-wrapper',
+        'method' => 'replace',
+        'effect' => 'fade',
+        'progress' => array(
+          'type' => 'throbber',
+          'message' => t('Retrieving merge fields for this list.'),
+        ),
+      ),
+    );
+
+    $form['mc_lists_config']['mergefields'] = array(
+      '#prefix' => '<div id="mergefields-wrapper">',
+      '#suffix' => '</div>',
+    );
+
+    // Show merge fields if changing list field or editing existing list.
+    if ($form_state->getValue('mc_lists') || !isset($signup->is_new) || !$signup->is_new) {
+      $form['mc_lists_config']['mergefields'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Merge Field Display'),
+        '#description' => t('Select the merge fields to show on registration forms. Required fields are automatically displayed.'),
+        '#id' => 'mergefields-wrapper',
+        '#tree' => TRUE,
+        '#weight' => 20,
+      );
+      $mc_lists = $form_state->getValue('mc_lists') ? $form_state->getValue('mc_lists') : $signup->mc_lists;
+      $mergevar_settings = mailchimp_get_mergevars(array_filter($mc_lists));
+      $mergevar_options = array();
+      foreach ($mergevar_settings as $list_mergevars) {
+        foreach ($list_mergevars['merge_vars'] as $mergevar) {
+          if ($mergevar['public']) {
+            $mergevar_options[$mergevar['tag']] = $mergevar;
+          }
+        }
+      }
+      foreach ($mergevar_options as $mergevar) {
+        $form['mc_lists_config']['mergefields'][$mergevar['tag']] = array(
+          '#type' => 'checkbox',
+          '#title' => String::checkPlain($mergevar['name']),
+          '#default_value' => isset($signup->settings['mergefields'][$mergevar['tag']]) ? !empty($signup->settings['mergefields'][$mergevar['tag']]) : TRUE,
+          '#required' => $mergevar['req'],
+          '#disabled' => $mergevar['req'],
+        );
+      }
+    }
 
     $form['subscription_settings'] = array(
       '#type' => 'fieldset',
@@ -227,13 +230,14 @@ class MailchimpSignupForm extends EntityForm {
       '#description' => t('If set, subscribers will be able to select applicable interest groups on the signup form.'),
     );
 
-    $form['cancel'] = array(
-      '#type' => 'link',
-      '#title' => t('Cancel'),
-      '#href' => 'admin/config/services/mailchimp/signup',
-    );
-
     return $form;
+  }
+
+  /**
+   * AJAX callback handler for MailchimpSignupForm.
+   */
+  public function mergefields_callback(&$form, FormStateInterface $form_state) {
+    return $form['mc_lists_config']['mergefields'];
   }
 
   /**
@@ -243,14 +247,56 @@ class MailchimpSignupForm extends EntityForm {
     $example = $this->entity;
     $status = $example->save();
 
+    if (isset($form_state['signup'])) {
+      $signup = $form_state['signup'];
+      $prior_settings = $signup->settings;
+      if (!$form_state['values']['mode'][MAILCHIMP_SIGNUP_PAGE]) {
+        $form_state['values']['settings']['path'] = '';
+      }
+    }
+    else {
+      $signup = mailchimp_signup_create();
+      $prior_settings = array();
+    }
+    $mergefields = $form_state['values']['mergefields'];
+    foreach ($mergefields as $id => $val) {
+      if ($val) {
+        $mergefields[$id] = $form_state['mergevar_options'][$id];
+      }
+    }
+    $signup->title = $form_state['values']['title'];
+    $signup->name = $form_state['values']['name'];
+    $signup->mode = array_sum($form_state['values']['mode']);
+    $signup->mc_lists = array_filter($form_state['values']['mc_lists']);
+    $signup->settings = $form_state['values']['settings'];
+    $signup->settings['mergefields'] = $mergefields;
+    $signup->settings['description'] = $form_state['values']['description'];
+    $signup->settings['doublein'] = $form_state['values']['doublein'];
+    $signup->settings['send_welcome'] = $form_state['values']['send_welcome'];
+    $signup->settings['include_interest_groups'] = $form_state['values']['include_interest_groups'];
+    if ($signup->save()) {
+      if (isset($form_state['values']['settings']['path'])) {
+        if (!isset($prior_settings['path']) || $prior_settings['path'] != $signup->settings['path'] || !($signup->mode & MAILCHIMP_SIGNUP_PAGE)) {
+          // We have a new (or removed) path. Rebuild menus.
+          menu_rebuild();
+        }
+      }
+      drupal_set_message(t('Signup form @name has been saved.',
+        array('@name' => $signup->name)));
+      $form_state['redirect'] = 'admin/config/services/mailchimp/signup';
+    }
+    else {
+      drupal_set_message(t('There has been an error saving your signup form.'), 'error');
+    }
+
     if ($status) {
       drupal_set_message($this->t('Saved the %label Example.', array(
-        '%label' => $example->label(),
+        '%label' => $example->get('title'),
       )));
     }
     else {
       drupal_set_message($this->t('The %label Example was not saved.', array(
-        '%label' => $example->label(),
+        '%label' => $example->get('title'),
       )));
     }
 
@@ -263,5 +309,8 @@ class MailchimpSignupForm extends EntityForm {
       ->execute();
     return (bool) $entity;
   }
+
 }
+
+
 ?>
