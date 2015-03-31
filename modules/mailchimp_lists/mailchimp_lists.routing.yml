@@ -12,18 +12,10 @@ mailchimp_lists.refresh:
     _title: 'Reset Mailchimp List Cache'
   requirements:
     _permission: 'administer mailchimp'
-mailchimp_lists.webhook.enable:
-  path: 'admin/config/services/mailchimp/lists/webhook/{list_id}/enable'
+mailchimp_lists.webhook:
+  path: 'admin/config/services/mailchimp/lists/{list_id}/webhook'
   defaults:
-    _controller: '\Drupal\mailchimp_lists\Controller\OverviewController::content'
-    _title: 'Mailchimp Lists'
-  requirements:
-    _permission: 'administer mailchimp'
-
-mailchimp_lists.webhook.disable:
-  path: 'admin/config/services/mailchimp/lists/webhook/{list_id}/disable'
-  defaults:
-    _controller: '\Drupal\mailchimp_lists\Controller\OverviewController::content'
-    _title: 'Mailchimp Lists'
+    _form: '\Drupal\mailchimp_lists\Form\MailchimpListsWebhookSettingsForm'
+    _title: 'Mailchimp List Webhook Settings'
   requirements:
     _permission: 'administer mailchimp'
