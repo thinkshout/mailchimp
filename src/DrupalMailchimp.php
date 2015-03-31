@@ -8,6 +8,8 @@
 namespace Drupal\mailchimp;
 
 use Drupal\Component\Serialization\Json;
+use Mailchimp;
+
 
 /**
  * Class DrupalMailchimp
@@ -17,7 +19,7 @@ use Drupal\Component\Serialization\Json;
 class DrupalMailchimp extends Mailchimp {
 
   protected $timeout;
-  protected $userAgent = 'MailChimp-PHP/2.0.4';
+  protected $userAgent = 'MailChimp-PHP/2.0.6';
 
   /**
    * Override __construct().
