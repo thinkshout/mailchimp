@@ -5,3 +5,18 @@ mailchimp_lists.overview:
     _title: 'Mailchimp Lists'
   requirements:
     _permission: 'administer mailchimp'
+mailchimp_lists.webhook.enable:
+  path: 'admin/config/services/mailchimp/lists/webhook/{list_id}/enable'
+  defaults:
+    _controller: '\Drupal\mailchimp_lists\Controller\OverviewController::content'
+    _title: 'Mailchimp Lists'
+  requirements:
+    _permission: 'administer mailchimp'
+
+mailchimp_lists.webhook.disable:
+  path: 'admin/config/services/mailchimp/lists/webhook/{list_id}/disable'
+  defaults:
+    _controller: '\Drupal\mailchimp_lists\Controller\OverviewController::content'
+    _title: 'Mailchimp Lists'
+  requirements:
+    _permission: 'administer mailchimp'
