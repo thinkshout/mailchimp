@@ -63,6 +63,20 @@ class DrupalMailchimp extends Mailchimp {
     $this->reports = new \Mailchimp_Reports($this);
     $this->gallery = new \Mailchimp_Gallery($this);
 
+    // Temporary code until call() is re-written. Allows parent::call() to 
+    // function.
+    $this->ch = curl_init();
+
+    if (isset($opts['CURLOPT_FOLLOWLOCATION']) && $opts['CURLOPT_FOLLOWLOCATION'] === true) {
+      curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, true);
+    }
+
+    curl_setopt($this->ch, CURLOPT_USERAGENT, 'MailChimp-PHP/2.0.6');
+    curl_setopt($this->ch, CURLOPT_POST, true);
+    curl_setopt($this->ch, CURLOPT_HEADER, false);
+    curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->ch, CURLOPT_CONNECTTIMEOUT, 30);
+    curl_setopt($this->ch, CURLOPT_TIMEOUT, $opts['timeout']);
   }
 
   /**
@@ -73,35 +87,35 @@ class DrupalMailchimp extends Mailchimp {
   /**
    * Override MCAPI::call() to leverage Drupal's core HTTP handling.
    */
-  public function call($url, $params) {
-    // @todo this is totally untested
-    $params['apikey'] = $this->apikey;
-    $params = Json::decode($params);
-    $post_options = array(
-      'body' => $params,
-      'headers' => array(
-        'Content-type' => 'application/json',
-        'Accept-Language' => language_default()->language,
-        'User-Agent' => $this->userAgent,
-      ),
-      'timeout' => $this->timeout,
-    );
-    try {
-      $response = Drupal::httpClient()->post($this->root . $url . '.json', $post_options);
-      // Expected result.
-      $data = $response->getBody(TRUE);
-    }
-    catch (Exception $e) {
-      throw new Mailchimp_HttpError(t("MailChimp API call to %url failed: @msg", array('%url' => $url, '@msg' => $response->error)));
-    }
-
-    $result = Json::decode($data);
-
-    if (floor($response->code / 100) >= 4) {
-      throw $this->castError($result);
-    }
-
-    return $result;
-  }
+//  public function call($url, $params) {
+//    // @todo this is totally untested
+//    $params['apikey'] = $this->apikey;
+//    $params = Json::decode($params);
+//    $post_options = array(
+//      'body' => $params,
+//      'headers' => array(
+//        'Content-type' => 'application/json',
+//        'Accept-Language' => language_default()->language,
+//        'User-Agent' => $this->userAgent,
+//      ),
+//      'timeout' => $this->timeout,
+//    );
+//    try {
+//      $response = \Drupal::httpClient()->post($this->root . $url . '.json', $post_options);
+//      // Expected result.
+//      $data = $response->getBody(TRUE);
+//    }
+//    catch (Exception $e) {
+//      throw new Mailchimp_HttpError(t("MailChimp API call to %url failed: @msg", array('%url' => $url, '@msg' => $response->error)));
+//    }
+//
+//    $result = Json::decode($data);
+//
+//    if (floor($response->code / 100) >= 4) {
+//      throw $this->castError($result);
+//    }
+//
+//    return $result;
+//  }
 
 }
