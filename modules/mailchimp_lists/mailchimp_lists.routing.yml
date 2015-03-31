@@ -8,8 +8,8 @@ mailchimp_lists.overview:
 mailchimp_lists.refresh:
   path: 'admin/config/services/mailchimp/list_cache_clear'
   defaults:
-    _controller: '\Drupal\mailchimp_lists\Controller\OverviewController::refresh'
-    _title: 'Mailchimp Lists Refresh'
+    _form: '\Drupal\mailchimp_lists\Form\MailchimpListsClearCacheForm'
+    _title: 'Reset Mailchimp List Cache'
   requirements:
     _permission: 'administer mailchimp'
 mailchimp_lists.webhook.enable:
