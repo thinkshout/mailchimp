@@ -56,7 +56,8 @@ class MailchimpSignupForm extends EntityForm {
       '#type' => 'machine_name',
       '#default_value' => $signup->get('name'),
       '#machine_name' => array(
-        'exists' => array($this, 'exist'),
+        'source' => array('name'),
+        'exists' => 'exist',
       ),
       '#description' => t('A unique machine-readable name for this list. It must only contain lowercase letters, numbers, and underscores.'),
       '#disabled' => !$signup->isNew(),
