@@ -7,9 +7,9 @@
 namespace Drupal\mailchimp_signup\Form;
 
 use Drupal\Core\Entity\EntityForm;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class MailchimpSignupForm
