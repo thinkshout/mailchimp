@@ -50,6 +50,8 @@ class DrupalMailchimp extends Mailchimp {
     // is the default in parent class)
     $this->timeout = (isset($opts['timeout']) && is_int($opts['timeout'])) ? $opts['timeout'] : 60;
 
+    $this->debug = isset($opts['debug']) ? TRUE : FALSE;
+
     $this->folders = new \Mailchimp_Folders($this);
     $this->templates = new \Mailchimp_Templates($this);
     $this->users = new \Mailchimp_Users($this);
