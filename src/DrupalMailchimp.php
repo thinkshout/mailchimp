@@ -35,7 +35,7 @@ class DrupalMailchimp extends Mailchimp {
       $apikey = $this->readConfigs();
     }
     if (!$apikey) {
-      throw new Mailchimp_Error(t('You must provide a MailChimp API key'));
+      throw new \Mailchimp_Error(t('You must provide a MailChimp API key'));
     }
     $this->apikey = $apikey;
     $dc = "us1";
@@ -48,18 +48,18 @@ class DrupalMailchimp extends Mailchimp {
 
     $this->timeout = (isset($opts['timeout']) && is_int($opts['timeout'])) ? $opts['timeout'] : 600;
 
-    $this->folders = new Mailchimp_Folders($this);
-    $this->templates = new Mailchimp_Templates($this);
-    $this->users = new Mailchimp_Users($this);
-    $this->helper = new Mailchimp_Helper($this);
-    $this->mobile = new Mailchimp_Mobile($this);
-    $this->ecomm = new Mailchimp_Ecomm($this);
-    $this->neapolitan = new Mailchimp_Neapolitan($this);
-    $this->lists = new Mailchimp_Lists($this);
-    $this->campaigns = new Mailchimp_Campaigns($this);
-    $this->vip = new Mailchimp_Vip($this);
-    $this->reports = new Mailchimp_Reports($this);
-    $this->gallery = new Mailchimp_Gallery($this);
+    $this->folders = new \Mailchimp_Folders($this);
+    $this->templates = new \Mailchimp_Templates($this);
+    $this->users = new \Mailchimp_Users($this);
+    $this->helper = new \Mailchimp_Helper($this);
+    $this->mobile = new \Mailchimp_Mobile($this);
+    $this->ecomm = new \Mailchimp_Ecomm($this);
+    $this->neapolitan = new \Mailchimp_Neapolitan($this);
+    $this->lists = new \Mailchimp_Lists($this);
+    $this->campaigns = new \Mailchimp_Campaigns($this);
+    $this->vip = new \Mailchimp_Vip($this);
+    $this->reports = new \Mailchimp_Reports($this);
+    $this->gallery = new \Mailchimp_Gallery($this);
 
   }
 
