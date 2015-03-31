@@ -807,3 +807,50 @@ function mailchimp_lists_add_to_segment_action_views_bulk_operations_form($optio
   );
   return $form;
 }
+
+/**
+ * Gets an array of default MailChimp webhook action names.
+ *
+ * @return array
+ *   Default webhook aciton names, indexed by the IDs used by the MailChimp API.
+ */
+function mailchimp_lists_default_webhook_actions() {
+  return array(
+    'subscribe' => 'Subscribes',
+    'unsubscribe' => 'Unsubscribes',
+    'profile' => 'Profile Updates',
+    'cleaned' => 'Cleaned Emails',
+    'upemail' => 'Email Address Changes',
+    'campaign' => 'Campaign Sending Status',
+  );
+}
+
+/**
+ * Returns an array of enabled webhook actions.
+ *
+ * @param $list_id
+ *   The MailChimp list ID to return webhook actions for.
+ *
+ * @return array
+ *   An array of enabled webhook action names.
+ */
+function mailchimp_lists_enabled_webhook_actions($list_id) {
+  $enabled_actions = array();
+
+  $webhook_url = mailchimp_webhook_url();
+
+  $webhooks = mailchimp_webhook_get($list_id);
+  if ($webhooks) {
+    foreach ($webhooks as $webhook) {
+      if ($webhook_url == $webhook['url']) {
+        foreach ($webhook['actions'] as $action => $enabled) {
+          if ($enabled) {
+            $enabled_actions[] = $action;
+          }
+        }
+      }
+    }
+  }
+
+  return $enabled_actions;
+}
