@@ -56,10 +56,8 @@ function mailchimp_get_api_object() {
     \Drupal::logger('mailchimp')->error('Mailchimp Error: API Key cannot be blank.');
     return NULL;
   }
-  // Set the timeout to something that won't take down the Drupal site:
-  $options = array('timeout' => 60);
 
-  $mailchimp = new $classname($api_key, $options);
+  $mailchimp = new $classname($api_key);
 
   return $mailchimp;
 }

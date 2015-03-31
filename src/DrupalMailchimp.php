@@ -46,7 +46,9 @@ class DrupalMailchimp extends Mailchimp {
     $this->root = str_replace('https://api', 'https://' . $dc . '.api', $this->root);
     $this->root = rtrim($this->root, '/') . '/';
 
-    $this->timeout = (isset($opts['timeout']) && is_int($opts['timeout'])) ? $opts['timeout'] : 600;
+    // Set the timeout to something that won't take down the Drupal site. (600
+    // is the default in parent class)
+    $this->timeout = (isset($opts['timeout']) && is_int($opts['timeout'])) ? $opts['timeout'] : 60;
 
     $this->folders = new \Mailchimp_Folders($this);
     $this->templates = new \Mailchimp_Templates($this);
