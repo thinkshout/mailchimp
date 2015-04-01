@@ -11,7 +11,7 @@ use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\Field\FieldItemBase;
 
 /**
- * Plugin implementation of the mailchimp_lists_subscription field type.
+ * Plugin implementation of the 'mailchimp_lists_subscription' field type.
  *
  * @FieldType (
  *   id = "mailchimp_lists_subscription",
