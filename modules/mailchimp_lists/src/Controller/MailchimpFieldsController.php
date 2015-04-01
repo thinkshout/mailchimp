@@ -11,8 +11,6 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 
-use Drupal\Component\Utility\String;
-
 /**
  * MailChimp Fields controller.
  */
@@ -45,6 +43,36 @@ class MailchimpFieldsController extends ControllerBase {
       '#header' => array(t('Entity Type'), t('Bundle'), t('Field'), t('Batch Update'),),
       '#empty' => '',
     );
+
+    // TODO: Get all fields.
+    $fields = array();
+    $row_id = 1;
+    foreach ($fields as $field) {
+      if ($field['type'] == 'mailchimp_lists_subscription') {
+        foreach ($field['bundles'] as $entity_type => $bundles) {
+          foreach ($bundles as $bundle) {
+            // TODO: Correct bulk update URL.
+            //$link = 'admin/config/services/mailchimp/lists/update_mergevars/' . $entity_type . '/' . $bundle . '/' . $field['field_name'];
+            $batch_update_url = Url::fromUri('');
+
+            $content['fields_table'][$row_id]['entity_type'] = array(
+              '#markup' => $entity_type,
+            );
+            $content['fields_table'][$row_id]['bundle'] = array(
+              '#markup' => $bundle,
+            );
+            $content['fields_table'][$row_id]['field'] = array(
+              '#markup' => $field['field_name'],
+            );
+            $content['lists_table'][$row_id]['batch_update'] = array(
+              '#markup' => \Drupal::l(t('Update Mailchimp Mergevar Values'), $batch_update_url),
+            );
+
+            $row_id++;
+          }
+        }
+      }
+    }
 
     return $content;
   }
