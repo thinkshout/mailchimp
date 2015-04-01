@@ -36,10 +36,12 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
 
     $list = mailchimp_get_list($list_id);
 
+    $form_state->set('list', $list);
+
     $default_webhook_actions = mailchimp_lists_default_webhook_actions();
     $enabled_webhook_actions = mailchimp_lists_enabled_webhook_actions($list_id);
 
-    $form['webhooks'] = array(
+    $form['webhook_actions'] = array(
       '#type' => 'fieldset',
       '#title' => t('Enabled webhook actions for the !name list',
         array(
@@ -49,7 +51,7 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
     );
 
     foreach ($default_webhook_actions as $action => $name) {
-      $form['webhooks'][$action] = array(
+      $form['webhook_actions'][$action] = array(
         '#type' => 'checkbox',
         '#title' => $name,
         '#default_value' => in_array($action, $enabled_webhook_actions),
@@ -70,6 +72,52 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $list = $form_state->get('list');
+
+    $webhook_actions = $form_state->getValue('webhook_actions');
+
+    $actions = array();
+    foreach ($webhook_actions as $webhook_id => $enable) {
+      $actions[$webhook_id] = ($enable === 1);
+    }
+
+    $result = FALSE;
+
+    if (count($actions) > 0) {
+      $webhook_url = mailchimp_webhook_url();
+
+      $webhooks = mailchimp_webhook_get($list['id']);
+      if (!empty($webhooks)) {
+        foreach ($webhooks as $webhook) {
+          if ($webhook['url'] == $webhook_url) {
+            // Delete current webhook.
+            mailchimp_webhook_delete($list['id'], mailchimp_webhook_url());
+          }
+        }
+      }
+
+      // Add webhook with enabled actions.
+      $result = mailchimp_webhook_add(
+        $list['id'],
+        mailchimp_webhook_url(),
+        $actions
+      );
+    }
+
+    if ($result) {
+      drupal_set_message(t('Webhooks for list "%name" have been updated.',
+        array(
+          '%name' => $list['name'],
+        )
+      ));
+    }
+    else {
+      drupal_set_message(t('Unable to update webhooks for list "%name".',
+        array(
+          '%name' => $list['name'],
+        )
+      ), 'warning');
+    }
 
     parent::submitForm($form, $form_state);
   }
