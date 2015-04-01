@@ -9,5 +9,6 @@ files:
  - tests/mailchimp_lists.test
 
 dependencies:
+ - field
  - mailchimp
  - options
