@@ -153,49 +153,6 @@ function mailchimp_signup_load_multiple_by_name($name = NULL) {
   return isset($name) ? reset($signups) : $signups;
 }
 
-/**
- * Implements hook_entity_info().
- */
-function mailchimp_signup_entity_info() {
-  $entities = array(
-    'mailchimp_signup' => array(
-      'label' => t('MailChimp Signup'),
-      'plural label' => t('MailChimp Signups'),
-      'entity class' => 'MailchimpSignup',
-      'controller class' => 'EntityAPIControllerExportable',
-      'base table' => 'mailchimp_signup',
-      'uri callback' => 'entity_class_uri',
-      'fieldable' => FALSE,
-      'exportable' => TRUE,
-      'label callback' => 'entity_class_label',
-      'module' => 'mailchimp_signup',
-      'entity keys' => array(
-        'id' => 'mcs_id',
-        'name' => 'name',
-      ),
-      'bundles' => array(
-        'mailchimp_signup' => array(
-          'label' => t('MailChimp Signup'),
-        ),
-      ),
-      'view modes' => array(
-        'full' => array(
-          'label' => t('Full'),
-          'custom settings' => FALSE,
-        ),
-      ),
-      // Enable the entity API's admin UI.
-      'admin ui' => array(
-        'path' => 'admin/config/services/mailchimp/signup',
-        'file' => 'includes/mailchimp_signup.admin.inc',
-        'controller class' => 'MailChimpSignupUIController',
-      ),
-      'access callback' => 'mailchimp_signup_entity_access',
-    ),
-  );
-
-  return $entities;
-}
 
 /**
  * Access callback for mailchimp_activity_entity.
