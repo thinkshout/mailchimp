@@ -154,12 +154,6 @@ function mailchimp_signup_load_multiple_by_name($name = NULL) {
 }
 
 
-/**
- * Access callback for mailchimp_activity_entity.
- */
-function mailchimp_signup_entity_access() {
-  return mailchimp_apikey_ready_access('administer mailchimp signup entities');
-}
 
 /**
  * Menu callback for Signup pages.
