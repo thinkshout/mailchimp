@@ -30,9 +30,10 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    global $request;
 
-    // TODO: Use real list ID.
-    $list_id = 1;
+    $list_id = $request->attributes->get('_raw_variables')->get('list_id');
+
     $list = mailchimp_get_list($list_id);
 
     $default_webhook_actions = mailchimp_lists_default_webhook_actions();
@@ -40,9 +41,9 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
 
     $form['webhooks'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Choose webhooks to enable for %name. Uncheck to disable.',
+      '#title' => t('Enabled webhook actions for the !name list',
         array(
-          '%name' => $list['name'],
+          '!name' => $list['name'],
         )),
       '#tree' => TRUE,
     );
@@ -69,12 +70,6 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config('mailchimp.settings');
-    $config
-      ->set('api_key', $form_state->getValue('api_key'))
-      ->set('cron', $form_state->getValue('cron'))
-      ->set('batch_limit', $form_state->getValue('batch_limit'))
-      ->save();
 
     parent::submitForm($form, $form_state);
   }
