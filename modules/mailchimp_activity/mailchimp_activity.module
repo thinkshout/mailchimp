@@ -71,7 +71,7 @@ function mailchimp_activity_menu() {
  * Access callback for activity menu items.
  */
 function mailchimp_activity_access(MailchimpActivityEntity $mailchimp_activity_entity) {
-  if ($mailchimp_activity_entity->enabled && user_access('access mailchimp activity')) {
+  if ($mailchimp_activity_entity->enabled && \Drupal::currentUser()->hasPermission('access mailchimp activity')) {
     return TRUE;
   }
   return FALSE;

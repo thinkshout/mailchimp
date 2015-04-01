@@ -21,7 +21,7 @@ define('MAILCHIMP_STATUS_SENDING', 'sending');
  * Access callback for mailchimp submodule menu items.
  */
 function mailchimp_apikey_ready_access($permission) {
-  if (mailchimp_get_api_object() && user_access($permission)) {
+  if (mailchimp_get_api_object() && \Drupal::currentUser()->hasPermission($permission)) {
     return TRUE;
   }
   return FALSE;

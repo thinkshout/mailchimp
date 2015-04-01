@@ -52,5 +52,5 @@ function mailchimp_lists_rules_action_entity_subscribe($entity, $field, $subscri
  * Access callback for the rules integration.
  */
 function mailchimp_lists_rules_access_callback() {
-  return user_access('administer mailchimp');
+  return \Drupal::currentUser()->hasPermission('administer mailchimp');
 }

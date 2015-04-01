@@ -193,7 +193,7 @@ function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
 function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
   $access = FALSE;
   // Only campaigns that haven't been sent can be changed.
-  if (user_access('administer mailchimp campaigns') &&
+  if (\Drupal::currentUser()->hasPermission('administer mailchimp campaigns') &&
     ($campaign->mc_data['status'] === 'sent') === $sent) {
     $access = TRUE;
   }
