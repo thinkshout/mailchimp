@@ -7,8 +7,9 @@ mailchimp.admin:
     _permission: 'administer mailchimp'
 
 mailchimp.webhook_endpoint:
-  path: 'mailchimp/webhook'
+  path: 'mailchimp/webhook/{hash}'
   defaults:
+    _controller: '\Drupal\mailchimp\Controller\MailchimpWebhookController::endpoint'
     _title: 'Mailchimp Webhook Endpoint'
   requirements:
    _permission: 'access content'
