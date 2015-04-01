@@ -19,3 +19,10 @@ mailchimp_lists.webhook:
     _title: 'Mailchimp List Webhook Settings'
   requirements:
     _permission: 'administer mailchimp'
+mailchimp_lists.fields:
+  path: 'admin/config/services/mailchimp/fields'
+  defaults:
+    _controller: '\Drupal\mailchimp_lists\Controller\MailchimpFieldsController::overview'
+    _title: 'Mailchimp Subscription Fields'
+  requirements:
+    _permission: 'administer mailchimp'
