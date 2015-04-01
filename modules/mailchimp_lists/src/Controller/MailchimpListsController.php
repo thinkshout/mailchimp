@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\mailchimp_lists\Controller\OverviewController.
+ * Contains \Drupal\mailchimp_lists\Controller\MailchimpListsController.
  */
 
 namespace Drupal\mailchimp_lists\Controller;
@@ -14,14 +14,14 @@ use Drupal\Core\Url;
 use Drupal\Component\Utility\String;
 
 /**
- * Mailchimp Lists overview controller.
+ * MailChimp Lists controller.
  */
-class OverviewController extends ControllerBase {
+class MailchimpListsController extends ControllerBase {
 
   /**
    * {@inheritdoc}
    */
-  public function content() {
+  public function overview() {
     $content = array();
 
     $lists_admin_url = Url::fromUri('https://admin.mailchimp.com/lists/');

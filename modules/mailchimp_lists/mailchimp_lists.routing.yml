@@ -1,7 +1,7 @@
 mailchimp_lists.overview:
   path: 'admin/config/services/mailchimp/lists'
   defaults:
-    _controller: '\Drupal\mailchimp_lists\Controller\OverviewController::content'
+    _controller: '\Drupal\mailchimp_lists\Controller\MailchimpListsController::overview'
     _title: 'Mailchimp Lists'
   requirements:
     _permission: 'administer mailchimp'
