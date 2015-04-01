@@ -28,12 +28,12 @@ use Drupal\mailchimp_signup\MailchimpSignupInterface;
  *   config_prefix = "mailchimp_signup",
  *   admin_permission = "administer mailchimp_signup",
  *   entity_keys = {
- *     "id" = "id",
- *     "label" = "label",
+ *     "id" = "mcs_id",
+ *     "label" = "name",
  *   },
  *   links = {
- *     "edit-form" = "/admin/config/services/mailchimp/signup/{mailchimp_signup}",
- *     "delete-form" = "/admin/config/services/mailchimp/signup/{mailchimp_signup}/delete"
+ *     "edit-form" = "entity.mailchimp_signup.edit_form",
+ *     "delete-form" = "entity.mailchimp_signup.delete_form"
  *   }
  * )
  */
