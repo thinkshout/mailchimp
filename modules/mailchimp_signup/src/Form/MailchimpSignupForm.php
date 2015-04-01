@@ -8,6 +8,7 @@ namespace Drupal\mailchimp_signup\Form;
 
 use Drupal\Component\Utility\String;
 use Drupal\Core\Entity\EntityForm;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -50,16 +51,17 @@ class MailchimpSignupForm extends EntityForm {
       '#title' => $this->t('Title'),
       '#size' => 35,
       '#maxlength' => 32,
-      '#default_value' => $signup->get('title'),
+      '#default_value' => $signup->title,
       '#description' => $this->t('The title for this signup form.'),
       '#required' => TRUE,
     );
-    $form['name'] = array(
+    $form['id'] = array(
       '#type' => 'machine_name',
-      '#default_value' => $signup->get('name'),
+      '#default_value' => $signup->id,
+      '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
       '#machine_name' => array(
-        'source' => array('name'),
-        'exists' => 'exist',
+        'source' => array('title'),
+        'exists' => 'mailchimp_signup_load',
       ),
       '#description' => t('A unique machine-readable name for this list. It must only contain lowercase letters, numbers, and underscores.'),
       '#disabled' => !$signup->isNew(),
