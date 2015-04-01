@@ -141,21 +141,23 @@ function mailchimp_activity_mapping_form_callback($form, &$form_state) {
  * Validation callback for mailchimp_activity_entity_form().
  */
 function mailchimp_activity_entity_form_validate($form, &$form_state) {
-  $extant_mc_entities = entity_load('mailchimp_activity_entity');
-  $form_id = $form_state['mailchimp_activity_entity']->mailchimp_activity_entity_id;
-  $form_bundle = $form_state['values']['bundle'];
-  $form_entity_id = $form_state['values']['entity_type'];
-  foreach ($extant_mc_entities as $extant_ent) {
-    if ($form_bundle == $extant_ent->bundle &&
-        $form_entity_id == $extant_ent->entity_type &&
-        $form_id != $extant_ent->mailchimp_activity_entity_id) {
-      form_set_error(
-        'bundle',
-        t('A MailChimp Activity Entity already exists for this Bundle. Either select a different Bundle or edit the !link for this bundle.',
-          array(
-            '!link' => l(t('existing MailChimp Activity Entity'), "admin/config/services/mailchimp/activity/manage/{$extant_ent->name}"),
-          )
-        ));
+  if ($form_state['submitted']) {
+    $extant_mc_entities = entity_load('mailchimp_activity_entity');
+    $form_id = $form_state['mailchimp_activity_entity']->mailchimp_activity_entity_id;
+    $form_bundle = $form_state['values']['bundle'];
+    $form_entity_id = $form_state['values']['entity_type'];
+    foreach ($extant_mc_entities as $extant_ent) {
+      if ($form_bundle == $extant_ent->bundle &&
+          $form_entity_id == $extant_ent->entity_type &&
+          $form_id != $extant_ent->mailchimp_activity_entity_id) {
+        form_set_error(
+          'bundle',
+          t('A MailChimp Activity Entity already exists for this Bundle. Either select a different Bundle or edit the !link for this bundle.',
+            array(
+              '!link' => l(t('existing MailChimp Activity Entity'), "admin/config/services/mailchimp/activity/manage/{$extant_ent->name}"),
+            )
+          ));
+      }
     }
   }
 }
