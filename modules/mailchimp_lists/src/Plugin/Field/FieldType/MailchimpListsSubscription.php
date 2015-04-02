@@ -28,20 +28,20 @@ class MailchimpListsSubscription extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function defaultStorageSettings() {
+    return array(
+      'mc_list_id' => '',
+      'double_opt_in' => 0,
+      'send_welcome' => 0,
+    ) + parent::defaultStorageSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
     $columns = array(
-      'mc_list_id' => array(
-        'type' => 'varchar',
-        'length' => 32,
-        'not null' => FALSE,
-      ),
-      'double_opt_in' => array(
-        'type' => 'int',
-        'size' => 'tiny',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'send_welcome' => array(
+      'show_interest_groups' => array(
         'type' => 'int',
         'size' => 'tiny',
         'not null' => TRUE,
@@ -126,15 +126,9 @@ class MailchimpListsSubscription extends FieldItemBase {
    * {@inheritdoc}
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['mc_list_id'] = DataDefinition::create('string')
-      ->setLabel(t('MailChimp List'))
-      ->setDescription(t('The MailChimp list attached to this field.'));
-    $properties['double_opt_in'] = DataDefinition::create('integer')
-      ->setLabel(t('Double Opt-in'))
-      ->setDescription(t('Boolean. True when new subscribers must confirm their subscription.'));
-    $properties['send_welcome'] = DataDefinition::create('integer')
-      ->setLabel(t('Send Welcome Email'))
-      ->setDescription(t('Boolean. True when new subscribers are sent a welcome email.'));
+    $properties['show_interest_groups'] = DataDefinition::create('integer')
+      ->setLabel(t('Show Interest Groups'))
+      ->setDescription(t('Boolean. True when list interest groups should be visible.'));
     return $properties;
   }
 
@@ -142,7 +136,8 @@ class MailchimpListsSubscription extends FieldItemBase {
    * {@inheritdoc}
    */
   public function isEmpty() {
-    $value = $this->get('mc_list_id')->getValue();
+    // TODO: Temporary. Replace with more general property.
+    $value = $this->get('show_interest_groups')->getValue();
     return $value === NULL || $value === '';
   }
 }
