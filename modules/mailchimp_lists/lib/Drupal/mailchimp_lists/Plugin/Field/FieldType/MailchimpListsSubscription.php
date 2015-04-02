@@ -71,7 +71,7 @@ class MailchimpListsSubscription extends FieldItemBase {
    * {@inheritdoc}
    */
   public function isEmpty() {
-    $value = $this->get('value')->getValue();
+    $value = $this->get('mc_list_id')->getValue();
     return $value === NULL || $value === '';
   }
 }
