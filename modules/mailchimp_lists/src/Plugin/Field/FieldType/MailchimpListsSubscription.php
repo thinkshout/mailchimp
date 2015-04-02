@@ -9,6 +9,7 @@ namespace Drupal\mailchimp_lists\Plugin\Field\FieldType;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\Field\FieldItemBase;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Plugin implementation of the 'mailchimp_lists_subscription' field type.
@@ -49,6 +50,24 @@ class MailchimpListsSubscription extends FieldItemBase {
     return array(
       'columns' => $columns,
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
+    $element = array();
+
+    return $element;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+    $element = array();
+
+    return $element;
   }
 
   /**
