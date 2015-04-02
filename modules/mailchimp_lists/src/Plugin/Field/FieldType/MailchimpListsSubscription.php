@@ -100,20 +100,23 @@ class MailchimpListsSubscription extends FieldItemBase {
           '!cacheclear' => \Drupal::l('clear your list cache', $refresh_lists_url),
         )),
       '#options' => $options,
-      '#default_value' => !empty($this->getValue('mc_list_id')) ? $this->getValue('mc_list_id') : FALSE,
+      '#default_value' => $this->getSetting('mc_list_id'),
       '#required' => TRUE,
+      '#disabled' => $has_data,
     );
     $element['double_opt_in'] = array(
       '#type' => 'checkbox',
       '#title' => 'Require subscribers to Double Opt-in',
       '#description' => 'New subscribers will be sent a link with an email they must follow to confirm their subscription.',
-      '#default_value' => !empty($this->getValue('double_opt_in')) ? $this->getValue('double_opt_in') : FALSE,
+      '#default_value' => $this->getSetting('double_opt_in'),
+      '#disabled' => $has_data,
     );
     $element['send_welcome'] = array(
       '#type' => 'checkbox',
       '#title' => 'Send a welcome email to new subscribers',
       '#description' => 'New subscribers will be sent a welcome email once they are confirmed.',
-      '#default_value' => !empty($this->getValue('send_welcome')) ? $this->getValue('send_welcome') : FALSE,
+      '#default_value' => $this->getSetting('send_welcome'),
+      '#disabled' => $has_data,
     );
 
     return $element;
