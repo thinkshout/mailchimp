@@ -17,7 +17,7 @@ use Drupal\Core\Field\FieldItemBase;
  *   id = "mailchimp_lists_subscription",
  *   label = @Translation("Mailchimp Subscription"),
  *   description = @Translation("Allows an entity to be subscribed to a Mailchimp list."),
- *   default_widget = "",
+ *   default_widget = "mailchimp_lists_select",
  *   default_formatter = "mailchimp_lists_subscribe_default"
  * )
  */
