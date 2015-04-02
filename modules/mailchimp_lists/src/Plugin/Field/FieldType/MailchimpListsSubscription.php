@@ -10,6 +10,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 
 /**
  * Plugin implementation of the 'mailchimp_lists_subscription' field type.
@@ -66,6 +67,54 @@ class MailchimpListsSubscription extends FieldItemBase {
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $element = array();
+
+    $lists = mailchimp_get_lists();
+    $options = array('' => t('-- Select --'));
+    foreach ($lists as $mc_list) {
+      $options[$mc_list['id']] = $mc_list['name'];
+    }
+    // TODO: Get all subscription fields; check for assigned MC list IDs.
+    /*
+    $fields = field_info_fields();
+    foreach ($fields as $field) {
+      if ($field['type'] == 'mailchimp_lists_subscription') {
+        if ($field['id'] != $this_field['id'] && isset($field['settings']['mc_list_id'])) {
+          unset($options[$field['settings']['mc_list_id']]);
+        }
+      }
+    }
+    */
+
+    $refresh_lists_url = Url::fromRoute('mailchimp_lists.refresh');
+    $mailchimp_url = Url::fromUri('https://admin.mailchimp.com');
+
+    $element['mc_list_id'] = array(
+      '#type' => 'select',
+      '#title' => t('MailChimp List'),
+      '#multiple' => FALSE,
+      '#description' => t('Available MailChimp lists which are not already
+        attached to Mailchimp Subscription Fields. If there are no options,
+        make sure you have created a list at !MailChimp first, then !cacheclear.',
+        array(
+          '!MailChimp' => \Drupal::l('MailChimp', $mailchimp_url),
+          '!cacheclear' => \Drupal::l('clear your list cache', $refresh_lists_url),
+        )),
+      '#options' => $options,
+      '#default_value' => !empty($this->getValue('mc_list_id')) ? $this->getValue('mc_list_id') : FALSE,
+      '#required' => TRUE,
+    );
+    $element['double_opt_in'] = array(
+      '#type' => 'checkbox',
+      '#title' => 'Require subscribers to Double Opt-in',
+      '#description' => 'New subscribers will be sent a link with an email they must follow to confirm their subscription.',
+      '#default_value' => !empty($this->getValue('double_opt_in')) ? $this->getValue('double_opt_in') : FALSE,
+    );
+    $element['send_welcome'] = array(
+      '#type' => 'checkbox',
+      '#title' => 'Send a welcome email to new subscribers',
+      '#description' => 'New subscribers will be sent a welcome email once they are confirmed.',
+      '#default_value' => !empty($this->getValue('send_welcome')) ? $this->getValue('send_welcome') : FALSE,
+    );
 
     return $element;
   }
