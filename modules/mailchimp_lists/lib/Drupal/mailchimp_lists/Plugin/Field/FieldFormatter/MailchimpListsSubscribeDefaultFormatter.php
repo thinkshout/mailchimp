@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Contains \Drupal\mailchimp_lists\Plugin\Field\FieldFormatter\MailchimpSubscribeDefaultFormatter.
+ * Contains \Drupal\mailchimp_lists\Plugin\Field\FieldFormatter\MailchimpListsSubscribeDefaultFormatter.
  */
 
 namespace Drupal\mailchimp_lists\Plugin\Field\FieldFormatter;
@@ -21,7 +21,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class MailchimpSubscribeDefaultFormatter extends FormatterBase {
+class MailchimpListsSubscribeDefaultFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
