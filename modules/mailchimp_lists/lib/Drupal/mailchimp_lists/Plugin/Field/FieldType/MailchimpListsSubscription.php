@@ -58,10 +58,10 @@ class MailchimpListsSubscription extends FieldItemBase {
     $properties['mc_list_id'] = DataDefinition::create('string')
       ->setLabel(t('MailChimp List'))
       ->setDescription(t('The MailChimp list attached to this field.'));
-    $properties['double_opt_in'] = DataDefinition::create('int')
+    $properties['double_opt_in'] = DataDefinition::create('integer')
       ->setLabel(t('Double Opt-in'))
       ->setDescription(t('Boolean. True when new subscribers must confirm their subscription.'));
-    $properties['send_welcome'] = DataDefinition::create('int')
+    $properties['send_welcome'] = DataDefinition::create('integer')
       ->setLabel(t('Send Welcome Email'))
       ->setDescription(t('Boolean. True when new subscribers are sent a welcome email.'));
     return $properties;
