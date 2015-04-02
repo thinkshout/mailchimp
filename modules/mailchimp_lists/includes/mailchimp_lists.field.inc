@@ -366,6 +366,7 @@ function mailchimp_lists_field_prepare_view($entity_type, $entities, $field, $in
  * Implements hook_form_FORM_ID_alter().
  */
 function mailchimp_lists_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+  /*
   if ($form['#field']['type'] == 'mailchimp_lists_subscription') {
     // Disable the list selector on the instance config page:
     $form['field']['settings']['mc_list_id']['#disabled'] = TRUE;
@@ -375,6 +376,7 @@ function mailchimp_lists_form_field_ui_field_edit_form_alter(&$form, &$form_stat
     $form['field']['cardinality']['#access'] = FALSE;
     $form['#validate'][] = 'mailchimp_lists_form_field_ui_field_edit_form_validate';
   }
+  */
 }
 
 /**
