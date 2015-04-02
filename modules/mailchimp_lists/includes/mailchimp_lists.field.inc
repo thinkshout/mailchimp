@@ -38,6 +38,7 @@ function mailchimp_lists_field_info() {
 /**
  * Implements hook_field_settings_form().
  */
+/*
 function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) {
   $lists = mailchimp_get_lists();
   $options = array('' => t('-- Select --'));
@@ -81,6 +82,7 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
   );
   return $form;
 }
+*/
 
 /**
  * Implements hook_field_instance_settings_form().
