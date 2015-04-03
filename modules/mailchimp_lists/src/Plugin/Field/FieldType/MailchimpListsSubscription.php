@@ -6,6 +6,7 @@
 
 namespace Drupal\mailchimp_lists\Plugin\Field\FieldType;
 
+use Drupal\Component\Utility\String;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\Field\FieldItemBase;
@@ -58,6 +59,64 @@ class MailchimpListsSubscription extends FieldItemBase {
    */
   public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
     $element = array();
+
+    $storage = $form_state->getStorage();
+
+    $mc_list_id = $storage['field']->getSetting('mc_list_id');
+
+    $element['show_interest_groups'] = array(
+      '#title' => "Enable Interest Groups",
+      '#type' => "checkbox",
+      '#default_value' => $this->getSetting('show_interest_groups'),
+    );
+    $element['interest_groups_title'] = array(
+      '#title' => "Interest Groups Label",
+      '#type' => "textfield",
+      '#default_value' => !empty($this->getSetting('show_interest_groups')) ? $this->getSetting('show_interest_groups') : "Interest Groups",
+    );
+    $element['mergefields'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Merge Fields'),
+      '#description' => t('Multi-value fields will only sync their first value to Mailchimp, as Mailchimp does not support multi-value fields.'),
+      '#tree' => TRUE,
+    );
+    $element['unsubscribe_on_delete'] = array(
+      '#title' => "Unsubscribe on deletion",
+      '#type' => "checkbox",
+      '#description' => t('Unsubscribe entities from this list when they are deleted.'),
+      '#default_value' => $this->getSetting('unsubscribe_on_delete'),
+    );
+    $mv_defaults = $this->getSetting('mergefields');
+    $mergevars = mailchimp_get_mergevars(array($mc_list_id));
+
+    $fields = mailchimp_lists_fieldmap_options($form['field']['entity_type']['#value'], $form['field']['bundle']['#value']);
+    $required_fields = mailchimp_lists_fieldmap_options($form['field']['entity_type']['#value'], $form['field']['bundle']['#value'], TRUE);
+
+    //unset($fields[$field['field_name']]);
+
+    //$fields_flat = options_array_flatten($fields);
+
+    $fields_flat = $fields;
+
+    foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
+      $default_value = isset($mv_defaults[$mergevar['tag']]) ? $mv_defaults[$mergevar['tag']] : -1;
+      $form['mergefields'][$mergevar['tag']] = array(
+        '#type' => 'select',
+        '#title' => String::checkPlain($mergevar['name']),
+        '#default_value' => array_key_exists($default_value, $fields_flat) ? $default_value : '',
+        '#required' => $mergevar['req'],
+      );
+      if (!$mergevar['req'] || $mergevar['tag'] === 'EMAIL') {
+        $form['mergefields'][$mergevar['tag']]['#options'] = $fields;
+        if ($mergevar['tag'] === 'EMAIL') {
+          $form['mergefields'][$mergevar['tag']]['#description'] = t('Any entity with an empty or invalid email address field value will simply be ignored by the Mailchimp subscription system. <em>This is why the Email field is the only required merge field which can sync to non-required fields.</em>');
+        }
+      }
+      else {
+        $form['mergefields'][$mergevar['tag']]['#options'] = $required_fields;
+        $form['mergefields'][$mergevar['tag']]['#description'] = t("Only 'required' and 'calculated' fields are allowed to be synced with Mailchimp 'required' merge fields.");
+      }
+    }
 
     return $element;
   }
