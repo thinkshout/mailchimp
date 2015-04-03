@@ -21,11 +21,11 @@ function mailchimp_libraries_info() {
   $libraries['mailchimp'] = array(
     'name' => 'MailChimp MCAPI',
     'vendor url' => 'http://apidocs.mailchimp.com/api/2.0',
-    'download url' => 'https://bitbucket.org/mailchimp/mailchimp-api-php/get/2.0.4.zip',
+    'download url' => 'https://bitbucket.org/mailchimp/mailchimp-api-php/get/2.0.6.zip',
     'path' => 'src',
     'version arguments' => array(
       'file' => 'composer.json',
-      // Version 2.0.4
+      // Version 2.0.6
       'pattern' => '/\"version": \"((\d+)\.(\d+)\.(\d+))\",/',
     ),
     'files' => array(
