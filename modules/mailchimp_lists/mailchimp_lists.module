@@ -59,6 +59,7 @@ function mailchimp_lists_menu() {
  * Implements hook_entity_delete().
  */
 function mailchimp_lists_entity_delete($entity, $type) {
+  /*
   // Check for mailchimp subscription fields and unsubscribe accordingly.
   $fields = field_info_fields();
   foreach ($fields as $field) {
@@ -72,6 +73,7 @@ function mailchimp_lists_entity_delete($entity, $type) {
       }
     }
   }
+  */
 }
 
 /**
