@@ -246,8 +246,9 @@ class MailchimpSignupForm extends EntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $example = $this->entity;
-    $status = $example->save();
+    $signup_config = $this->entity;
+    $status = $signup_config->save();
+    $form_state->setRedirect('mailchimp_signup.admin');
 
     if (isset($form_state['signup'])) {
       $signup = $form_state['signup'];
