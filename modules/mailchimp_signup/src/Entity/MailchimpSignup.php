@@ -90,5 +90,12 @@ class MailchimpSignup extends ConfigEntityBase implements MailchimpSignupInterfa
 
   // Your specific configuration property get/set methods go here,
   // implementing the interface.
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    return $this->title;
+  }
+
 }
 ?>
