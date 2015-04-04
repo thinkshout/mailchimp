@@ -57,7 +57,7 @@ class MailchimpSignupForm extends EntityForm {
     );
     $form['id'] = array(
       '#type' => 'machine_name',
-      '#default_value' => $signup->id,
+      '#default_value' => $signup->mcs_id,
       '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
       '#machine_name' => array(
         'source' => array('title'),
