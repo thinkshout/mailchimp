@@ -251,6 +251,7 @@ class MailchimpSignupForm extends EntityForm {
     $status = $signup_config->save();
     $form_state->setRedirect('mailchimp_signup.admin');
 
+    return;
     if (isset($form_state['signup'])) {
       $signup = $form_state['signup'];
       $prior_settings = $signup->settings;
