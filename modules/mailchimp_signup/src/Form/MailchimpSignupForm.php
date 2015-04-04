@@ -174,7 +174,7 @@ class MailchimpSignupForm extends EntityForm {
     );
 
     // Show merge fields if changing list field or editing existing list.
-    if ($form_state->getValue('mc_lists') || !isset($signup->is_new) || !$signup->is_new) {
+    if ($form_state->getValue('mc_lists') || !$signup->isNew()) {
       $form['mc_lists_config']['mergefields'] = array(
         '#type' => 'fieldset',
         '#title' => t('Merge Field Display'),
