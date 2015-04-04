@@ -20,7 +20,7 @@ class MailchimpSignupListBuilder extends ConfigEntityListBuilder {
   public function buildHeader() {
     $header['label'] = $this->t('Mailchimp Signup');
     $header['id'] = $this->t('Machine name');
-    return $header + parent::buildHeader();
+    return $header;// + parent::buildHeader();
   }
 
   /**
@@ -32,7 +32,7 @@ class MailchimpSignupListBuilder extends ConfigEntityListBuilder {
 
     // You probably want a few more properties here...
 
-    return $row + parent::buildRow($entity);
+    return $row ;//+ parent::buildRow($entity);
   }
 
 }
