@@ -6,6 +6,8 @@
  * Mailchimp.
  */
 
+use \Drupal\mailchimp_signup\Entity\MailchimpSignup;
+
 define('MAILCHIMP_SIGNUP_BLOCK', 1);
 define('MAILCHIMP_SIGNUP_PAGE', 2);
 define('MAILCHIMP_SIGNUP_BOTH', 3);
@@ -106,13 +108,7 @@ function mailchimp_signup_block_view($delta = '') {
  * Wrapper around mailchimp_signup_load_multiple to load a single signup entity.
  */
 function mailchimp_signup_load($signup_id) {
-  $signups = mailchimp_signup_load_multiple(array($signup_id));
-  if ($signups) {
-    return reset($signups);
-  }
-  else {
-    return FALSE;
-  }
+  return MailchimpSignup::load($signup_id);
 }
 
 /**
