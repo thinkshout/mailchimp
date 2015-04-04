@@ -28,8 +28,8 @@ use Drupal\mailchimp_signup\MailchimpSignupInterface;
  *   config_prefix = "mailchimp_signup",
  *   admin_permission = "administer mailchimp_signup",
  *   entity_keys = {
- *     "id" = "mcs_id",
- *     "label" = "name",
+ *     "id" = "id",
+ *     "uuid" = "uuid",
  *   },
  *   links = {
  *     "edit-form" = "entity.mailchimp_signup.edit_form",
@@ -44,7 +44,7 @@ class MailchimpSignup extends ConfigEntityBase implements MailchimpSignupInterfa
    *
    * @var int
    */
-  public $mcs_id;
+  public $id;
 
   /**
    * The Signup Form Machine Name.

@@ -4,7 +4,7 @@ mailchimp_signup.mailchimp_signup.*:
   type: config_entity
   label: 'Mailchimp Signup config'
   mapping:
-    mcs_id:
+    id:
       type: string
       label: 'Machine Name'
     title:
