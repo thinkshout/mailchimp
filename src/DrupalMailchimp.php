@@ -78,7 +78,7 @@ class DrupalMailchimp extends Mailchimp {
     curl_setopt($this->ch, CURLOPT_HEADER, false);
     curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($this->ch, CURLOPT_CONNECTTIMEOUT, 30);
-    curl_setopt($this->ch, CURLOPT_TIMEOUT, $opts['timeout']);
+    curl_setopt($this->ch, CURLOPT_TIMEOUT, $this->timeout);
   }
 
   /**
