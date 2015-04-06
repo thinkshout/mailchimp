@@ -64,7 +64,7 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
              ? 'All available MailChimp lists are already attached to MailChimp Subscription Fields.'
              : 'No available Mailchimp lists exist.';
     $warning .= ' Create a new list at !mc, then !cc.';
-    
+
     drupal_set_message(t(
         $warning,
         array(
@@ -79,7 +79,7 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
   } else {
     $disabled = FALSE;
   }
-  
+
   $form['mc_list_id'] = array(
     '#type' => 'select',
     '#title' => t('MailChimp List'),
@@ -110,7 +110,7 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
     '#default_value' => isset($this_field['settings']['send_welcome']) ? $this_field['settings']['send_welcome'] : FALSE,
     '#disabled' => $disabled,
   );
-  
+
   return $form;
 }
 
@@ -467,12 +467,24 @@ function mailchimp_lists_field_get($entity, array $options, $name, $entity_type,
 }
 
 /**
- * Implements hook_field_presave().
- *
+ * Implements hook_field_insert().
+ */
+function mailchimp_lists_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  _mailchimp_lists_field_postsave($entity_type, $entity, $field, $instance, $langcode, $items);
+}
+
+/**
+ * Implements hook_field_update().
+ */
+function mailchimp_lists_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  _mailchimp_lists_field_postsave($entity_type, $entity, $field, $instance, $langcode, $items);
+}
+
+/**
  * If we have any mailchimp_lists_subscription fields, we handle any changes to
  * them by making appropriate subscription calls.
  */
-function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+function _mailchimp_lists_field_postsave($entity_type, $entity, $field, $instance, $langcode, &$items) {
   if ($field['type'] == 'mailchimp_lists_subscription') {
     $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
     $choices = $entity_wrapper->{$instance['field_name']}->value();
