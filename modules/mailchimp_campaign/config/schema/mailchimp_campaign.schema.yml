@@ -1,0 +1,20 @@
+# Schema for the mailchimp_campaign module.
+
+mailchimp_campaign.mailchimp_campaign.*:
+  type: config_entity
+  label: 'MailChimp Campaign'
+  mapping:
+    mc_campaign_id:
+      type: string
+      label: 'MailChimp campaign ID'
+    template:
+      type: blob
+      label: 'Campaign body template'
+      size: 'big'
+      serialize: true
+    created:
+      type: int
+      label: 'Created time'
+    updated:
+      type: int
+      label: 'Updated time'
