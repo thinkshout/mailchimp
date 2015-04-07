@@ -5,10 +5,35 @@ mailchimp_campaign.overview:
     _title: 'Mailchimp Campaigns'
   requirements:
     _permission: 'administer mailchimp'
+
 mailchimp_campaign.view:
-  path: 'admin/config/services/mailchimp/campaigns/{campaign_id}'
+  path: 'admin/config/services/mailchimp/campaigns/{mc_campaign_id}'
   defaults:
     _controller: '\Drupal\mailchimp_campaign\Controller\MailchimpCampaignController::view'
     _title: 'Mailchimp Campaign'
+  requirements:
+    _permission: 'administer mailchimp'
+
+mailchimp_campaign.add:
+  path: '/admin/config/services/mailchimp/campaigns/add'
+  defaults:
+    _entity_form: 'mailchimp_campaign.add'
+    _title: 'Add MailChimp Campaign'
+  requirements:
+    _permission: 'administer mailchimp'
+
+entity.mailchimp_campaign.edit_form:
+  path: '/admin/config/services/mailchimp/campaigns/{mc_campaign_id}'
+  defaults:
+    _entity_form: 'mailchimp_campaign.edit'
+    _title: 'Edit MailChimp Campaign'
+  requirements:
+    _permission: 'administer mailchimp'
+
+entity.mailchimp_campaign.delete_form:
+  path: '/admin/config/services/mailchimp/campaign/{mc_campaign_id}/delete'
+  defaults:
+    _entity_form: 'mailchimp_campaign.delete'
+    _title: 'Delete MailChimp Campaign'
   requirements:
     _permission: 'administer mailchimp'
