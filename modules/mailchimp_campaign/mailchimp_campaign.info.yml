@@ -9,5 +9,4 @@ files:
  - tests/mailchimp_campaigns.test
 
 dependencies:
- - entity
  - mailchimp_lists
