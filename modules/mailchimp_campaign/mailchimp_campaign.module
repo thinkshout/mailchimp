@@ -439,11 +439,11 @@ function mailchimp_campaign_delete_campaign($cid) {
  */
 function mailchimp_campaign_list_templates($reset = FALSE) {
   $cache = \Drupal::cache('mailchimp');
-  $cache = $reset ? NULL : $cache->get('templates');
+  $cached_templates = $cache->get('templates');
 
   $all_templates = array();
   // Return cached lists:
-  if ($cache) {
+  if (!$reset && !empty($cached_templates)) {
     $all_templates = $cache->data;
   }
   // Query lists from the MailChimp API and store in cache:
