@@ -1,0 +1,4 @@
+mailchimp_campaign.overview:
+  title: 'Campaigns'
+  route_name: mailchimp_campaign.overview
+  base_route: mailchimp.admin
