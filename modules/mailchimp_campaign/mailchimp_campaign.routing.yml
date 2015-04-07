@@ -1,0 +1,7 @@
+mailchimp_campaign.overview:
+  path: 'admin/config/services/mailchimp/campaigns'
+  defaults:
+    _controller: '\Drupal\mailchimp_campaign\Controller\MailchimpCampaignController::overview'
+    _title: 'Mailchimp Campaigns'
+  requirements:
+    _permission: 'administer mailchimp'
