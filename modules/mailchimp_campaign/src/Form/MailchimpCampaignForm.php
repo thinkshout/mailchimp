@@ -200,7 +200,7 @@ class MailchimpCampaignForm extends EntityForm {
           $entity_type = $campaign_content[$section . '_wrapper']['entity_import']['entity_type'];
         }
 
-        $form['content'][$section . '_wrapper'] += mailchimp_campaign_get_entity_import_form_elements($entity_type, $section);
+        $form['content'][$section . '_wrapper'] += $this->getEntityImportFormElements($entity_type, $section);
         $form['content'][$section . '_wrapper'] += mailchimp_campaign_get_merge_vars_form_elements($merge_vars, $mailchimp_lists[$list_id]['name']);
       }
     }
@@ -227,7 +227,7 @@ class MailchimpCampaignForm extends EntityForm {
         $entity_type = $campaign_content[$section . '_wrapper']['entity_import']['entity_type'];
       }
 
-      $form['content'][$section . '_wrapper'] += mailchimp_campaign_get_entity_import_form_elements($entity_type, $section);
+      $form['content'][$section . '_wrapper'] += $this->getEntityImportFormElements($entity_type, $section);
 
       $list_name = (!empty($list_id)) ? $mailchimp_lists[$list_id]['name'] : '';
       $form['content'][$section . '_wrapper'] += mailchimp_campaign_get_merge_vars_form_elements($merge_vars, $list_name);
@@ -300,6 +300,125 @@ class MailchimpCampaignForm extends EntityForm {
     }
 
     return $options;
+  }
+
+  /**
+   * Gets form elements used in the entity import feature.
+   *
+   * @param string $entity_type
+   *   The type of entity to import.
+   * @param string $section
+   *   The content section these fields are displayed in.
+   *
+   * @return array
+   *   Array of form elements used to display entity imports.
+   */
+  private function getEntityImportFormElements($entity_type, $section) {
+    $form = array();
+
+    // Get available entity types.
+    $entity_info = $this->getEntitiesForContentImport();
+    $entity_options = _mailchimp_campaign_build_entity_option_list($entity_info);
+
+    $form['entity_import'] = array(
+      '#id' => 'entity-import',
+      '#type' => 'fieldset',
+      '#title' => t('Insert site content'),
+      '#description' => t('<b>For use only with text filters that use the MailChimp Campaign filter</b><br />You can insert an entity of a given type and pick the view mode that will be rendered within this campaign section.'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      // '#states' => array(
+      //   'visible' => array(
+      //     ':input[name="content[' . $section . '_wrapper][' . $section . '][format]"]' => array('value' => 'mailchimp_campaign'),
+      //   ),
+      // ),
+    );
+
+    $form['entity_import']['entity_type'] = array(
+      '#type' => 'select',
+      '#title' => t('Entity Type'),
+      '#options' => $entity_options,
+      '#default_value' => $entity_type,
+      '#ajax' => array(
+        'callback' => 'mailchimp_campaign_entity_type_callback',
+        'wrapper' => $section . '-content-entity-lookup-wrapper',
+      ),
+    );
+    $form['entity_import']['entity_type']['#attributes']['class'][] = $section . '-entity-import-entity-type';
+
+    $form['entity_import']['entity_import_wrapper'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'id' => $section . '-content-entity-lookup-wrapper',
+      ),
+    );
+
+    if ($entity_type != NULL) {
+      // Get available entity view modes.
+      $entity_view_mode_options = _mailchimp_campaign_build_entity_view_mode_option_list($entity_info[$entity_type]);
+
+      $form['entity_import']['entity_id'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Entity Title'),
+        // Pass entity type as first parameter to autocomplete callback.
+        '#autocomplete_path' => 'admin/config/services/mailchimp/campaigns/entities/' . $entity_type,
+      );
+      $form['entity_import']['entity_id']['#attributes']['id'] = $section . '-entity-import-entity-id';
+
+      $form['entity_import']['entity_view_mode'] = array(
+        '#type' => 'select',
+        '#title' => t('View Mode'),
+        '#options' => $entity_view_mode_options,
+        '#attributes' => array(
+          'id' => $section . '-entity-import-entity-view-mode',
+        ),
+      );
+    }
+
+    $form['entity_import']['entity_import_link'] = array(
+      '#type' => 'item',
+      '#markup' => '<a id="' . $section . '-add-entity-token-link" class="add-entity-token-link" href="javascript:void(0);">' . t('Insert entity token') . '</a>',
+      '#states' => array(
+        'invisible' => array(
+          ':input[name="content[' . $section . '_wrapper][entity_import][entity_type]"]' => array('value' => ''),
+        ),
+      ),
+    );
+
+    $form['entity_import']['entity_import_tag'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'id' => $section . '-entity-import-tag-field',
+      ),
+      '#states' => array(
+        'invisible' => array(
+          ':input[name="content[' . $section . '_wrapper][entity_import][entity_type]"]' => array('value' => ''),
+        ),
+      ),
+    );
+
+    return $form;
+  }
+
+  /**
+   * Returns an array of entities based on data from entity_get_info().
+   *
+   * Filters out entities that do not contain a title field, as they cannot
+   * be used to import content into templates.
+   *
+   * @return array
+   *   Filtered entities from entity_get_info().
+   */
+  private function getEntitiesForContentImport() {
+    $entity_info = entity_get_info();
+
+    foreach ($entity_info as $key => $entity) {
+      if (in_array('title', $entity['schema_fields_sql']['base table'])) {
+        $filtered_entities[$key] = $entity;
+      }
+    }
+
+    return $filtered_entities;
   }
 
 }
