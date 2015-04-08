@@ -201,7 +201,7 @@ class MailchimpCampaignForm extends EntityForm {
         }
 
         $form['content'][$section . '_wrapper'] += $this->getEntityImportFormElements($entity_type, $section);
-        $form['content'][$section . '_wrapper'] += mailchimp_campaign_get_merge_vars_form_elements($merge_vars, $mailchimp_lists[$list_id]['name']);
+        $form['content'][$section . '_wrapper'] += $this->getMergeVarsFormElements($merge_vars, $mailchimp_lists[$list_id]['name']);
       }
     }
     else {
@@ -230,7 +230,7 @@ class MailchimpCampaignForm extends EntityForm {
       $form['content'][$section . '_wrapper'] += $this->getEntityImportFormElements($entity_type, $section);
 
       $list_name = (!empty($list_id)) ? $mailchimp_lists[$list_id]['name'] : '';
-      $form['content'][$section . '_wrapper'] += mailchimp_campaign_get_merge_vars_form_elements($merge_vars, $list_name);
+      $form['content'][$section . '_wrapper'] += $this->getMergeVarsFormElements($merge_vars, $list_name);
     }
 
     // Message preview:
@@ -468,6 +468,74 @@ class MailchimpCampaignForm extends EntityForm {
     }
 
     return $filtered_entities;
+  }
+
+  /**
+   * Gets form elements used in the merge vars feature.
+   *
+   * @param array $merge_vars
+   *   Array of MailChimp merge vars for the current list.
+   * @see mailchimp_get_mergevars
+   * @param string $list_name
+   *   The name of the current list.
+   *
+   * @return array
+   *   Array of form elements used to display merge vars.
+   */
+  private function getMergeVarsFormElements($merge_vars, $list_name) {
+    $form = array();
+
+    $form['merge_vars'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array(
+          'merge-vars-wrapper'
+        ),
+      ),
+    );
+
+    $form['merge_vars']['content'] = array(
+      '#type' => 'item',
+      '#title' => 'MailChimp merge variables',
+      '#markup' => $this->buildMergeVarsHtml($merge_vars),
+      '#description' => t(
+        'Insert merge variables from the %list_name list or one of the !standard_link.',
+        array(
+          '%list_name' => $list_name,
+          '!standard_link' => l(
+            t('standard MailChimp merge variables'), 'http://kb.mailchimp.com/article/all-the-merge-tags-cheatsheet',
+            array('attributes' => array('target' => '_blank'))),
+        )
+      ),
+    );
+
+    return $form;
+  }
+
+  /**
+   * Builds a HTML string used to render merge vars on the campaign form.
+   *
+   * @param array $merge_vars
+   *   Array of merge vars. @see mailchimp_lists_get_merge_vars
+   *
+   * @return string
+   *   HTML string containing formatted merge vars.
+   */
+  function buildMergeVarsHtml($merge_vars) {
+    if (!empty($merge_vars)) {
+      $rows = array();
+      foreach ($merge_vars as $var) {
+        $rows[] = array(
+          $var['name'],
+          '<a id="merge-var-' . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a>',
+        );
+      }
+      $table = theme('table', array('rows' => $rows));
+      return render($table);
+    }
+    else {
+      return t('No custom merge vars exist for the current list.');
+    }
   }
 
 }
