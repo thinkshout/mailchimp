@@ -66,7 +66,7 @@ class MailchimpCampaignForm extends EntityForm {
       '#type' => 'select',
       '#title' => t('List'),
       '#description' => t('Select the list this campaign should be sent to.'),
-      '#options' => _mailchimp_campaign_build_option_list($mailchimp_lists),
+      '#options' => $this->buildOptionList($mailchimp_lists),
       '#default_value' => ($campaign) ? $campaign->mc_data['list_id'] : -1,
       '#required' => TRUE,
       '#ajax' => array(
@@ -96,7 +96,7 @@ class MailchimpCampaignForm extends EntityForm {
         '#type' => 'select',
         '#title' => t('List Segment'),
         '#description' => t('Select the list segment this campaign should be sent to.'),
-        '#options' => _mailchimp_campaign_build_option_list($list_segments, '-- Entire list --'),
+        '#options' => $this->buildOptionList($list_segments, '-- Entire list --'),
         '#default_value' => (isset($segment_id)) ? $segment_id : '',
       );
     }
@@ -132,7 +132,7 @@ class MailchimpCampaignForm extends EntityForm {
       '#type' => 'select',
       '#title' => t('Template'),
       '#description' => t('Select a MailChimp user template to use. Due to a limitation in the API, only templates that do not contain repeating sections are available. If empty, the default template will be applied.'),
-      '#options' => _mailchimp_campaign_build_option_list(mailchimp_campaign_list_templates(), '-- Select --', $template_type_labels),
+      '#options' => $this->buildOptionList(mailchimp_campaign_list_templates(), '-- Select --', $template_type_labels),
       '#default_value' => ($campaign) ? $campaign->mc_data['template_id'] : -1,
       '#ajax' => array(
         'callback' => 'mailchimp_campaign_template_callback',
@@ -222,8 +222,10 @@ class MailchimpCampaignForm extends EntityForm {
         '#default_value' => ($campaign) ? $campaign->template['html']['value'] : '',
       );
 
-      $entity_type = isset($form_state['values']['content'][$section . '_wrapper']['entity_import']['entity_type']) ?
-        $form_state['values']['content'][$section . '_wrapper']['entity_import']['entity_type'] : NULL;
+      $entity_type = NULL;
+      if (isset($campaign_content[$section . '_wrapper']['entity_import']['entity_type'])) {
+        $entity_type = $campaign_content[$section . '_wrapper']['entity_import']['entity_type'];
+      }
 
       $form['content'][$section . '_wrapper'] += mailchimp_campaign_get_entity_import_form_elements($entity_type, $section);
 
@@ -265,6 +267,39 @@ class MailchimpCampaignForm extends EntityForm {
     // TODO: Save entity.
 
     $form_state->setRedirect('mailchimp_campaign.overview');
+  }
+
+  /**
+   * Returns an options list for a given array of items.
+   *
+   * @param array $list
+   *   Array of item data containing 'id' and 'name' properties.
+   * @param string $no_selection_label
+   *   The option value to display when no option is selected.
+   * @param array $labels
+   *   Optional associative array of list indexes to custom labels.
+   *
+   * @return array
+   *   Associative array of item IDs to name.
+   */
+  private function buildOptionList($list, $no_selection_label = '-- Select --', $labels = array()) {
+    $options = array();
+    if ($no_selection_label) {
+      $options[''] = $no_selection_label;
+    }
+    foreach ($list as $index => $item) {
+      if (!isset($item['id'])) {
+        $label = isset($labels[$index]) ? $labels[$index] : $index;
+        if (count($item)) {
+          $options[$label] = $this->buildOptionList($item, FALSE, $labels);
+        }
+      }
+      else {
+        $options[$item['id']] = $item['name'];
+      }
+    }
+
+    return $options;
   }
 
 }
