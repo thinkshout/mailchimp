@@ -303,6 +303,51 @@ class MailchimpCampaignForm extends EntityForm {
   }
 
   /**
+   * Returns an options list of entities based on data from entity_get_info().
+   *
+   * Filters out entities that do not contain a title field, as they cannot
+   * be used to import content into templates.
+   *
+   * @param array $entity_info
+   *   Array of entities as returned by entity_get_info().
+   *
+   * @return array
+   *   Associative array of entity IDs to name.
+   */
+  private function buildEntityOptionList($entity_info) {
+    $options = array(
+      '' => '-- Select --',
+    );
+
+    foreach ($entity_info as $entity_id => $entity_data) {
+      // Exclude MailChimp entities.
+      if (strpos($entity_id, 'mailchimp') === FALSE) {
+        $options[$entity_id] = $entity_data['label'];
+      }
+    }
+
+    return $options;
+  }
+
+  /**
+   * Returns an options list of entity view modes.
+   *
+   * @param array $entity
+   *   Array of entity data as returned by entity_get_info().
+   *
+   * @return array
+   *   Associative array of view mode IDs to name.
+   */
+  private function buildEntityViewModeOptionList(array $entity) {
+    $options = array();
+    foreach ($entity['view modes'] as $view_mode_id => $view_mode_data) {
+      $options[$view_mode_id] = $view_mode_data['label'];
+    }
+
+    return $options;
+  }
+
+  /**
    * Gets form elements used in the entity import feature.
    *
    * @param string $entity_type
@@ -318,7 +363,7 @@ class MailchimpCampaignForm extends EntityForm {
 
     // Get available entity types.
     $entity_info = $this->getEntitiesForContentImport();
-    $entity_options = _mailchimp_campaign_build_entity_option_list($entity_info);
+    $entity_options = $this->buildEntityOptionList($entity_info);
 
     $form['entity_import'] = array(
       '#id' => 'entity-import',
@@ -355,7 +400,7 @@ class MailchimpCampaignForm extends EntityForm {
 
     if ($entity_type != NULL) {
       // Get available entity view modes.
-      $entity_view_mode_options = _mailchimp_campaign_build_entity_view_mode_option_list($entity_info[$entity_type]);
+      $entity_view_mode_options = buildEntityViewModeOptionList($entity_info[$entity_type]);
 
       $form['entity_import']['entity_id'] = array(
         '#type' => 'textfield',
@@ -410,11 +455,14 @@ class MailchimpCampaignForm extends EntityForm {
    *   Filtered entities from entity_get_info().
    */
   private function getEntitiesForContentImport() {
-    $entity_info = entity_get_info();
+    $entity_info = \Drupal::entityManager()->getDefinitions();
 
     foreach ($entity_info as $key => $entity) {
-      if (in_array('title', $entity['schema_fields_sql']['base table'])) {
-        $filtered_entities[$key] = $entity;
+      foreach ($entity['entity_keys'] as $entity_key => $value) {
+        if ($value == 'title') {
+          $filtered_entities[$key] = $entity;
+          continue;
+        }
       }
     }
 
