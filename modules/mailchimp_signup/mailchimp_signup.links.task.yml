@@ -1,5 +1,5 @@
 mailchimp_signup.admin:
   route_name: mailchimp_signup.admin
   base_route: mailchimp.admin
-  title: 'Mailchimp Signup'
+  title: 'Signup Forms'
   weight: 10
