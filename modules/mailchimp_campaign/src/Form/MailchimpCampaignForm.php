@@ -322,7 +322,7 @@ class MailchimpCampaignForm extends EntityForm {
     foreach ($entity_info as $entity_id => $entity_data) {
       // Exclude MailChimp entities.
       if (strpos($entity_id, 'mailchimp') === FALSE) {
-        $options[$entity_id] = $entity_data['label'];
+        $options[$entity_id] = $entity_data->getLabel();
       }
     }
 
@@ -458,7 +458,8 @@ class MailchimpCampaignForm extends EntityForm {
     $entity_info = \Drupal::entityManager()->getDefinitions();
 
     foreach ($entity_info as $key => $entity) {
-      foreach ($entity['entity_keys'] as $entity_key => $value) {
+      $entity_keys = $entity->getKeys();
+      foreach ($entity_keys as $entity_key => $value) {
         if ($value == 'title') {
           $filtered_entities[$key] = $entity;
           continue;
