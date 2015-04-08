@@ -494,6 +494,8 @@ class MailchimpCampaignForm extends EntityForm {
       ),
     );
 
+    $merge_vars_url = Url::fromUri('https://admin.mailchimp.com/lists/');
+
     $form['merge_vars']['content'] = array(
       '#type' => 'item',
       '#title' => 'MailChimp merge variables',
@@ -502,8 +504,8 @@ class MailchimpCampaignForm extends EntityForm {
         'Insert merge variables from the %list_name list or one of the !standard_link.',
         array(
           '%list_name' => $list_name,
-          '!standard_link' => l(
-            t('standard MailChimp merge variables'), 'http://kb.mailchimp.com/article/all-the-merge-tags-cheatsheet',
+          '!standard_link' => \Drupal::l(
+            t('standard MailChimp merge variables'), $merge_vars_url,
             array('attributes' => array('target' => '_blank'))),
         )
       ),
