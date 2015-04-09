@@ -281,7 +281,7 @@ class MailchimpCampaignForm extends EntityForm {
 
     $template_content = $this->parseTemplateContent($form_state->get('content'));
 
-    $campaign_id = $form_state->get('campaign');
+    $campaign_id = (!empty($form_state->get('campaign'))) ? $form_state->get('campaign')->mc_campaign_id : NULL;
     mailchimp_campaign_save_campaign($template_content, $options, $segment_options, $campaign_id);
 
     // TODO: Clear campaign cache.
