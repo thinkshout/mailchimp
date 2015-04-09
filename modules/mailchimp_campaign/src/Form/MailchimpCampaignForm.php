@@ -544,7 +544,7 @@ class MailchimpCampaignForm extends EntityForm {
    * @return string
    *   HTML string containing formatted merge vars.
    */
-  function buildMergeVarsHtml($merge_vars) {
+  private function buildMergeVarsHtml($merge_vars) {
     if (!empty($merge_vars)) {
       $rows = array();
       foreach ($merge_vars as $var) {
