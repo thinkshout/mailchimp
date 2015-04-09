@@ -264,7 +264,28 @@ class MailchimpCampaignForm extends EntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    // TODO: Save entity.
+    $options = array(
+      'title' => $form_state->get('title'),
+      'subject' => $form_state->get('subject'),
+      'list_id' => $form_state->get('list_id'),
+      'from_email' => $form_state->get('from_email'),
+      'from_name' => check_plain($form_state->get('from_name')),
+      'template_id' => $form_state->get('template_id'),
+    );
+    $segment_options = NULL;
+    if (!empty($form_state->get('list_segment_id')) && !empty($form_state->get('list_segment_id'))) {
+      $segment_options = array(
+        'saved_segment_id' => $form_state->get('list_segment_id'),
+      );
+    }
+
+    $template_content = _mailchimp_campaign_parse_template_content($form_state->get('content'));
+
+    $campaign_id = $form_state->get('campaign');
+    mailchimp_campaign_save_campaign($template_content, $options, $segment_options, $campaign_id);
+
+    // TODO: Clear campaign cache.
+    //cache_clear_all('mailchimp_campaign_campaigns', 'cache');
 
     $form_state->setRedirect('mailchimp_campaign.overview');
   }
