@@ -279,7 +279,7 @@ class MailchimpCampaignForm extends EntityForm {
       );
     }
 
-    $template_content = _mailchimp_campaign_parse_template_content($form_state->get('content'));
+    $template_content = $this->parseTemplateContent($form_state->get('content'));
 
     $campaign_id = $form_state->get('campaign');
     mailchimp_campaign_save_campaign($template_content, $options, $segment_options, $campaign_id);
@@ -559,6 +559,33 @@ class MailchimpCampaignForm extends EntityForm {
     else {
       return t('No custom merge vars exist for the current list.');
     }
+  }
+
+  /**
+   * Parses template content to remove wrapper elements from tree.
+   *
+   * @param array $content
+   *   The template content array.
+   *
+   * @return array
+   *   The template content array minus wrapper elements.
+   */
+  private function parseTemplateContent($content) {
+    $template_content = array();
+    $content_keys = array_keys($content);
+    foreach ($content_keys as $content_key) {
+      if (strpos($content_key, '_wrapper') !== FALSE) {
+        // If this element is a wrapper, add the element contained
+        // within the wrapper to the template content.
+        $new_content_key = str_replace('_wrapper', '', $content_key);
+        $template_content[$new_content_key] = $content[$content_key][$new_content_key];
+      }
+      else {
+        // If this element is not a wrapper, add it to the template content.
+        $template_content[$content_key] = $content[$content_key];
+      }
+    }
+    return $template_content;
   }
 
 }
