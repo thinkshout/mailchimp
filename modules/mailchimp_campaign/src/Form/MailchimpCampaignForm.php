@@ -265,23 +265,23 @@ class MailchimpCampaignForm extends EntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $options = array(
-      'title' => $form_state->get('title'),
-      'subject' => $form_state->get('subject'),
-      'list_id' => $form_state->get('list_id'),
-      'from_email' => $form_state->get('from_email'),
-      'from_name' => String::checkPlain($form_state->get('from_name')),
-      'template_id' => $form_state->get('template_id'),
+      'title' => $form_state->getValue('title'),
+      'subject' => $form_state->getValue('subject'),
+      'list_id' => $form_state->getValue('list_id'),
+      'from_email' => $form_state->getValue('from_email'),
+      'from_name' => String::checkPlain($form_state->getValue('from_name')),
+      'template_id' => $form_state->getValue('template_id'),
     );
     $segment_options = NULL;
-    if (!empty($form_state->get('list_segment_id')) && !empty($form_state->get('list_segment_id'))) {
+    if (!empty($form_state->getValue('list_segment_id')) && !empty($form_state->getValue('list_segment_id'))) {
       $segment_options = array(
-        'saved_segment_id' => $form_state->get('list_segment_id'),
+        'saved_segment_id' => $form_state->getValue('list_segment_id'),
       );
     }
 
-    $template_content = $this->parseTemplateContent($form_state->get('content'));
+    $template_content = $this->parseTemplateContent($form_state->getValue('content'));
 
-    $campaign_id = (!empty($form_state->get('campaign'))) ? $form_state->get('campaign')->mc_campaign_id : NULL;
+    $campaign_id = (!empty($form_state->getValue('campaign'))) ? $form_state->getValue('campaign')->mc_campaign_id : NULL;
     mailchimp_campaign_save_campaign($template_content, $options, $segment_options, $campaign_id);
 
     // TODO: Clear campaign cache.
