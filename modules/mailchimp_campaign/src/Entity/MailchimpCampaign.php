@@ -7,7 +7,7 @@
 
 namespace Drupal\mailchimp_campaign\Entity;
 
-use Drupal\Core\Config\Entity\ContentEntityBase;
+use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
 
 /**
