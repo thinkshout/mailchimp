@@ -6,7 +6,7 @@ mailchimp_campaign.mailchimp_campaign.*:
   mapping:
     mc_campaign_id:
       type: string
-      label: 'MailChimp campaign ID'
+      label: 'MailChimp Campaign ID'
     template:
       type: blob
       label: 'Campaign body template'

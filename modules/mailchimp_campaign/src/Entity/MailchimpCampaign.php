@@ -8,6 +8,8 @@
 namespace Drupal\mailchimp_campaign\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
 
 /**
@@ -61,11 +63,35 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
   public $created;
 
   /**
-   * The updated timestamp.
+   * The last changed timestamp.
    *
    * @var int
    */
-  public $updated;
+  public $changed;
+
+  public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
+    $fields = array();
+
+    $fields['mc_campaign_id'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('MailChimp Campaign ID'))
+      ->setDescription(t('MailChimp campaign ID.'))
+      ->setReadOnly(TRUE)
+      ->setSetting('max_length', 16);
+
+    $fields['template'] = BaseFieldDefinition::create('blob')
+      ->setLabel(t('Template'))
+      ->setDescription(t('Campaign body template.'));
+
+    $fields['created'] = BaseFieldDefinition::create('created')
+      ->setLabel(t('Created'))
+      ->setDescription(t('The Unix timestamp when the campaign was created.'));
+
+    $fields['changed'] = BaseFieldDefinition::create('changed')
+      ->setLabel(t('Changed'))
+      ->setDescription(t('The Unix timestamp when the campaign was most recently saved.'));
+
+    return $fields;
+  }
 
   /**
    * {@inheritdoc}
