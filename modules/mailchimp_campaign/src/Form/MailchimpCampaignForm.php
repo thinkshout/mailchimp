@@ -7,7 +7,7 @@
 namespace Drupal\mailchimp_campaign\Form;
 
 use Drupal\Component\Utility\String;
-use Drupal\Core\Entity\EntityForm;
+use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
@@ -19,7 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @package Drupal\mailchimp_campaign\Form
  */
-class MailchimpCampaignForm extends EntityForm {
+class MailchimpCampaignForm extends ContentEntityForm {
 
   /**
    * @param \Drupal\Core\Entity\Query\QueryFactory $entity_query
