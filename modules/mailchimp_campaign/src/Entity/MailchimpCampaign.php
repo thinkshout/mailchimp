@@ -24,10 +24,12 @@ use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
  *       "delete" = "Drupal\mailchimp_campaign\Form\MailchimpCampaignDeleteForm"
  *     }
  *   },
- *   config_prefix = "mailchimp_campaign",
+ *   base_table = "mailchimp_campaign",
  *   admin_permission = "administer mailchimp",
+ *   fieldable = TRUE,
  *   entity_keys = {
- *     "mc_campaign_id" = "mc_campaign_id",
+ *     "id" = "mc_campaign_id",
+ *     "uuid" = "uuid"
  *   },
  *   links = {
  *     "edit-form" = "entity.mailchimp_campaign.edit_form",
