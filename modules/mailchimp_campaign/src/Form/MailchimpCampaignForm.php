@@ -122,6 +122,7 @@ class MailchimpCampaignForm extends EntityForm {
       '#default_value' => ($campaign) ? $campaign->mc_data['from_name'] : variable_get('site_name'),
       '#size' => 40,
       '#maxlength' => 255,
+      '#required' => TRUE,
     );
     $template_type_labels = array(
       'user' => 'My Custom Templates',
