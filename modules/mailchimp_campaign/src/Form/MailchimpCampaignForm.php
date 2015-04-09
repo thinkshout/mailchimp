@@ -182,14 +182,14 @@ class MailchimpCampaignForm extends EntityForm {
         }
         $form['content'][$section . '_wrapper'] = array(
           '#type' => 'fieldset',
-          '#title' => check_plain(drupal_ucfirst($section)),
+          '#title' => String::checkPlain(drupal_ucfirst($section)),
           '#collapsible' => TRUE,
           '#collapsed' => TRUE,
         );
         $form['content'][$section . '_wrapper'][$section] = array(
           '#type' => 'text_format',
           '#format' => $format,
-          '#title' => check_plain(drupal_ucfirst($section)),
+          '#title' => String::checkPlain((drupal_ucfirst($section))),
           '#default_value' => $default_value,
         );
 
@@ -269,7 +269,7 @@ class MailchimpCampaignForm extends EntityForm {
       'subject' => $form_state->get('subject'),
       'list_id' => $form_state->get('list_id'),
       'from_email' => $form_state->get('from_email'),
-      'from_name' => check_plain($form_state->get('from_name')),
+      'from_name' => String::checkPlain($form_state->get('from_name')),
       'template_id' => $form_state->get('template_id'),
     );
     $segment_options = NULL;
