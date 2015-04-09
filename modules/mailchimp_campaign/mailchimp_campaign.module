@@ -4,6 +4,8 @@
  * Module file for mailchimp_campaign.
  */
 
+use \Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
+
 /**
  * Implements hook_entity_info().
  */
