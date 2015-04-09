@@ -72,11 +72,18 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = array();
 
+    // Standard field, used as unique if primary index.
     $fields['mc_campaign_id'] = BaseFieldDefinition::create('string')
       ->setLabel(t('MailChimp Campaign ID'))
       ->setDescription(t('MailChimp campaign ID.'))
       ->setReadOnly(TRUE)
       ->setSetting('max_length', 16);
+
+    // Standard field, unique outside of the scope of the current project.
+    $fields['uuid'] = BaseFieldDefinition::create('uuid')
+      ->setLabel(t('UUID'))
+      ->setDescription(t('The UUID of the campaign.'))
+      ->setReadOnly(TRUE);
 
     $fields['template'] = BaseFieldDefinition::create('blob')
       ->setLabel(t('Template'))
