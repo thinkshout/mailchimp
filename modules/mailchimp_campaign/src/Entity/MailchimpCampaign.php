@@ -7,7 +7,7 @@
 
 namespace Drupal\mailchimp_campaign\Entity;
 
-use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Config\Entity\ContentEntityBase;
 use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
 
 /**
@@ -35,7 +35,7 @@ use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
  *   }
  * )
  */
-class MailchimpCampaign extends ConfigEntityBase implements MailchimpCampaignInterface {
+class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignInterface {
 
   /**
    * The MailChimp campaign ID.

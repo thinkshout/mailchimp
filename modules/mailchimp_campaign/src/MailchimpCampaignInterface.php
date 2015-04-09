@@ -6,8 +6,8 @@
  */
 namespace Drupal\mailchimp_campaign;
 
-use Drupal\Core\Config\Entity\ConfigEntityInterface;
+use Drupal\Core\Config\Entity\ContentEntityInterface;
 
-interface MailchimpCampaignInterface extends ConfigEntityInterface {
+interface MailchimpCampaignInterface extends ContentEntityInterface {
   
 }
