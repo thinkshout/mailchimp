@@ -95,9 +95,10 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
       ->setDescription(t('The UUID of the campaign.'))
       ->setReadOnly(TRUE);
 
-    $fields['template'] = BaseFieldDefinition::create('string')
+    $fields['template'] = BaseFieldDefinition::create('string_long')
       ->setLabel(t('Template'))
-      ->setDescription(t('Campaign body template.'));
+      ->setDescription(t('Campaign body template.'))
+      ->setSetting('case_sensitive', TRUE);
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
