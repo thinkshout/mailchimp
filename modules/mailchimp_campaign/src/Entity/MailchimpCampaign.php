@@ -15,7 +15,7 @@ use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
 /**
  * Defines the MailchimpCampaign entity.
  *
- * @ConfigEntityType(
+ * @ContentEntityType(
  *   id = "mailchimp_campaign",
  *   label = @Translation("Mailchimp Campaign"),
  *   fieldable = FALSE,
@@ -69,6 +69,16 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
    */
   public $changed;
 
+  /**
+   * {@inheritdoc}
+   *
+   * Define the field properties here.
+   *
+   * Field name, type and size determine the table structure.
+   *
+   * In addition, we can define how the field and its content can be manipulated
+   * in the GUI. The behaviour of the widgets used can be determined here.
+   */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = array();
 
