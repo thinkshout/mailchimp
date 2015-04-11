@@ -350,6 +350,9 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
       array('%name' => $options['title'], '%cid' => $campaign_id)));
 
     // Save the campaign entity:
+    /*
+     * Moved to MailchimpCampaignForm
+
     $campaign = entity_create('mailchimp_campaign', array(
       'mc_campaign_id' => $campaign_id,
       'template' => $template,
@@ -357,6 +360,7 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
     ));
 
     mailchimp_campaign_save($campaign);
+    */
 
     // Clear cached data for this campaign.
     mailchimp_campaign_get_campaigns(array($campaign_id), TRUE);

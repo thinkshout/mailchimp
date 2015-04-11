@@ -42,32 +42,32 @@ use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
 class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignInterface {
 
   /**
-   * The MailChimp campaign ID.
-   *
-   * @var string
+   * {@inheritdoc}
    */
-  public $mc_campaign_id;
+  public function getMcCampaignId() {
+    return $this->get('mc_campaign_id')->value;
+  }
 
   /**
-   * The campaign body template.
-   *
-   * @var string
+   * {@inheritdoc}
    */
-  public $template;
+  public function getTemplate() {
+    return $this->get('template')->value;
+  }
 
   /**
-   * The created timestamp.
-   *
-   * @var int
+   * {@inheritdoc}
    */
-  public $created;
+  public function setMcCampaignId($mc_campaign_id) {
+    $this->set('mc_campaign_id', $mc_campaign_id);
+  }
 
   /**
-   * The last changed timestamp.
-   *
-   * @var int
+   * {@inheritdoc}
    */
-  public $changed;
+  public function setTemplate($template) {
+   $this->set('template', $template);
+  }
 
   /**
    * {@inheritdoc}
@@ -86,7 +86,6 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
     $fields['mc_campaign_id'] = BaseFieldDefinition::create('string')
       ->setLabel(t('MailChimp Campaign ID'))
       ->setDescription(t('MailChimp campaign ID.'))
-      ->setReadOnly(TRUE)
       ->setSetting('max_length', 16);
 
     // Standard field, unique outside of the scope of the current project.

@@ -44,6 +44,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
+    /* @var $campaign \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
     $campaign = $this->entity;
 
     $form_state->set('campaign', $campaign);
@@ -129,6 +130,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       'basic' => 'Basic Templates',
       'gallery' => 'Themes',
     );
+
     $form['template_id'] = array(
       '#type' => 'select',
       '#title' => t('Template'),
@@ -140,6 +142,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
         'wrapper' => 'content-sections',
       ),
     );
+
     $form['content'] = array(
       '#id' => 'content-sections',
       '#type' => 'fieldset',
@@ -216,11 +219,11 @@ class MailchimpCampaignForm extends ContentEntityForm {
       );
       $form['content']['html_wrapper']['html'] = array(
         '#type' => 'text_format',
-        '#format' => ($campaign) ? $campaign->template['html']['format'] : 'mailchimp_campaign',
+        '#format' => ($campaign->getTemplate() != NULL) ? $campaign->template['html']['format'] : 'mailchimp_campaign',
         '#title' => t('Content'),
         '#description' => t('The HTML content of the campaign.'),
         '#access' => empty($form_state->get('template_id')),
-        '#default_value' => ($campaign) ? $campaign->template['html']['value'] : '',
+        '#default_value' => ($campaign->getTemplate() != NULL) ? $campaign->template['html']['value'] : '',
       );
 
       $entity_type = NULL;
@@ -282,8 +285,14 @@ class MailchimpCampaignForm extends ContentEntityForm {
 
     $template_content = $this->parseTemplateContent($form_state->getValue('content'));
 
-    $campaign_id = (!empty($form_state->getValue('campaign'))) ? $form_state->getValue('campaign')->mc_campaign_id : NULL;
-    mailchimp_campaign_save_campaign($template_content, $options, $segment_options, $campaign_id);
+    $existing_campaign_id = (!empty($form_state->getValue('campaign'))) ? $form_state->getValue('campaign')->mc_campaign_id : NULL;
+    $campaign_id = mailchimp_campaign_save_campaign($template_content, $options, $segment_options, $existing_campaign_id);
+
+    /* @var $campaign \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
+    $campaign = $this->getEntity();
+    $campaign->setMcCampaignId($campaign_id);
+    $campaign->setTemplate($form_state->getValue('template_id'));
+    $campaign->save();
 
     // TODO: Clear campaign cache.
     //cache_clear_all('mailchimp_campaign_campaigns', 'cache');
