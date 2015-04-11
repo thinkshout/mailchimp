@@ -58,6 +58,13 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
   /**
    * {@inheritdoc}
    */
+  public function getCreated() {
+    return $this->get('created')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function setMcCampaignId($mc_campaign_id) {
     $this->set('mc_campaign_id', $mc_campaign_id);
   }

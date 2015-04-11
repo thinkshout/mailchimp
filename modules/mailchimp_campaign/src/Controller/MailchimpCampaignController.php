@@ -33,43 +33,46 @@ class MailchimpCampaignController extends ControllerBase {
     $campaigns = mailchimp_campaign_load_multiple();
     $templates = mailchimp_campaign_list_templates();
 
+    /* @var $campaign \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
     foreach ($campaigns as $campaign) {
-      $archive_url = Url::fromUri($campaign->mc_data['archive_url']);
-      $campaign_url = Url::fromRoute('mailchimp_campaign.view', array('campaign_id' => $campaign->mc_campaign_id));
+      $campaign_id = $campaign->getMcCampaignId();
+
+      //$archive_url = Url::fromUri($campaign->mc_data['archive_url']);
+      $campaign_url = Url::fromRoute('mailchimp_campaign.view', array('mc_campaign_id' => $campaign_id));
       $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list['web_id']);
 
       $actions = array(
-        \Drupal::l(t('View Archive'), $archive_url),
-        \Drupal::l(t('View'), $campaign_url),
+        //\Drupal::l(t('View Archive'), $archive_url),
+        //\Drupal::l(t('View'), $campaign_url),
       );
 
-      $content['campaigns_table'][$campaign->mc_campaign_id]['title'] = array(
-        '#markup' => \Drupal::l($campaign->label(), $campaign_url),
+      $content['campaigns_table'][$campaign_id]['title'] = array(
+        '#markup' => \Drupal::l($campaign->label()->getValue(), $campaign_url),
       );
 
-      $content['campaigns_table'][$campaign->mc_campaign_id]['subject'] = array(
+      $content['campaigns_table'][$campaign_id]['subject'] = array(
         '#markup' => $campaign->mc_data['subject'],
       );
 
-      $content['campaigns_table'][$campaign->mc_campaign_id]['status'] = array(
+      $content['campaigns_table'][$campaign_id]['status'] = array(
         '#markup' => $campaign->mc_data['status'],
       );
 
-      $content['campaigns_table'][$campaign->mc_campaign_id]['list'] = array(
+      $content['campaigns_table'][$campaign_id]['list'] = array(
         '#markup' => \Drupal::l($campaign->list['name'], $list_url, array(
             'attributes' => array('target' => '_blank'),
           )),
       );
 
-      $content['campaigns_table'][$campaign->mc_campaign_id]['template'] = array(
+      $content['campaigns_table'][$campaign_id]['template'] = array(
         '#markup' => isset($templates[$campaign->mc_data['template_id']]) ? $templates[$campaign->mc_data['template_id']]['name'] : '',
       );
 
-      $content['campaigns_table'][$campaign->mc_campaign_id]['created'] = array(
-        '#markup' => $campaign->mc_data['create_time'],
+      $content['campaigns_table'][$campaign_id]['created'] = array(
+        '#markup' => $campaign->getCreated(),
       );
 
-      $content['campaigns_table'][$campaign->mc_campaign_id]['actions'] = array(
+      $content['campaigns_table'][$campaign_id]['actions'] = array(
         '#markup' => implode(' | ', $actions),
       );
     }
