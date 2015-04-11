@@ -872,13 +872,15 @@ function mailchimp_campaign_load($cid, $reset = FALSE) {
 /**
  * Loads multiple campaigns.
  */
-function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions = array(), $reset = FALSE) {
+function mailchimp_campaign_load_multiple($campaign_ids = array(), $reset = FALSE) {
   if (empty($campaign_ids)) {
-    $campaign_ids = FALSE;
+    $campaign_ids = NULL;
   }
-  $campaigns = entity_load('mailchimp_campaign', $campaign_ids, $conditions, $reset);
-
-  return $campaigns;
+  $controller = \Drupal::entityManager()->getStorage('mailchimp_campaign');
+  if ($reset) {
+    $controller->resetCache($campaign_ids);
+  }
+  return $controller->loadMultiple($campaign_ids);
 }
 
 /**
