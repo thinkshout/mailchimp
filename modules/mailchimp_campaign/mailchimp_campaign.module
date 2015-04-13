@@ -16,8 +16,9 @@ function mailchimp_campaign_entity_storage_load(array $entities, $entity_type) {
 
   $ids = array();
   if (!empty($entities)) {
+    /* @var $campaign \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
     foreach ($entities as $campaign) {
-      $ids[] = $campaign->mc_campaign_id;
+      $ids[] = $campaign->getMcCampaignId();
     }
   }
   $mc_campaigns = mailchimp_campaign_get_campaigns($ids);
