@@ -2,3 +2,27 @@ mailchimp_campaign.overview:
   title: 'Campaigns'
   route_name: mailchimp_campaign.overview
   base_route: mailchimp.admin
+
+mailchimp_campaign.view:
+  title: 'View'
+  route_name: mailchimp_campaign.view
+  parent_id: mailchimp_campaign.overview
+  weight: 0
+
+mailchimp_campaign.send:
+  title: 'Send'
+  route_name: mailchimp_campaign.send
+  parent_id: mailchimp_campaign.overview
+  weight: 1
+
+entity.mailchimp_campaign.edit_form:
+  title: 'Edit'
+  route_name: entity.mailchimp_campaign.edit_form
+  parent_id: mailchimp_campaign.overview
+  weight: 2
+
+entity.mailchimp_campaign.delete_form:
+  title: 'Delete'
+  route_name: entity.mailchimp_campaign.delete_form
+  parent_id: mailchimp_campaign.overview
+  weight: 3
