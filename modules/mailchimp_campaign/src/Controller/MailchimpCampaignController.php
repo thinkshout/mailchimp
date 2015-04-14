@@ -69,7 +69,7 @@ class MailchimpCampaignController extends ControllerBase {
       );
 
       $content['campaigns_table'][$campaign_id]['created'] = array(
-        '#markup' => $campaign->getCreated(),
+        '#markup' => $campaign->mc_data['create_time'],
       );
 
       $content['campaigns_table'][$campaign_id]['actions'] = array(
