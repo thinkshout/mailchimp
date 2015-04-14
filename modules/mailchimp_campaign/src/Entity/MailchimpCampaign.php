@@ -19,11 +19,8 @@ use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
  *   id = "mailchimp_campaign",
  *   label = @Translation("Mailchimp Campaign"),
  *   fieldable = FALSE,
- *   controllers = {
- *     "storage" = "Drupal\Core\Entity\DatabaseStorageController",
- *     "view_builder" = "Drupal\mailchimp_campaign\MailchimpCampaignViewBuilder"
- *   },
  *   handlers = {
+ *     "view_builder" = "Drupal\mailchimp_campaign\Entity\MailchimpCampaignViewBuilder",
  *     "form" = {
  *       "add" = "Drupal\mailchimp_campaign\Form\MailchimpCampaignForm",
  *       "edit" = "Drupal\mailchimp_campaign\Form\MailchimpCampaignForm",
