@@ -481,7 +481,7 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
   $all_templates = array();
   // Return cached lists:
   if (!$reset && !empty($cached_templates)) {
-    $all_templates = $cache->data;
+    $all_templates = $cached_templates->data;
   }
   // Query lists from the MailChimp API and store in cache:
   else {
