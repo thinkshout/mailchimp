@@ -23,7 +23,7 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
     $build = parent::view($entity, $view_mode, $langcode);
 
     // Prepare rendered content.
-    $content = mailchimp_campaign_render_template($entity->template);
+    $content = $this->renderTemplate($entity->template);
     $rendered = '';
     foreach ($content as $key => $section) {
       $rendered .= "<h3>$key</h3>" . $section;
@@ -110,6 +110,26 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
     }
 
     return $build;
+  }
+
+  /**
+   * Converts a template into rendered content.
+   *
+   * @param FieldItemList $template
+   *   List of template sections.
+   *
+   * @return array
+   *   Array of template content indexed by section ID.
+   */
+  private function renderTemplate(FieldItemList $template) {
+    $content = array();
+    foreach ($template->list as $key => $part) {
+      if (isset($part->format)) {
+        $content[$key] = check_markup($part->value, $part->format);
+      }
+    }
+
+    return $content;
   }
 
 }
