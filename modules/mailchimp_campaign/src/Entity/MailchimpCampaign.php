@@ -19,6 +19,10 @@ use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
  *   id = "mailchimp_campaign",
  *   label = @Translation("Mailchimp Campaign"),
  *   fieldable = FALSE,
+ *   controllers = {
+ *     "storage" = "Drupal\Core\Entity\DatabaseStorageController",
+ *     "view_builder" = "Drupal\mailchimp_campaign\MailchimpCampaignViewBuilder"
+ *   },
  *   handlers = {
  *     "form" = {
  *       "add" = "Drupal\mailchimp_campaign\Form\MailchimpCampaignForm",
@@ -104,7 +108,11 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
     $fields['template'] = BaseFieldDefinition::create('string_long')
       ->setLabel(t('Template'))
       ->setDescription(t('Campaign body template.'))
-      ->setSetting('case_sensitive', TRUE);
+      ->setSetting('case_sensitive', TRUE)
+      ->setDisplayOptions('view', array(
+        'label' => 'above',
+        'type' => 'string_long',
+      ));
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
