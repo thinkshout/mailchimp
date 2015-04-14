@@ -83,14 +83,18 @@ class MailchimpCampaignController extends ControllerBase {
   /**
    * View a MailChimp campaign
    *
-   * @param int $campaign_id
-   *   The ID of the campaign to view.
+   * @param int $mc_campaign_id
+   *   The ID of the MailChimp campaign to view.
    *
    * @return array
    *   Renderable array of page content.
    */
-  public function view($campaign_id) {
-    $content = array();
+  public function view($mc_campaign_id) {
+    $view_builder = \Drupal::entityManager()->getViewBuilder('mailchimp_campaign');
+
+    $campaign = mailchimp_campaign_load($mc_campaign_id);
+
+    $content = $view_builder->view($campaign);
 
     return $content;
   }
