@@ -763,9 +763,12 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
  */
 function mailchimp_campaign_render_template($template) {
   $content = array();
-  foreach ($template as $key => $part) {
-    if (isset($part['format'])) {
-      $content[$key] = check_markup($part['value'], $part['format']);
+
+  /* @var $template \Drupal\Core\Field\FieldItemList */
+  /* @var $part \Drupal\Core\Field\Plugin\Field\FieldType\StringLongItem */
+  foreach ($template->list as $key => $part) {
+    if (isset($part->format)) {
+      $content[$key] = check_markup($part->value, $part->format);
     }
   }
 
