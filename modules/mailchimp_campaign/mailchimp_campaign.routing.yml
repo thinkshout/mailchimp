@@ -23,7 +23,7 @@ mailchimp_campaign.add:
     _permission: 'administer mailchimp'
 
 entity.mailchimp_campaign.edit_form:
-  path: '/admin/config/services/mailchimp/campaigns/{mc_campaign_id}'
+  path: '/admin/config/services/mailchimp/campaigns/{mc_campaign_id}/edit'
   defaults:
     _entity_form: 'mailchimp_campaign.edit'
     _title: 'Edit MailChimp Campaign'
