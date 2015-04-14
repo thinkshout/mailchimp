@@ -47,7 +47,7 @@ class MailchimpCampaignController extends ControllerBase {
       );
 
       $content['campaigns_table'][$campaign_id]['title'] = array(
-        '#markup' => \Drupal::l($campaign->label()->getValue(), $campaign_url),
+        '#markup' => \Drupal::l($campaign->mc_data['title'], $campaign_url),
       );
 
       $content['campaigns_table'][$campaign_id]['subject'] = array(
