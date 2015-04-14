@@ -22,6 +22,14 @@ mailchimp_campaign.add:
   requirements:
     _permission: 'administer mailchimp'
 
+mailchimp_campaign.send:
+  path: 'admin/config/services/mailchimp/campaigns/{mc_campaign_id}/send'
+  defaults:
+    _controller: '\Drupal\mailchimp_campaign\Controller\MailchimpCampaignController::view'
+    _title: 'Send Mailchimp Campaign'
+  requirements:
+    _permission: 'administer mailchimp'
+
 entity.mailchimp_campaign.edit_form:
   path: '/admin/config/services/mailchimp/campaigns/{mc_campaign_id}/edit'
   defaults:
