@@ -4,7 +4,6 @@
  * Module file for mailchimp_campaign.
  */
 
-use \Drupal\Core\Field\FieldItemList;
 use \Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
 
 /**

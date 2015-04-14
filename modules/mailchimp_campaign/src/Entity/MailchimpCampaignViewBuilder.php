@@ -9,6 +9,7 @@ namespace Drupal\mailchimp_campaign\Entity;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
+use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Url;
 
 /**
