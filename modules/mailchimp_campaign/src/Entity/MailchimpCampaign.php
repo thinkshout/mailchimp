@@ -15,6 +15,8 @@ use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
 /**
  * Defines the MailchimpCampaign entity.
  *
+ * @ingroup mailchimp_campaign
+ *
  * @ContentEntityType(
  *   id = "mailchimp_campaign",
  *   label = @Translation("Mailchimp Campaign"),

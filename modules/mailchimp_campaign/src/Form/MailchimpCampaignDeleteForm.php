@@ -10,6 +10,11 @@ use Drupal\Core\Entity\EntityConfirmFormBase;
 use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * Form controller for the MailchimpCampaign entity delete form.
+ *
+ * @ingroup mailchimp_campaign
+ */
 class MailchimpCampaignDeleteForm extends EntityConfirmFormBase {
 
   /**

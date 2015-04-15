@@ -14,6 +14,8 @@ use Drupal\Core\Url;
 
 /**
  * Defines the render controller for MailchimpCampaign entities.
+ *
+ * @ingroup mailchimp_campaign
  */
 class MailchimpCampaignViewBuilder extends EntityViewBuilder {
 
