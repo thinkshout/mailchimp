@@ -5,6 +5,7 @@ mailchimp_lists.overview:
     _title: 'Mailchimp Lists'
   requirements:
     _permission: 'administer mailchimp'
+
 mailchimp_lists.refresh:
   path: 'admin/config/services/mailchimp/list_cache_clear'
   defaults:
@@ -12,6 +13,7 @@ mailchimp_lists.refresh:
     _title: 'Reset Mailchimp List Cache'
   requirements:
     _permission: 'administer mailchimp'
+
 mailchimp_lists.webhook:
   path: 'admin/config/services/mailchimp/lists/{list_id}/webhook'
   defaults:
@@ -19,6 +21,7 @@ mailchimp_lists.webhook:
     _title: 'Mailchimp List Webhook Settings'
   requirements:
     _permission: 'administer mailchimp'
+
 mailchimp_lists.fields:
   path: 'admin/config/services/mailchimp/fields'
   defaults:
