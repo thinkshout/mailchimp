@@ -15,9 +15,9 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class MailchimpSignupForm
+ * Form controller for the MailchimpSignup entity edit form.
  *
- * @package Drupal\mailchimp_signup\Form
+ * @ingroup mailchimp_signup
  */
 class MailchimpSignupForm extends EntityForm {
 

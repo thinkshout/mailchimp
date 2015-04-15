@@ -13,6 +13,8 @@ use Drupal\mailchimp_signup\MailchimpSignupInterface;
 /**
  * Defines the MailchimpSignup entity.
  *
+ * @ingroup mailchimp_signup
+ *
  * @ConfigEntityType(
  *   id = "mailchimp_signup",
  *   label = @Translation("Mailchimp Signup Form"),

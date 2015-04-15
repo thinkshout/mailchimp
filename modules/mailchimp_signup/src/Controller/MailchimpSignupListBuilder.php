@@ -11,6 +11,8 @@ use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Provides a listing of MailchimpSignups.
+ *
+ * @ingroup mailchimp_signup
  */
 class MailchimpSignupListBuilder extends ConfigEntityListBuilder {
 

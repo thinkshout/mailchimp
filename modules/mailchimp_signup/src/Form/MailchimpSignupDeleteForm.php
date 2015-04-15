@@ -11,9 +11,10 @@ use Drupal\Core\Url;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Builds the form to delete a Example.
+ * Form controller for the MailchimpSignup entity delete form.
+ *
+ * @ingroup mailchimp_signup
  */
-
 class MailchimpSignupDeleteForm extends EntityConfirmFormBase {
 
   /**
