@@ -80,7 +80,7 @@ class MailchimpSignupListBuilder extends ConfigEntityListBuilder {
     $row['lists'] = implode(', ', $list_labels);
     $row['access'] = $access;
 
-    return $row ;//+ parent::buildRow($entity);
+    return $row + parent::buildRow($entity);
   }
 
 }
