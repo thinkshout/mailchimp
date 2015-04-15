@@ -14,6 +14,14 @@ mailchimp_lists.refresh:
   requirements:
     _permission: 'administer mailchimp'
 
+mailchimp_lists.update_mergevars:
+  path: 'admin/config/services/mailchimp/lists/update_mergevars/{entity_type}/{bundle}/{field_name}'
+  defaults:
+    _form: '\Drupal\mailchimp_lists\Form\MailchimpListsUpdateMergevarsForm'
+    _title: 'Batch Update Merge Variables'
+  requirements:
+    _permission: 'administer mailchimp'
+
 mailchimp_lists.webhook:
   path: 'admin/config/services/mailchimp/lists/{list_id}/webhook'
   defaults:
