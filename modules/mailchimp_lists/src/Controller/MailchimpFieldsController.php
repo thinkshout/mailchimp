@@ -44,16 +44,16 @@ class MailchimpFieldsController extends ControllerBase {
       '#empty' => '',
     );
 
-    // TODO: Get all fields.
-    $fields = array();
+    $field_map = \Drupal::entityManager()->getFieldMap();
+
     $row_id = 1;
-    foreach ($fields as $field) {
-      if ($field['type'] == 'mailchimp_lists_subscription') {
-        foreach ($field['bundles'] as $entity_type => $bundles) {
-          foreach ($bundles as $bundle) {
+    foreach ($field_map as $entity_type => $fields) {
+      foreach ($fields as $field_name => $field_properties) {
+        if ($field_properties['type'] == 'mailchimp_lists_subscription') {
+          foreach ($field_properties['bundles'] as $bundle) {
             // TODO: Correct bulk update URL.
             //$link = 'admin/config/services/mailchimp/lists/update_mergevars/' . $entity_type . '/' . $bundle . '/' . $field['field_name'];
-            $batch_update_url = Url::fromUri('');
+            //$batch_update_url = Url::fromUri('');
 
             $content['fields_table'][$row_id]['entity_type'] = array(
               '#markup' => $entity_type,
@@ -62,10 +62,10 @@ class MailchimpFieldsController extends ControllerBase {
               '#markup' => $bundle,
             );
             $content['fields_table'][$row_id]['field'] = array(
-              '#markup' => $field['field_name'],
+              '#markup' => $field_name,
             );
             $content['lists_table'][$row_id]['batch_update'] = array(
-              '#markup' => \Drupal::l(t('Update Mailchimp Mergevar Values'), $batch_update_url),
+              '#markup' => '',// \Drupal::l(t('Update Mailchimp Mergevar Values'), $batch_update_url),
             );
 
             $row_id++;
