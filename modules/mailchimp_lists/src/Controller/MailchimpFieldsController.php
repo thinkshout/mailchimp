@@ -52,8 +52,11 @@ class MailchimpFieldsController extends ControllerBase {
         if ($field_properties['type'] == 'mailchimp_lists_subscription') {
           foreach ($field_properties['bundles'] as $bundle) {
             // TODO: Correct bulk update URL.
-            //$link = 'admin/config/services/mailchimp/lists/update_mergevars/' . $entity_type . '/' . $bundle . '/' . $field['field_name'];
-            //$batch_update_url = Url::fromUri('');
+            $batch_update_url = Url::fromRoute('mailchimp_lists.update_mergevars', array(
+              'entity_type' => $entity_type,
+              'bundle' => $bundle,
+              'field_name' => $field_name,
+            ));
 
             $content['fields_table'][$row_id]['entity_type'] = array(
               '#markup' => $entity_type,
@@ -64,8 +67,8 @@ class MailchimpFieldsController extends ControllerBase {
             $content['fields_table'][$row_id]['field'] = array(
               '#markup' => $field_name,
             );
-            $content['lists_table'][$row_id]['batch_update'] = array(
-              '#markup' => '',// \Drupal::l(t('Update Mailchimp Mergevar Values'), $batch_update_url),
+            $content['fields_table'][$row_id]['batch_update'] = array(
+              '#markup' => \Drupal::l(t('Update Mailchimp Mergevar Values'), $batch_update_url),
             );
 
             $row_id++;
