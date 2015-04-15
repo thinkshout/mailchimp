@@ -51,11 +51,11 @@ class MailchimpFieldsController extends ControllerBase {
       foreach ($fields as $field_name => $field_properties) {
         if ($field_properties['type'] == 'mailchimp_lists_subscription') {
           foreach ($field_properties['bundles'] as $bundle) {
-            // TODO: Correct bulk update URL.
             $batch_update_url = Url::fromRoute('mailchimp_lists.update_mergevars', array(
               'entity_type' => $entity_type,
               'bundle' => $bundle,
               'field_name' => $field_name,
+              'destination' => 'admin/config/services/mailchimp/fields',
             ));
 
             $content['fields_table'][$row_id]['entity_type'] = array(

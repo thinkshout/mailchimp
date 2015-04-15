@@ -41,7 +41,7 @@ class MailchimpListsUpdateMergevarsForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return Url::fromRoute('mailchimp_lists.overview');
+    return Url::fromRoute('mailchimp_lists.fields');
   }
 
   public function getDescription() {
