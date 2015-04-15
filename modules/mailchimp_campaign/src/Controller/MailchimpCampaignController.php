@@ -39,7 +39,7 @@ class MailchimpCampaignController extends ControllerBase {
       $campaign_id = $campaign->getMcCampaignId();
 
       $archive_url = Url::fromUri($campaign->mc_data['archive_url']);
-      $campaign_url = Url::fromRoute('mailchimp_campaign.view', array('mc_campaign_id' => $campaign_id));
+      $campaign_url = Url::fromRoute('mailchimp_campaign.view', array('mailchimp_campaign' => $campaign_id));
       $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list['web_id']);
 
       $actions = array(
