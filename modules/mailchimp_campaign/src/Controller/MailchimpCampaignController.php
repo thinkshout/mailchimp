@@ -12,6 +12,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 
 use Drupal\Component\Utility\String;
+use Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
 
 /**
  * MailChimp Campaign controller.
@@ -83,18 +84,16 @@ class MailchimpCampaignController extends ControllerBase {
   /**
    * View a MailChimp campaign
    *
-   * @param int $mc_campaign_id
-   *   The ID of the MailChimp campaign to view.
+   * @param MailchimpCampaign $mailchimp_campaign
+   *   The MailChimp campaign to view.
    *
    * @return array
    *   Renderable array of page content.
    */
-  public function view($mc_campaign_id) {
+  public function view(MailchimpCampaign $mailchimp_campaign) {
     $view_builder = \Drupal::entityManager()->getViewBuilder('mailchimp_campaign');
 
-    $campaign = mailchimp_campaign_load($mc_campaign_id);
-
-    $content = $view_builder->view($campaign);
+    $content = $view_builder->view($mailchimp_campaign);
 
     return $content;
   }

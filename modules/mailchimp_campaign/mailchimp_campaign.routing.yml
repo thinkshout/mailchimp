@@ -7,7 +7,7 @@ mailchimp_campaign.overview:
     _permission: 'administer mailchimp'
 
 mailchimp_campaign.view:
-  path: 'admin/config/services/mailchimp/campaigns/{mc_campaign_id}'
+  path: 'admin/config/services/mailchimp/campaigns/{mailchimp_campaign}'
   defaults:
     _controller: '\Drupal\mailchimp_campaign\Controller\MailchimpCampaignController::view'
     _title: 'Mailchimp Campaign'
@@ -23,7 +23,7 @@ mailchimp_campaign.add:
     _permission: 'administer mailchimp'
 
 mailchimp_campaign.send:
-  path: 'admin/config/services/mailchimp/campaigns/{mc_campaign_id}/send'
+  path: 'admin/config/services/mailchimp/campaigns/{mailchimp_campaign}/send'
   defaults:
     _controller: '\Drupal\mailchimp_campaign\Controller\MailchimpCampaignController::view'
     _title: 'Send Mailchimp Campaign'
@@ -31,7 +31,7 @@ mailchimp_campaign.send:
     _permission: 'administer mailchimp'
 
 entity.mailchimp_campaign.edit_form:
-  path: '/admin/config/services/mailchimp/campaigns/{mc_campaign_id}/edit'
+  path: '/admin/config/services/mailchimp/campaigns/{mailchimp_campaign}/edit'
   defaults:
     _entity_form: 'mailchimp_campaign.edit'
     _title: 'Edit MailChimp Campaign'
@@ -39,7 +39,7 @@ entity.mailchimp_campaign.edit_form:
     _permission: 'administer mailchimp'
 
 entity.mailchimp_campaign.delete_form:
-  path: '/admin/config/services/mailchimp/campaign/{mc_campaign_id}/delete'
+  path: '/admin/config/services/mailchimp/campaign/{mailchimp_campaign}/delete'
   defaults:
     _entity_form: 'mailchimp_campaign.delete'
     _title: 'Delete MailChimp Campaign'
