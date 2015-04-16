@@ -30,3 +30,29 @@ function hook_mailchimp_lists_mergevars_alter(&$mergevars, $entity, $entity_type
 function hook_mailchimp_process_webhook($type, $data) {
 
 }
+
+/**
+ * Perform an action after a subscriber has been subscribed.
+ *
+ * @string $list_id
+ *   Mailchimp list id.
+ * @string $email
+ *   Subscriber email address.
+ * @array $merge_vars
+ *   Submitted user values.
+ */
+function hook_mailchimp_subscribe_user($list_id, $email, $merge_vars) {
+
+}
+
+/**
+ * Perform an action after a subscriber has been unsubscribed.
+ *
+ * @string $list_id
+ *   Mailchimp list id.
+ * @string $email
+ *   Subscriber email address.
+ */
+function hook_mailchimp_unsubscribe_user($list_id, $email) {
+
+}
