@@ -40,18 +40,50 @@ class MailchimpListsSubscription extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function defaultFieldSettings() {
+    return array(
+      'show_interest_groups' => 0,
+      'interest_groups_label' => '',
+      'merge_fields' => array(),
+      'unsubscribe_on_delete' => 0,
+    ) + parent::defaultFieldSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
     $columns = array(
-      'show_interest_groups' => array(
+      'subscribe' => array(
         'type' => 'int',
         'size' => 'tiny',
         'not null' => TRUE,
         'default' => 0,
       ),
+      'interest_groups' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => TRUE,
+      ),
     );
     return array(
       'columns' => $columns,
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
+    $properties['subscribe'] = DataDefinition::create('integer')
+      ->setLabel(t('Subscribe'))
+      ->setDescription(t('Boolean. True when an entity is subscribed to a list.'));
+
+    $properties['interest_groups'] = DataDefinition::create('string')
+      ->setLabel(t('Interest groups'))
+      ->setDescription(t('Interest groups selected for a list.'));
+
+    return $properties;
   }
 
   /**
@@ -118,35 +150,38 @@ class MailchimpListsSubscription extends FieldItemBase {
    * {@inheritdoc}
    */
   public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
-    $element = array();
+    $element = parent::fieldSettingsForm($form, $form_state);
 
     $storage = $form_state->getStorage();
-
     $mc_list_id = $storage['field']->getSetting('mc_list_id');
+
+    $settings = $this->getSettings();
 
     $element['show_interest_groups'] = array(
       '#title' => "Enable Interest Groups",
       '#type' => "checkbox",
-      '#default_value' => $this->getSetting('show_interest_groups'),
+      '#default_value' => $settings['show_interest_groups'],
     );
-    $element['interest_groups_title'] = array(
+    $element['interest_groups_label'] = array(
       '#title' => "Interest Groups Label",
       '#type' => "textfield",
-      '#default_value' => !empty($this->getSetting('show_interest_groups')) ? $this->getSetting('show_interest_groups') : "Interest Groups",
+      '#default_value' => !empty($settings['show_interest_groups']) ? $settings['show_interest_groups'] : 'Interest Groups',
     );
-    $element['mergefields'] = array(
+    $element['merge_fields'] = array(
       '#type' => 'fieldset',
       '#title' => t('Merge Fields'),
       '#description' => t('Multi-value fields will only sync their first value to Mailchimp, as Mailchimp does not support multi-value fields.'),
       '#tree' => TRUE,
     );
+
     $element['unsubscribe_on_delete'] = array(
       '#title' => "Unsubscribe on deletion",
       '#type' => "checkbox",
       '#description' => t('Unsubscribe entities from this list when they are deleted.'),
-      '#default_value' => $this->getSetting('unsubscribe_on_delete'),
+      '#default_value' => $settings['unsubscribe_on_delete'],
     );
-    $mv_defaults = $this->getSetting('mergefields');
+
+    $mv_defaults = $this->getSetting('merge_fields');
     $mergevars = mailchimp_get_mergevars(array($mc_list_id));
 
     $fields = mailchimp_lists_fieldmap_options($form['field']['entity_type']['#value'], $form['field']['bundle']['#value']);
@@ -160,21 +195,21 @@ class MailchimpListsSubscription extends FieldItemBase {
 
     foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
       $default_value = isset($mv_defaults[$mergevar['tag']]) ? $mv_defaults[$mergevar['tag']] : -1;
-      $element['mergefields'][$mergevar['tag']] = array(
+      $element['merge_fields'][$mergevar['tag']] = array(
         '#type' => 'select',
         '#title' => String::checkPlain($mergevar['name']),
         '#default_value' => array_key_exists($default_value, $fields_flat) ? $default_value : '',
         '#required' => $mergevar['req'],
       );
       if (!$mergevar['req'] || $mergevar['tag'] === 'EMAIL') {
-        $element['mergefields'][$mergevar['tag']]['#options'] = $fields;
+        $element['merge_fields'][$mergevar['tag']]['#options'] = $fields;
         if ($mergevar['tag'] === 'EMAIL') {
-          $element['mergefields'][$mergevar['tag']]['#description'] = t('Any entity with an empty or invalid email address field value will simply be ignored by the Mailchimp subscription system. <em>This is why the Email field is the only required merge field which can sync to non-required fields.</em>');
+          $element['merge_fields'][$mergevar['tag']]['#description'] = t('Any entity with an empty or invalid email address field value will simply be ignored by the Mailchimp subscription system. <em>This is why the Email field is the only required merge field which can sync to non-required fields.</em>');
         }
       }
       else {
-        $element['mergefields'][$mergevar['tag']]['#options'] = $required_fields;
-        $element['mergefields'][$mergevar['tag']]['#description'] = t("Only 'required' and 'calculated' fields are allowed to be synced with Mailchimp 'required' merge fields.");
+        $element['merge_fields'][$mergevar['tag']]['#options'] = $required_fields;
+        $element['merge_fields'][$mergevar['tag']]['#description'] = t("Only 'required' and 'calculated' fields are allowed to be synced with Mailchimp 'required' merge fields.");
       }
     }
 
@@ -184,19 +219,8 @@ class MailchimpListsSubscription extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['show_interest_groups'] = DataDefinition::create('integer')
-      ->setLabel(t('Show Interest Groups'))
-      ->setDescription(t('Boolean. True when list interest groups should be visible.'));
-    return $properties;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function isEmpty() {
-    // TODO: Temporary. Replace with more general property.
-    $value = $this->get('show_interest_groups')->getValue();
+    $value = $this->get('subscribe')->getValue();
     return $value === NULL || $value === '';
   }
 }
