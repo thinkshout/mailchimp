@@ -59,8 +59,11 @@ class MailchimpListsUpdateMergevarsForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $entity_type = \Drupal::request()->get('entity_type');
+    $bundle = \Drupal::request()->get('bundle');
+    $field_name = \Drupal::request()->get('field_name');
 
-    // TODO: Update mergevars.
+    mailchimp_lists_update_member_merge_values($entity_type, $bundle, $field_name);
 
     drupal_set_message(t('Mergevars updated.'));
   }
