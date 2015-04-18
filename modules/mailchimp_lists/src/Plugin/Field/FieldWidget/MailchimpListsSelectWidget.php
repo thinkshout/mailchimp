@@ -6,6 +6,7 @@
 
 namespace Drupal\mailchimp_lists\Plugin\Field\FieldWidget;
 
+use Drupal\Component\Utility\String;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -29,13 +30,60 @@ class MailchimpListsSelectWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta,
-                              array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+
+    $settings = $this->getSettings();
+
+    // TODO: Get user selected value.
+    $subscribe = FALSE;
+
+    $email = NULL;
+    /*
+    if (isset($element['#entity'])) {
+      $email = mailchimp_lists_load_email($instance, $element['#entity'], FALSE);
+      if ($email) {
+        $default = mailchimp_is_subscribed($field['settings']['mc_list_id'], $email);
+      }
+    }
+    */
+
     $element += array(
-      '#type' => 'textfield',
-      '#default_value' => $items[$delta]->mc_list_id ?: NULL,
-      '#placeholder' => $this->getSetting('placeholder'),
+      '#title' => String::checkPlain($element['#title']),
+      '#type' => 'fieldset',
     );
+    $element['subscribe'] = array(
+      '#title' => t('Subscribe'),
+      '#type' => 'checkbox',
+      '#default_value' => ($subscribe)? TRUE : $this->fieldDefinition->required,
+      '#required' => $this->fieldDefinition->required,
+      '#disabled' => $this->fieldDefinition->required,
+    );
+
+    /*
+    if ($instance['settings']['show_interest_groups'] || $form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
+      $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
+      $element['interest_groups'] = array(
+        '#type' => 'fieldset',
+        '#title' => check_plain($instance['settings']['interest_groups_title']),
+        '#weight' => 100,
+        '#states' => array(
+          'invisible' => array(
+            ':input[name="' . $field['field_name'] . '[' . $langcode . '][0][subscribe]"]' => array('checked' => FALSE),
+          ),
+        ),
+      );
+      if ($form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
+        $element['interest_groups']['#states']['invisible'] = array(
+          ':input[name="instance[settings][show_interest_groups]"]' => array('checked' => FALSE),
+        );
+      }
+      $groups_default = isset($instance['default_value'][0]['interest_groups']) ? $instance['default_value'][0]['interest_groups'] : array();
+      if ($mc_list['stats']['group_count']) {
+        $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
+      }
+    }
+    */
+
     return array('value' => $element);
   }
 
