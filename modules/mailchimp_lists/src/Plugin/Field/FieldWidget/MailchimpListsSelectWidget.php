@@ -31,14 +31,6 @@ class MailchimpListsSelectWidget extends WidgetBase {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-
-    $settings = $this->getSettings();
-
-    // TODO: Get user selected value.
-    $subscribed = FALSE;
-
-    $email = NULL;
-
     /* @var $instance \Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription */
     $instance = $items[0];
 
