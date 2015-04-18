@@ -6,7 +6,9 @@
  */
 
 use Drupal\mailchimp\Library\DrupalMailchimpLibrary;
-use \Drupal\Core\Entity\EntityManager;
+use Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription;
+use Drupal\Core\Entity\EntityManager;
+use Drupal\field\Entity\FieldConfig;
 
 module_load_include('inc', 'mailchimp_lists', 'includes/mailchimp_lists.field');
 
@@ -82,21 +84,29 @@ function mailchimp_lists_entity_delete($entity, $type) {
  *
  * Returns an email address or FALSE.
  */
-function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
-  $entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity);
-  if (!isset($instance['settings']['mergefields']['EMAIL'])) {
+function mailchimp_lists_load_email(MailchimpListsSubscription $instance, $entity, $log_errors = TRUE) {
+  $merge_fields = $instance->getFieldDefinition()->getSetting('merge_fields');
+
+  if (empty($merge_fields) || !isset($merge_fields['EMAIL'])) {
     if ($log_errors) {
-      \Drupal::logger('mailchimp_lists')->notice('Mailchimp Lists field "{field}" on {entity} -> {bundle} has no EMAIL field configured, subscription actions cannot take place.', array(
-        'field' => $instance['field_name'],
-        'entity' => $instance['entity_type'],
-        'bundle' => $instance['bundle'],
-      ));
+      //\Drupal::logger('mailchimp_lists')->notice('Mailchimp Lists field "{field}" on {entity} -> {bundle} has no EMAIL field configured, subscription actions cannot take place.', array(
+      //  'field' => $instance['field_name'],
+      //  'entity' => $instance['entity_type'],
+      //  'bundle' => $instance['bundle'],
+      //));
     }
     return FALSE;
   }
-  $email = $entity_wrapper->{$instance['settings']['mergefields']['EMAIL']}->value();
-  if (valid_email_address($email)) {
-    return $email;
+
+  // Get the value of the entity's email property using the user-defined
+  // email field.
+  $mail_property = $instance->getFieldDefinition()->getSetting('merge_fields')['EMAIL'];
+
+  /* @var $mail_field \Drupal\Core\Field\FieldItemList */
+  $mail_field = $entity->get($mail_property);
+
+  if (($mail_field != NULL) && valid_email_address($mail_field->getString())) {
+    return $mail_field->getString();
   }
   else {
     return FALSE;
@@ -374,7 +384,17 @@ function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type
 /**
  * Triggers an update of all merge field values for appropriate entities.
  */
-function mailchimp_lists_update_member_merge_values($entity_type, $bundle_name, $field) {
+function mailchimp_lists_update_member_merge_values($entity_type, $bundle_name, $field_name) {
+
+  // TODO: D8 version of field_info_instance().
+
+  $field_config = FieldConfig::loadByName($entity_type, $bundle_name, $field_name);
+
+
+
+  // TODO: Load field.
+  $field = NULL;
+
   $instance = field_info_instance($entity_type, $field['field_name'], $bundle_name);
   $mergefields = $instance['settings']['mergefields'];
   // Assemble a list of current subscription statuses so we don't alter them.
