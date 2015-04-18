@@ -35,17 +35,19 @@ class MailchimpListsSelectWidget extends WidgetBase {
     $settings = $this->getSettings();
 
     // TODO: Get user selected value.
-    $subscribe = FALSE;
+    $subscribed = FALSE;
 
     $email = NULL;
-    /*
-    if (isset($element['#entity'])) {
-      $email = mailchimp_lists_load_email($instance, $element['#entity'], FALSE);
+
+    /* @var $instance \Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription */
+    $instance = $items[0];
+
+    if (!empty($instance->getEntity())) {
+      $email = mailchimp_lists_load_email($instance, $instance->getEntity(), FALSE);
       if ($email) {
-        $default = mailchimp_is_subscribed($field['settings']['mc_list_id'], $email);
+        $subscribed = mailchimp_is_subscribed($instance->getFieldDefinition()->getSetting('mc_list_id'), $email);
       }
     }
-    */
 
     $element += array(
       '#title' => String::checkPlain($element['#title']),
@@ -54,9 +56,9 @@ class MailchimpListsSelectWidget extends WidgetBase {
     $element['subscribe'] = array(
       '#title' => t('Subscribe'),
       '#type' => 'checkbox',
-      '#default_value' => ($subscribe)? TRUE : $this->fieldDefinition->required,
-      '#required' => $this->fieldDefinition->required,
-      '#disabled' => $this->fieldDefinition->required,
+      '#default_value' => ($subscribed)? TRUE : $this->fieldDefinition->isRequired(),
+      '#required' => $this->fieldDefinition->isRequired(),
+      '#disabled' => $this->fieldDefinition->isRequired(),
     );
 
     /*
