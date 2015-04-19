@@ -7,7 +7,7 @@
 
 /**
  * Implements hook_field_info().
- */
+ */invokations
 function mailchimp_lists_field_info() {
   return array(
     'mailchimp_lists_subscription' => array(

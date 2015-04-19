@@ -539,7 +539,8 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
     $mcapi = mailchimp_get_api_object();
     $result = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
     if ($result) {
-      module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
+      // TODO: D8 equivalent of module_invoke_all()
+      //module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
     }
     // Clear user cache:
     mailchimp_cache_clear_member($list_id, $email);
@@ -944,7 +945,8 @@ function mailchimp_process_webhook() {
   }
 
   // Allow other modules to act on a webhook.
-  module_invoke_all('mailchimp_process_webhook', $type, $data);
+  // TODO: D8 equivalent of module_invoke_all()
+  //module_invoke_all('mailchimp_process_webhook', $type, $data);
 
   // Log event:
   \Drupal::logger('mailchimp')->info('Webhook type {type} has been processed.', array(
