@@ -354,7 +354,9 @@ function _mailchimp_lists_mergevars_populate($merge_fields, EntityInterface $ent
       $mergevars[$label] = isset($object) ? $property->getString() : NULL;
     }
   }
-  drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
+  // TODO: D8 equivalent of drupal_alter()
+  //drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
+
   return $mergevars;
 }
 
