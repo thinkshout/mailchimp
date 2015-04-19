@@ -287,7 +287,9 @@ function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
  *   True on success.
  */
 function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $confirm = TRUE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE) {
-  if ($this->config('mailchimp.settings')->get('cron')) {
+  $config = \Drupal::config('mailchimp.settings');
+
+  if ($config->get('cron')) {
     $args = array(
       'list_id' => $list_id,
       'email' => $email,
@@ -313,6 +315,8 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin
  *   True on success.
  */
 function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE) {
+  $config = \Drupal::config('mailchimp.settings');
+
   $result = FALSE;
   try {
     $mcapi = mailchimp_get_api_object();
@@ -327,7 +331,7 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $doub
       ));
     }
     else {
-      if (!$this->config('mailchimp.settings')->get('test_mode')) {
+      if (!$config->get('test_mode')) {
         \Drupal::logger('mailchimp')->warning('A problem occurred subscribing {email} to list {list}.', array(
           'email' => $email,
           'list' => $list_id,
@@ -375,7 +379,9 @@ function mailchimp_addto_queue($function, $args) {
  *   Success or failure.
  */
 function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE) {
-  if ($this->config('mailchimp.settings')->get('cron')) {
+  $config = \Drupal::config('mailchimp.settings');
+
+  if ($config->get('cron')) {
     $args = array(
       'list_id' => $list_id,
       'email' => $email,
@@ -493,10 +499,12 @@ function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE, $u
  *   Indicates whether unsubscribe was successful.
  */
 function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FALSE, $notify = FALSE) {
+  $config = \Drupal::config('mailchimp.settings');
+
   $result = FALSE;
 
   if (mailchimp_is_subscribed($list_id, $email)) {
-    if ($this->config('mailchimp.settings')->get('cron')) {
+    if ($config->get('cron')) {
       $result = mailchimp_addto_queue(
         'mailchimp_unsubscribe_process',
         array(

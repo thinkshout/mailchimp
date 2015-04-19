@@ -30,7 +30,7 @@ function mailchimp_drush_command() {
  */
 function _mailchimp_cron_batch($temp_batchsize = NULL) {
   $stored_batchsize = NULL;
-  $config = $this->config('mailchimp.settings');
+  $config = \Drupal::config('mailchimp.settings');
   if (!is_null($temp_batchsize)) {
     $stored_batchsize = $config->get('batch_limit', 100);
     $config->set('batch_limit', $temp_batchsize);
