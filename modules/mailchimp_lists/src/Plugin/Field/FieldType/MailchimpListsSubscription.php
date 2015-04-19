@@ -232,6 +232,6 @@ class MailchimpListsSubscription extends FieldItemBase {
     parent::preSave();
 
     $choices = $this->value;
-    mailchimp_lists_process_subscribe_form_choices($choices, $this->getFieldDefinition(), $this->getEntity());
+    mailchimp_lists_process_subscribe_form_choices($choices, $this, $this->getEntity());
   }
 }

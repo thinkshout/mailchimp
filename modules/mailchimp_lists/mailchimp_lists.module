@@ -7,6 +7,7 @@
 
 use Drupal\mailchimp\Library\DrupalMailchimpLibrary;
 use Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManager;
 use Drupal\field\Entity\FieldConfig;
 
@@ -38,7 +39,7 @@ function mailchimp_lists_entity_delete($entity, $type) {
  *
  * Returns an email address or FALSE.
  */
-function mailchimp_lists_load_email(MailchimpListsSubscription $instance, $entity, $log_errors = TRUE) {
+function mailchimp_lists_load_email(MailchimpListsSubscription $instance, EntityInterface $entity, $log_errors = TRUE) {
   $merge_fields = $instance->getFieldDefinition()->getSetting('merge_fields');
 
   if (empty($merge_fields) || !isset($merge_fields['EMAIL'])) {
@@ -170,15 +171,18 @@ function mailchimp_lists_subscribe_form_submit($form, &$form_state) {
  * @entity $entity
  *   An Entity that has the $instance field.
  */
-function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $field, $entity) {
+function mailchimp_lists_process_subscribe_form_choices($choices, MailchimpListsSubscription $instance, EntityInterface $entity) {
   $email = mailchimp_lists_load_email($instance, $entity);
+
   if (!$email) {
     // We can't do much subscribing without an email address.
     return;
   }
+
+  $settings = $instance->getFieldDefinition()->getSettings();
+
   $function = FALSE;
-  $list_id = $field['settings']['mc_list_id'];
-  $subscribed = mailchimp_is_subscribed($list_id, $email);
+  $subscribed = mailchimp_is_subscribed($settings['mc_list_id'], $email);
   if ($choices['subscribe'] != $subscribed) {
     // Subscription selection has changed.
     if ($choices['subscribe']) {
@@ -196,23 +200,23 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
       $mergevars = array();
     }
     else {
-      $mergevars = _mailchimp_lists_mergevars_populate($instance['settings']['mergefields'], $entity, $instance['entity_type']);
+      $mergevars = _mailchimp_lists_mergevars_populate($settings['merge_fields'], $entity, $entity->getEntityType());
       if (!empty($choices['interest_groups'])) {
         $mergevars['GROUPINGS'] = mailchimp_reformat_groupings($choices['interest_groups']);
       }
     }
     switch ($function) {
       case 'add':
-        $ret = mailchimp_subscribe($list_id, $email, $mergevars, $field['settings']['double_opt_in'], $field['settings']['send_welcome']);
+        $ret = mailchimp_subscribe($settings['mc_list_id'], $email, $mergevars, $settings['double_opt_in'], $settings['send_welcome']);
         break;
 
       case 'remove':
-        $ret = mailchimp_unsubscribe($list_id, $email, TRUE);
+        $ret = mailchimp_unsubscribe($settings['mc_list_id'], $email, TRUE);
         break;
 
       case 'update':
-        if (_mailchimp_lists_subscription_has_changed($instance, $field, $entity, $email, $choices)) {
-          $ret = mailchimp_update_member($list_id, $email, $mergevars);
+        if (_mailchimp_lists_subscription_has_changed($instance, $entity, $email, $choices)) {
+          $ret = mailchimp_update_member($settings['mc_list_id'], $email, $mergevars);
         }
         else {
           $ret = TRUE;
@@ -235,14 +239,25 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
  * 
  * returns bool
  */
-function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $email, $choices) {
+function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $instance, EntityInterface $entity, $email, $choices) {
+  $settings = $instance->getFieldDefinition()->getSettings();
+
   if (isset($entity->original)) {
-    $new_entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity);
-    $old_entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity->original);
+
+    // TODO: Compare entity revisions for changes to subscription field.
+
+    /*
+    $entity_type = $entity->getEntityType();
+
+    $new_entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
+    $old_entity_wrapper = entity_metadata_wrapper($entity_type, $entity->original);
     // First compare Interest Group settings:
-    if ($instance['settings']['show_interest_groups']) {
-      $old_settings = $old_entity_wrapper->{$field['field_name']}->value();
-      $new_settings = $new_entity_wrapper->{$field['field_name']}->value();
+    if ($settings['show_interest_groups']) {
+
+      $field_name = $instance->getFieldDefinition()->field_name;
+
+      $old_settings = $old_entity_wrapper->{$field_name}->value();
+      $new_settings = $new_entity_wrapper->{$field_name}->value();
       foreach ($new_settings['interest_groups'] as $id => $new_interests) {
         if (!isset($old_settings['interest_groups'][$id])) {
           return TRUE;
@@ -280,12 +295,13 @@ function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $
         }
       }
     }
+    */
   }
   // We don't have an old entity to compare values so we have to retrieve our
   // old settings from Mailchimp. This means the only possible change is in our
   // interest group settings, so we only analyze those:
   else {
-    $member_info = mailchimp_get_memberinfo($field['settings']['mc_list_id'], $email);
+    $member_info = mailchimp_get_memberinfo($settings['mc_list_id'], $email);
     foreach ($member_info['merges']['GROUPINGS'] as $grouping) {
       if (!isset($choices['interest_groups'][$grouping['id']])) {
         return TRUE;
@@ -311,24 +327,31 @@ function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $
 /**
  * Helper function to complete a mailchimp-api-ready mergevars array.
  */
-function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type) {
-  $wrapper = entity_metadata_wrapper($entity_type, $entity);
+function _mailchimp_lists_mergevars_populate($merge_fields, EntityInterface $entity, $entity_type) {
   $mergevars = array();
-  foreach ($mergefields as $label => $property) {
+  foreach ($merge_fields as $label => $property) {
     if (!empty($property) && strlen($property)) {
       $elements = explode(':', $property);
-      $object = $wrapper;
+      $object = $entity;
+
       foreach ($elements as $element) {
+        // TODO: EntityListWrapper probably needs to change for D8.
         if ($object instanceof EntityListWrapper) {
           $object = $object[0];
         }
-        if ($object->value() === NULL || !isset($object->{$element})) {
+
+        /* @var $property \Drupal\Core\Field\FieldItemInterface */
+        $property = $object->get($element);
+
+        if ($property == NULL) {
           $object = NULL;
           break;
         }
-        $object = $object->{$element};
+
+        $object = $property;
       }
-      $mergevars[$label] = isset($object) ? $object->value() : NULL;
+
+      $mergevars[$label] = isset($object) ? $property->getString() : NULL;
     }
   }
   drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
