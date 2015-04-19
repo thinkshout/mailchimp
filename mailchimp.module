@@ -322,7 +322,8 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $doub
     $mcapi = mailchimp_get_api_object();
     $result = $mcapi->lists->subscribe($list_id, array('email' => $email), $merge_vars, $format, $double_optin, $update_existing, $replace_interests, $confirm);
     if (isset($result['email'])) {
-      module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
+      // TODO: D8 equivalent of module_invoke_all()
+      //module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
       // Clear user cache, just in case there's some cruft leftover:
       mailchimp_cache_clear_member($list_id, $email);
       \Drupal::logger('mailchimp')->error('{email} was subscribed to list {list}.', array(
