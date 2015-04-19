@@ -53,30 +53,36 @@ class MailchimpListsSelectWidget extends WidgetBase {
       '#disabled' => $this->fieldDefinition->isRequired(),
     );
 
-    /*
-    if ($instance['settings']['show_interest_groups'] || $form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
-      $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
+    // TODO: Condition should also be true if current form is field settings form.
+    if ($this->fieldDefinition->getSetting('show_interest_groups')) {
+      $mc_list = mailchimp_get_list($instance->getFieldDefinition()->getSetting('mc_list_id'));
       $element['interest_groups'] = array(
         '#type' => 'fieldset',
-        '#title' => check_plain($instance['settings']['interest_groups_title']),
+        '#title' => String::checkPlain($instance->getFieldDefinition()->getSetting('interest_groups_title')),
         '#weight' => 100,
+        // TODO: Hide interest groups if subscribe checkbox is empty.
+        // TODO: field_sub[0][value][subscribe]
         '#states' => array(
           'invisible' => array(
-            ':input[name="' . $field['field_name'] . '[' . $langcode . '][0][subscribe]"]' => array('checked' => FALSE),
+            ':input[name="' . $instance->getFieldDefinition()->getName() . '[0][value][subscribe]"]' => array('checked' => FALSE),
           ),
         ),
       );
-      if ($form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
-        $element['interest_groups']['#states']['invisible'] = array(
-          ':input[name="instance[settings][show_interest_groups]"]' => array('checked' => FALSE),
-        );
-      }
-      $groups_default = isset($instance['default_value'][0]['interest_groups']) ? $instance['default_value'][0]['interest_groups'] : array();
+      // TODO: Limit to field settings form only.
+      //if ($form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
+      //  $element['interest_groups']['#states']['invisible'] = array(
+      //    ':input[name="instance[settings][show_interest_groups]"]' => array('checked' => FALSE),
+      //  );
+      //}
+
+      $groups_default = array();
+
+      // TODO: Get selected interest groups.
+      //$groups_default = isset($instance['default_value'][0]['interest_groups']) ? $instance['default_value'][0]['interest_groups'] : array();
       if ($mc_list['stats']['group_count']) {
         $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
       }
     }
-    */
 
     return array('value' => $element);
   }
