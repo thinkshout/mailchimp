@@ -248,6 +248,7 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
 /**
  * Implements hook_field_formatter_info().
  */
+/*
 function mailchimp_lists_field_formatter_info() {
   return array(
     'mailchimp_lists_field_subscribe' => array(
@@ -267,6 +268,7 @@ function mailchimp_lists_field_formatter_info() {
     ),
   );
 }
+*/
 
 /**
  * Implements hook_field_formatter_settings_form().
@@ -306,6 +308,7 @@ function mailchimp_lists_field_formatter_settings_summary($field, $instance, $vi
 /**
  * Implements hook_field_formatter_view().
  */
+/*
 function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
@@ -362,6 +365,7 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
 
   return array($element);
 }
+*/
 
 /**
  * Implements hook_field_prepare_view().
