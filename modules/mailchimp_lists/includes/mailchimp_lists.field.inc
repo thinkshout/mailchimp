@@ -7,7 +7,8 @@
 
 /**
  * Implements hook_field_info().
- */invokations
+ */
+/*
 function mailchimp_lists_field_info() {
   return array(
     'mailchimp_lists_subscription' => array(
@@ -34,6 +35,7 @@ function mailchimp_lists_field_info() {
     ),
   );
 }
+*/
 
 /**
  * Implements hook_field_settings_form().
@@ -87,6 +89,7 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
 /**
  * Implements hook_field_instance_settings_form().
  */
+/*
 function mailchimp_lists_field_instance_settings_form($field, $instance) {
   $form = array();
   $mc_list_id = $field['settings']['mc_list_id'];
@@ -140,6 +143,9 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
 
   return $form;
 }
+*/
+
+// TODO: Move field validation into MailchimpListsSubscription.
 
 /**
  * Implements hook_field_validate().
@@ -162,13 +168,16 @@ function mailchimp_lists_field_validate($entity_type, $entity, $field, $instance
 /**
  * Implements hook_field_is_empty().
  */
+/*
 function mailchimp_lists_field_is_empty($item, $field) {
   return FALSE;
 }
+*/
 
 /**
  * Implements hook_field_widget_info().
  */
+/*
 function mailchimp_lists_field_widget_info() {
   return array(
     'mailchimp_lists_select' => array(
@@ -182,10 +191,12 @@ function mailchimp_lists_field_widget_info() {
     ),
   );
 }
+*/
 
 /**
  * Implements hook_field_widget_form().
  */
+/*
 function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $default = isset($instance['default_value'][0]['subscribe']) ? $instance['default_value'][0]['subscribe'] : FALSE;
   $email = NULL;
@@ -230,6 +241,9 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
   }
   return $element;
 }
+*/
+
+// TODO: Port all field formatter hooks to MailchimpListsFieldSubscribeFormatter.
 
 /**
  * Implements hook_field_formatter_info().
@@ -364,6 +378,8 @@ function mailchimp_lists_field_prepare_view($entity_type, $entities, $field, $in
   }
 }
 
+// TODO: Move into MailchimpListsSubscription.
+
 /**
  * Implements hook_form_FORM_ID_alter().
  */
@@ -397,6 +413,7 @@ function mailchimp_lists_form_field_ui_field_edit_form_validate(&$form, &$form_s
 /**
  * Property callback for mailchimp_lists_subscription field.
  */
+/*
 function mailchimp_lists_subscription_property_info_callback(&$info, $entity_type, $field, $instance, $field_type) {
   $name = $field['field_name'];
   $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$name];
@@ -407,6 +424,7 @@ function mailchimp_lists_subscription_property_info_callback(&$info, $entity_typ
 
   unset($property['query callback']);
 }
+*/
 
 /**
  * Entity field data callback for mailchimp subscription fields.
@@ -444,6 +462,7 @@ function mailchimp_lists_field_get($entity, array $options, $name, $entity_type,
  * If we have any mailchimp_lists_subscription fields, we handle any changes to
  * them by making appropriate subscription calls.
  */
+/*
 function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
   if ($field['type'] == 'mailchimp_lists_subscription') {
     $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
@@ -451,3 +470,4 @@ function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance,
     mailchimp_lists_process_subscribe_form_choices($choices, $instance, $field, $entity);
   }
 }
+*/
