@@ -75,9 +75,9 @@ class MailchimpListsSubscription extends FieldItemBase {
    * {@inheritdoc}
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['subscribe'] = DataDefinition::create('integer')
+    $properties['subscribe'] = DataDefinition::create('boolean')
       ->setLabel(t('Subscribe'))
-      ->setDescription(t('Boolean. True when an entity is subscribed to a list.'));
+      ->setDescription(t('True when an entity is subscribed to a list.'));
 
     $properties['interest_groups'] = DataDefinition::create('string')
       ->setLabel(t('Interest groups'))
@@ -189,6 +189,7 @@ class MailchimpListsSubscription extends FieldItemBase {
 
     //unset($fields[$field['field_name']]);
 
+    // TODO: Flatten fields array.
     //$fields_flat = options_array_flatten($fields);
 
     $fields_flat = $fields;
@@ -220,7 +221,17 @@ class MailchimpListsSubscription extends FieldItemBase {
    * {@inheritdoc}
    */
   public function isEmpty() {
-    $value = $this->get('subscribe')->getValue();
-    return $value === NULL || $value === '';
+    $value = $this->getValue();
+    return (($value === NULL) || ($value === ''));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave() {
+    parent::preSave();
+
+    $choices = $this->value;
+    mailchimp_lists_process_subscribe_form_choices($choices, $this->getFieldDefinition(), $this->getEntity());
   }
 }
