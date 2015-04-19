@@ -574,6 +574,7 @@ function mailchimp_lists_mollom_form_info($form_id) {
  * @return array
  *   List of properties that can be used as an #options list.
  */
+/*
 function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $required = FALSE, $prefix = NULL, $tree = NULL) {
   $options = array();
   if (!$prefix) {
@@ -582,15 +583,13 @@ function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $
 
   $properties = \Drupal::entityManager()->getFieldDefinitions($entity_type, $entity_bundle);
 
-/*
-  if (isset($entity_bundle)) {
-    $info = entity_get_property_info($entity_type);
-    $properties = $info['properties'];
-    if (isset($info['bundles'][$entity_bundle])) {
-      $properties += $info['bundles'][$entity_bundle]['properties'];
-    }
-  }
-*/
+  //if (isset($entity_bundle)) {
+  //  $info = entity_get_property_info($entity_type);
+  //  $properties = $info['properties'];
+  //  if (isset($info['bundles'][$entity_bundle])) {
+  //    $properties += $info['bundles'][$entity_bundle]['properties'];
+  //  }
+  //}
 
   foreach ($properties as $key => $property) {
     $keypath = $prefix ? $prefix . ':' . $key : $key;
@@ -621,6 +620,7 @@ function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $
   }
   return $options;
 }
+*/
 
 /**
  * Implements hook_action_info().

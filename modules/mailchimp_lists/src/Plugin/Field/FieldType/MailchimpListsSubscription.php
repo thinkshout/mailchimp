@@ -184,8 +184,8 @@ class MailchimpListsSubscription extends FieldItemBase {
     $mv_defaults = $this->getSetting('merge_fields');
     $mergevars = mailchimp_get_mergevars(array($mc_list_id));
 
-    $fields = mailchimp_lists_fieldmap_options($form['field']['entity_type']['#value'], $form['field']['bundle']['#value']);
-    $required_fields = mailchimp_lists_fieldmap_options($form['field']['entity_type']['#value'], $form['field']['bundle']['#value'], TRUE);
+    $fields = $this->getFieldmapOptions($form['field']['entity_type']['#value'], $form['field']['bundle']['#value']);
+    $required_fields = $this->getFieldmapOptions($form['field']['entity_type']['#value'], $form['field']['bundle']['#value'], TRUE);
 
     //unset($fields[$field['field_name']]);
 
@@ -233,5 +233,70 @@ class MailchimpListsSubscription extends FieldItemBase {
 
     $choices = $this->value;
     mailchimp_lists_process_subscribe_form_choices($choices, $this, $this->getEntity());
+  }
+
+  /**
+   * Get an array with all possible Drupal properties for a given entity type.
+   *
+   * @param string $entity_type
+   *   Name of entity whose properties to list.
+   * @param string $entity_bundle
+   *   Optional bundle to limit available properties.
+   * @param bool $required
+   *   Set to TRUE if properties are required.
+   * @param string $prefix
+   *   Optional prefix for option IDs in the options list.
+   * @param string $tree
+   *   Optional name of the parent element if this options list is part of a tree.
+   *
+   * @return array
+   *   List of properties that can be used as an #options list.
+   */
+  private function getFieldmapOptions($entity_type, $entity_bundle = NULL, $required = FALSE, $prefix = NULL, $tree = NULL) {
+    $options = array();
+    if (!$prefix) {
+      $options[''] = t('-- Select --');
+    }
+
+    $properties = \Drupal::entityManager()->getFieldDefinitions($entity_type, $entity_bundle);
+
+    /*
+      if (isset($entity_bundle)) {
+        $info = entity_get_property_info($entity_type);
+        $properties = $info['properties'];
+        if (isset($info['bundles'][$entity_bundle])) {
+          $properties += $info['bundles'][$entity_bundle]['properties'];
+        }
+      }
+    */
+
+    foreach ($properties as $key => $property) {
+      $keypath = $prefix ? $prefix . ':' . $key : $key;
+      $type = isset($property->type) ? entity_property_extract_innermost_type($property->type) : 'text';
+      $is_entity = ($type == 'entity');// || (bool) entity_get_info($type);
+
+      $label = $property->getLabel();
+      $bundle = $property->getTargetBundle();
+
+      if ($is_entity) {
+        // We offer fields on related entities (useful for field collections).
+        // But we only offer 1 level of depth to avoid loops.
+        if (!$prefix) {
+          $options[$label] = $this->getFieldmapOptions($type, $bundle, $required, $keypath, $label);
+        }
+      }
+      elseif (!$required || $property->isRequired() || $property->isComputed()) {
+        //if (isset($property['field']) && $property['field'] && !empty($property['property info'])) {
+        //  foreach ($property['property info'] as $sub_key => $sub_prop) {
+        //    $label = isset($tree) ? $tree . ' - ' . $property['label'] : $property['label'];
+        //    $options[$label][$keypath . ':' . $sub_key] = $sub_prop['label'];
+        //  }
+        //}
+        //else {
+        $options[$keypath] = $label;
+        //}
+      }
+    }
+    return $options;
   }
 }
