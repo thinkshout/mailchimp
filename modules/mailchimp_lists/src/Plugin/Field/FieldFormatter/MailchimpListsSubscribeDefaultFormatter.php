@@ -34,9 +34,9 @@ class MailchimpListsSubscribeDefaultFormatter extends FormatterBase {
     $element['show_interest_groups'] = array(
       '#title' => t('Show Interest Groups'),
       '#type' => 'checkbox',
-      '#description' => $settings['show_interest_groups'] ? t('Check to display interest group membership details.') : t('To display Interest Groups, first enable them in the field instance settings.'),
-      '#default_value' => $settings['show_interest_groups'] && $field_settings['show_interest_groups'],
-      '#disabled' => !$settings['show_interest_groups'],
+      '#description' => $field_settings['show_interest_groups'] ? t('Check to display interest group membership details.') : t('To display Interest Groups, first enable them in the field instance settings.'),
+      '#default_value' => $field_settings['show_interest_groups'] && $settings['show_interest_groups'],
+      '#disabled' => !$field_settings['show_interest_groups'],
     );
 
     return $element;
@@ -71,10 +71,6 @@ class MailchimpListsSubscribeDefaultFormatter extends FormatterBase {
     foreach ($items as $delta => $item) {
       $elements[$delta] = array();
 
-      //$elements[$delta] = array(
-      //  '#type' => 'markup',
-      //  '#markup' => check_plain($item->mc_list_id),
-      //);
       $field_settings = $this->getFieldSettings();
 
       $mc_list = mailchimp_get_list($field_settings['mc_list_id']);

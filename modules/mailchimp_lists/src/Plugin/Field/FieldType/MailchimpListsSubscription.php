@@ -220,6 +220,17 @@ class MailchimpListsSubscription extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public function getValue() {
+    $values = parent::getValue();
+
+
+
+    return $values;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function isEmpty() {
     $value = $this->getValue();
     return (($value === NULL) || ($value === ''));
