@@ -412,9 +412,15 @@ function mailchimp_lists_form_field_storage_config_edit_form_alter(&$form, FormS
  * Ensure cardinality is set to 1 on mailchimp_lists_subscription fields.
  */
 function mailchimp_lists_form_field_ui_field_edit_form_validate(&$form, FormStateInterface &$form_state) {
-  if ($form['#field']['type'] == 'mailchimp_lists_subscription') {
-    if ($form_state['values']['field']['cardinality'] !== 1) {
-      form_set_error('cardinality', t('Cardinality on mailchimp lists fields must be set to one.'));
+  $storage = $form_state->getStorage();
+
+  /* @var $field_config \Drupal\field\Entity\FieldConfig */
+  $field_config = $storage['field_config'];
+
+  if ($field_config->field_type == 'mailchimp_lists_subscription') {
+
+    if ($form_state->getValue('cardinality_number') != 1) {
+      $form_state->setErrorByName('cardinality_number', t('Cardinality on mailchimp lists fields must be set to 1.'));
     }
   }
 }
