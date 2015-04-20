@@ -88,55 +88,51 @@ class MailchimpListsSubscribeDefaultFormatter extends FormatterBase {
       $mc_list = mailchimp_get_list($field_settings['mc_list_id']);
       $email = mailchimp_lists_load_email($item, $item->getEntity(), FALSE);
 
-      // TODO: Display subscription form if accessible.
-      //if ($display['type'] == 'mailchimp_lists_field_subscribe' && $email && entity_access('edit', $entity_type, $entity)) {
-      //  $field_form_id = 'mailchimp_lists_' . $field['field_name'] . '_form';
-      //  $element = drupal_get_form($field_form_id, $item, $display['settings'], $entity, $field);
-      //}
-      //else {
-        if ($email) {
-          if (mailchimp_is_subscribed($field_settings['mc_list_id'], $email)) {
-            $status = t('Subscribed to %list', array('%list' => $mc_list['name']));
-          }
-          else {
-            $status = t('Not subscribed to %list', array('%list' => $mc_list['name']));
-          }
+      if ($email) {
+        if (mailchimp_is_subscribed($field_settings['mc_list_id'], $email)) {
+          $status = t('Subscribed to %list', array('%list' => $mc_list['name']));
         }
         else {
-          $status = t('Invalid email configuration.');
+          $status = t('Not subscribed to %list', array('%list' => $mc_list['name']));
         }
-        $elements[$delta]['status'] = array(
-          '#markup' => $status,
-          '#description' => t('@mc_list_description', array('@mc_list_description' => $item->getFieldDefinition()->getDescription())),
-        );
-        // TODO: Figure out why this formatter has no settings ($this->getSetting('show_interest_groups'))
-        if ($field_settings['show_interest_groups'] && $this->getSetting('show_interest_groups')) {
-          $memberinfo = mailchimp_get_memberinfo($field_settings['mc_list_id'], $email);
-          if (isset($memberinfo['merges']['GROUPINGS'])) {
-            $elements[$delta]['interest_groups'] = array(
-              '#type' => 'fieldset',
-              '#title' => t('Interest Groups'),
-              '#weight' => 100,
-            );
-            foreach ($memberinfo['merges']['GROUPINGS'] as $grouping) {
-              $items = array();
-              foreach ($grouping['groups'] as $interest) {
-                if ($interest['interested']) {
-                  $items[] = $interest['name'];
-                }
+      }
+      else {
+        $status = t('Invalid email configuration.');
+      }
+      $elements[$delta]['status'] = array(
+        '#markup' => $status,
+        '#description' => t('@mc_list_description', array(
+          '@mc_list_description' => $item->getFieldDefinition()
+              ->getDescription()
+        )),
+      );
+      // TODO: Figure out why this formatter has no settings ($this->getSetting('show_interest_groups'))
+      if ($field_settings['show_interest_groups'] && $this->getSetting('show_interest_groups')) {
+        $memberinfo = mailchimp_get_memberinfo($field_settings['mc_list_id'], $email);
+        if (isset($memberinfo['merges']['GROUPINGS'])) {
+          $elements[$delta]['interest_groups'] = array(
+            '#type' => 'fieldset',
+            '#title' => t('Interest Groups'),
+            '#weight' => 100,
+          );
+          foreach ($memberinfo['merges']['GROUPINGS'] as $grouping) {
+            $items = array();
+            foreach ($grouping['groups'] as $interest) {
+              if ($interest['interested']) {
+                $items[] = $interest['name'];
               }
-              if (count($items)) {
-                $elements[$delta]['interest_groups'][$grouping['id']] = array(
-                  '#title' => $grouping['name'],
-                  '#theme' => 'item_list',
-                  '#items' => $items,
-                  '#type' => 'ul',
-                );
-              }
+            }
+            if (count($items)) {
+              $elements[$delta]['interest_groups'][$grouping['id']] = array(
+                '#title' => $grouping['name'],
+                '#theme' => 'item_list',
+                '#items' => $items,
+                '#type' => 'ul',
+              );
             }
           }
         }
-      //}
+      }
     }
 
     return $elements;
