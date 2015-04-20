@@ -86,13 +86,10 @@ class MailchimpListsSubscribeForm extends FormBase {
     // Determine if a user is subscribed to the list.
     $is_subscribed = mailchimp_is_subscribed($mc_list['id'], $email);
     $wrapper_key = 'mailchimp_' . $field_name;
-    $form_state->setValue('settings', array(
-      'wrapper_key' => $wrapper_key,
-      // TODO: Use below values if needed for submit handler.
-      //'instance' => $instance,
-      //'field' => $field,
-      //'entity' => $this->fieldInstance->getEntity(),
-    ));
+    $form['wrapper_key'] = array(
+      '#type' => 'hidden',
+      '#default_value' => $wrapper_key,
+    );
     $form[$wrapper_key] = array(
       '#type' => 'container',
       '#tree' => TRUE,
@@ -150,7 +147,10 @@ class MailchimpListsSubscribeForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $wrapper_key = $form_state->getValue('wrapper_key');
+    $choices = $form_state->getValue($wrapper_key);
 
+    mailchimp_lists_process_subscribe_form_choices($choices, $this->fieldInstance, $this->fieldInstance->getEntity());
   }
 
 }
