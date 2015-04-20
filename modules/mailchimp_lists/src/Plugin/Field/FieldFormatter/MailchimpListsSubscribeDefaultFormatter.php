@@ -26,12 +26,24 @@ class MailchimpListsSubscribeDefaultFormatter extends FormatterBase {
   /**
    * {@inheritdoc}
    */
+  public static function defaultSettings() {
+    $settings = array(
+      'show_interest_groups' => FALSE,
+    );
+
+    return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function settingsForm(array $form, FormStateInterface $form_state) {
+    $form = parent::settingsForm($form, $form_state);
+
     $field_settings = $this->getFieldSettings();
     $settings = $this->getSettings();
 
-    $element = array();
-    $element['show_interest_groups'] = array(
+    $form['show_interest_groups'] = array(
       '#title' => t('Show Interest Groups'),
       '#type' => 'checkbox',
       '#description' => $field_settings['show_interest_groups'] ? t('Check to display interest group membership details.') : t('To display Interest Groups, first enable them in the field instance settings.'),
@@ -39,7 +51,7 @@ class MailchimpListsSubscribeDefaultFormatter extends FormatterBase {
       '#disabled' => !$field_settings['show_interest_groups'],
     );
 
-    return $element;
+    return $form;
   }
 
   /**
