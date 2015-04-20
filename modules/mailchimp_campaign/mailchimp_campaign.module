@@ -290,6 +290,9 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
     ),
   );
 
+  // Allow alter of template and options used in campaign
+  drupal_alter('mailchimp_campaign', $options, $template, $campaign_id);
+
   // Convert template to content by running through formatter.
   if (isset($template['html'])) {
     $content = mailchimp_campaign_render_template($template);
