@@ -27,7 +27,38 @@ class MailchimpListsSubscribeDefaultFormatter extends FormatterBase {
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
-    return array();
+    $field_settings = $this->getFieldSettings();
+    $settings = $this->getSettings();
+
+    $element = array();
+    $element['show_interest_groups'] = array(
+      '#title' => t('Show Interest Groups'),
+      '#type' => 'checkbox',
+      '#description' => $settings['show_interest_groups'] ? t('Check to display interest group membership details.') : t('To display Interest Groups, first enable them in the field instance settings.'),
+      '#default_value' => $settings['show_interest_groups'] && $field_settings['show_interest_groups'],
+      '#disabled' => !$settings['show_interest_groups'],
+    );
+
+    return $element;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $field_settings = $this->getFieldSettings();
+    $settings = $this->getSettings();
+
+    $summary = array();
+
+    if ($field_settings['show_interest_groups'] && $settings['show_interest_groups']) {
+      $summary[] = t('Display Interest Groups');
+    }
+    else {
+      $summary[] = t('Hide Interest Groups');
+    }
+
+    return $summary;
   }
 
   /**

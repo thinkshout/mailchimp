@@ -243,8 +243,6 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
 }
 */
 
-// TODO: Port all field formatter hooks to MailchimpListsFieldSubscribeFormatter.
-
 /**
  * Implements hook_field_formatter_info().
  */
@@ -273,6 +271,7 @@ function mailchimp_lists_field_formatter_info() {
 /**
  * Implements hook_field_formatter_settings_form().
  */
+/*
 function mailchimp_lists_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
@@ -288,10 +287,12 @@ function mailchimp_lists_field_formatter_settings_form($field, $instance, $view_
 
   return $element;
 }
+*/
 
 /**
  * Implements hook_field_formatter_settings_summary().
  */
+/*
 function mailchimp_lists_field_formatter_settings_summary($field, $instance, $view_mode) {
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
@@ -304,6 +305,7 @@ function mailchimp_lists_field_formatter_settings_summary($field, $instance, $vi
 
   return $summary;
 }
+*/
 
 /**
  * Implements hook_field_formatter_view().
