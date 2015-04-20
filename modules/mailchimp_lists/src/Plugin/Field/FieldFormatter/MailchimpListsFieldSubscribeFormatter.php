@@ -31,7 +31,6 @@ class MailchimpListsFieldSubscribeFormatter extends FormatterBase {
 
     /* @var $item \Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription */
     foreach ($items as $delta => $item) {
-
       $form = new \Drupal\mailchimp_lists\Form\MailchimpListsSubscribeForm();
 
       $field_name = $item->getFieldDefinition()->getName();
@@ -39,6 +38,8 @@ class MailchimpListsFieldSubscribeFormatter extends FormatterBase {
       // Give each form a unqiue ID in case of mulitiple subscription forms.
       $field_form_id = 'mailchimp_lists_' . $field_name . '_form';
       $form->setFormID($field_form_id);
+      $form->setFieldInstance($item);
+      $form->setFieldFormatter($this);
 
       $elements[$delta] = \Drupal::formBuilder()->getForm($form);
     }
