@@ -15,8 +15,6 @@ respective README's for more details.
     of Mailchimp lists
   * Mailchimp list subscription via entity fields, allowing subscription rules
     to be governed by entity controls, permissions, and UI
-  * Compatibility with Views Bulk Operations
-  * Special VBO function for creating & updating static list segments
   * Allow users to subscribe during registration by adding a field to Users
   * Map Entity field values to your MailChimp merge fields
   * Standalone subscribe and unsubscribe forms
