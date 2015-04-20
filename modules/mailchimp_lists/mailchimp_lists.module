@@ -69,23 +69,6 @@ function mailchimp_lists_load_email(MailchimpListsSubscription $instance, Entity
 }
 
 /**
- * Implements hook_forms().
- * 
- * This allows each field's subscription-form rendering to have a unique form
- * ID. If this weren't the case, multiple forms getting rendered on a single
- * entity display would have submit button conflicts.
- */
-function mailchimp_lists_forms($form_id, $args) {
-  $forms = array();
-  if (strpos($form_id, 'mailchimp_lists_') === 0 && isset($args[3]['type']) && $args[3]['type'] == "mailchimp_lists_subscription") {
-    $forms['mailchimp_lists_' . $args[0]['field_name'] . '_form'] = array(
-      'callback' => 'mailchimp_lists_subscribe_form',
-    );
-  }
-  return $forms;
-}
-
-/**
  * Return a form element for a single newsletter.
  */
 function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $settings, $entity, $field) {
