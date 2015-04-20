@@ -439,33 +439,6 @@ function mailchimp_lists_populate_member_batch_complete($success, $results, $ope
 }
 
 /**
- * Implements hook_mollom_form_list().
- *
- * Enable Mollom integration for user subscription forms.
- */
-function mailchimp_lists_mollom_form_list() {
-  $forms = array();
-  $forms['mailchimp_lists_subscribe_form'] = array(
-    'title' => t('Mailchimp Newsletter Subscription Fields'),
-  );
-
-  return $forms;
-}
-
-/**
- * Implements hook_mollom_form_info().
- */
-function mailchimp_lists_mollom_form_info($form_id) {
-  // Set mollom form info.
-  $form_info = array(
-    'bypass access' => array('administer mailchimp'),
-    'mode' => MOLLOM_MODE_CAPTCHA,
-  );
-
-  return $form_info;
-}
-
-/**
  * Implements hook_action_info().
  */
 function mailchimp_lists_action_info() {
