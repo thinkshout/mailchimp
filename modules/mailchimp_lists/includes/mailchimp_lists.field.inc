@@ -5,6 +5,8 @@
  * Field hooks.
  */
 
+use Drupal\Core\Form\FormStateInterface;
+
 /**
  * Implements hook_field_info().
  */
@@ -389,18 +391,19 @@ function mailchimp_lists_field_prepare_view($entity_type, $entities, $field, $in
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function mailchimp_lists_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
-  /*
-  if ($form['#field']['type'] == 'mailchimp_lists_subscription') {
-    // Disable the list selector on the instance config page:
-    $form['field']['settings']['mc_list_id']['#disabled'] = TRUE;
-    $form['field']['settings']['mc_list_id']['#description'] = t("To alter this list, use the 'Field Settings' tab");
+function mailchimp_lists_form_field_storage_config_edit_form_alter(&$form, FormStateInterface &$form_state, $form_id) {
+  $storage = $form_state->getStorage();
+
+  /* @var $field_config \Drupal\field\Entity\FieldConfig */
+  $field_config = $storage['field_config'];
+
+  if ($field_config->field_type == 'mailchimp_lists_subscription') {
     // Hide the cardinality setting:
-    $form['field']['cardinality']['#default_value'] = 1;
-    $form['field']['cardinality']['#access'] = FALSE;
+    $form['cardinality_container']['cardinality_number']['#default_value'] = 1;
+    $form['cardinality_container']['#access'] = FALSE;
+
     $form['#validate'][] = 'mailchimp_lists_form_field_ui_field_edit_form_validate';
   }
-  */
 }
 
 /**
@@ -408,7 +411,7 @@ function mailchimp_lists_form_field_ui_field_edit_form_alter(&$form, &$form_stat
  *
  * Ensure cardinality is set to 1 on mailchimp_lists_subscription fields.
  */
-function mailchimp_lists_form_field_ui_field_edit_form_validate(&$form, &$form_state) {
+function mailchimp_lists_form_field_ui_field_edit_form_validate(&$form, FormStateInterface &$form_state) {
   if ($form['#field']['type'] == 'mailchimp_lists_subscription') {
     if ($form_state['values']['field']['cardinality'] !== 1) {
       form_set_error('cardinality', t('Cardinality on mailchimp lists fields must be set to one.'));

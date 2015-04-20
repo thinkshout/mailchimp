@@ -90,7 +90,7 @@ class MailchimpListsSubscription extends FieldItemBase {
    * {@inheritdoc}
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-    $element = array();
+    $element = parent::storageSettingsForm($form, $form_state, $has_data);
 
     $lists = mailchimp_get_lists();
     $options = array('' => t('-- Select --'));
