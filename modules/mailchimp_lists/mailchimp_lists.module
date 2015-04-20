@@ -162,13 +162,11 @@ function mailchimp_lists_subscribe_form_submit($form, &$form_state) {
  *
  * Subscription blocks, user settings, and new user creation.
  * 
- * @array $choices
+ * @param array $choices
  *   An array representing the form values selected.
- * @array $instance
+ * @param \Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription $instance
  *   A mailchimp_lists_subscription field instance configuration.
- * @array $field
- *   A mailchimp_lists_subscription field definition.
- * @entity $entity
+ * @param \Drupal\Core\Entity\EntityInterface $entity
  *   An Entity that has the $instance field.
  */
 function mailchimp_lists_process_subscribe_form_choices($choices, MailchimpListsSubscription $instance, EntityInterface $entity) {
@@ -222,7 +220,6 @@ function mailchimp_lists_process_subscribe_form_choices($choices, MailchimpLists
           $ret = TRUE;
         }
         break;
-
     }
     if (empty($ret)) {
       drupal_set_message(t('There was a problem with your newsletter signup.'), 'warning');
