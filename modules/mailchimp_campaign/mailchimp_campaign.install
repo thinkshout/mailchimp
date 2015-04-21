@@ -7,6 +7,7 @@
 /**
  * Implements hook_install().
  */
+/*
 function mailchimp_campaign_install() {
   $format_name = 'mailchimp_campaign';
 
@@ -33,3 +34,4 @@ function mailchimp_campaign_install() {
     filter_format_save($mailchimp_campaign_format);
   }
 }
+*/
