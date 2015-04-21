@@ -72,9 +72,7 @@ function mailchimp_campaign_entity_info() {
 /**
  * Implements hook_permission().
  */
-
-// TODO: Move into mailchimp_campaign.permissions.yml
-
+/*
 function mailchimp_campaign_permission() {
   return array(
     'administer mailchimp campaigns' => array(
@@ -83,6 +81,7 @@ function mailchimp_campaign_permission() {
     ),
   );
 }
+*/
 
 /**
  * Implements hook_menu().
