@@ -347,6 +347,33 @@ class MailchimpCampaignForm extends ContentEntityForm {
   }
 
   /**
+   * Ajax callback to render content with a template is selected.
+   *
+   * @param array $form
+   *   Form API array structure.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state information.
+   *
+   * @return AjaxResponse
+   *   Ajax response with the rendered content element.
+   */
+  public static function entityTypeCallback(array $form, FormStateInterface $form_state) {
+    $response = new AjaxResponse();
+
+    $content_wrapper = $form_state['triggering_element']['#parents'][1];
+    $entity_import_wrapper = $form_state['triggering_element']['#ajax']['wrapper'];
+
+    $html = '<div id="' . $entity_import_wrapper . '" class="content-entity-lookup-wrapper">';
+    $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_id']);
+    $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_view_mode']);
+    $html .= '</div>';
+
+    $response->addCommand(new ReplaceCommand('#' . $entity_import_wrapper, $html));
+
+    return $response;
+  }
+
+  /**
    * Returns an options list for a given array of items.
    *
    * @param array $list
@@ -461,12 +488,9 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#title' => t('Entity Type'),
       '#options' => $entity_options,
       '#default_value' => $entity_type,
-
-      // TODO: Convert to D8 AJAX API.
-
       '#ajax' => array(
-        'callback' => 'mailchimp_campaign_entity_type_callback',
-        'wrapper' => $section . '-content-entity-lookup-wrapper',
+        'callback' => 'Drupal\mailchimp_campaign\Form\MailchimpCampaignForm::entityTypeCallback',
+        //'wrapper' => $section . '-content-entity-lookup-wrapper',
       ),
     );
     $form['entity_import']['entity_type']['#attributes']['class'][] = $section . '-entity-import-entity-type';
