@@ -21,7 +21,8 @@ class MailchimpCampaignDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to delete %name?', array('%name' => $this->entity->label()));
+    return $this->t('Are you sure you want to delete %name? This action will delete both the MailChimp campaign and Drupal entity and cannot be undone.',
+      array('%name' => $this->entity->label()));
   }
 
   /**

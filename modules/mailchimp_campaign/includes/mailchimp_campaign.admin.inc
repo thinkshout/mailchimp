@@ -637,6 +637,7 @@ function _mailchimp_campaign_parse_template_content($content) {
 /**
  * List deletion form.
  */
+/*
 function mailchimp_campaign_delete_form($form, &$form_state, MailChimpCampaign $campaign) {
   $form_state['campaign'] = $campaign;
   return confirm_form($form,
@@ -646,10 +647,12 @@ function mailchimp_campaign_delete_form($form, &$form_state, MailChimpCampaign $
     t('Delete campaign')
   );
 }
+*/
 
 /**
  * Submit handler for mailchimp_campaign_delete_list_form().
  */
+/*
 function mailchimp_campaign_delete_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
   if (mailchimp_campaign_delete_campaign($campaign->mc_campaign_id)) {
@@ -659,6 +662,7 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
   }
   drupal_goto('admin/config/services/mailchimp/campaigns');
 }
+*/
 
 /**
  * List deletion form.
