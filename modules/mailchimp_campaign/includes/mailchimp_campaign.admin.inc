@@ -451,6 +451,7 @@ function mailchimp_campaign_get_merge_vars_form_elements($merge_vars, $list_name
 /**
  * AJAX callback when changing entity type.
  */
+/*
 function mailchimp_campaign_entity_type_callback($form, $form_state) {
   $commands = array();
 
@@ -465,6 +466,7 @@ function mailchimp_campaign_entity_type_callback($form, $form_state) {
   $commands[] = ajax_command_replace('#' . $entity_import_wrapper, $html);
   return array('#type' => 'ajax', '#commands' => $commands);
 }
+*/
 
 /**
  * Returns an options list for a given array of items.

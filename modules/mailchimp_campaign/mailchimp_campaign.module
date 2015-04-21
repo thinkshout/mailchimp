@@ -40,6 +40,7 @@ function mailchimp_campaign_entity_storage_load(array $entities, $entity_type) {
 /**
  * Implements hook_entity_info().
  */
+/*
 function mailchimp_campaign_entity_info() {
   $return = array(
     'mailchimp_campaign' => array(
@@ -66,10 +67,14 @@ function mailchimp_campaign_entity_info() {
   );
   return $return;
 }
+*/
 
 /**
  * Implements hook_permission().
  */
+
+// TODO: Move into mailchimp_campaign.permissions.yml
+
 function mailchimp_campaign_permission() {
   return array(
     'administer mailchimp campaigns' => array(
@@ -82,6 +87,7 @@ function mailchimp_campaign_permission() {
 /**
  * Implements hook_menu().
  */
+/*
 function mailchimp_campaign_menu() {
   $items['admin/config/services/mailchimp/campaigns'] = array(
     'title' => 'Campaigns',
@@ -163,6 +169,7 @@ function mailchimp_campaign_menu() {
 
   return $items;
 }
+*/
 
 /**
  * Callback for campaign template entity search field.
@@ -236,6 +243,7 @@ function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
 /**
  * Page callback for showing a list of MailChimp Campaign entities.
  */
+/*
 function mailchimp_campaign_overview_page() {
   $campaigns = mailchimp_campaign_load_multiple();
   $templates = mailchimp_campaign_list_templates();
@@ -278,6 +286,7 @@ function mailchimp_campaign_overview_page() {
     '#rows' => $rows,
   );
 }
+*/
 
 /**
  * Implements hook_theme().
@@ -380,19 +389,6 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
     drupal_set_message(t('Campaign %name (%cid) was successfully saved.',
       array('%name' => $options['title'], '%cid' => $campaign_id)));
 
-    // Save the campaign entity:
-    /*
-     * Moved to MailchimpCampaignForm
-
-    $campaign = entity_create('mailchimp_campaign', array(
-      'mc_campaign_id' => $campaign_id,
-      'template' => $template,
-      'is_new' => $is_new,
-    ));
-
-    mailchimp_campaign_save($campaign);
-    */
-
     // Clear cached data for this campaign.
     mailchimp_campaign_get_campaigns(array($campaign_id), TRUE);
   }
@@ -435,6 +431,9 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
 /**
  * Delete a MailChimp campaign and the local entity.
  */
+
+// TODO: Move into MailchimpCampaignDeleteForm.
+
 function mailchimp_campaign_delete_campaign($cid) {
   $mcapi = mailchimp_get_api_object();
 
@@ -882,6 +881,7 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
 /**
  * Saves a campaign.
  */
+/*
 function mailchimp_campaign_save(MailChimpCampaign $campaign) {
   $campaign->updated = REQUEST_TIME;
   // Set the creation timestamp if not set.
@@ -891,14 +891,17 @@ function mailchimp_campaign_save(MailChimpCampaign $campaign) {
 
   return $campaign->save();
 }
+*/
 
 /**
  * Load a campaign by ID.
  */
+/*
 function mailchimp_campaign_load($cid, $reset = FALSE) {
   $campaign = mailchimp_campaign_load_multiple(array($cid), array(), $reset);
   return $campaign ? $campaign[$cid] : FALSE;
 }
+*/
 
 /**
  * Loads multiple campaigns.
