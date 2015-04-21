@@ -604,20 +604,29 @@ class MailchimpCampaignForm extends ContentEntityForm {
    *   HTML string containing formatted merge vars.
    */
   private function buildMergeVarsHtml($merge_vars) {
-    //if (!empty($merge_vars)) {
-    //  $rows = array();
-    //  foreach ($merge_vars as $var) {
-    //    $rows[] = array(
-    //      $var['name'],
-    //      '<a id="merge-var-' . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a>',
-    //    );
-    //  }
-    //  $table = theme('table', array('rows' => $rows));
-    //  return render($table);
-    //}
-    //else {
+    if (!empty($merge_vars)) {
+      $element = array();
+
+      $element['mergevars_table'] = array(
+        '#type' => 'table',
+        '#empty' => '',
+      );
+
+      foreach ($merge_vars as $var) {
+        $element['mergevars_table'][$var['tag']]['name'] = array(
+          '#markup' => $var['name'],
+        );
+
+        $element['mergevars_table'][$var['tag']]['link'] = array(
+          '#markup' => '<a id="merge-var-' . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a>',
+        );
+      }
+
+      return render($element);
+    }
+    else {
       return t('No custom merge vars exist for the current list.');
-    //}
+    }
   }
 
   /**
