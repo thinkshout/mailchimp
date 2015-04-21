@@ -476,6 +476,9 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#description' => t('<b>For use only with text filters that use the MailChimp Campaign filter</b><br />You can insert an entity of a given type and pick the view mode that will be rendered within this campaign section.'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
+
+      // TODO: This was commented in 7.x branch. Needs review.
+
       // '#states' => array(
       //   'visible' => array(
       //     ':input[name="content[' . $section . '_wrapper][' . $section . '][format]"]' => array('value' => 'mailchimp_campaign'),

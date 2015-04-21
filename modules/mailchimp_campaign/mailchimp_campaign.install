@@ -8,7 +8,6 @@
  * Implements hook_install().
  */
 function mailchimp_campaign_install() {
-  /*
   $format_name = 'mailchimp_campaign';
 
   if (!filter_format_exists($format_name)) {
@@ -33,5 +32,4 @@ function mailchimp_campaign_install() {
     $mailchimp_campaign_format = (object) $mailchimp_campaign_format;
     filter_format_save($mailchimp_campaign_format);
   }
-  */
 }
