@@ -634,6 +634,7 @@ function mailchimp_campaign_filter_tips($filter, $format, $long) {
  * @return string
  *   The filtered text.
  */
+/*
 function mailchimp_campaign_filter_campaign_process($text, $filter, $format, $langcode, $cache, $cache_id) {
   // Replace node macros with entity content:
   $pattern = '/\[mailchimp_campaign\|entity_type=(\w+)\|entity_id=(\d+)\|view_mode=(\w+)\]/s';
@@ -644,10 +645,12 @@ function mailchimp_campaign_filter_campaign_process($text, $filter, $format, $la
 
   return $text;
 }
+*/
 
 /**
  * Callback for preg_replace in mailchimp_campaign_filter_campaign_process().
  */
+/*
 function mailchimp_campaign_process_callback($matches = array()) {
   $content = '';
   $entity_type = $entity_id = $view_mode = '';
@@ -680,6 +683,7 @@ function mailchimp_campaign_process_callback($matches = array()) {
 
   return $content;
 }
+*/
 
 /**
  * Page callback for a campaign's statistics.
