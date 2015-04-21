@@ -518,14 +518,16 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
  */
 function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
   $cache = \Drupal::cache('mailchimp');
+  // TODO: Fix caching. Turns $template['info'] from array to object.
+  $cached_template = NULL; //$cache->get('template_' . $template_id);
+
   $all_templates = mailchimp_campaign_list_templates($reset);
   foreach ($all_templates as $type) {
     if (isset($type[$template_id])) {
       $template = $type[$template_id];
       // Get template details from cache or the MailChimp API.
-      $cache = $reset ? NULL : $cache->get('template_' . $template_id);
-      if ($cache) {
-        $template['info'] = $cache->data;
+      if (!$reset && !empty($cached_template)) {
+        $template['info'] = $cached_template;
       }
       else {
         if ($mcapi = mailchimp_get_api_object()) {

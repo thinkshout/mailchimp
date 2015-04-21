@@ -173,6 +173,8 @@ class MailchimpCampaignForm extends ContentEntityForm {
       $merge_vars = array();
     }
 
+    $campaign_template = $campaign->getTemplate();
+
     if ($mc_template) {
       if (strpos($mc_template['info']['source'], 'mc:repeatable')) {
         drupal_set_message(t('WARNING: This template has repeating sections, which are not supported. You may want to select a different template.'), 'warning');
@@ -182,20 +184,21 @@ class MailchimpCampaignForm extends ContentEntityForm {
         // or defaults coming from the MailChimp template.
         $default_value = $content;
         $format = 'mailchimp_campaign';
-        if ($campaign && $campaign->template[$section]) {
-          $default_value = $campaign->template[$section]['value'];
-          $format = $campaign->template[$section]['format'];
+
+        if (($campaign_template != NULL) && isset($campaign_template[$section])) {
+          $default_value = $campaign_template[$section]['value'];
+          $format = $campaign_template[$section]['format'];
         }
         $form['content'][$section . '_wrapper'] = array(
           '#type' => 'fieldset',
-          '#title' => String::checkPlain(drupal_ucfirst($section)),
+          '#title' => String::checkPlain(ucfirst($section)),
           '#collapsible' => TRUE,
           '#collapsed' => TRUE,
         );
         $form['content'][$section . '_wrapper'][$section] = array(
           '#type' => 'text_format',
           '#format' => $format,
-          '#title' => String::checkPlain((drupal_ucfirst($section))),
+          '#title' => String::checkPlain(ucfirst($section)),
           '#default_value' => $default_value,
         );
 
@@ -221,11 +224,11 @@ class MailchimpCampaignForm extends ContentEntityForm {
       );
       $form['content']['html_wrapper']['html'] = array(
         '#type' => 'text_format',
-        '#format' => ($campaign->getTemplate() != NULL) ? $campaign->template['html']['format'] : 'mailchimp_campaign',
+        '#format' => ($campaign_template != NULL) ? $campaign_template['html']['format'] : 'mailchimp_campaign',
         '#title' => t('Content'),
         '#description' => t('The HTML content of the campaign.'),
         '#access' => empty($form_state->getValue('template_id')),
-        '#default_value' => ($campaign->getTemplate() != NULL) ? $campaign->template['html']['value'] : '',
+        '#default_value' => ($campaign_template != NULL) ? $campaign_template['html']['value'] : '',
       );
 
       $entity_type = NULL;
