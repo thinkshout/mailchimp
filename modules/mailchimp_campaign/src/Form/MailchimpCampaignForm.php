@@ -7,6 +7,8 @@
 namespace Drupal\mailchimp_campaign\Form;
 
 use Drupal\Component\Utility\String;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
@@ -74,9 +76,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#default_value' => ($campaign) ? $campaign->mc_data['list_id'] : -1,
       '#required' => TRUE,
       '#ajax' => array(
-        'callback' => 'mailchimp_campaign_list_segment_callback',
-        'method' => 'replace',
-        'wrapper' => 'list-segments-wrapper',
+        'callback' => 'Drupal\mailchimp_campaign\Form\MailchimpCampaignForm::listSegmentCallback',
       ),
     );
 
@@ -141,8 +141,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#options' => $this->buildOptionList(mailchimp_campaign_list_templates(), '-- Select --', $template_type_labels),
       '#default_value' => ($campaign) ? $campaign->mc_data['template_id'] : -1,
       '#ajax' => array(
-        'callback' => 'mailchimp_campaign_template_callback',
-        'wrapper' => 'content-sections',
+        'callback' => 'Drupal\mailchimp_campaign\Form\MailchimpCampaignForm::templateCallback',
       ),
     );
 
@@ -304,6 +303,50 @@ class MailchimpCampaignForm extends ContentEntityForm {
   }
 
   /**
+   * Ajax callback to render list segments when a list is selected.
+   *
+   * @param array $form
+   *   Form API array structure.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state information.
+   *
+   * @return AjaxResponse
+   *   Ajax response with the rendered list segments element.
+   */
+  public static function listSegmentCallback(array $form, FormStateInterface $form_state) {
+    $response = new AjaxResponse();
+
+    $list_segment_html = drupal_render($form['list_segment_id']);
+    $response->addCommand(new ReplaceCommand('#list-segments-wrapper', $list_segment_html));
+
+    if (isset($form['content']['html_wrapper']['merge_vars'])) {
+      $merge_vars_html = drupal_render($form['content']['html_wrapper']['merge_vars']);
+      $response->addCommand(new ReplaceCommand('.merge-vars-wrapper', $merge_vars_html));
+    }
+
+    return $response;
+  }
+
+  /**
+   * Ajax callback to render content with a template is selected.
+   *
+   * @param array $form
+   *   Form API array structure.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state information.
+   *
+   * @return AjaxResponse
+   *   Ajax response with the rendered content element.
+   */
+  public static function templateCallback(array $form, FormStateInterface $form_state) {
+    $response = new AjaxResponse();
+
+    $response->addCommand(new ReplaceCommand('#content-sections', $form['content']));
+
+    return $response;
+  }
+
+  /**
    * Returns an options list for a given array of items.
    *
    * @param array $list
@@ -418,6 +461,9 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#title' => t('Entity Type'),
       '#options' => $entity_options,
       '#default_value' => $entity_type,
+
+      // TODO: Convert to D8 AJAX API.
+
       '#ajax' => array(
         'callback' => 'mailchimp_campaign_entity_type_callback',
         'wrapper' => $section . '-content-entity-lookup-wrapper',

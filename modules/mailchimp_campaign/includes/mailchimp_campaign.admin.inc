@@ -7,6 +7,7 @@
 /**
  * Returns a form for creating a campaign.
  */
+/*
 function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign $campaign = NULL) {
   $path = drupal_get_path('module', 'mailchimp_campaign');
   drupal_add_js($path . '/js/mailchimp_campaign.utils.js', 'file');
@@ -218,17 +219,21 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
 
   return $form;
 }
+*/
 
 /**
  * AJAX callback when changing template ID.
  */
+/*
 function mailchimp_campaign_template_callback($form, $form_state) {
   return $form['content'];
 }
+*/
 
 /**
  * AJAX callback when changing list ID.
  */
+/*
 function mailchimp_campaign_list_segment_callback($form, $form_state) {
   $commands = array();
 
@@ -242,6 +247,7 @@ function mailchimp_campaign_list_segment_callback($form, $form_state) {
 
   return array('#type' => 'ajax', '#commands' => $commands);
 }
+*/
 
 /**
  * Preview callback for mailchimp_campaign_campaign_form().
@@ -309,6 +315,7 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
  * @return array
  *   Array of form elements used to display entity imports.
  */
+/*
 function mailchimp_campaign_get_entity_import_form_elements($entity_type, $section) {
   $form = array();
 
@@ -395,6 +402,7 @@ function mailchimp_campaign_get_entity_import_form_elements($entity_type, $secti
 
   return $form;
 }
+*/
 
 /**
  * Gets form elements used in the merge vars feature.
@@ -408,6 +416,7 @@ function mailchimp_campaign_get_entity_import_form_elements($entity_type, $secti
  * @return array
  *   Array of form elements used to display merge vars.
  */
+/*
 function mailchimp_campaign_get_merge_vars_form_elements($merge_vars, $list_name) {
   $form = array();
 
@@ -437,6 +446,7 @@ function mailchimp_campaign_get_merge_vars_form_elements($merge_vars, $list_name
 
   return $form;
 }
+*/
 
 /**
  * AJAX callback when changing entity type.
@@ -469,6 +479,7 @@ function mailchimp_campaign_entity_type_callback($form, $form_state) {
  * @return array
  *   Associative array of item IDs to name.
  */
+/*
 function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- Select --', $labels = array()) {
   $options = array();
   if ($no_selection_label) {
@@ -488,6 +499,7 @@ function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- 
 
   return $options;
 }
+*/
 
 /**
  * Returns an array of entities based on data from entity_get_info().
@@ -498,6 +510,7 @@ function _mailchimp_campaign_build_option_list($list, $no_selection_label = '-- 
  * @return array
  *   Filtered entities from entity_get_info().
  */
+/*
 function _mailchimp_campaign_get_entities_for_content_import() {
   $entity_info = entity_get_info();
 
@@ -509,6 +522,7 @@ function _mailchimp_campaign_get_entities_for_content_import() {
 
   return $filtered_entities;
 }
+*/
 
 /**
  * Returns an options list of entities based on data from entity_get_info().
@@ -522,6 +536,10 @@ function _mailchimp_campaign_get_entities_for_content_import() {
  * @return array
  *   Associative array of entity IDs to name.
  */
+
+// TODO: Already moved into MailchimpCampaignForm but still used entity import.
+// Remove if entity import feature is dropped.
+
 function _mailchimp_campaign_build_entity_option_list($entity_info) {
   $options = array(
     '' => '-- Select --',
@@ -545,6 +563,10 @@ function _mailchimp_campaign_build_entity_option_list($entity_info) {
  * @return array
  *   Associative array of view mode IDs to name.
  */
+
+// TODO: Already moved into MailchimpCampaignForm but still used entity import.
+// Remove if entity import feature is dropped.
+
 function _mailchimp_campaign_build_entity_view_mode_option_list(array $entity) {
   $options = array();
   foreach ($entity['view modes'] as $view_mode_id => $view_mode_data) {
@@ -563,6 +585,7 @@ function _mailchimp_campaign_build_entity_view_mode_option_list(array $entity) {
  * @return string
  *   HTML string containing formatted merge vars.
  */
+/*
 function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
   if (!empty($merge_vars)) {
     $rows = array();
@@ -579,6 +602,7 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
     return t('No custom merge vars exist for the current list.');
   }
 }
+*/
 
 /**
  * Parses template content to remove wrapper elements from tree.
@@ -589,6 +613,9 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
  * @return array
  *   The template content array minus wrapper elements.
  */
+
+// TODO: Already moved into MailchimpCampaignForm but still used for preview.
+
 function _mailchimp_campaign_parse_template_content($content) {
   $template_content = array();
   $content_keys = array_keys($content);
