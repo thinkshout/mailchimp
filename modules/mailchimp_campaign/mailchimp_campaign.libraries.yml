@@ -1,0 +1,9 @@
+campaign-form:
+  version: 1.x
+  css:
+    component:
+      css/mailchimp_campaign.css: {}
+  js:
+    js/mailchimp_campaign.utils.js: {}
+  dependencies:
+    - core/jquery
