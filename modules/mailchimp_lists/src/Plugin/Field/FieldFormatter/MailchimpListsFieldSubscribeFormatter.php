@@ -26,6 +26,56 @@ class MailchimpListsFieldSubscribeFormatter extends FormatterBase {
   /**
    * {@inheritdoc}
    */
+  public static function defaultSettings() {
+    $settings = array(
+      'show_interest_groups' => FALSE,
+    );
+
+    return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    $form = parent::settingsForm($form, $form_state);
+
+    $field_settings = $this->getFieldSettings();
+    $settings = $this->getSettings();
+
+    $form['show_interest_groups'] = array(
+      '#title' => t('Show Interest Groups'),
+      '#type' => 'checkbox',
+      '#description' => $field_settings['show_interest_groups'] ? t('Check to display interest group membership details.') : t('To display Interest Groups, first enable them in the field instance settings.'),
+      '#default_value' => $field_settings['show_interest_groups'] && $settings['show_interest_groups'],
+      '#disabled' => !$field_settings['show_interest_groups'],
+    );
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsSummary() {
+    $field_settings = $this->getFieldSettings();
+    $settings = $this->getSettings();
+
+    $summary = array();
+
+    if ($field_settings['show_interest_groups'] && $settings['show_interest_groups']) {
+      $summary[] = t('Display Interest Groups');
+    }
+    else {
+      $summary[] = t('Hide Interest Groups');
+    }
+
+    return $summary;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function viewElements(FieldItemListInterface $items) {
     $elements = array();
 
