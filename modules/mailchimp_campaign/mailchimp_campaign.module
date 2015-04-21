@@ -562,6 +562,7 @@ function _mailchimp_campaign_mcapi_error_message($result, $message, $variables =
 /**
  * Change the relative URLs to absolute ones in the message.
  */
+/*
 function mailchimp_campaign_convert_url($text) {
   global $base_url;
   $matches = array();
@@ -576,6 +577,7 @@ function mailchimp_campaign_convert_url($text) {
 
   return $text;
 }
+*/
 
 /**
  * Implements hook_filter_info().

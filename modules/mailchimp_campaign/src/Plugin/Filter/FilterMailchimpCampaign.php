@@ -33,7 +33,7 @@ class FilterMailchimpCampaign extends FilterBase {
     $text = preg_replace_callback($pattern, array($this, 'mailchimp_campaign_process_callback'), $text);
 
     // Convert URL to absolute.
-    $text = mailchimp_campaign_convert_url($text);
+    $text = $this->convertUrl($text);
 
     $result->setProcessedText($text);
 
@@ -82,6 +82,24 @@ class FilterMailchimpCampaign extends FilterBase {
     );
 
     return $tip;
+  }
+
+  /**
+   * Change the relative URLs to absolute ones in the message.
+   */
+  private function convertUrl($text) {
+    global $base_url;
+    $matches = array();
+    preg_match_all('/<(a|img).*?(href|src)="(.*?)"/', $text, $matches);
+    foreach ($matches[3] as $key => $url) {
+      if ($url[0] == '/') {
+        $new_url = $base_url . $url;
+        $new_match = str_replace($url, $new_url, $matches[0][$key]);
+        $text = str_replace($matches[0][$key], $new_match, $text);
+      }
+    }
+
+    return $text;
   }
 
 }
