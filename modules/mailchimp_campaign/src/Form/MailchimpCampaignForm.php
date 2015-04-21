@@ -80,8 +80,8 @@ class MailchimpCampaignForm extends ContentEntityForm {
       ),
     );
 
-    if (!empty($form_state->get('list_id'))) {
-      $list_id = $form_state->get('list_id');
+    if (!empty($form_state->getValue('list_id'))) {
+      $list_id = $form_state->getValue('list_id');
     }
     elseif ($campaign && $campaign->mc_data) {
       $list_id = $campaign->mc_data['list_id'];
@@ -156,8 +156,8 @@ class MailchimpCampaignForm extends ContentEntityForm {
     );
 
     $mc_template = NULL;
-    if (!empty($form_state->get('template_id'))) {
-      $mc_template = mailchimp_campaign_get_template($form_state->get('template_id'));
+    if (!empty($form_state->getValue('template_id'))) {
+      $mc_template = mailchimp_campaign_get_template($form_state->getValue('template_id'));
     }
     else {
       if (($campaign) && $campaign->mc_template) {
@@ -199,7 +199,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
           '#default_value' => $default_value,
         );
 
-        $campaign_content = $form_state->get('content');
+        $campaign_content = $form_state->getValue('content');
 
         $entity_type = NULL;
         if (isset($campaign_content[$section . '_wrapper']['entity_import']['entity_type'])) {
@@ -224,7 +224,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
         '#format' => ($campaign->getTemplate() != NULL) ? $campaign->template['html']['format'] : 'mailchimp_campaign',
         '#title' => t('Content'),
         '#description' => t('The HTML content of the campaign.'),
-        '#access' => empty($form_state->get('template_id')),
+        '#access' => empty($form_state->getValue('template_id')),
         '#default_value' => ($campaign->getTemplate() != NULL) ? $campaign->template['html']['value'] : '',
       );
 
@@ -240,7 +240,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
     }
 
     // Message preview:
-    if (!empty($form_state->get('mailchimp_campaign_campaign_preview'))) {
+    if (!empty($form_state->getValue('mailchimp_campaign_campaign_preview'))) {
       $form['preview_wrapper'] = array(
         '#title' => t('Campaign content preview'),
         '#type' => 'fieldset',
@@ -248,7 +248,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
         '#collapsed' => FALSE,
       );
       $form['preview_wrapper']['preview'] = array(
-        '#markup' => $form_state->get('mailchimp_campaign_campaign_preview'),
+        '#markup' => $form_state->getValue('mailchimp_campaign_campaign_preview'),
       );
     }
 
