@@ -150,8 +150,6 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#type' => 'fieldset',
       '#title' => t('Content sections'),
       '#description' => t('The HTML content or, if a template is selected, the content for each section.'),
-      '#collapsible' => FALSE,
-      '#collapsed' => FALSE,
       '#tree' => TRUE,
     );
 
@@ -190,10 +188,9 @@ class MailchimpCampaignForm extends ContentEntityForm {
           $format = $campaign_template[$section]['format'];
         }
         $form['content'][$section . '_wrapper'] = array(
-          '#type' => 'fieldset',
+          '#type' => 'details',
           '#title' => String::checkPlain(ucfirst($section)),
-          '#collapsible' => TRUE,
-          '#collapsed' => TRUE,
+          '#open' => FALSE,
         );
         $form['content'][$section . '_wrapper'][$section] = array(
           '#type' => 'text_format',
@@ -217,10 +214,9 @@ class MailchimpCampaignForm extends ContentEntityForm {
       $section = 'html';
 
       $form['content']['html_wrapper'] = array(
-        '#type' => 'fieldset',
+        '#type' => 'details',
         '#title' => t('Content'),
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
+        '#open' => FALSE,
       );
       $form['content']['html_wrapper']['html'] = array(
         '#type' => 'text_format',
@@ -246,9 +242,8 @@ class MailchimpCampaignForm extends ContentEntityForm {
     if (!empty($form_state->getValue('mailchimp_campaign_campaign_preview'))) {
       $form['preview_wrapper'] = array(
         '#title' => t('Campaign content preview'),
-        '#type' => 'fieldset',
-        '#collapsible' => TRUE,
-        '#collapsed' => FALSE,
+        '#type' => 'details',
+        '#open' => TRUE,
       );
       $form['preview_wrapper']['preview'] = array(
         '#markup' => $form_state->getValue('mailchimp_campaign_campaign_preview'),
@@ -474,11 +469,10 @@ class MailchimpCampaignForm extends ContentEntityForm {
 
     $form['entity_import'] = array(
       '#id' => 'entity-import',
-      '#type' => 'fieldset',
+      '#type' => 'details',
       '#title' => t('Insert site content'),
       '#description' => t('<b>For use only with text filters that use the MailChimp Campaign filter</b><br />You can insert an entity of a given type and pick the view mode that will be rendered within this campaign section.'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#open' => FALSE,
 
       // TODO: This was commented in 7.x branch. Needs review.
 
