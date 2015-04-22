@@ -7,3 +7,4 @@ campaign-form:
     js/mailchimp_campaign.utils.js: {}
   dependencies:
     - core/jquery
+    - core/drupal.autocomplete

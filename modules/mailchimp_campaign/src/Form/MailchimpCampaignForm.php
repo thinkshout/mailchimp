@@ -516,7 +516,10 @@ class MailchimpCampaignForm extends ContentEntityForm {
         '#type' => 'textfield',
         '#title' => t('Entity Title'),
         // Pass entity type as first parameter to autocomplete callback.
-        '#autocomplete_path' => 'admin/config/services/mailchimp/campaigns/entities/' . $entity_type,
+        '#autocomplete_route_name' => 'mailchimp_campaign.entity_autocomplete',
+        '#autocomplete_route_parameters' => array(
+          'entity_type' => $entity_type,
+        ),
       );
       $form['entity_import']['entity_id']['#attributes']['id'] = $section . '-entity-import-entity-id';
 

@@ -10,9 +10,10 @@ namespace Drupal\mailchimp_campaign\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
-
 use Drupal\Component\Utility\String;
 use Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
+
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * MailChimp Campaign controller.
@@ -96,6 +97,23 @@ class MailchimpCampaignController extends ControllerBase {
     $content = $view_builder->view($mailchimp_campaign);
 
     return $content;
+  }
+
+  /**
+   * Callback for entity title autocomplete field.
+   *
+   * @param string $entity_type
+   *   The entity type to search by title.
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *   A JSON response containing matched entity data.
+   */
+  public function entityAutocomplete($entity_type) {
+    $matches = array();
+
+    // TODO: Look up entity from search query.
+
+    return new JsonResponse($matches);
   }
 
 }
