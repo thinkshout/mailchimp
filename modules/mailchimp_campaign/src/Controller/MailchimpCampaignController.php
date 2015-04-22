@@ -7,10 +7,10 @@
 
 namespace Drupal\mailchimp_campaign\Controller;
 
+
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
-use Drupal\Component\Utility\String;
 use Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -109,11 +109,34 @@ class MailchimpCampaignController extends ControllerBase {
    *   A JSON response containing matched entity data.
    */
   public function entityAutocomplete($entity_type) {
-    $matches = array();
+    $q = \Drupal::request()->get('q');
 
-    // TODO: Look up entity from search query.
+    $query = \Drupal::entityQuery($entity_type)
+      ->condition('title', $q, 'CONTAINS')
+      ->range(0, 10);
 
-    return new JsonResponse($matches);
+    $entity_ids = $query->execute();
+
+    $entities = array();
+
+    if (!empty($entity_ids)) {
+      $entities_data = entity_load_multiple($entity_type, $entity_ids);
+
+      if (!empty($entities_data)) {
+
+        /* @var $entity \Drupal\Core\Entity\EntityInterface */
+        foreach ($entities_data as $id => $entity) {
+          $title = $entity->getTypedData()->getString('title');
+
+          $entities[] = array(
+            'value' => $id,
+            'label' => SafeMarkup::checkPlain($title),
+          );
+        }
+      }
+    }
+
+    return new JsonResponse($entities);
   }
 
 }
