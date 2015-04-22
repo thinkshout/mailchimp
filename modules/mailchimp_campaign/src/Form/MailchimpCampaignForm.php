@@ -295,8 +295,9 @@ class MailchimpCampaignForm extends ContentEntityForm {
     $campaign->setTemplate($form_state->getValue('template_id'));
     $campaign->save();
 
-    // TODO: Clear campaign cache.
-    //cache_clear_all('mailchimp_campaign_campaigns', 'cache');
+    // Clear campaigns cache.
+    $cache = \Drupal::cache('mailchimp');
+    $cache->deleteAll('mailchimp_campaign_campaigns');
 
     $form_state->setRedirect('mailchimp_campaign.overview');
   }
