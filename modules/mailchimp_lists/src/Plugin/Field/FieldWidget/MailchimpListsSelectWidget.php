@@ -6,7 +6,7 @@
 
 namespace Drupal\mailchimp_lists\Plugin\Field\FieldWidget;
 
-use Drupal\Component\Utility\String;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -42,7 +42,7 @@ class MailchimpListsSelectWidget extends WidgetBase {
     }
 
     $element += array(
-      '#title' => String::checkPlain($element['#title']),
+      '#title' => SafeMarkup::checkPlain($element['#title']),
       '#type' => 'fieldset',
     );
     $element['subscribe'] = array(
@@ -58,7 +58,7 @@ class MailchimpListsSelectWidget extends WidgetBase {
       $mc_list = mailchimp_get_list($instance->getFieldDefinition()->getSetting('mc_list_id'));
       $element['interest_groups'] = array(
         '#type' => 'fieldset',
-        '#title' => String::checkPlain($instance->getFieldDefinition()->getSetting('interest_groups_title')),
+        '#title' => SafeMarkup::checkPlain($instance->getFieldDefinition()->getSetting('interest_groups_title')),
         '#weight' => 100,
         // TODO: Hide interest groups if subscribe checkbox is empty.
         // TODO: field_sub[0][value][subscribe]

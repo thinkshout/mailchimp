@@ -6,12 +6,10 @@
 
 namespace Drupal\mailchimp_campaign\Form;
 
-use Drupal\Component\Utility\String;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\ContentEntityForm;
-use Drupal\Core\Entity\ContentEntityType;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -194,13 +192,13 @@ class MailchimpCampaignForm extends ContentEntityForm {
         }
         $form['content'][$section . '_wrapper'] = array(
           '#type' => 'details',
-          '#title' => String::checkPlain(ucfirst($section)),
+          '#title' => SafeMarkup::checkPlain(ucfirst($section)),
           '#open' => FALSE,
         );
         $form['content'][$section . '_wrapper'][$section] = array(
           '#type' => 'text_format',
           '#format' => $format,
-          '#title' => String::checkPlain(ucfirst($section)),
+          '#title' => SafeMarkup::checkPlain(ucfirst($section)),
           '#default_value' => $default_value,
         );
 
@@ -274,7 +272,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       'subject' => $form_state->getValue('subject'),
       'list_id' => $form_state->getValue('list_id'),
       'from_email' => $form_state->getValue('from_email'),
-      'from_name' => String::checkPlain($form_state->getValue('from_name')),
+      'from_name' => SafeMarkup::checkPlain($form_state->getValue('from_name')),
       'template_id' => $form_state->getValue('template_id'),
     );
     $segment_options = NULL;

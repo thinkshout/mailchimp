@@ -6,7 +6,7 @@
 
 namespace Drupal\mailchimp_lists\Plugin\Field\FieldType;
 
-use Drupal\Component\Utility\String;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\Field\FieldItemBase;
@@ -198,7 +198,7 @@ class MailchimpListsSubscription extends FieldItemBase {
       $default_value = isset($mv_defaults[$mergevar['tag']]) ? $mv_defaults[$mergevar['tag']] : -1;
       $element['merge_fields'][$mergevar['tag']] = array(
         '#type' => 'select',
-        '#title' => String::checkPlain($mergevar['name']),
+        '#title' => SafeMarkup::checkPlain($mergevar['name']),
         '#default_value' => array_key_exists($default_value, $fields_flat) ? $default_value : '',
         '#required' => $mergevar['req'],
       );

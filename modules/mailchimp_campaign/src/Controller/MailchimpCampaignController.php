@@ -7,7 +7,6 @@
 
 namespace Drupal\mailchimp_campaign\Controller;
 
-
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
