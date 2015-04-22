@@ -122,13 +122,12 @@ class MailchimpCampaignController extends ControllerBase {
       $entities_data = entity_load_multiple($entity_type, $entity_ids);
 
       if (!empty($entities_data)) {
-
         /* @var $entity \Drupal\Core\Entity\EntityInterface */
         foreach ($entities_data as $id => $entity) {
           $title = $entity->getTypedData()->getString('title');
 
           $entities[] = array(
-            'value' => $id,
+            'value' => $title . ' [' . $id . ']',
             'label' => SafeMarkup::checkPlain($title),
           );
         }
