@@ -24,6 +24,7 @@ use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
  *   handlers = {
  *     "view_builder" = "Drupal\mailchimp_campaign\Entity\MailchimpCampaignViewBuilder",
  *     "form" = {
+ *       "send" = "Drupal\mailchimp_campaign\Form\MailchimpCampaignSendForm",
  *       "add" = "Drupal\mailchimp_campaign\Form\MailchimpCampaignForm",
  *       "edit" = "Drupal\mailchimp_campaign\Form\MailchimpCampaignForm",
  *       "delete" = "Drupal\mailchimp_campaign\Form\MailchimpCampaignDeleteForm"

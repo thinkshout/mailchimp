@@ -398,14 +398,19 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
 }
 
 /**
- * Send MailChimp campaign.
+ * Sends a MailChimp campaign.
+ *
+ * @param \Drupal\mailchimp_campaign\Entity\MailchimpCampaign $campaign
+ *   The MailChimp campaign to send.
+ *
+ * @return bool
+ *   TRUE if campaign is sent successfully.
  */
 function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
   $mcapi = mailchimp_get_api_object();
 
-  // Send campaign.
   try {
-    $result = $mcapi->campaigns->send($campaign->mc_campaign_id);
+    $result = $mcapi->campaigns->send($campaign->getMcCampaignId());
   }
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
@@ -418,7 +423,10 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     // Log action, and notify the user.
     \Drupal::logger('mailchimp_campaign')->error('MailChimp campaign {name} has been sent.', array(
       'name' => $campaign->label()));
-    entity_get_controller('mailchimp_campaign')->resetCache(array($campaign->identifier()));
+
+    // TODO: Update resetCache for D8 MailchimpCampaign entity.
+    //entity_get_controller('mailchimp_campaign')->resetCache(array($campaign->identifier()));
+
     return TRUE;
   }
   elseif (isset($result['status']) && ($result['status'] == 'error')) {
