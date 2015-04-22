@@ -10,6 +10,7 @@ use Drupal\Component\Utility\String;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\Core\Entity\ContentEntityType;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
@@ -173,6 +174,10 @@ class MailchimpCampaignForm extends ContentEntityForm {
 
     $campaign_template = $campaign->getTemplate();
 
+    $campaign_content = $form_state->getValue('content');
+
+    $entity_type = NULL;
+
     if ($mc_template) {
       if (strpos($mc_template['info']['source'], 'mc:repeatable')) {
         drupal_set_message(t('WARNING: This template has repeating sections, which are not supported. You may want to select a different template.'), 'warning');
@@ -199,9 +204,6 @@ class MailchimpCampaignForm extends ContentEntityForm {
           '#default_value' => $default_value,
         );
 
-        $campaign_content = $form_state->getValue('content');
-
-        $entity_type = NULL;
         if (isset($campaign_content[$section . '_wrapper']['entity_import']['entity_type'])) {
           $entity_type = $campaign_content[$section . '_wrapper']['entity_import']['entity_type'];
         }
@@ -227,7 +229,6 @@ class MailchimpCampaignForm extends ContentEntityForm {
         '#default_value' => ($campaign_template != NULL) ? $campaign_template['html']['value'] : '',
       );
 
-      $entity_type = NULL;
       if (isset($campaign_content[$section . '_wrapper']['entity_import']['entity_type'])) {
         $entity_type = $campaign_content[$section . '_wrapper']['entity_import']['entity_type'];
       }
@@ -358,8 +359,10 @@ class MailchimpCampaignForm extends ContentEntityForm {
   public static function entityTypeCallback(array $form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
 
-    $content_wrapper = $form_state['triggering_element']['#parents'][1];
-    $entity_import_wrapper = $form_state['triggering_element']['#ajax']['wrapper'];
+    $triggering_element = $form_state->getTriggeringElement();
+
+    $content_wrapper = $triggering_element['#parents'][1];
+    $entity_import_wrapper = $triggering_element['#ajax']['wrapper'];
 
     $html = '<div id="' . $entity_import_wrapper . '" class="content-entity-lookup-wrapper">';
     $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_id']);
@@ -434,15 +437,18 @@ class MailchimpCampaignForm extends ContentEntityForm {
   /**
    * Returns an options list of entity view modes.
    *
-   * @param array $entity
-   *   Array of entity data as returned by entity_get_info().
+   * @param string $entity_type
+   *   Entity type to build view mode options for.
    *
    * @return array
    *   Associative array of view mode IDs to name.
    */
-  private function buildEntityViewModeOptionList(array $entity) {
+  private function buildEntityViewModeOptionList($entity_type) {
     $options = array();
-    foreach ($entity['view modes'] as $view_mode_id => $view_mode_data) {
+
+    $view_modes = \Drupal::entityManager()->getViewModes($entity_type);
+
+    foreach ($view_modes as $view_mode_id => $view_mode_data) {
       $options[$view_mode_id] = $view_mode_data['label'];
     }
 
@@ -490,7 +496,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#default_value' => $entity_type,
       '#ajax' => array(
         'callback' => 'Drupal\mailchimp_campaign\Form\MailchimpCampaignForm::entityTypeCallback',
-        //'wrapper' => $section . '-content-entity-lookup-wrapper',
+        'wrapper' => $section . '-content-entity-lookup-wrapper',
       ),
     );
     $form['entity_import']['entity_type']['#attributes']['class'][] = $section . '-entity-import-entity-type';
@@ -504,7 +510,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
 
     if ($entity_type != NULL) {
       // Get available entity view modes.
-      $entity_view_mode_options = buildEntityViewModeOptionList($entity_info[$entity_type]);
+      $entity_view_mode_options = $this->buildEntityViewModeOptionList($entity_type);
 
       $form['entity_import']['entity_id'] = array(
         '#type' => 'textfield',
