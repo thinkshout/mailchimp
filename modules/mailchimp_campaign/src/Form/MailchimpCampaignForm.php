@@ -290,7 +290,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
     /* @var $campaign \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
     $campaign = $this->getEntity();
     $campaign->setMcCampaignId($campaign_id);
-    $campaign->setTemplate($form_state->getValue('template_id'));
+    $campaign->setTemplate($template_content);
     $campaign->save();
 
     // Clear campaigns cache.

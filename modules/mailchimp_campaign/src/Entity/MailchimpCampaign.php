@@ -56,7 +56,7 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
    * {@inheritdoc}
    */
   public function getTemplate() {
-    return $this->get('template')->value;
+    return unserialize($this->get('template')->value);
   }
 
   /**
@@ -77,7 +77,7 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
    * {@inheritdoc}
    */
   public function setTemplate($template) {
-   $this->set('template', $template);
+   $this->set('template', serialize($template));
   }
 
   /**
