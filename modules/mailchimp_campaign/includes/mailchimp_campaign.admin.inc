@@ -276,6 +276,7 @@ function mailchimp_campaign_campaign_form_validate($form, &$form_state) {
 /**
  * Submit handler for mailchimp_campaign_campaign_form().
  */
+/*
 function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $options = array(
@@ -303,6 +304,7 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
 
   $form_state['redirect'][] = 'admin/config/services/mailchimp/campaigns';
 }
+*/
 
 /**
  * Gets form elements used in the entity import feature.
