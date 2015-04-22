@@ -181,6 +181,7 @@ function mailchimp_campaign_menu() {
  * @return array
  *   Entities with titles matching search string.
  */
+/*
 function mailchimp_campaign_entities_autocomplete_callback($type, $string = '') {
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', $type)
@@ -203,6 +204,7 @@ function mailchimp_campaign_entities_autocomplete_callback($type, $string = '') 
 
   drupal_json_output($entities);
 }
+*/
 
 /**
  * Title callback: Generate a title for a registration entity.
