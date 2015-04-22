@@ -671,6 +671,7 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
 /**
  * List deletion form.
  */
+/*
 function mailchimp_campaign_send_form($form, &$form_state, MailChimpCampaign $campaign) {
   $form_state['campaign'] = $campaign;
   return confirm_form($form,
@@ -680,10 +681,12 @@ function mailchimp_campaign_send_form($form, &$form_state, MailChimpCampaign $ca
     t('Send campaign')
   );
 }
+*/
 
 /**
  * Submit handler for mailchimp_campaign_delete_list_form().
  */
+/*
 function mailchimp_campaign_send_form_submit($form, &$form_state) {
   $campaign = $form_state['campaign'];
   mailchimp_campaign_send_campaign($campaign);
@@ -692,3 +695,4 @@ function mailchimp_campaign_send_form_submit($form, &$form_state) {
   );
   drupal_goto('admin/config/services/mailchimp/campaigns');
 }
+*/
