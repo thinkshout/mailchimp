@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Url;
+use Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
 
 /**
  * Defines the render controller for MailchimpCampaign entities.
@@ -26,7 +27,8 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
     $build = parent::view($entity, $view_mode, $langcode);
 
     // Prepare rendered content.
-    $content = $this->renderTemplate($entity->template);
+    /* @var $entity \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
+    $content = $this->renderTemplate($entity->getTemplate());
     $rendered = '';
     foreach ($content as $key => $section) {
       $rendered .= "<h3>$key</h3>" . $section;
@@ -118,17 +120,17 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
   /**
    * Converts a template into rendered content.
    *
-   * @param FieldItemList $template
-   *   List of template sections.
+   * @param array $template
+   *   Array of template sections.
    *
    * @return array
    *   Array of template content indexed by section ID.
    */
-  private function renderTemplate(FieldItemList $template) {
+  private function renderTemplate($template) {
     $content = array();
-    foreach ($template->list as $key => $part) {
-      if (isset($part->format)) {
-        $content[$key] = check_markup($part->value, $part->format);
+    foreach ($template as $key => $part) {
+      if (isset($part['format'])) {
+        $content[$key] = check_markup($part['value'], $part['format']);
       }
     }
 
