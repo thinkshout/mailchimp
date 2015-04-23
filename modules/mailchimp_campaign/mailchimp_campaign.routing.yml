@@ -22,6 +22,7 @@ mailchimp_campaign.send:
     _title: 'Send MailChimp Campaign'
   requirements:
     _permission: 'administer mailchimp'
+    _entity_access: 'mailchimp_campaign.send'
 
 mailchimp_campaign.add:
   path: '/admin/config/services/mailchimp/campaigns/add'

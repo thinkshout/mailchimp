@@ -10,6 +10,7 @@ namespace Drupal\mailchimp_campaign\Entity;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
 
 /**
@@ -22,6 +23,7 @@ use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
  *   label = @Translation("Mailchimp Campaign"),
  *   fieldable = FALSE,
  *   handlers = {
+ *     "access" = "Drupal\mailchimp_campaign\MailchimpCampaignAccessControlHandler",
  *     "view_builder" = "Drupal\mailchimp_campaign\Entity\MailchimpCampaignViewBuilder",
  *     "form" = {
  *       "send" = "Drupal\mailchimp_campaign\Form\MailchimpCampaignSendForm",
@@ -123,6 +125,20 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
       ->setDescription(t('The Unix timestamp when the campaign was most recently saved.'));
 
     return $fields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
+    if ($operation == 'create') {
+      return $this->entityManager()
+        ->getAccessControlHandler($this->entityTypeId)
+        ->createAccess($this->bundle(), $account, [], $return_as_object);
+    }
+    return $this->entityManager()
+      ->getAccessControlHandler($this->entityTypeId)
+      ->access($this, $operation, $this->activeLangcode, $account, $return_as_object);
   }
 
   /**
