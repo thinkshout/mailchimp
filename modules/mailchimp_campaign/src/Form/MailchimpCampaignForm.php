@@ -249,18 +249,24 @@ class MailchimpCampaignForm extends ContentEntityForm {
       );
     }
 
-    $form['actions']['preview'] = array(
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function actions(array $form, FormStateInterface $form_state) {
+    $actions = parent::actions($form, $form_state);
+
+    $actions['submit']['#value'] = t('Save as draft');
+
+    $actions['preview'] = array(
       '#type' => 'submit',
       '#value' => t('Preview content'),
-      '#weight' => 10,
-      '#submit' => array('mailchimp_campaign_campaign_preview'),
-    );
-    $form['actions']['save'] = array(
-      '#type' => 'submit',
-      '#value' => t('Save as draft'),
+      '#submit' => array('::submitForm', '::preview'),
     );
 
-    return $form;
+    return $actions;
   }
 
   /**
@@ -298,6 +304,21 @@ class MailchimpCampaignForm extends ContentEntityForm {
     $cache->deleteAll('mailchimp_campaign_campaigns');
 
     $form_state->setRedirect('mailchimp_campaign.overview');
+  }
+
+  /**
+   * Generates a preview of the campaign template content.
+   */
+  public function preview(array $form, FormStateInterface $form_state) {
+    $text = '';
+    $template_content = $this->parseTemplateContent($form_state->getValue('content'));
+    $content = mailchimp_campaign_render_template($template_content);
+    foreach ($content as $key => $section) {
+      $text .= "<h3>$key</h3>" . $section;
+    }
+
+    $form_state->setValue('mailchimp_campaign_campaign_preview', $text);
+    $form_state->setRebuild(TRUE);
   }
 
   /**
