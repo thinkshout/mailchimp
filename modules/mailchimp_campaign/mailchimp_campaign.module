@@ -38,190 +38,6 @@ function mailchimp_campaign_entity_storage_load(array $entities, $entity_type) {
 }
 
 /**
- * Implements hook_entity_info().
- */
-/*
-function mailchimp_campaign_entity_info() {
-  $return = array(
-    'mailchimp_campaign' => array(
-      'label' => t('MailChimp Campaign'),
-      'entity class' => 'MailChimpCampaign',
-      'controller class' => 'MailChimpCampaignController',
-      'base table' => 'mailchimp_campaigns',
-      'uri callback' => 'entity_class_uri',
-      'fieldable' => FALSE,
-      'exportable' => FALSE,
-      'entity keys' => array(
-        'id' => 'mc_campaign_id',
-      ),
-      'token type' => 'mailchimp_campaign',
-      'module' => 'mailchimp_campaign',
-      'label callback' => 'entity_class_label',
-      'view modes' => array(
-        'full' => array(
-          'label' => t('Full Campaign'),
-          'custom settings' => FALSE,
-        ),
-      ),
-    ),
-  );
-  return $return;
-}
-*/
-
-/**
- * Implements hook_permission().
- */
-/*
-function mailchimp_campaign_permission() {
-  return array(
-    'administer mailchimp campaigns' => array(
-      'title' => t('Administer MailChimp campaigns'),
-      'description' => t('Create and send MailChimp campaigns.'),
-    ),
-  );
-}
-*/
-
-/**
- * Implements hook_menu().
- */
-/*
-function mailchimp_campaign_menu() {
-  $items['admin/config/services/mailchimp/campaigns'] = array(
-    'title' => 'Campaigns',
-    'description' => 'Manage MailChimp Campaigns.',
-    'page callback' => 'mailchimp_campaign_overview_page',
-    'access callback' => 'mailchimp_apikey_ready_access',
-    'access arguments' => array('administer mailchimp campaigns'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10,
-  );
-  $items['admin/config/services/mailchimp/campaigns/add'] = array(
-    'title' => 'Add a Campaign',
-    'description' => 'Add a new MailChimp campaign.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_campaign_campaign_form'),
-    'access callback' => 'mailchimp_apikey_ready_access',
-    'access arguments' => array('administer mailchimp campaigns'),
-    'file' => 'includes/mailchimp_campaign.admin.inc',
-    'type' => MENU_LOCAL_ACTION,
-  );
-  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign'] = array(
-    'title callback' => 'mailchimp_campaign_page_title',
-    'title arguments' => array(5),
-    'page callback' => 'mailchimp_campaign_view',
-    'page arguments' => array(5),
-    'access arguments' => array('administer mailchimp campaigns'),
-    'load arguments' => array(5),
-  );
-  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/view'] = array(
-    'title' => 'View',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => 0,
-  );
-  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/send'] = array(
-    'title' => 'Send',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_campaign_send_form', 5),
-    'access callback' => 'mailchimp_campaign_access',
-    'access arguments' => array(5, FALSE),
-    'file' => 'includes/mailchimp_campaign.admin.inc',
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 1,
-  );
-  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/edit'] = array(
-    'title' => 'Edit',
-    'description' => 'Edit a MailChimp campaign.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_campaign_campaign_form', 5),
-    'access callback' => 'mailchimp_campaign_access',
-    'access arguments' => array(5, FALSE),
-    'file' => 'includes/mailchimp_campaign.admin.inc',
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 2,
-  );
-  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/delete'] = array(
-    'title' => 'Delete',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_campaign_delete_form', 5),
-    'access callback' => 'mailchimp_campaign_access',
-    'access arguments' => array(5, FALSE),
-    'file' => 'includes/mailchimp_campaign.admin.inc',
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 3,
-  );
-  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/stats'] = array(
-    'title' => 'Stats',
-    'page callback' => 'mailchimp_campaign_stats_page',
-    'page arguments' => array(5),
-    'access callback' => 'mailchimp_campaign_access',
-    'access arguments' => array(5, TRUE),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 4,
-  );
-  $items['admin/config/services/mailchimp/campaigns/entities'] = array(
-    'page callback' => 'mailchimp_campaign_entities_autocomplete_callback',
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-  );
-
-  return $items;
-}
-*/
-
-/**
- * Callback for campaign template entity search field.
- *
- * @param string $type
- *   The entity type to limit search to.
- * @param string $string
- *   The string to search entity titles for.
- *
- * @return array
- *   Entities with titles matching search string.
- */
-/*
-function mailchimp_campaign_entities_autocomplete_callback($type, $string = '') {
-  $query = new EntityFieldQuery();
-  $query->entityCondition('entity_type', $type)
-    ->propertyCondition('title', $string, 'CONTAINS')
-    ->range(0, 10);
-
-  $entities = array();
-
-  $result = $query->execute();
-  if (isset($result[$type])) {
-    $entity_ids = array_keys($result[$type]);
-    $entities_data = entity_load($type, $entity_ids);
-
-    if (!empty($entities_data)) {
-      foreach ($entities_data as $id => $entity) {
-        $entities[$entity->title . ' [' . $id . ']'] = $entity->title;
-      }
-    }
-  }
-
-  drupal_json_output($entities);
-}
-*/
-
-/**
- * Title callback: Generate a title for a registration entity.
- *
- * Callback for hook_menu() within system_themes_page().
- *
- * @param MailChimpCampaign $campaign
- *   The MailChimp campaign instance.
- *
- * @return string
- *   The entity title.
- */
-function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
-  return $campaign->label();
-}
-
-/**
  * Access callback for campaigns.
  *
  * Provides access to features based on whether or not a campaign has been sent.
@@ -231,6 +47,9 @@ function mailchimp_campaign_page_title(MailChimpCampaign $campaign) {
  * @param bool $sent
  *   Set to TRUE when a campaign has been sent.
  */
+
+// TODO: Update to D8 access callback.
+
 function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
   $access = FALSE;
   // Only campaigns that haven't been sent can be changed.
@@ -240,54 +59,6 @@ function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
   }
   return $access;
 }
-
-/**
- * Page callback for showing a list of MailChimp Campaign entities.
- */
-/*
-function mailchimp_campaign_overview_page() {
-  $campaigns = mailchimp_campaign_load_multiple();
-  $templates = mailchimp_campaign_list_templates();
-
-  $rows = array();
-  foreach ($campaigns as $campaign) {
-    $actions = array(
-      l(t('View Archive'), $campaign->mc_data['archive_url'], array(
-        'attributes' => array('target' => '_blank'),
-      )),
-      l(t('View'), 'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id),
-    );
-
-    $rows[] = array(
-      l($campaign->label(),
-        'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id),
-      $campaign->mc_data['subject'],
-      $campaign->mc_data['status'],
-      l($campaign->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list['web_id'],
-        array(
-          'attributes' => array('target' => '_blank'),
-        )),
-      isset($templates[$campaign->mc_data['template_id']]) ? $templates[$campaign->mc_data['template_id']]['name'] : '',
-      $campaign->mc_data['create_time'],
-      implode(' | ', $actions),
-    );
-  }
-
-  return array(
-    '#theme' => 'table',
-    '#header' => array(
-      t('Title'),
-      t('Subject'),
-      t('Status'),
-      t('MailChimp list'),
-      t('MailChimp template'),
-      t('Created'),
-      t('Actions'),
-    ),
-    '#rows' => $rows,
-  );
-}
-*/
 
 /**
  * Implements hook_theme().
@@ -440,9 +211,6 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
 /**
  * Delete a MailChimp campaign and the local entity.
  */
-
-// TODO: Move into MailchimpCampaignDeleteForm.
-
 function mailchimp_campaign_delete_campaign($cid) {
   $mcapi = mailchimp_get_api_object();
 
@@ -570,135 +338,6 @@ function _mailchimp_campaign_mcapi_error_message($result, $message, $variables =
 }
 
 /**
- * Change the relative URLs to absolute ones in the message.
- */
-/*
-function mailchimp_campaign_convert_url($text) {
-  global $base_url;
-  $matches = array();
-  preg_match_all('/<(a|img).*?(href|src)="(.*?)"/', $text, $matches);
-  foreach ($matches[3] as $key => $url) {
-    if ($url[0] == '/') {
-      $new_url = $base_url . $url;
-      $new_match = str_replace($url, $new_url, $matches[0][$key]);
-      $text = str_replace($matches[0][$key], $new_match, $text);
-    }
-  }
-
-  return $text;
-}
-*/
-
-/**
- * Implements hook_filter_info().
- */
-/*
-function mailchimp_campaign_filter_info() {
-  $filters['mailchimp_campaign'] = array(
-    'title' => t('MailChimp Campaign filter'),
-    'description' => t('Add content and covert URLs for sending as MailChimp campaigns.'),
-    'process callback' => 'mailchimp_campaign_filter_campaign_process',
-    'tips callback' => 'mailchimp_campaign_filter_tips',
-  );
-  return $filters;
-}
-*/
-
-/**
- * Tips callback for mailchimp_campaign_filter_info().
- *
- * @param object $filter
- *   The filter object containing settings for the given format.
- * @param object $format
- *   The text format object assigned to the text to be filtered.
- * @param bool $long
- *   Set to TRUE to return a long tip, FALSE for short.
- *
- * @return string
- *   Translated text to display as a tip.
- */
-/*
-function mailchimp_campaign_filter_tips($filter, $format, $long) {
-  $tip = t('Converts content tokens in the format %pattern into the appropriate rendered content and makes all paths absolute. Use the "Insert Site Content" widget below to generate tokens.',
-    array('%pattern' => '[mailchimp_campaign|entity_type=node|entity_id=1|view_mode=teaser]')
-  );
-
-  return $tip;
-}
-*/
-
-/**
- * Process callback for mailchimp_campaign_filter_info().
- *
- * @string $text
- *   The text string to be filtered.
- * @object object $filter
- *   The filter object containing settings for the given format.
- * @string $format
- *   The text format object assigned to the text to be filtered.
- * @string $langcode
- *   The language code of the text to be filtered.
- * @bool $cache
- *   A Boolean indicating whether the filtered text is going to be cached in
- *   {cache_filter}.
- * @int $cache_id
- *   The ID of the filtered text in {cache_filter}, if $cache is TRUE.
- *
- * @return string
- *   The filtered text.
- */
-/*
-function mailchimp_campaign_filter_campaign_process($text, $filter, $format, $langcode, $cache, $cache_id) {
-  // Replace node macros with entity content:
-  $pattern = '/\[mailchimp_campaign\|entity_type=(\w+)\|entity_id=(\d+)\|view_mode=(\w+)\]/s';
-  $text = preg_replace_callback($pattern, 'mailchimp_campaign_process_callback', $text);
-
-  // Convert URL to absolute:
-  $text = mailchimp_campaign_convert_url($text);
-
-  return $text;
-}
-*/
-
-/**
- * Callback for preg_replace in mailchimp_campaign_filter_campaign_process().
- */
-/*
-function mailchimp_campaign_process_callback($matches = array()) {
-  $content = '';
-  $entity_type = $entity_id = $view_mode = '';
-  foreach ($matches as $key => $match) {
-    switch ($key) {
-      case 1:
-        $entity_type = $match;
-        break;
-
-      case 2:
-        $entity_id = $match;
-        break;
-
-      case 3:
-        $view_mode = $match;
-        break;
-
-    }
-  }
-
-  $entities = entity_load($entity_type, array($entity_id));
-  if (!empty($entities)) {
-    $render_array = entity_view($entity_type, $entities, $view_mode, NULL, TRUE);
-    // Remove contextual links.
-    if (isset($render_array[$entity_type][$entity_id]['#contextual_links'])) {
-      unset($render_array[$entity_type][$entity_id]['#contextual_links']);
-    }
-    $content = render($render_array);
-  }
-
-  return $content;
-}
-*/
-
-/**
  * Page callback for a campaign's statistics.
  *
  * @param MailChimpCampaign $campaign
@@ -707,6 +346,9 @@ function mailchimp_campaign_process_callback($matches = array()) {
  * @return array
  *   A renderable array for the campaign stats page.
  */
+
+// TODO: Move into MailchimpCampaignController, set up route.
+
 function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
   $mcapi = mailchimp_get_api_object();
 
@@ -900,31 +542,6 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
 }
 
 /**
- * Saves a campaign.
- */
-/*
-function mailchimp_campaign_save(MailChimpCampaign $campaign) {
-  $campaign->updated = REQUEST_TIME;
-  // Set the creation timestamp if not set.
-  if (!isset($campaign->created) || empty($campaign->created)) {
-    $campaign->created = REQUEST_TIME;
-  }
-
-  return $campaign->save();
-}
-*/
-
-/**
- * Load a campaign by ID.
- */
-/*
-function mailchimp_campaign_load($cid, $reset = FALSE) {
-  $campaign = mailchimp_campaign_load_multiple(array($cid), array(), $reset);
-  return $campaign ? $campaign[$cid] : FALSE;
-}
-*/
-
-/**
  * Loads multiple campaigns.
  */
 function mailchimp_campaign_load_multiple($campaign_ids = array(), $reset = FALSE) {
@@ -950,17 +567,4 @@ function mailchimp_campaign_delete($cid) {
  */
 function mailchimp_campaign_delete_multiple($campaign_ids) {
   return entity_get_controller('mailchimp_campaign')->delete($campaign_ids);
-}
-
-/**
- * Display a campaign.
- *
- * @param object $campaign
- *   A fully loaded campaign object.
- *
- * @return array
- *   Renderable elements.
- */
-function mailchimp_campaign_view($campaign) {
-  return $campaign->view();
 }
