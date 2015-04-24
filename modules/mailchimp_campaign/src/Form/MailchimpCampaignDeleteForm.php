@@ -55,5 +55,18 @@ class MailchimpCampaignDeleteForm extends EntityConfirmFormBase {
 
     $form_state->setRedirectUrl($this->getCancelUrl());
   }
+
+  /**
+   * {@inheritdoc}
+   *
+   * // TODO: Make sure override afterBuild is the correct solution.
+   *
+   * Have to disable EntityForm::afterbuild for this form.
+   * Drupal was attempting to get a field definition for the submit button
+   * from the MailchimpCampaign entity, which doesn't (and shouldn't) have it.
+   */
+  public function afterBuild(array $element, FormStateInterface $form_state) {
+    return $element;
+  }
 }
 ?>
