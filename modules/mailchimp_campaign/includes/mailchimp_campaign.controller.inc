@@ -8,38 +8,6 @@
 class MailChimpCampaignController extends EntityAPIController {
 
   /**
-   * Implement in order to attach MailChimp data to campaign entities.
-   */
-  /*
-   * Moved into mailchimp_campaign.module::mailchimp_campaign_entity_storage_load
-   *
-  protected function attachLoad(&$campaigns, $revision_id = FALSE) {
-    $ids = array();
-    if (!empty($campaigns)) {
-      foreach ($campaigns as $campaign) {
-        $ids[] = $campaign->mc_campaign_id;
-      }
-    }
-    $mc_campaigns = mailchimp_campaign_get_campaigns($ids);
-
-    foreach ($campaigns as $mc_campaign_id => $campaign) {
-      $campaign->mc_data = $mc_campaigns[$mc_campaign_id];
-
-      // Lists are cached separately, but we want to load them here.
-      if (isset($campaign->mc_data['list_id']) && $campaign->mc_data['list_id']) {
-        $campaign->list = mailchimp_get_list($campaign->mc_data['list_id']);
-      }
-
-      if (isset($campaign->mc_data['template_id']) && $campaign->mc_data['template_id']) {
-        $campaign->mc_template = mailchimp_campaign_get_template($campaign->mc_data['template_id']);
-      }
-    }
-
-    parent::attachLoad($campaigns, $revision_id);
-  }
-  */
-
-  /**
    * Implement to clear MailChimp campaign data caches.
    *
    * @param array $ids
