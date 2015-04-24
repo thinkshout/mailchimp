@@ -92,11 +92,10 @@ class MailchimpSignupForm extends EntityForm {
     );
 
     $form['settings'] = array(
-      '#type' => 'fieldset',
+      '#type' => 'details',
       '#title' => 'Settings',
       '#tree' => TRUE,
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
+      '#open' => TRUE,
     );
 
     $form['settings']['path'] = array(
@@ -137,10 +136,9 @@ class MailchimpSignupForm extends EntityForm {
     );
 
     $form['mc_lists_config'] = array(
-      '#type' => 'fieldset',
+      '#type' => 'details',
       '#title' => t('MailChimp List Selection & Configuration'),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
+      '#open' => TRUE,
     );
     $lists = mailchimp_get_lists();
     $options = array();
@@ -205,10 +203,9 @@ class MailchimpSignupForm extends EntityForm {
     }
 
     $form['subscription_settings'] = array(
-      '#type' => 'fieldset',
+      '#type' => 'details',
       '#title' => t('Subscription Settings'),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
+      '#open' => TRUE,
     );
 
     $form['subscription_settings']['doublein'] = array(
