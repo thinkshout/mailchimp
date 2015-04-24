@@ -26,6 +26,8 @@ class MailchimpCampaignAccessControlHandler extends EntityAccessControlHandler {
     $status = $entity->mc_data['status'];
     switch ($operation) {
       case 'send':
+      case 'edit':
+      case 'delete':
         return ($status == MAILCHIMP_STATUS_SENT) ? AccessResult::forbidden(): AccessResult::allowed();
         break;
       default:
