@@ -22,15 +22,15 @@ class MailchimpCampaignAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   public function access(EntityInterface $entity, $operation, $langcode = LanguageInterface::LANGCODE_DEFAULT, AccountInterface $account = NULL, $return_as_object = FALSE) {
-
+    /* @var $entity \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
+    $status = $entity->mc_data['status'];
     switch ($operation) {
       case 'send':
-        //return AccessResult::forbidden();
+        return ($status == MAILCHIMP_STATUS_SENT) ? AccessResult::forbidden(): AccessResult::allowed();
         break;
       default:
         return parent::access($entity, $operation, $langcode, $account, $return_as_object);
     }
-
   }
 
 }
