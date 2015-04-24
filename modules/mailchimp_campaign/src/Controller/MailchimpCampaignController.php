@@ -39,7 +39,7 @@ class MailchimpCampaignController extends ControllerBase {
       $campaign_id = $campaign->getMcCampaignId();
 
       $archive_url = Url::fromUri($campaign->mc_data['archive_url']);
-      $campaign_url = Url::fromRoute('mailchimp_campaign.view', array('mailchimp_campaign' => $campaign_id));
+      $campaign_url = Url::fromRoute('entity.mailchimp_campaign.view', array('mailchimp_campaign' => $campaign_id));
       $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list['web_id']);
 
       $actions = array(
@@ -94,6 +94,85 @@ class MailchimpCampaignController extends ControllerBase {
     $view_builder = \Drupal::entityManager()->getViewBuilder('mailchimp_campaign');
 
     $content = $view_builder->view($mailchimp_campaign);
+
+    return $content;
+  }
+
+  /**
+   * View a MailChimp campaign stats.
+   *
+   * @param MailchimpCampaign $mailchimp_campaign
+   *   The MailChimp campaign to view stats for.
+   *
+   * @return array
+   *   Renderable array of page content.
+   */
+  public function stats(MailchimpCampaign $mailchimp_campaign) {
+    $content = array();
+
+    $mcapi = mailchimp_get_api_object();
+
+    try {
+      $response = $mcapi->reports->summary($mailchimp_campaign->getMcCampaignId());
+    } catch (Mailchimp_Error $e) {
+      drupal_set_message($e->getMessage(), 'error');
+      \Drupal::logger('mailchimp_campaign')
+        ->error('An error occurred getting report data from MailChimp: {message}', array(
+        'message' => $e->getMessage()
+      ));
+    }
+
+    if (!empty($response)) {
+      // Attach stats JS.
+      $content['#attached']['library'][] = 'mailchimp_campaign/google-jsapi';
+      $content['#attached']['library'][] = 'mailchimp_campaign/campaign-stats';
+
+      // Time series chart data.
+      $content['#attached']['drupalSettings']['mailchimp_campaign'] = array(
+        'stats' => array(),
+      );
+
+      foreach ($response['timeseries'] as $series) {
+        $content['#attached']['drupalSettings']['mailchimp_campaign']['stats'][] = array(
+          'timestamp' => $series['timestamp'],
+          'emails_sent' => isset($series['emails_sent']) ? $series['emails_sent'] : 0,
+          'unique_opens' => $series['unique_opens'],
+          'recipients_click' => $series['recipients_click'],
+        );
+      }
+
+      $content['charts'] = array(
+        '#prefix' => '<h2>' . t('Hourly stats for the first 24 hours of the campaign') . '</h2>',
+        '#markup' => '<div id="mailchimp-campaign-chart"></div>',
+      );
+
+      $content['metrics_table'] = array(
+        '#type' => 'table',
+        '#header' => array(t('Key'), t('Value')),
+        '#empty' => '',
+        '#prefix' => '<h2>' . t('Other campaign metrics') . '</h2>',
+      );
+
+      foreach ($response as $key => $value) {
+        if (is_array($value)) {
+          break;
+        }
+
+        $content['metrics_table'][] = array(
+          'key' => array(
+            '#markup' => $key,
+          ),
+          'value' => array(
+            '#markup' => $value
+          ),
+        );
+      }
+    }
+    else {
+      $content['unavailable'] = array(
+        '#markup' => 'The campaign stats are unavailable at this time.',
+      );
+    }
 
     return $content;
   }
