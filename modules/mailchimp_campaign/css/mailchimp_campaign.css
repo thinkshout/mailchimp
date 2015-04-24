@@ -1,9 +1,9 @@
-fieldset#entity-import .form-type-select, fieldset#entity-import .form-type-textfield, div.content-entity-lookup-wrapper {
-    display: inline-block;
+details#entity-import .form-type-select, details#entity-import .form-type-textfield, div.content-entity-lookup-wrapper {
+    display: inline-block!important;
     margin-right: 10px!important;
 }
 
-fieldset#entity-import .form-item {
+details#entity-import .form-item {
     padding: 0!important;
 }
 
