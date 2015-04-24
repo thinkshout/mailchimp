@@ -246,63 +246,35 @@ class MailchimpSignupForm extends EntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $signup_config = $this->entity;
-    $signup_config->mode = array_sum($form_state->getValue('mode'));
-    $status = $signup_config->save();
-    $form_state->setRedirect('mailchimp_signup.admin');
+    $mode = $form_state->getValue('mode');
 
-    return;
-    if (isset($form_state['signup'])) {
-      $signup = $form_state['signup'];
-      $prior_settings = $signup->settings;
-      if (!$form_state['values']['mode'][MAILCHIMP_SIGNUP_PAGE]) {
-        $form_state['values']['settings']['path'] = '';
-      }
-    }
-    else {
-      $signup = mailchimp_signup_create();
-      $prior_settings = array();
-    }
-    $mergefields = $form_state['values']['mergefields'];
+    /* @var $signup \Drupal\mailchimp_signup\Entity\MailchimpSignup */
+    $signup = $this->getEntity();
+    $signup->mode = array_sum($mode);
+
+    $mergefields = $form_state->getValue('mergefields');
+    $mergevar_options = $form_state->getValue('mergevar_options');
     foreach ($mergefields as $id => $val) {
       if ($val) {
-        $mergefields[$id] = $form_state['mergevar_options'][$id];
+        $mergefields[$id] = $mergevar_options[$id];
       }
-    }
-    $signup->title = $form_state['values']['title'];
-    $signup->name = $form_state['values']['name'];
-    $signup->mode = array_sum($form_state['values']['mode']);
-    $signup->mc_lists = array_filter($form_state['values']['mc_lists']);
-    $signup->settings = $form_state['values']['settings'];
-    $signup->settings['mergefields'] = $mergefields;
-    $signup->settings['description'] = $form_state['values']['description'];
-    $signup->settings['doublein'] = $form_state['values']['doublein'];
-    $signup->settings['send_welcome'] = $form_state['values']['send_welcome'];
-    $signup->settings['include_interest_groups'] = $form_state['values']['include_interest_groups'];
-    if ($signup->save()) {
-      if (isset($form_state['values']['settings']['path'])) {
-        if (!isset($prior_settings['path']) || $prior_settings['path'] != $signup->settings['path'] || !($signup->mode & MAILCHIMP_SIGNUP_PAGE)) {
-          // We have a new (or removed) path. Rebuild menus.
-          menu_rebuild();
-        }
-      }
-      drupal_set_message(t('Signup form @name has been saved.',
-        array('@name' => $signup->name)));
-      $form_state['redirect'] = 'admin/config/services/mailchimp/signup';
-    }
-    else {
-      drupal_set_message(t('There has been an error saving your signup form.'), 'error');
     }
 
-    if ($status) {
-      drupal_set_message($this->t('Saved the %label Example.', array(
-        '%label' => $example->get('title'),
-      )));
+    $signup->settings['mergefields'] = $mergefields;
+    $signup->settings['description'] = $form_state->getValue('description');
+    $signup->settings['doublein'] = $form_state->getValue('doublein');
+    $signup->settings['send_welcome'] = $form_state->getValue('send_welcome');
+    $signup->settings['include_interest_groups'] = $form_state->getValue('include_interest_groups');
+
+    // Clear path value if mode doesn't include signup page.
+    if (!isset($mode[MAILCHIMP_SIGNUP_PAGE])) {
+      $signup->settings['path'] = '';
     }
-    else {
-      drupal_set_message($this->t('The %label Example was not saved.', array(
-        '%label' => $example->get('title'),
-      )));
+
+    if ($signup->save()) {
+
+      // TODO: Build dynamic route for signup page.
+
     }
 
     $form_state->setRedirect('mailchimp_signup.admin');
