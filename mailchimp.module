@@ -442,7 +442,10 @@ function mailchimp_update_member_process($list_id, $email, $merge_vars, $format,
  */
 function mailchimp_get_members($list_id, $status = 'subscribed', $options = array()) {
   $results = FALSE;
-  if (lock_acquire('mailchimp_get_members', 60)) {
+
+  $lock = \Drupal::lock();
+
+  if ($lock->acquire('mailchimp_get_members', 60)) {
     try {
       $mcapi = mailchimp_get_api_object();
       $results = $mcapi->lists->members($list_id, $status, $options);
@@ -451,7 +454,8 @@ function mailchimp_get_members($list_id, $status = 'subscribed', $options = arra
       \Drupal::logger('mailchimp')->error('An error occurred pulling member info for a list. "{message}"', array(
         'message' => $e->getMessage()));
     }
-    lock_release('mailchimp_get_members');
+
+    $lock->release('mailchimp_get_members');
   }
   return $results;
 }
