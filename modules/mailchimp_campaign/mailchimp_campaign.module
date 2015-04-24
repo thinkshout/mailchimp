@@ -38,29 +38,6 @@ function mailchimp_campaign_entity_storage_load(array $entities, $entity_type) {
 }
 
 /**
- * Access callback for campaigns.
- *
- * Provides access to features based on whether or not a campaign has been sent.
- *
- * @param MailChimpCampaign $campaign
- *   The MailChimp campaign instance.
- * @param bool $sent
- *   Set to TRUE when a campaign has been sent.
- */
-
-// TODO: Update to D8 access callback.
-
-function mailchimp_campaign_access(MailChimpCampaign $campaign, $sent = TRUE) {
-  $access = FALSE;
-  // Only campaigns that haven't been sent can be changed.
-  if (\Drupal::currentUser()->hasPermission('administer mailchimp campaigns') &&
-    ($campaign->mc_data['status'] === 'sent') === $sent) {
-    $access = TRUE;
-  }
-  return $access;
-}
-
-/**
  * Implements hook_theme().
  */
 function mailchimp_campaign_theme($existing, $type, $theme, $path) {
