@@ -39,7 +39,7 @@ entity.mailchimp_campaign.edit_form:
     _title: 'Edit MailChimp Campaign'
   requirements:
     _permission: 'administer mailchimp'
-    _entity_access: 'mailchimp_campaign.send'
+    _entity_access: 'mailchimp_campaign.edit'
 
 entity.mailchimp_campaign.delete_form:
   path: '/admin/config/services/mailchimp/campaign/{mailchimp_campaign}/delete'
@@ -48,7 +48,7 @@ entity.mailchimp_campaign.delete_form:
     _title: 'Delete MailChimp Campaign'
   requirements:
     _permission: 'administer mailchimp'
-    _entity_access: 'mailchimp_campaign.send'
+    _entity_access: 'mailchimp_campaign.delete'
 
 mailchimp_campaign.entity_autocomplete:
   path: 'admin/config/services/mailchimp/campaigns/entities/{entity_type}'
