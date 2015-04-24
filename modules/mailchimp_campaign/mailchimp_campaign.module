@@ -172,8 +172,8 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     \Drupal::logger('mailchimp_campaign')->error('MailChimp campaign {name} has been sent.', array(
       'name' => $campaign->label()));
 
-    // TODO: Update resetCache for D8 MailchimpCampaign entity.
-    //entity_get_controller('mailchimp_campaign')->resetCache(array($campaign->identifier()));
+    $controller = \Drupal::entityManager()->getStorage('mailchimp_campaign');
+    $controller->resetCache(array($campaign->getMcCampaignId()));
 
     return TRUE;
   }
