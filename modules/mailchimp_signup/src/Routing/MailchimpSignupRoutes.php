@@ -29,8 +29,9 @@ class MailchimpSignupRoutes {
           '/' . $signup->settings['path'],
           // Route defaults.
           array(
-            '_form' => '\Drupal\mailchimp_signup\Form\MailchimpSignupPageForm',
+            '_controller' => '\Drupal\mailchimp_signup\Controller\MailchimpSignupController::page',
             '_title' => $signup->title,
+            'signup_id' => $signup->id,
           ),
           // Route requirements.
           array(

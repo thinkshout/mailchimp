@@ -8,8 +8,7 @@ namespace Drupal\mailchimp_signup\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\mailchimp_lists\Plugin\Field\FieldFormatter\MailchimpListsFieldSubscribeFormatter;
-use Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription;
+use Drupal\mailchimp_signup\Entity\MailchimpSignup;
 
 /**
  * Subscribe to a MailChimp list.
@@ -22,7 +21,14 @@ class MailchimpSignupPageForm extends FormBase {
    *
    * @var string
    */
-  private $formId = 'mailchimp_signup_page';
+  private $formId = 'mailchimp_signup_page_form';
+
+  /**
+   * The MailchimpSignup entity used to build this form.
+   *
+   * @var MailchimpSignup
+   */
+  private $signup = nULL;
 
   /**
    * {@inheritdoc}
@@ -35,11 +41,15 @@ class MailchimpSignupPageForm extends FormBase {
     $this->formId = $formId;
   }
 
+  public function setSignup(MailchimpSignup $signup) {
+    $this->signup = $signup;
+  }
+
   /**
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    return ['mailchimp_signup.page'];
+    return ['mailchimp_signup.page_form'];
   }
 
   /**
