@@ -116,10 +116,17 @@ function mailchimp_signup_load($signup_id) {
  */
 function mailchimp_signup_load_multiple($signup_ids = array(), $conditions = array(), $reset = FALSE) {
   if (empty($signup_ids)) {
-    $signup_ids = FALSE;
+    $signup_ids = NULL;
   }
 
-  return entity_load('mailchimp_signup', $signup_ids, $conditions, $reset);
+  $controller = \Drupal::entityManager()->getStorage('mailchimp_signup');
+
+  if ($reset) {
+    $controller->resetCache($signup_ids);
+  }
+
+  return $controller->loadMultiple($signup_ids);
+
 }
 
 /**
