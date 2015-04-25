@@ -30,3 +30,6 @@ entity.mailchimp_signup.delete_form:
     _title: 'Delete Signup Form'
   requirements:
     _permission: 'administer mailchimp_signup'
+
+route_callbacks:
+  - '\Drupal\mailchimp_signup\Routing\MailchimpSignupRoutes::routes'
