@@ -150,7 +150,64 @@ class MailchimpSignupPageForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $list_details = mailchimp_get_lists($this->signup->mc_lists);
 
+    $subscribe_lists = array();
+
+    // Filter out blank fields so we don't erase values on the Mailchimp side.
+    $merge_values = array_filter($form_state->getValue('mergevars'));
+
+    $email = $merge_values['EMAIL'];
+
+    $mailchimp_lists = $form_state->getValue('mailchimp_lists');
+
+    // If we only have one list we won't have checkbox values to investigate.
+    if (count($this->signup->mc_lists) == 1) {
+      $subscribe_lists[0] = array(
+        'subscribe' => reset($this->signup->mc_lists),
+        'interest_groups' => isset($mailchimp_lists['interest_groups']) ? $mailchimp_lists['interest_groups'] : NULL,
+      );
+    }
+    else {
+      // We can look at the checkbox values now.
+      foreach ($mailchimp_lists as $list) {
+        if ($list['subscribe']) {
+          $subscribe_lists[] = $list;
+        }
+      }
+    }
+
+    $successes = array();
+
+    // Loop through the selected lists and try to subscribe.
+    foreach ($subscribe_lists as $list_choices) {
+      $list_id = $list_choices['subscribe'];
+      $mergevars = $merge_values;
+
+      if (isset($list_choices['interest_groups'])) {
+        $mergevars['GROUPINGS'] = mailchimp_reformat_groupings($list_choices['interest_groups']);
+      }
+
+      $result = mailchimp_subscribe($list_id, $email, $mergevars, $this->signup->settings['doublein'], $this->signup->settings['send_welcome']);
+
+      if (empty($result)) {
+        drupal_set_message(t('There was a problem with your newsletter signup to %list.', array(
+          '%list' => $list_details[$list_id]['name'],
+        )), 'warning');
+      }
+      else {
+        $successes[] = $list_details[$list_id]['name'];
+      }
+    }
+
+    if (count($successes) && strlen($this->signup->settings['confirmation_message'])) {
+      drupal_set_message($this->signup->settings['confirmation_message'], 'status');
+    }
+
+    // TODO: Redirect to form destination.
+    //if (!empty($this->signup->settings['destination'])) {
+    //  $form_state['redirect'] = $this->signup->settings['destination'];
+    //}
   }
 
 }
