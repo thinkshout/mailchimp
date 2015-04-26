@@ -181,16 +181,11 @@ class MailchimpSignupForm extends EntityForm {
         '#tree' => TRUE,
         '#weight' => 20,
       );
+
       $mc_lists = $form_state->getValue('mc_lists') ? $form_state->getValue('mc_lists') : $signup->mc_lists;
-      $mergevar_settings = mailchimp_get_mergevars(array_filter($mc_lists));
-      $mergevar_options = array();
-      foreach ($mergevar_settings as $list_mergevars) {
-        foreach ($list_mergevars['merge_vars'] as $mergevar) {
-          if ($mergevar['public']) {
-            $mergevar_options[$mergevar['tag']] = $mergevar;
-          }
-        }
-      }
+
+      $mergevar_options = $this->getMergevarOptions($mc_lists);
+
       foreach ($mergevar_options as $mergevar) {
         $form['mc_lists_config']['mergefields'][$mergevar['tag']] = array(
           '#type' => 'checkbox',
@@ -250,7 +245,11 @@ class MailchimpSignupForm extends EntityForm {
     $signup->mode = array_sum($mode);
 
     $mergefields = $form_state->getValue('mergefields');
-    $mergevar_options = $form_state->getValue('mergevar_options');
+
+    $mc_lists = $form_state->getValue('mc_lists') ? $form_state->getValue('mc_lists') : $signup->mc_lists;
+
+    $mergevar_options = $this->getMergevarOptions($mc_lists);
+
     foreach ($mergefields as $id => $val) {
       if ($val) {
         $mergefields[$id] = $mergevar_options[$id];
@@ -268,11 +267,7 @@ class MailchimpSignupForm extends EntityForm {
       $signup->settings['path'] = '';
     }
 
-    if ($signup->save()) {
-
-      // TODO: Build dynamic route for signup page.
-
-    }
+    $signup->save();
 
     $form_state->setRedirect('mailchimp_signup.admin');
   }
@@ -284,7 +279,18 @@ class MailchimpSignupForm extends EntityForm {
     return (bool) $entity;
   }
 
+  private function getMergevarOptions(array $mc_lists) {
+    $mergevar_settings = mailchimp_get_mergevars(array_filter($mc_lists));
+    $mergevar_options = array();
+    foreach ($mergevar_settings as $list_mergevars) {
+      foreach ($list_mergevars['merge_vars'] as $mergevar) {
+        if ($mergevar['public']) {
+          $mergevar_options[$mergevar['tag']] = $mergevar;
+        }
+      }
+    }
+
+    return $mergevar_options;
+  }
+
 }
-
-
-?>
