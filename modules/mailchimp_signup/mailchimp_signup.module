@@ -53,22 +53,6 @@ function mailchimp_signup_menu() {
 }
 
 /**
- * Implements hook_permission().
- */
-function mailchimp_signup_permission() {
-  $return = array();
-  $return['administer mailchimp signup entities'] = array(
-    'title' => t('Administer Mailchimp Signup Entities.'),
-  );
-  $return['access mailchimp signup pages'] = array(
-    'title' => t('Access all Mailchimp Signup Pages.'),
-    'description' => t('This does not effect Signup Blocks: only Pages.'),
-  );
-
-  return $return;
-}
-
-/**
  * Implements hook_block_info().
  */
 function mailchimp_signup_block_info() {
