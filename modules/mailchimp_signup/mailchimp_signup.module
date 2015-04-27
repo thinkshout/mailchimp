@@ -13,46 +13,6 @@ define('MAILCHIMP_SIGNUP_PAGE', 2);
 define('MAILCHIMP_SIGNUP_BOTH', 3);
 
 /**
- * Implements hook_block_info().
- */
-/*
-function mailchimp_signup_block_info() {
-  $blocks = array();
-  $signups = mailchimp_signup_load_multiple();
-  foreach ($signups as $signup) {
-    if (intval($signup->mode) == MAILCHIMP_SIGNUP_BLOCK || intval($signup->mode) == MAILCHIMP_SIGNUP_BOTH) {
-      $blocks[$signup->identifier()] = array(
-        'info' => t('Mailchimp Subscription Form: @name', array('@name' => $signup->label())),
-        'cache' => DRUPAL_CACHE_PER_USER,
-      );
-    }
-  }
-  return $blocks;
-}
-*/
-
-/**
- * Implements hook_block_view().
- *
- * Provides a block for each signup configured to add a block.
- */
-/*
-function mailchimp_signup_block_view($delta = '') {
-  $signup = mailchimp_signup_load($delta);
-  if ($signup) {
-    $block = array(
-      'subject' => $signup->title,
-      'content' => drupal_get_form('mailchimp_signup_subscribe_block_' . $signup->name . '_form', $signup, 'mailchimp_signup_block'),
-    );
-  }
-  else {
-    $block = FALSE;
-  }
-  return $block;
-}
-*/
-
-/**
  * Wrapper around mailchimp_signup_load_multiple to load a single signup entity.
  */
 function mailchimp_signup_load($signup_id) {
@@ -74,7 +34,6 @@ function mailchimp_signup_load_multiple($signup_ids = array(), $conditions = arr
   }
 
   return $controller->loadMultiple($signup_ids);
-
 }
 
 /**
@@ -88,20 +47,6 @@ function mailchimp_signup_load_multiple($signup_ids = array(), $conditions = arr
  */
 function mailchimp_signup_delete_multiple($signup_ids) {
   return entity_get_controller('mailchimp_signup')->delete($signup_ids);
-}
-
-/**
- * Gets an array of all Signups, keyed by the list name.
- *
- * @param string $name
- *   If set, the signup with the given name is returned.
- *
- * @return MailchimpSignup[]
- *   Depending whether $name isset, an array of signups or a single one.
- */
-function mailchimp_signup_load_multiple_by_name($name = NULL) {
-  $signups = entity_load_multiple_by_name('mailchimp_signup', isset($name) ? array($name) : FALSE);
-  return isset($name) ? reset($signups) : $signups;
 }
 
 /**
@@ -120,18 +65,4 @@ function mailchimp_signup_subscribe_form_validate($form, &$form_state) {
     }
     form_set_error('mailchimp_lists', t("Please select at least one list to subscribe to."));
   }
-}
-
-/**
- * Implements hook_entity_delete().
- */
-
-// TODO: Update for Drupal 8 entity API.
-
-function mailchimp_signup_entity_delete($entity, $type) {
-  //if ($type == 'mailchimp_signup') {
-  //  if ($entity->mode & MAILCHIMP_SIGNUP_PAGE) {
-  //    menu_rebuild();
-  //  }
-  //}
 }
