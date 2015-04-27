@@ -37,19 +37,6 @@ function mailchimp_signup_load_multiple($signup_ids = array(), $conditions = arr
 }
 
 /**
- * Deletes multiple signups by ID.
- *
- * @param array $signup_ids
- *   An array of signup IDs to delete.
- *
- * @return bool
- *   TRUE on success, FALSE otherwise.
- */
-function mailchimp_signup_delete_multiple($signup_ids) {
-  return entity_get_controller('mailchimp_signup')->delete($signup_ids);
-}
-
-/**
  * Validation handler for mailchimp_signup_subscribe_form.
  */
 
