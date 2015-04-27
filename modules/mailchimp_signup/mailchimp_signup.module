@@ -15,6 +15,7 @@ define('MAILCHIMP_SIGNUP_BOTH', 3);
 /**
  * Implements hook_block_info().
  */
+/*
 function mailchimp_signup_block_info() {
   $blocks = array();
   $signups = mailchimp_signup_load_multiple();
@@ -28,12 +29,14 @@ function mailchimp_signup_block_info() {
   }
   return $blocks;
 }
+*/
 
 /**
  * Implements hook_block_view().
  *
  * Provides a block for each signup configured to add a block.
  */
+/*
 function mailchimp_signup_block_view($delta = '') {
   $signup = mailchimp_signup_load($delta);
   if ($signup) {
@@ -47,6 +50,7 @@ function mailchimp_signup_block_view($delta = '') {
   }
   return $block;
 }
+*/
 
 /**
  * Wrapper around mailchimp_signup_load_multiple to load a single signup entity.
@@ -125,9 +129,9 @@ function mailchimp_signup_subscribe_form_validate($form, &$form_state) {
 // TODO: Update for Drupal 8 entity API.
 
 function mailchimp_signup_entity_delete($entity, $type) {
-  if ($type == 'mailchimp_signup') {
-    if ($entity->mode & MAILCHIMP_SIGNUP_PAGE) {
-      menu_rebuild();
-    }
-  }
+  //if ($type == 'mailchimp_signup') {
+  //  if ($entity->mode & MAILCHIMP_SIGNUP_PAGE) {
+  //    menu_rebuild();
+  //  }
+  //}
 }
