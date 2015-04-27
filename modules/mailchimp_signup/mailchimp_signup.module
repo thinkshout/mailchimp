@@ -2,8 +2,7 @@
 
 /**
  * @file
- * Mailchimp Signup module. Allows creation of signup forms integrated with
- * Mailchimp.
+ * Creates signup forms integrated with MailChimp.
  */
 
 use \Drupal\mailchimp_signup\Entity\MailchimpSignup;
@@ -13,16 +12,30 @@ define('MAILCHIMP_SIGNUP_PAGE', 2);
 define('MAILCHIMP_SIGNUP_BOTH', 3);
 
 /**
- * Wrapper around mailchimp_signup_load_multiple to load a single signup entity.
+ * Loads a single MailchimpSignup entity by ID.
+ *
+ * @param int $signup_id
+ *   The ID of the MailchimpSignup entity to load.
+ *
+ * @return \Drupal\mailchimp_signup\Entity\MailchimpSignup
+ *   The MailchimpSignup entity.
  */
 function mailchimp_signup_load($signup_id) {
   return MailchimpSignup::load($signup_id);
 }
 
 /**
- * Loads multiple signup forms.
+ * Loads multiple MailchimpSignup entities.
+ *
+ * @param array $signup_ids
+ *   Array of MailchimpSignup entity IDs to load.
+ * @param bool $reset
+ *   TRUE to reset cache when loading MailchimpSignup entities.
+ *
+ * @return \Drupal\mailchimp_signup\Entity\MailchimpSignup[]
+ *   Array of MailchimpSignup entities.
  */
-function mailchimp_signup_load_multiple($signup_ids = array(), $conditions = array(), $reset = FALSE) {
+function mailchimp_signup_load_multiple($signup_ids = array(), $reset = FALSE) {
   if (empty($signup_ids)) {
     $signup_ids = NULL;
   }
