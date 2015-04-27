@@ -39,12 +39,17 @@ function mailchimp_lists_field_info() {
  * Implements hook_field_settings_form().
  */
 function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) {
+  $form = array();
+
   $lists = mailchimp_get_lists();
+  $lists_exist = count($lists) > 0;
   $options = array('' => t('-- Select --'));
   foreach ($lists as $mc_list) {
     $options[$mc_list['id']] = $mc_list['name'];
   }
+  // Grab the fields list.
   $fields = field_info_fields();
+  // Remove options for mailchimp lists that already have fields.
   foreach ($fields as $field) {
     if ($field['type'] == 'mailchimp_lists_subscription') {
       if ($field['id'] != $this_field['id'] && isset($field['settings']['mc_list_id'])) {
@@ -52,33 +57,60 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
       }
     }
   }
+
+  // If there are no available lists, provide a warning..
+  if (count($options)==1) {
+    $warning = $lists_exist
+             ? 'All available MailChimp lists are already attached to MailChimp Subscription Fields.'
+             : 'No available Mailchimp lists exist.';
+    $warning .= ' Create a new list at !mc, then !cc.';
+
+    drupal_set_message(t(
+        $warning,
+        array(
+          '!mc' => l(t('MailChimp'), 'https://admin.mailchimp.com'),
+          '!cc' => l(t('clear your list cache'),
+                 'admin/config/services/mailchimp/list_cache_clear',
+                 array('query' => array('destination' => $_GET['q']))),
+        )),
+      'warning'
+    );
+    $disabled = TRUE;
+  } else {
+    $disabled = FALSE;
+  }
+
   $form['mc_list_id'] = array(
     '#type' => 'select',
     '#title' => t('MailChimp List'),
     '#multiple' => FALSE,
-    '#description' => t('Available MailChimp lists which are not already attached to Mailchimp Subscription Fields. If there are no options, make sure you have created a list at !MailChimp first, then !cacheclear.',
-      array(
-        '!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'),
-        '!cacheclear' => l(t('clear your list cache'),
-        'admin/config/services/mailchimp/list_cache_clear',
-        array('query' => array('destination' => $_GET['q']))),
-      )),
+    '#description' => t('Available MailChimp lists which are not already attached to Mailchimp Subscription Fields. If unavailable, make sure you have created a list at !MailChimp first, then !cacheclear.',
+                    array(
+                      '!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'),
+                      '!cacheclear' => l(t('clear your list cache'),
+                                     'admin/config/services/mailchimp/list_cache_clear',
+                                     array('query' => array('destination' => $_GET['q']))),
+                    )),
     '#options' => $options,
     '#default_value' => isset($this_field['settings']['mc_list_id']) ? $this_field['settings']['mc_list_id'] : FALSE,
     '#required' => TRUE,
+    '#disabled' => $disabled,
   );
   $form['double_opt_in'] = array(
     '#type' => 'checkbox',
     '#title' => 'Require subscribers to Double Opt-in',
     '#description' => 'New subscribers will be sent a link with an email they must follow to confirm their subscription.',
     '#default_value' => isset($this_field['settings']['double_opt_in']) ? $this_field['settings']['double_opt_in'] : FALSE,
+    '#disabled' => $disabled,
   );
   $form['send_welcome'] = array(
     '#type' => 'checkbox',
     '#title' => 'Send a welcome email to new subscribers',
     '#description' => 'New subscribers will be sent a welcome email once they are confirmed.',
     '#default_value' => isset($this_field['settings']['send_welcome']) ? $this_field['settings']['send_welcome'] : FALSE,
+    '#disabled' => $disabled,
   );
+
   return $form;
 }
 
@@ -435,15 +467,36 @@ function mailchimp_lists_field_get($entity, array $options, $name, $entity_type,
 }
 
 /**
- * Implements hook_field_presave().
- *
+ * Implements hook_field_insert().
+ */
+function mailchimp_lists_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  _mailchimp_lists_field_postsave($entity_type, $entity, $field, $instance, $langcode, $items);
+}
+
+/**
+ * Implements hook_field_update().
+ */
+function mailchimp_lists_field_update($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  _mailchimp_lists_field_postsave($entity_type, $entity, $field, $instance, $langcode, $items);
+}
+
+/**
  * If we have any mailchimp_lists_subscription fields, we handle any changes to
  * them by making appropriate subscription calls.
  */
-function mailchimp_lists_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+function _mailchimp_lists_field_postsave($entity_type, $entity, $field, $instance, $langcode, &$items) {
   if ($field['type'] == 'mailchimp_lists_subscription') {
     $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
     $choices = $entity_wrapper->{$instance['field_name']}->value();
+
+    if (!isset($entity->is_new)) {
+      $entity->is_new = (($entity_wrapper->getIdentifier() === FALSE) || ($entity_wrapper->getIdentifier() === NULL));
+    }
+
+    if ($entity->is_new && empty($entity->{$instance['field_name']})) {
+      $choices = $instance['default_value'][0];
+    }
+
     mailchimp_lists_process_subscribe_form_choices($choices, $instance, $field, $entity);
   }
 }

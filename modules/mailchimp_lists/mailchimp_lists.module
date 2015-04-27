@@ -78,6 +78,14 @@ function mailchimp_lists_entity_delete($entity, $type) {
  * Returns an email address or FALSE.
  */
 function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
+  // Load original email if it exists.
+  if (isset($entity->original)) {
+    $email = mailchimp_lists_load_email($instance, $entity->original, $log_errors);
+    if ($email) {
+      return $email;
+    }
+  }
+
   $entity_wrapper = entity_metadata_wrapper($instance['entity_type'], $entity);
   if (!isset($instance['settings']['mergefields']['EMAIL'])) {
     if ($log_errors) {
@@ -89,7 +97,22 @@ function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
     }
     return FALSE;
   }
-  $email = $entity_wrapper->{$instance['settings']['mergefields']['EMAIL']}->value();
+
+  $property = $instance['settings']['mergefields']['EMAIL'];
+  $elements = explode(':', $property);
+  $object = $entity_wrapper;
+  foreach ($elements as $element) {
+    if ($object instanceof EntityListWrapper) {
+      $object = $object[0];
+    }
+    if (($object->value() === NULL) || (!isset($object->{$element}))) {
+      $object = NULL;
+      break;
+    }
+    $object = $object->{$element};
+  }
+  $email = (isset($object)) ? ($object->value()) : (NULL);
+
   if (valid_email_address($email)) {
     return $email;
   }

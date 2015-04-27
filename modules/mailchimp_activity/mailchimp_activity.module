@@ -31,12 +31,19 @@ function mailchimp_activity_entity_info() {
         'file' => 'includes/mailchimp_activity.admin.inc',
         'controller class' => 'MailChimpActivityUIController',
       ),
-      'label callback' => 'entity_class_label',
+      'label callback' => 'mailchimp_activity_entity_info_label',
       'access callback' => 'mailchimp_activity_entity_access',
     ),
   );
 
   return $return;
+}
+
+/**
+ * Entity label callback.
+ */
+function mailchimp_activity_entity_info_label($entity, $entity_type) {
+  return empty($entity) ? 'New MailChimp Activity' : $entity->label;
 }
 
 /**
@@ -123,6 +130,9 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
     $emails = array();
     $emails[] = array('email' => $email);
     try {
+      if (!$mcapi) {
+        throw new MailchimpException('Cannot get member activity without Mailchimp API. Check API key has been entered.');
+      }
       $result = $mcapi->lists->memberActivity($list_id, $emails);
     }
     catch (Mailchimp_Error $e) {

@@ -167,7 +167,7 @@ function mailchimp_signup_entity_info() {
       'uri callback' => 'entity_class_uri',
       'fieldable' => FALSE,
       'exportable' => TRUE,
-      'label callback' => 'entity_class_label',
+      'label callback' => 'mailchimp_signup_entity_info_label',
       'module' => 'mailchimp_signup',
       'entity keys' => array(
         'id' => 'mcs_id',
@@ -195,6 +195,13 @@ function mailchimp_signup_entity_info() {
   );
 
   return $entities;
+}
+
+/**
+ * Entity label callback.
+ */
+function mailchimp_signup_entity_info_label($entity, $entity_type) {
+  return empty($entity) ? 'New MailChimp Signup' : $entity->title;
 }
 
 /**
@@ -372,7 +379,7 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
       $successes[] = $list_details[$list_id]['name'];
     }
   }
-  if (count($successes) && strlen($signup->settings['confirmation_message'])) {
+  if (count($successes) && isset($signup->settings['confirmation_message']) && strlen($signup->settings['confirmation_message'])) {
     drupal_set_message($signup->settings['confirmation_message'], 'status');
   }
   if (!empty($signup->settings['destination'])) {

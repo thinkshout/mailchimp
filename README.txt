@@ -49,10 +49,10 @@ respective README's for more details.
         - README.md
         - composer.json
 
-  * At the time of writing, version 2.0.4 of the Mailchimp API library was the
+  * At the time of writing, version 2.0.6 of the Mailchimp API library was the
     latest. If you are using a later version and have issues, consider switching
-    to version 2.0.4.
-    (https://bitbucket.org/mailchimp/mailchimp-api-php/get/2.0.4.zip)
+    to version 2.0.6.
+    (https://bitbucket.org/mailchimp/mailchimp-api-php/get/2.0.6.zip)
 
 ## Configuration
   1. Direct your browser to admin/config/services/mailchimp to configure the

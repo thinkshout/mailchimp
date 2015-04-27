@@ -314,6 +314,9 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
   $is_new = empty($campaign_id);
   if ($is_new) {
     try {
+      if (!$mcapi) {
+        throw new MailchimpException('Cannot create campaign without Mailchimp API. Check API key has been entered.');
+      }
       $result = $mcapi->campaigns->create('regular', $options, $content, $segment_options);
     }
     catch (Mailchimp_Error $e) {
@@ -329,6 +332,9 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
   else {
     // Updates must be sent one type at a time.
     try {
+      if (!$mcapi) {
+        throw new MailchimpException('Cannot update campaign without Mailchimp API. Check API key has been entered.');
+      }
       $mcapi->campaigns->update($campaign_id, 'options', $options);
       $mcapi->campaigns->update($campaign_id, 'segment_opts', $segment_options);
       $mcapi->campaigns->update($campaign_id, 'content', $content);
@@ -374,6 +380,9 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
 
   // Send campaign.
   try {
+    if (!$mcapi) {
+      throw new MailchimpException('Cannot send campaign without Mailchimp API. Check API key has been entered.');
+    }
     $result = $mcapi->campaigns->send($campaign->mc_campaign_id);
   }
   catch (Mailchimp_Error $e) {
@@ -408,6 +417,9 @@ function mailchimp_campaign_delete_campaign($cid) {
   $result = NULL;
   // Delete campaign from MailChimp.
   try {
+    if (!$mcapi) {
+      throw new MailchimpException('Cannot delete campaign without Mailchimp API. Check API key has been entered.');
+    }
     $result = $mcapi->campaigns->delete($cid);
   }
   catch (Mailchimp_Error $e) {
@@ -632,13 +644,33 @@ function mailchimp_campaign_process_callback($matches = array()) {
   if (!empty($entities)) {
     $render_array = entity_view($entity_type, $entities, $view_mode, NULL, TRUE);
     // Remove contextual links.
-    if (isset($render_array[$entity_type][$entity_id]['#contextual_links'])) {
-      unset($render_array[$entity_type][$entity_id]['#contextual_links']);
-    }
+    _mailchimp_campaign_recursive_unset($render_array[$entity_type][$entity_id], '#contextual_links');
     $content = render($render_array);
   }
 
   return $content;
+}
+
+/**
+ * Helper function to recursively unset a given key from an array.
+ *
+ * Used here by mailchimp_campaign_process_callback() to remove all contextual
+ * links, even from nested entity objects.
+ *
+ * @param array $array Array that needs keys removed.
+ * @param string $unwanted_key Key that needs to be removed.
+ */
+function _mailchimp_campaign_recursive_unset(&$array, $unwanted_key) {
+  // Remove key from top level of array.
+  if (isset($array[$unwanted_key])) {
+    unset($array[$unwanted_key]);
+  }
+  // Recurse through any remaining keys that may themselves be arrays.
+  foreach ($array as &$value) {
+    if (is_array($value)) {
+      _mailchimp_campaign_recursive_unset($value, $unwanted_key);
+    }
+  }
 }
 
 /**
@@ -654,6 +686,9 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
   $mcapi = mailchimp_get_api_object();
 
   try {
+    if (!$mcapi) {
+      throw new MailchimpException('Cannot get campaign stats without Mailchimp API. Check API key has been entered.');
+    }
     $response = $mcapi->reports->summary($campaign->mc_campaign_id);
   }
   catch (Mailchimp_Error $e) {
@@ -763,6 +798,9 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
   if (!empty($to_refresh)) {
     $mcapi = mailchimp_get_api_object();
     try {
+      if (!$mcapi) {
+        throw new MailchimpException('Cannot get list without Mailchimp API. Check API key has been entered.');
+      }
       $response = $mcapi->campaigns->getList(array('campaign_id' => implode(',', $to_refresh)));
     }
     catch (Mailchimp_Error $e) {
@@ -798,6 +836,9 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
   $mcapi = mailchimp_get_api_object();
 
   try {
+    if (!$mcapi) {
+      throw new MailchimpException('Cannot get list segments without Mailchimp API. Check API key has been entered.');
+    }
     $response = $mcapi->lists->segments($list_id, $type);
   }
   catch (Mailchimp_Error $e) {
@@ -825,6 +866,9 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
   $mcapi = mailchimp_get_api_object();
 
   try {
+    if (!$mcapi) {
+      throw new MailchimpException('Cannot get campaign list segment without Mailchimp API. Check API key has been entered.');
+    }
     $result = $mcapi->campaigns->segmentTest($list_id,
       array('saved_segment_id' => $list_segment_id));
   }

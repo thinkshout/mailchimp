@@ -13,7 +13,7 @@
 class DrupalMailchimp extends Mailchimp {
 
   protected $timeout;
-  protected $userAgent = 'MailChimp-PHP/2.0.4';
+  protected $userAgent = 'MailChimp-PHP/2.0.6';
 
   /**
    * Override __construct().
@@ -83,11 +83,11 @@ class DrupalMailchimp extends Mailchimp {
       )
     );
 
-    if (!empty($response->error)) {
-      throw new Mailchimp_HttpError(t("MailChimp API call to %url failed: @msg", array('%url' => $url, '@msg' => $response->error)));
-    }
-
     $result = drupal_json_decode($response->data);
+
+    if (!empty($response->error)) {
+      throw new Mailchimp_HttpError(t("MailChimp API call to %url failed: @msg: @error", array('%url' => $url, '@msg' => $response->error, '@error' => $result['error'])));
+    }
 
     if (floor($response->code / 100) >= 4) {
       throw $this->castError($result);
