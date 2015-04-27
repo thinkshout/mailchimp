@@ -16,7 +16,7 @@ use Drupal\Core\Block\BlockBase;
  *   admin_label = @Translation("Subscribe Block"),
  *   category = @Translation("MailChimp Signup"),
  *   module = "mailchimp_signup",
- *   derivative = "Drupal\mailchimp_signup\Plugin\Derivative\MailchimpSignupSubscribeBlock"
+ *   deriver = "Drupal\mailchimp_signup\Plugin\Derivative\MailchimpSignupSubscribeBlock"
  * )
  */
 class MailchimpSignupSubscribeBlock extends BlockBase {
