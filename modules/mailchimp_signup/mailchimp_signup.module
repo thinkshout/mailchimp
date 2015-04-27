@@ -13,46 +13,6 @@ define('MAILCHIMP_SIGNUP_PAGE', 2);
 define('MAILCHIMP_SIGNUP_BOTH', 3);
 
 /**
- * Implements hook_menu().
- */
-function mailchimp_signup_menu() {
-  $items = array();
-
-  $items['admin/config/services/mailchimp/signup/%mailchimp_signup/edit'] = array(
-    'title' => 'Edit a signup form',
-    'description' => 'Edit a Signup form.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_signup_signup_form', 5),
-    'load arguments' => array(5),
-    'access arguments' => array('administer mailchimp'),
-    'file' => 'includes/mailchimp_signup.admin.inc',
-    'type' => MENU_CALLBACK,
-  );
-  $items['admin/config/services/mailchimp/signup/%mailchimp_signup/delete'] = array(
-    'title' => 'Delete Signup form',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_signup_signup_delete_form', 5),
-    'access arguments' => array('administer mailchimp'),
-    'file' => 'includes/mailchimp_signup.admin.inc',
-  );
-
-  $signups = mailchimp_signup_load_multiple();
-  foreach ($signups as $signup) {
-    if (intval($signup->mode) == MAILCHIMP_SIGNUP_PAGE || intval($signup->mode) == MAILCHIMP_SIGNUP_BOTH) {
-      $items[$signup->settings['path']] = array(
-        'title' => $signup->title,
-        'page callback' => 'mailchimp_signup_page',
-        'page arguments' => array($signup->identifier()),
-        'access callback' => 'user_access',
-        'access arguments' => array('access mailchimp signup pages'),
-        'type' => MENU_SUGGESTED_ITEM,
-      );
-    }
-  }
-  return $items;
-}
-
-/**
  * Implements hook_block_info().
  */
 function mailchimp_signup_block_info() {
