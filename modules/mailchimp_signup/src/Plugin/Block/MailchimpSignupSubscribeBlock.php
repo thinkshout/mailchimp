@@ -25,11 +25,20 @@ class MailchimpSignupSubscribeBlock extends BlockBase {
    * {@inheritdoc}
    */
   public function build() {
-    $block_id = $this->getDerivativeId();
+    $signup_id = $this->getDerivativeId();
 
-    return array(
-      '#markup' => 'Default block content here.',
-    );
+    /* @var $signup \Drupal\mailchimp_signup\Entity\MailchimpSignup */
+    $signup = mailchimp_signup_load($signup_id);
+
+    $form = new \Drupal\mailchimp_signup\Form\MailchimpSignupPageForm();
+
+    $form_id = 'mailchimp_signup_subscribe_block_' . $signup->id . '_form';
+    $form->setFormID($form_id);
+    $form->setSignup($signup);
+
+    $content = \Drupal::formBuilder()->getForm($form);
+
+    return $content;
   }
 
 }
