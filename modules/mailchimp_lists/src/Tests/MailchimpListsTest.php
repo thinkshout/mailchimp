@@ -26,7 +26,7 @@ class MailchimpListsTest extends MailchimpListsTestBase {
   /**
    * Tests that a list can be loaded.
    */
-  function testgetList() {
+  function testGetList() {
     $list = mailchimp_get_list(DrupalMailchimpLists::TEST_LIST_A);
 
     $this->assertEqual($list['id'], DrupalMailchimpLists::TEST_LIST_A, 'List can be loaded.');
