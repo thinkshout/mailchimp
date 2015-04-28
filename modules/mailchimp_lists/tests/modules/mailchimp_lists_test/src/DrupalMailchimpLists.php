@@ -13,6 +13,7 @@ class DrupalMailchimpLists {
   const TEST_LIST_A = 'mailchimp_test_list_a';
   const TEST_LIST_B = 'mailchimp_test_list_b';
   const TEST_LIST_C = 'mailchimp_test_list_c';
+  const TEST_LIST_INVALID = 'mailchimp_invalid_list';
 
   const TEST_SEGMENT_A = 1;
   const TEST_SEGMENT_B = 2;
