@@ -16,13 +16,6 @@ use Drupal\mailchimp_test\ConfigOverrider;
 abstract class MailchimpTestBase extends WebTestBase {
 
   /**
-   * Modules to enable.
-   *
-   * @var array
-   */
-  public static $modules = array('mailchimp', 'mailchimp_test');
-
-  /**
    * Drupal configuration object.
    *
    * @var \Drupal\Core\Config\Config
