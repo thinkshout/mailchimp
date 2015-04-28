@@ -12,7 +12,7 @@ use Drupal\mailchimp_lists_test\DrupalMailchimpLists;
 /**
  * Tests core lists functionality.
  *
- * @group mailchimp_lists
+ * @group mailchimp
  */
 class MailchimpListsTest extends MailchimpListsTestBase {
 

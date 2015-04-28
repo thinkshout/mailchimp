@@ -12,7 +12,7 @@ use Drupal\mailchimp_lists_test\DrupalMailchimpLists;
 /**
  * Tests list subscription functionality.
  *
- * @group mailchimp_lists
+ * @group mailchimp
  */
 class MailchimpListsSubscriptionTest extends MailchimpListsTestBase {
 
