@@ -5,9 +5,6 @@ package: MailChimp
 core: 8.x
 configure: mailchimp_lists.overview
 
-files:
- - tests/mailchimp_lists.test
-
 dependencies:
  - field
  - mailchimp
