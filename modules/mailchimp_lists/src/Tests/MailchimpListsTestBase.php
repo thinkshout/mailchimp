@@ -2,18 +2,18 @@
 
 /**
  * @file
- * Contains Drupal\mailchimp\Tests\MailchimpTestBase.
+ * Contains Drupal\mailchimp_lists\Tests\MailchimpListsTestBase.
  */
 
-namespace Drupal\mailchimp\Tests;
+namespace Drupal\mailchimp_lists\Tests;
 
 use Drupal\simpletest\WebTestBase;
-use Drupal\mailchimp_test\ConfigOverrider;
+use Drupal\mailchimp_lists_test\ConfigOverrider;
 
 /**
- * Sets up MailChimp module tests.
+ * Sets up MailChimp Lists module tests.
  */
-abstract class MailchimpTestBase extends WebTestBase {
+abstract class MailchimpListsTestBase extends WebTestBase {
 
   /**
    * Drupal configuration object.
@@ -32,13 +32,6 @@ abstract class MailchimpTestBase extends WebTestBase {
     parent::setUp();
 
     \Drupal::configFactory()->addOverride(new ConfigOverrider());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function tearDown() {
-    parent::tearDown();
   }
 
 }
