@@ -8,6 +8,7 @@ namespace Drupal\mailchimp_lists\Plugin\Field\FieldType;
 
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Form\OptGroup;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -187,12 +188,11 @@ class MailchimpListsSubscription extends FieldItemBase {
     $fields = $this->getFieldmapOptions($form['field']['entity_type']['#value'], $form['field']['bundle']['#value']);
     $required_fields = $this->getFieldmapOptions($form['field']['entity_type']['#value'], $form['field']['bundle']['#value'], TRUE);
 
-    //unset($fields[$field['field_name']]);
+    // Prevent this subscription field appearing as a merge field option.
+    $field_name = $this->getFieldDefinition()->getName();
+    unset($fields[$field_name]);
 
-    // TODO: Flatten fields array.
-    //$fields_flat = options_array_flatten($fields);
-
-    $fields_flat = $fields;
+    $fields_flat = OptGroup::flattenOptions($fields);
 
     foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
       $default_value = isset($mv_defaults[$mergevar['tag']]) ? $mv_defaults[$mergevar['tag']] : -1;
