@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Mailchimp module Drush integration
+ * MailChimp Module Drush integration.
  */
 
 /**

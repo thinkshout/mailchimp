@@ -30,21 +30,23 @@ function mailchimp_apikey_ready_access($permission) {
 /**
  * Get a Mailchimp API object for communication with the mailchimp server.
  *
- * @return DrupalMailchimpLibrary
- *   The default return value is an instance of DrupalMailchimpLibrary, although that
- *   can be overridden.
+ * @return \Drupal\mailchimp\DrupalMailchimp
+ *   Drupal MailChimp library object.
  */
 function mailchimp_get_api_object() {
   $mailchimp = &drupal_static(__FUNCTION__);
+
   if (isset($mailchimp)) {
     return $mailchimp;
   }
 
   $config = \Drupal::config('mailchimp.settings');
+
   // We allow the class name to be overridden, following the example of core's
   // mailsystem, in order to use alternate MailChimp classes. The bundled tests
   // use this approach to extend the MailChimp class with a test server.
   $classname = $config->get('api_classname');
+
   if (!class_exists($classname) && ($classname != 'Drupal\mailchimp_test\DrupalMailchimp')) {
     $msg = t('Failed to load MailChimp PHP library. Please refer to the installation requirements.');
     \Drupal::logger('mailchimp')->error($msg);

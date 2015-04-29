@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Mailchimp hook definitions.
+ * MailChimp module hook definitions.
  */
 
 /**
@@ -14,8 +14,10 @@
  *
  * @return NULL
  */
-function hook_mailchimp_lists_mergevars_alter(&$mergevars, $entity, $entity_type) {
-}
+
+// TODO: Is this hook used anywhere?
+
+function hook_mailchimp_lists_mergevars_alter(&$mergevars, $entity, $entity_type) {}
 
 /**
  * Perform an action during the firing of a MailChimp webhook.
@@ -27,6 +29,4 @@ function hook_mailchimp_lists_mergevars_alter(&$mergevars, $entity, $entity_type
  * @array $data
  *   The data contained in the webhook.
  */
-function hook_mailchimp_process_webhook($type, $data) {
-
-}
+function hook_mailchimp_process_webhook($type, $data) {}
