@@ -353,19 +353,20 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $doub
 }
 
 /**
- * Add a MailChimp subscription task to the queue.
+ * Adds a MailChimp subscription task to the queue.
  *
- * @string $function
+ * @param string $function
  *   The name of the function the queue runner should call.
- * @array $args
+ * @param array $args
  *   The list of args to pass to the function.
  *
- * @return bool
- *   Success or failure.
+ * @return mixed
+ *   Unique ID if item is successfully added to the queue, FALSE otherwise.
  */
 function mailchimp_addto_queue($function, $args) {
-  $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+  $queue = \Drupal::queue(MAILCHIMP_QUEUE_CRON);
   $queue->createQueue();
+
   return $queue->createItem(array(
     'function' => $function,
     'args' => $args,
@@ -1002,24 +1003,26 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
 /**
  * Implements hook_cron().
  * 
- * We don't use batch API calls currently as it would require sorting through
- * a lot of options here. Instead, we will provide VBO functions to perform
- * large unsubscribes and subscribes and specifically call the batch functions.
+ * Processes queued MailChimp actions.
  */
-//function mailchimp_cron() {
-//  $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
-//  $queue->createQueue();
-//  $queue_count = $queue->numberOfItems();
-//  if ($queue_count > 0) {
-//    $batch_limit = $this->config('mailchimp.settings')->get('batch_limit', 100);
-//    $batch_size = ($queue_count < $batch_limit) ? $queue_count : $batch_limit;
-//    $count = 0;
-//    while ($count < $batch_size) {
-//      if ($item = $queue->claimItem()) {
-//        call_user_func_array($item->data['function'], $item->data['args']);
-//        $queue->deleteItem($item);
-//      }
-//      $count++;
-//    }
-//  }
-//}
+function mailchimp_cron() {
+  $queue = \Drupal::queue(MAILCHIMP_QUEUE_CRON);
+  $queue->createQueue();
+
+  $queue_count = $queue->numberOfItems();
+
+  if ($queue_count > 0) {
+    $batch_limit = $this->config('mailchimp.settings')->get('batch_limit', 100);
+    $batch_size = ($queue_count < $batch_limit) ? $queue_count : $batch_limit;
+    $count = 0;
+
+    while ($count < $batch_size) {
+      if ($item = $queue->claimItem()) {
+        call_user_func_array($item->data['function'], $item->data['args']);
+        $queue->deleteItem($item);
+      }
+
+      $count++;
+    }
+  }
+}

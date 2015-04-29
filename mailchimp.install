@@ -40,6 +40,6 @@ function mailchimp_requirements($phase) {
  * Implements hook_uninstall().
  */
 function mailchimp_uninstall() {
-  $queue = DrupalQueue::get(MAILCHIMP_QUEUE_CRON);
+  $queue = \Drupal::queue(MAILCHIMP_QUEUE_CRON);
   $queue->deleteQueue();
 }
