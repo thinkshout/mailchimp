@@ -164,6 +164,7 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     drupal_set_message($e->getMessage(), 'error');
     \Drupal::logger('mailchimp_campaign')->error('An error occurred while sending to this campaign: {message}', array(
       'message' => $e->getMessage()));
+
     return FALSE;
   }
 
@@ -182,6 +183,7 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     $message = 'MailChimp error. The campaign was not sent.';
     _mailchimp_campaign_mcapi_error_message($result, $message);
   }
+
   return FALSE;
 }
 
@@ -192,6 +194,7 @@ function mailchimp_campaign_delete_campaign($cid) {
   $mcapi = mailchimp_get_api_object();
 
   $result = NULL;
+
   // Delete campaign from MailChimp.
   try {
     $result = $mcapi->campaigns->delete($cid);
@@ -211,10 +214,13 @@ function mailchimp_campaign_delete_campaign($cid) {
   elseif (isset($result['complete']) && ($result['complete'] === TRUE)) {
     // Delete campaign from the database.
     mailchimp_campaign_delete($cid);
+
     \Drupal::logger('mailchimp_campaign')->info('MailChimp campaign {cid} was deleted.', array(
       'cid' => $cid));
+
     return TRUE;
   }
+
   return FALSE;
 }
 
@@ -232,11 +238,12 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
   $cached_templates = $cache->get('templates');
 
   $all_templates = array();
-  // Return cached lists:
+
+  // Return cached lists.
   if (!$reset && !empty($cached_templates)) {
     $all_templates = $cached_templates->data;
   }
-  // Query lists from the MailChimp API and store in cache:
+  // Query lists from the MailChimp API and store in cache.
   else {
     if ($mcapi = mailchimp_get_api_object()) {
       $template_types = array(
@@ -244,10 +251,13 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
         'base' => 1,
         'gallery' => 1,
       );
+
       $response = $mcapi->templates->getList($template_types);
+
       foreach ($template_types as $type => $chosen) {
         if ($chosen) {
           $all_templates[$type] = array();
+
           foreach ($response[$type] as $template) {
             $all_templates[$type][$template['id']] = $template;
           }
@@ -257,6 +267,7 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
 
     $cache->set('templates', $all_templates);
   }
+
   return $all_templates;
 }
 
@@ -277,9 +288,11 @@ function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
   $cached_template = NULL; //$cache->get('template_' . $template_id);
 
   $all_templates = mailchimp_campaign_list_templates($reset);
+
   foreach ($all_templates as $type) {
     if (isset($type[$template_id])) {
       $template = $type[$template_id];
+
       // Get template details from cache or the MailChimp API.
       if (!$reset && !empty($cached_template)) {
         $template['info'] = $cached_template;
@@ -290,9 +303,11 @@ function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
           $cache->set('template_' . $template_id, $template['info']);
         }
       }
+
       return $template;
     }
   }
+
   return NULL;
 }
 
@@ -301,6 +316,7 @@ function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
  */
 function _mailchimp_campaign_mcapi_error_message($result, $message, $variables = array()) {
   $mcapi_error_message = 'MailChimp error code: %errorCode, MailChimp error message: %errorMessage.';
+
   $mcapi_error_variables = array(
     '%errorCode' => $result['code'],
     '%errorMessage' => $result['message'],
@@ -325,6 +341,7 @@ function _mailchimp_campaign_mcapi_error_message($result, $message, $variables =
  */
 function mailchimp_campaign_render_template($template) {
   $content = array();
+
   foreach ($template as $key => $part) {
     if (isset($part['format'])) {
       $content[$key] = check_markup($part['value'], $part['format']);
@@ -347,8 +364,9 @@ function mailchimp_campaign_render_template($template) {
  */
 function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
   $cache = \Drupal::cache('mailchimp');
-  $mc_campaigns = array();
   $cached_campaigns = $cache->get('campaigns');
+
+  $mc_campaigns = array();
   foreach ($mc_campaign_ids as $id) {
     if (!isset($cached_campaigns->data[$id])
       || ($cached_campaigns->data[$id]['status'] == MAILCHIMP_STATUS_SENDING)
@@ -362,6 +380,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
 
   if (!empty($to_refresh)) {
     $mcapi = mailchimp_get_api_object();
+
     try {
       $response = $mcapi->campaigns->getList(array('campaign_id' => implode(',', $to_refresh)));
     }
@@ -369,6 +388,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
       drupal_set_message($e->getMessage(), 'error');
       \Drupal::logger('mailchimp_campaign')->error('An error occurred while getting campaigns: {message}', array(
         'message' => $e->getMessage()));
+
       return NULL;
     }
 
@@ -407,6 +427,7 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
       'list_id' => $list_id,
       'message' => $e->getMessage(),
     ));
+
     return NULL;
   }
 
@@ -435,6 +456,7 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
     drupal_set_message($e->getMessage(), 'error');
     \Drupal::logger('mailchimp_campaign')->error('An error occurred testing a list segment: {message}', array(
       'message' => $e->getMessage()));
+
     return NULL;
   }
 
@@ -448,10 +470,13 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $reset = FALS
   if (empty($campaign_ids)) {
     $campaign_ids = NULL;
   }
+
   $controller = \Drupal::entityManager()->getStorage('mailchimp_campaign');
+
   if ($reset) {
     $controller->resetCache($campaign_ids);
   }
+
   return $controller->loadMultiple($campaign_ids);
 }
 

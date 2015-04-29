@@ -149,4 +149,3 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
   }
 
 }
-?>

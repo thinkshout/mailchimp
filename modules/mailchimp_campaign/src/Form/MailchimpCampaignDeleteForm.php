@@ -69,4 +69,3 @@ class MailchimpCampaignDeleteForm extends EntityConfirmFormBase {
     return $element;
   }
 }
-?>

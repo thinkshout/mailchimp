@@ -90,8 +90,6 @@ class MailchimpSignup extends ConfigEntityBase implements MailchimpSignupInterfa
    */
   public $status;
 
-  // Your specific configuration property get/set methods go here,
-  // implementing the interface.
   /**
    * {@inheritdoc}
    */
@@ -100,4 +98,3 @@ class MailchimpSignup extends ConfigEntityBase implements MailchimpSignupInterfa
   }
 
 }
-?>

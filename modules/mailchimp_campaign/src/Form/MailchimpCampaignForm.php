@@ -710,5 +710,3 @@ class MailchimpCampaignForm extends ContentEntityForm {
   }
 
 }
-
-?>

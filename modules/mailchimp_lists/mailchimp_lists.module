@@ -56,11 +56,11 @@ function mailchimp_lists_load_email(MailchimpListsSubscription $instance, Entity
       //  'bundle' => $instance['bundle'],
       //));
     }
+
     return FALSE;
   }
 
-  // Get the value of the entity's email property using the user-defined
-  // email field.
+  // Get the entity's email property value from the user-defined email field.
   $mail_property = $instance->getFieldDefinition()->getSetting('merge_fields')['EMAIL'];
 
   /* @var $mail_field \Drupal\Core\Field\FieldItemList */
@@ -97,7 +97,9 @@ function mailchimp_lists_process_subscribe_form_choices($choices, MailchimpLists
   $settings = $instance->getFieldDefinition()->getSettings();
 
   $function = FALSE;
+
   $subscribed = mailchimp_is_subscribed($settings['mc_list_id'], $email);
+
   if ($choices['subscribe'] != $subscribed) {
     // Subscription selection has changed.
     if ($choices['subscribe']) {
@@ -110,6 +112,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, MailchimpLists
   elseif ($choices['subscribe']) {
     $function = 'update';
   }
+
   if ($function) {
     if ($function == 'remove') {
       $mergevars = array();
@@ -120,6 +123,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, MailchimpLists
         $mergevars['GROUPINGS'] = mailchimp_reformat_groupings($choices['interest_groups']);
       }
     }
+
     switch ($function) {
       case 'add':
         $ret = mailchimp_subscribe($settings['mc_list_id'], $email, $mergevars, $settings['double_opt_in'], $settings['send_welcome']);
@@ -216,6 +220,7 @@ function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $i
   // interest group settings, so we only analyze those:
   else {
     $member_info = mailchimp_get_memberinfo($settings['mc_list_id'], $email);
+
     foreach ($member_info['merges']['GROUPINGS'] as $grouping) {
       if (!isset($choices['interest_groups'][$grouping['id']])) {
         return TRUE;
@@ -225,6 +230,7 @@ function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $i
           // Standardize formatting of choices:
           $choices['interest_groups'][$grouping['id']] = array($choices['interest_groups'][$grouping['id']] => $choices['interest_groups'][$grouping['id']]);
         }
+
         foreach ($grouping['groups'] as $group) {
           $selected = isset($choices['interest_groups'][$grouping['id']][$group['name']]) && $choices['interest_groups'][$grouping['id']][$group['name']];
           if (($group['interested'] && !$selected) || (!$group['interested'] && $selected)) {
@@ -234,7 +240,8 @@ function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $i
       }
     }
   }
-  // No changes detected:
+
+  // No changes detected.
   return FALSE;
 }
 
@@ -243,6 +250,7 @@ function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $i
  */
 function _mailchimp_lists_mergevars_populate($merge_fields, EntityInterface $entity, $entity_type) {
   $mergevars = array();
+
   foreach ($merge_fields as $label => $property) {
     if (!empty($property) && strlen($property)) {
       $elements = explode(':', $property);
@@ -268,6 +276,7 @@ function _mailchimp_lists_mergevars_populate($merge_fields, EntityInterface $ent
       $mergevars[$label] = isset($object) ? $property->getString() : NULL;
     }
   }
+
   // TODO: D8 equivalent of drupal_alter()
   //drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
 
@@ -307,6 +316,7 @@ function mailchimp_lists_update_member_merge_values($entity_type, $bundle_name, 
     'progress_message' => t('Processed @current out of @total.'),
     'error_message' => t('MailChimp Merge Variable Update Failed.'),
   );
+
   batch_set($batch);
 }
 
@@ -318,7 +328,9 @@ function mailchimp_lists_get_subscribers(FieldConfig $field, &$context) {
     $context['results']['subscribers'] = array();
     $context['sandbox']['progress'] = 0;
   }
+
   $limit = 100;
+
   $options = array(
     'start' => $context['sandbox']['progress'] / $limit,
     'limit' => $limit,
@@ -327,14 +339,17 @@ function mailchimp_lists_get_subscribers(FieldConfig $field, &$context) {
   $mc_list_id = $field->getFieldStorageDefinition()->getSetting('mc_list_id');
 
   $matches = mailchimp_get_members($mc_list_id, 'subscribed', $options);
+
   if ($matches) {
     if (!isset($context['sandbox']['max'])) {
       $context['sandbox']['max'] = $matches['total'];
     }
+
     foreach ($matches['data'] as $result) {
       $context['results']['subscribers'][strtolower($result['email'])] = $result;
       $context['sandbox']['progress']++;
     }
+
     $context['message'] = t('Check subscription status for contact %count of %total.', array('%count' => $context['sandbox']['progress'], '%total' => $context['sandbox']['max']));
     $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
   }
@@ -356,17 +371,21 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
 
     $context['sandbox']['progress'] = 0;
     $context['sandbox']['max'] = isset($query_results[$entity_type]) ? count($query_results[$entity_type]) : 0;
+
     if ($context['sandbox']['max']) {
       $context['sandbox']['entity_ids'] = array_keys($query_results[$entity_type]);
       $context['results']['update_queue'] = array();
     }
   }
+
   if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
     $batch_size = 50;
     $item_ids = array_slice($context['sandbox']['entity_ids'], $context['sandbox']['progress'], $batch_size);
     $entities = entity_load($entity_type, $item_ids);
+
     foreach ($entities as $entity) {
       $merge_vars = _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type);
+
       if ($merge_vars['EMAIL'] && isset($context['results']['subscribers'][strtolower($merge_vars['EMAIL'])])) {
         $context['results']['update_queue'][] = array(
           'email' => array('email' => $merge_vars['EMAIL']),
@@ -375,14 +394,17 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
           'merge_vars' => $merge_vars,
         );
       }
+
       $context['sandbox']['progress']++;
     }
+
     $context['message'] = t('Checking for changes on items %count - %next.',
       array(
         '%count' => $context['sandbox']['progress'],
         '%next' => $context['sandbox']['progress'] + $batch_size,
       )
     );
+
     $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
   }
 }
@@ -395,6 +417,7 @@ function mailchimp_lists_execute_mergevar_batch_update($list_id, &$context) {
     $config = \Drupal::config('mailchimp.settings');
 
     $batch_limit = $config->get('mailchimp_batch_limit');
+
     if (empty($batch_limit)) {
       $batch_limit = 1000;
     }
@@ -405,13 +428,16 @@ function mailchimp_lists_execute_mergevar_batch_update($list_id, &$context) {
     $context['results']['updates'] = 0;
     $context['results']['errors'] = 0;
   }
+
   if ($context['sandbox']['progress'] < $context['sandbox']['total']) {
     $batch = array_slice($context['results']['update_queue'], $context['sandbox']['progress'], $context['sandbox']['mc_batch_limit']);
     $result = mailchimp_batch_update_members($list_id, $batch, FALSE, TRUE, FALSE);
+
     if ($result) {
       $context['results']['updates'] += $result['update_count'];
       $context['results']['errors'] += $result['error_count'];
     }
+
     $batch_size = count($batch);
     $context['sandbox']['progress'] += $batch_size;
     $context['message'] = t('Updating Mailchimp mergevars for items %count - %next.',
@@ -420,6 +446,7 @@ function mailchimp_lists_execute_mergevar_batch_update($list_id, &$context) {
         '%next' => $context['sandbox']['progress'] + $batch_size,
       )
     );
+
     $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['total'];
   }
 }
@@ -482,6 +509,7 @@ function mailchimp_lists_enabled_webhook_actions($list_id) {
   $webhook_url = mailchimp_webhook_url();
 
   $webhooks = mailchimp_webhook_get($list_id);
+
   if ($webhooks) {
     foreach ($webhooks as $webhook) {
       if ($webhook_url == $webhook['url']) {

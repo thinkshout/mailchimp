@@ -48,4 +48,3 @@ class MailchimpSignupDeleteForm extends EntityConfirmFormBase {
     $form_state->setRedirectUrl($this->getCancelUrl());
   }
 }
-?>
