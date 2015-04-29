@@ -53,27 +53,26 @@ class MailchimpListsSelectWidget extends WidgetBase {
       '#disabled' => $this->fieldDefinition->isRequired(),
     );
 
-    // TODO: Condition should also be true if current form is field settings form.
-    if ($this->fieldDefinition->getSetting('show_interest_groups')) {
+    $form_id = $form_state->getFormObject()->getFormId();
+
+    if ($this->fieldDefinition->getSetting('show_interest_groups') || ($form_id == 'field_ui_field_edit_form')) {
       $mc_list = mailchimp_get_list($instance->getFieldDefinition()->getSetting('mc_list_id'));
       $element['interest_groups'] = array(
         '#type' => 'fieldset',
         '#title' => SafeMarkup::checkPlain($instance->getFieldDefinition()->getSetting('interest_groups_title')),
         '#weight' => 100,
-        // TODO: Hide interest groups if subscribe checkbox is empty.
-        // TODO: field_sub[0][value][subscribe]
         '#states' => array(
           'invisible' => array(
             ':input[name="' . $instance->getFieldDefinition()->getName() . '[0][value][subscribe]"]' => array('checked' => FALSE),
           ),
         ),
       );
-      // TODO: Limit to field settings form only.
-      //if ($form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
-      //  $element['interest_groups']['#states']['invisible'] = array(
-      //    ':input[name="instance[settings][show_interest_groups]"]' => array('checked' => FALSE),
-      //  );
-      //}
+
+      if ($form_id == 'field_ui_field_edit_form') {
+        $element['interest_groups']['#states']['invisible'] = array(
+          ':input[name="field[settings][show_interest_groups]"]' => array('checked' => FALSE),
+        );
+      }
 
       $groups_default = array();
 
