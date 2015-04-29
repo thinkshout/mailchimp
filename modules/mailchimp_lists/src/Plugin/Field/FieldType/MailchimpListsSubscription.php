@@ -98,17 +98,29 @@ class MailchimpListsSubscription extends FieldItemBase {
     foreach ($lists as $mc_list) {
       $options[$mc_list['id']] = $mc_list['name'];
     }
-    // TODO: Get all subscription fields; check for assigned MC list IDs.
-    /*
-    $fields = field_info_fields();
-    foreach ($fields as $field) {
-      if ($field['type'] == 'mailchimp_lists_subscription') {
-        if ($field['id'] != $this_field['id'] && isset($field['settings']['mc_list_id'])) {
-          unset($options[$field['settings']['mc_list_id']]);
+
+    $field_map = \Drupal::entityManager()->getFieldMap();
+
+    $field_definitions = array();
+    foreach ($field_map as $entity_type => $fields) {
+      $field_definitions[$entity_type] = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
+    }
+
+    // Prevent MailChimp lists that have already been assigned to a field
+    // appearing as field options.
+    foreach ($field_map as $entity_type => $fields) {
+      foreach ($fields as $field_name => $field_properties) {
+        if ($field_properties['type'] == 'mailchimp_lists_subscription') {
+          /* @var $field \Drupal\field\Entity\FieldStorageConfig */
+          $field = $field_definitions[$entity_type][$field_name];
+          $field_settings = $field->getSettings();
+
+          if (($field_name != $this->getFieldDefinition()->getName()) && isset($field_settings['mc_list_id'])) {
+            unset($options[$field_settings['mc_list_id']]);
+          }
         }
       }
     }
-    */
 
     $refresh_lists_url = Url::fromRoute('mailchimp_lists.refresh');
     $mailchimp_url = Url::fromUri('https://admin.mailchimp.com');
