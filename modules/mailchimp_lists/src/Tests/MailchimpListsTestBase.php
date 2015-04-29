@@ -16,13 +16,6 @@ use Drupal\mailchimp_lists_test\ConfigOverrider;
 abstract class MailchimpListsTestBase extends WebTestBase {
 
   /**
-   * Drupal configuration object.
-   *
-   * @var \Drupal\Core\Config\Config
-   */
-  protected $config;
-
-  /**
    * {@inheritdoc}
    */
   protected function setUp() {
