@@ -476,12 +476,9 @@ function mailchimp_get_members($list_id, $status = 'subscribed', $options = arra
 }
 
 /**
- * Wrapper around MCAPI->lists->batch-subscribe.
+ * Batch updates a number of MailChimp list members.
  *
- * $batch is an array where each element is an array formatted thus:
- *   'email' => array('email' => 'example@example.com'),
- *   'email_type' => 'html' or 'text',
- *   'merge_vars' => array('MERGEKEY' => 'value', 'MERGEKEY2' => 'value2'),
+ * @see Mailchimp_Lists::batchSubscribe()
  */
 function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE, $update_existing = FALSE, $replace_interests = TRUE) {
   $results = FALSE;
@@ -499,26 +496,9 @@ function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE, $u
 }
 
 /**
- * Unsubscribes a member from a list.
+ * Unsubscribes a member from a MailChimp list.
  *
- * @param string $list_id
- *   A mailchimp list id.
- * @param string $email
- *   Email address to be unsubscribed.
- * @param bool $delete
- *   Indicates whether an email should be deleted or just unsubscribed.
- * @param bool $goodbye
- *   Indicates whether to send the goodbye email to the email address.
- * @param bool $notify
- *   Indicates whether to send the unsubscribe notification email to the address
- *   defined in the list email notification settings.
- * @param object $mcapi
- *   Mailchimp API object if one is already loaded.
- * @param bool $allow_async
- *   Set to TRUE to allow asynchronous processing using DrupalQueue.
- *
- * @return bool
- *   Indicates whether unsubscribe was successful.
+ * @see Mailchimp_Lists::unsubscribe()
  */
 function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FALSE, $notify = FALSE) {
   $config = \Drupal::config('mailchimp.settings');
@@ -547,12 +527,9 @@ function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FAL
 }
 
 /**
- * Wrapper around Mailchimp_Lists::unsubscribe().
+ * Unsubscribes a member from a MailChimp list.
  *
  * @see Mailchimp_Lists::unsubscribe()
- *
- * @return bool
- *   Success or failure.
  */
 function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $notify) {
   $result = FALSE;
@@ -596,6 +573,8 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
 function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
   $cache = \Drupal::cache('mailchimp');
 
+  $campaign_data = FALSE;
+
   if (!$reset) {
     $cached_data = $cache->get('campaign_' . $campaign_id);
 
@@ -617,9 +596,6 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
       $campaign_data = $results['data'][0];
       $cache->set('campaign_' . $campaign_id, $campaign_data);
     }
-    else {
-      $campaign_data = FALSE;
-    }
   }
   catch (Exception $e) {
     \Drupal::logger('mailchimp')->error('An error occurred retrieving campaign data for {campaign}. "{message}"', array(
@@ -632,9 +608,7 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
 }
 
 /**
- * Wrapper around MCAPI->helper->campaignsForEmail().
- *
- * Returns all IDs of campaigns that have included a given email address.
+ * Returns data for campaigns that have included a given email address.
  *
  * @param string $email
  *   Email address to search.
@@ -660,8 +634,6 @@ function mailchimp_get_campaigns_for_email($email) {
 }
 
 /**
- * Wrapper around MCAPI->helper->listsForEmail().
- *
  * Returns all lists a given email address is currently subscribed to.
  *
  * @param string $email
@@ -688,13 +660,9 @@ function mailchimp_get_lists_for_email($email) {
 }
 
 /**
- * Wrapper around MCAPI->lists->webhooks().
+ * Returns all webhooks for a given MailChimp list ID.
  *
- * @param string $list_id
- *   Mailchimp API List ID.
- *
- * @return mixed
- *   Array of existing webhooks, or FALSE.
+ * @see Mailchimp_Lists::webhooks()
  */
 function mailchimp_webhook_get($list_id) {
   try {
@@ -721,7 +689,7 @@ function mailchimp_webhook_get($list_id) {
  * @param string $list_id
  *   The MailChimp list ID to add a webhook for.
  * @param string $url
- *   The URL of the webhook.
+ *   The URL of the webhook endpoint.
  * @param array $actions
  *   Associative array of webhook action to bool, indicating enabled status.
  * @param array $sources
@@ -748,10 +716,17 @@ function mailchimp_webhook_add($list_id, $url, $actions = array(), $sources = ar
 }
 
 /**
- * Wrapper around MCAPI->lists->webhookDel().
+ * Deletes a MailChimp list webhook.
+ *
+ * @see Mailchimp_Lists::webhookDel()
+ *
+ * @param string $list_id
+ *   The ID of the MailChimp list to delete the webhook from.
+ * @param string $url
+ *   The URL of the webhook endpoint.
  *
  * @return bool
- *   TRUE if deletion was successful, otherwise FALSE.
+ *   TRUE if deletion was successful, FALSE otherwise.
  */
 function mailchimp_webhook_delete($list_id, $url) {
   try {
@@ -771,7 +746,7 @@ function mailchimp_webhook_delete($list_id, $url) {
 }
 
 /**
- * Clear a mailchimp user memberinfo cache.
+ * Clears a mailchimp user member info cache.
  *
  * @param string $list_id
  * @param string $email
@@ -782,7 +757,7 @@ function mailchimp_cache_clear_member($list_id, $email) {
 }
 
 /**
- * Clear a mailchimp activity cache.
+ * Clears a mailchimp activity cache.
  *
  * @param string $list_id
  */
@@ -792,7 +767,7 @@ function mailchimp_cache_clear_list_activity($list_id) {
 }
 
 /**
- * Clear a mailchimp activity cache.
+ * Clears a mailchimp activity cache.
  *
  * @param string $campaign_id
  */
@@ -820,7 +795,7 @@ function mailchimp_process_webhook_access($key) {
 }
 
 /**
- * Process a webhook post from MailChimp.
+ * Processes a webhook post from MailChimp.
  */
 function mailchimp_process_webhook() {
   if (!isset($_POST)) {
@@ -860,7 +835,7 @@ function mailchimp_process_webhook() {
 }
 
 /**
- * Generate a key to include in the webhook url based on a hash.
+ * Generates a key to include in the webhook URL based on a hash.
  *
  * @return string
  *   The key.
@@ -870,7 +845,7 @@ function mailchimp_webhook_key() {
 }
 
 /**
- * Generate the webhook endpoint URL.
+ * Generates the webhook endpoint URL.
  *
  * @return string
  *   The endpoint URL.
