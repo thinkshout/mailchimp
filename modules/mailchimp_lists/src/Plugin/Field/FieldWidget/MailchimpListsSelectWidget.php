@@ -34,10 +34,12 @@ class MailchimpListsSelectWidget extends WidgetBase {
     /* @var $instance \Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription */
     $instance = $items[0];
 
+    $subscribe_default = $instance->getSubscribe();
+
     if (!empty($instance->getEntity())) {
       $email = mailchimp_lists_load_email($instance, $instance->getEntity(), FALSE);
       if ($email) {
-        $subscribed = mailchimp_is_subscribed($instance->getFieldDefinition()->getSetting('mc_list_id'), $email);
+        $subscribe_default = mailchimp_is_subscribed($instance->getFieldDefinition()->getSetting('mc_list_id'), $email);
       }
     }
 
@@ -45,10 +47,11 @@ class MailchimpListsSelectWidget extends WidgetBase {
       '#title' => SafeMarkup::checkPlain($element['#title']),
       '#type' => 'fieldset',
     );
+
     $element['subscribe'] = array(
       '#title' => t('Subscribe'),
       '#type' => 'checkbox',
-      '#default_value' => ($subscribed)? TRUE : $this->fieldDefinition->isRequired(),
+      '#default_value' => ($subscribe_default)? TRUE : $this->fieldDefinition->isRequired(),
       '#required' => $this->fieldDefinition->isRequired(),
       '#disabled' => $this->fieldDefinition->isRequired(),
     );
@@ -57,6 +60,7 @@ class MailchimpListsSelectWidget extends WidgetBase {
 
     if ($this->fieldDefinition->getSetting('show_interest_groups') || ($form_id == 'field_ui_field_edit_form')) {
       $mc_list = mailchimp_get_list($instance->getFieldDefinition()->getSetting('mc_list_id'));
+
       $element['interest_groups'] = array(
         '#type' => 'fieldset',
         '#title' => SafeMarkup::checkPlain($instance->getFieldDefinition()->getSetting('interest_groups_title')),
@@ -74,10 +78,12 @@ class MailchimpListsSelectWidget extends WidgetBase {
         );
       }
 
-      $groups_default = array();
+      $groups_default = $instance->getInterestGroups();
 
-      // TODO: Get selected interest groups.
-      //$groups_default = isset($instance['default_value'][0]['interest_groups']) ? $instance['default_value'][0]['interest_groups'] : array();
+      if ($groups_default == NULL) {
+        $groups_default = array();
+      }
+
       if ($mc_list['stats']['group_count']) {
         $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
       }

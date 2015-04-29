@@ -220,17 +220,6 @@ class MailchimpListsSubscription extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function getValue() {
-    $values = parent::getValue();
-
-
-
-    return $values;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function isEmpty() {
     $value = $this->getValue();
     return (($value === NULL) || ($value === ''));
@@ -244,6 +233,32 @@ class MailchimpListsSubscription extends FieldItemBase {
 
     $choices = $this->value;
     mailchimp_lists_process_subscribe_form_choices($choices, $this, $this->getEntity());
+  }
+
+  /**
+   * Returns the field 'subscribe' value.
+   *
+   * @return bool
+   */
+  public function getSubscribe() {
+    if (isset($this->values['value'])) {
+      return ($this->values['value']['subscribe'] == 1);
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Returns the field 'interest_groups' value.
+   *
+   * @return array
+   */
+  public function getInterestGroups() {
+    if (isset($this->values['value'])) {
+      return $this->values['value']['interest_groups'];
+    }
+
+    return NULL;
   }
 
   /**
