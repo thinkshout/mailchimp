@@ -92,7 +92,7 @@ function mailchimp_signup_block_view($delta = '') {
   $signup = mailchimp_signup_load($delta);
   if ($signup) {
     $block = array(
-      'subject' => $signup->title,
+      'subject' => check_plain($signup->title),
       'content' => drupal_get_form('mailchimp_signup_subscribe_block_' . $signup->name . '_form', $signup, 'mailchimp_signup_block'),
     );
   }
@@ -251,7 +251,7 @@ function mailchimp_signup_forms($form_id, $args) {
 function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
   $form['#attributes'] = array('class' => array('mailchimp-signup-subscribe-form'));
   $form['description'] = array(
-    '#markup' => $signup->settings['description'],
+    '#markup' => filter_xss($signup->settings['description']),
   );
   $form['mailchimp_lists'] = array('#tree' => TRUE);
   $lists = mailchimp_get_lists($signup->mc_lists);
@@ -382,7 +382,7 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
     }
   }
   if (count($successes) && isset($signup->settings['confirmation_message']) && strlen($signup->settings['confirmation_message'])) {
-    drupal_set_message($signup->settings['confirmation_message'], 'status');
+    drupal_set_message(check_plain($signup->settings['confirmation_message']), 'status');
   }
   if (!empty($signup->settings['destination'])) {
     $form_state['redirect'] = $signup->settings['destination'];
