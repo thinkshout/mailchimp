@@ -17,7 +17,7 @@ function mailchimp_requirements($phase) {
     'title' => t('MailChimp'),
   );
 
-  if (($phase == 'install') || ($phase == 'runtime')) {
+  if ($phase == 'runtime') {
     // Check for MailChimp library.
     if (ClassLoader::classExists('Mailchimp')) {
       $requirements['mailchimp'] = array(
