@@ -30,7 +30,7 @@ entity.mailchimp_campaign.stats:
     _title: 'MailChimp Campaign Stats'
   requirements:
     _permission: 'administer mailchimp'
-#   _entity_access: 'mailchimp_campaign.stats'
+    _entity_access: 'mailchimp_campaign.stats'
 
 mailchimp_campaign.add:
   path: '/admin/config/services/mailchimp/campaigns/add'
