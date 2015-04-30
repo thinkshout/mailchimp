@@ -47,7 +47,7 @@ class MailchimpListsController extends ControllerBase {
 
       $webhook_status = $enabled_webhook_actions . ' of ' . $total_webhook_actions . ' enabled (' . \Drupal::l(t('update'), $webhook_url) . ')';
 
-      $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id']);
+      $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id'], array('attributes' => array('target' => '_blank')));
 
       $content['lists_table'][$mc_list['id']]['name'] = array(
         '#markup' => \Drupal::l($mc_list['name'], $list_url),
