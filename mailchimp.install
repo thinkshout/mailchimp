@@ -11,25 +11,23 @@ use Doctrine\Common\ClassLoader;
  * Implements hook_requirements().
  */
 function mailchimp_requirements($phase) {
-  $requirements = array();
-
-  $requirements['mailchimp'] = array(
-    'title' => t('MailChimp'),
+  $requirements = array(
+    'mailchimp' => array(
+      'title' => t('MailChimp'),
+    ),
   );
 
   if ($phase == 'runtime') {
+    $config = \Drupal::config('mailchimp.settings');
+
     // Check for MailChimp library.
-    if (ClassLoader::classExists('Mailchimp')) {
-      $requirements['mailchimp'] = array(
-        'description' => t('The MailChimp MCAPI wrapper library is installed correctly.'),
-        'severity' => REQUIREMENT_OK,
-      );
+    if (ClassLoader::classExists($config->get('api_classname'))) {
+      $requirements['mailchimp']['description'] = t('The MailChimp MCAPI wrapper library is installed correctly.');
+      $requirements['mailchimp']['severity'] = REQUIREMENT_OK;
     }
     else {
-      $requirements['mailchimp'] = array(
-        'description' => t('The MailChimp MCAPI wrapper library has not been installed correctly.'),
-        'severity' => REQUIREMENT_ERROR,
-      );
+      $requirements['mailchimp']['description'] = t('The MailChimp MCAPI wrapper library has not been installed correctly.');
+      $requirements['mailchimp']['severity'] = REQUIREMENT_ERROR;
     }
   }
 
