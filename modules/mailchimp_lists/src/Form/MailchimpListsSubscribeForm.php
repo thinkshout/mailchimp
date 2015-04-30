@@ -123,8 +123,14 @@ class MailchimpListsSubscribeForm extends FormBase {
             ),
           ),
         );
-        // TODO: Default value from field settings.
-        //$form[$wrapper_key]['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $instance['default_value'][0]['interest_groups'], $email);
+
+        $groups_default = $this->fieldInstance->getInterestGroups();
+
+        if ($groups_default == NULL) {
+          $groups_default = array();
+        }
+
+        $form[$wrapper_key]['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
       }
     }
 
