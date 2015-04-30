@@ -24,7 +24,7 @@ class MailchimpListsController extends ControllerBase {
   public function overview() {
     $content = array();
 
-    $lists_admin_url = Url::fromUri('https://admin.mailchimp.com/lists/');
+    $lists_admin_url = Url::fromUri('https://admin.mailchimp.com/lists/', array('attributes' => array('target' => '_blank')));
 
     $lists_empty_message = t('You don\'t have any lists configured in your
       MailChimp account, (or you haven\'t configured your API key correctly on
