@@ -277,9 +277,8 @@ function _mailchimp_lists_mergevars_populate($merge_fields, EntityInterface $ent
     }
   }
 
-  // TODO: D8 equivalent of drupal_alter()
-  //drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
-
+  // Allow other modules to alter the merge vars.
+  \Drupal::moduleHandler()->alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
   return $mergevars;
 }
 
