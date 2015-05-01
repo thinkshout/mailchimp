@@ -1012,6 +1012,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
         $input['#type'] = 'textfield';
       };
       $input['#size'] = $mergevar['size'];
+      $input['#element_validate'] = array('mailchimp_validate_email');
       break;
 
     default:
@@ -1055,4 +1056,16 @@ function mailchimp_cron() {
       $count++;
     }
   }
+}
+
+/**
+ * Wrapper for email validation function in core.
+ *
+ * Necessary so email validation function can be added
+ * to forms as a value in the #element_validate array.
+ *
+ * @see \Egulias\EmailValidator\EmailValidator::isValid()
+ */
+function mailchimp_validate_email($mail) {
+  return \Drupal::service('email.validator')->isValid($mail);
 }
