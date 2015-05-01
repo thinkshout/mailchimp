@@ -43,6 +43,9 @@ class MailchimpSignupDeleteForm extends EntityConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->entity->delete();
+
+    \Drupal::service('router.builder')->setRebuildNeeded();
+
     drupal_set_message($this->t('Signup Form %label has been deleted.', array('%label' => $this->entity->label())));
 
     $form_state->setRedirectUrl($this->getCancelUrl());
