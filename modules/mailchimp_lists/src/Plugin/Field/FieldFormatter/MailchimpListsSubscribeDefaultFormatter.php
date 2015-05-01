@@ -106,7 +106,7 @@ class MailchimpListsSubscribeDefaultFormatter extends FormatterBase {
               ->getDescription()
         )),
       );
-      // TODO: Figure out why this formatter has no settings ($this->getSetting('show_interest_groups'))
+
       if ($field_settings['show_interest_groups'] && $this->getSetting('show_interest_groups')) {
         $memberinfo = mailchimp_get_memberinfo($field_settings['mc_list_id'], $email);
         if (isset($memberinfo['merges']['GROUPINGS'])) {
