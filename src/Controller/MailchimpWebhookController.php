@@ -44,8 +44,7 @@ class MailchimpWebhookController extends ControllerBase {
       }
 
       // Allow other modules to act on a webhook.
-      // TODO: Convert to Drupal 8.
-      //module_invoke_all('mailchimp_process_webhook', $type, $data);
+      \Drupal::moduleHandler()->invokeAll('mailchimp_process_webhook', array($type, $data));
 
       // Log event.
       \Drupal::logger('mailchimp')->info('Webhook type {type} has been processed.', array(

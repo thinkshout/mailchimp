@@ -822,8 +822,7 @@ function mailchimp_process_webhook() {
   }
 
   // Allow other modules to act on a webhook.
-  // TODO: D8 equivalent of module_invoke_all()
-  //module_invoke_all('mailchimp_process_webhook', $type, $data);
+  \Drupal::moduleHandler()->invokeAll('mailchimp_process_webhook', array($type, $data));
 
   // Log event:
   \Drupal::logger('mailchimp')->info('Webhook type {type} has been processed.', array(

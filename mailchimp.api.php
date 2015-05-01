@@ -39,14 +39,6 @@ function hook_mailchimp_subscribe_success($list_id, $email, $merge_vars) {}
  */
 function hook_mailchimp_unsubscribe_success($list_id, $email) {}
 
-
-/**
- * @} End of "addtogroup hooks".
- */
-// TODO: Is this hook used anywhere?
-
-function hook_mailchimp_lists_mergevars_alter(&$mergevars, $entity, $entity_type) {}
-
 /**
  * Perform an action during the firing of a MailChimp webhook.
  *
@@ -56,5 +48,14 @@ function hook_mailchimp_lists_mergevars_alter(&$mergevars, $entity, $entity_type
  *   The type of webhook firing.
  * @param array $data
  *   The data contained in the webhook.
+ *
+ * @ingroup mailchimp
  */
 function hook_mailchimp_process_webhook($type, $data) {}
+
+/**
+ * @} End of "addtogroup hooks".
+ */
+// TODO: Is this hook used anywhere?
+
+function hook_mailchimp_lists_mergevars_alter(&$mergevars, $entity, $entity_type) {}
