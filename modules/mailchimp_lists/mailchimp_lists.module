@@ -5,7 +5,6 @@
  * Mailchimp lists module.
  */
 
-use Drupal\mailchimp\Library\DrupalMailchimpLibrary;
 use Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManager;
