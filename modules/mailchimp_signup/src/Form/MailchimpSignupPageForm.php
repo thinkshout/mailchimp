@@ -143,7 +143,21 @@ class MailchimpSignupPageForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+    $build_info = $form_state->getBuildInfo();
+    $signup = $build_info['callback_object']->signup;
 
+    // For forms that allow subscribing to multiple lists
+    // ensure at least one list is checked.
+    if (count($signup->mc_lists) > 1) {
+      $values = $form_state->getValues();
+      foreach ($values['mailchimp_lists'] as $list) {
+        if ($list['subscribe']) {
+          return;
+        }
+      }
+
+      $form_state->setErrorByName('mailchimp_lists', t("Please select at least one list to subscribe to."));
+    }
   }
 
   /**
