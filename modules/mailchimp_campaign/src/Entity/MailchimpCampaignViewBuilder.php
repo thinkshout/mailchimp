@@ -24,6 +24,9 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
   public function view(EntityInterface $entity, $view_mode = 'full', $langcode = NULL) {
     $build = parent::view($entity, $view_mode, $langcode);
 
+    // Attach campaign JS and CSS.
+    $build['#attached']['library'][] = 'mailchimp_campaign/campaign-view';
+
     // Prepare rendered content.
     /* @var $entity \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
     $content = $this->renderTemplate($entity->getTemplate());
@@ -104,8 +107,8 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
 
     foreach ($fields as $key => $field) {
       $build[$key] = array(
-        '#prefix' => "<div class=\"field campaign-{$key}\"><div class=\"field-label\">{$field['label']}</div>",
-        '#markup' => $field['value'],
+        '#prefix' => "<div class=\"field campaign-{$key}\"><h3 class=\"field-label\">{$field['label']}</h3>",
+        '#markup' => "<p>{$field['value']}</p>",
         '#suffix' => '</div>',
       );
     }

@@ -9,6 +9,16 @@ campaign-form:
     - core/jquery
     - core/drupal.autocomplete
 
+campaign-view:
+  version: 1.x
+  js:
+    js/mailchimp_campaign.utils.js: {}
+  css:
+    component:
+      css/mailchimp_campaign.css: {}
+  dependencies:
+
+
 campaign-stats:
   version: 1.x
   js:
