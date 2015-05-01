@@ -9,7 +9,9 @@ use Drupal\mailchimp\Library\DrupalMailchimpLibrary;
 use Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManager;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\field\Entity\FieldConfig;
+use Drupal\Core\Field\FieldDefinitionInterface;
 
 module_load_include('inc', 'mailchimp_lists', 'includes/mailchimp_lists.field');
 
@@ -18,23 +20,27 @@ module_load_include('inc', 'mailchimp_lists', 'includes/mailchimp_lists.field');
  */
 function mailchimp_lists_entity_delete($entity, $type) {
 
-  // TODO: Update unsubscribe on delete.
+  // Only act on content entities.
+  if (!($entity instanceof FieldableEntityInterface)) {
+    return;
+  }
 
-  /*
-  // Check for mailchimp subscription fields and unsubscribe accordingly.
-  $fields = field_info_fields();
-  foreach ($fields as $field) {
-    if ($field['type'] == 'mailchimp_lists_subscription' && isset($field['bundles'][$type])) {
-      $wrapper = entity_metadata_wrapper($type, $entity);
-      if (in_array($wrapper->getBundle(), $field['bundles'][$type])) {
-        $instance = field_info_instance($type, $field['field_name'], $wrapper->getBundle());
-        if ($instance['settings']['unsubscribe_on_delete']) {
-          mailchimp_lists_process_subscribe_form_choices(array('subscribe' => FALSE), $instance, $field, $entity);
-        }
-      }
+  $field_definitions = $entity->getFieldDefinitions();
+  if (empty($field_definitions)) {
+    return;
+  }
+
+  // Filter fields to only subscription fields marked to unsubscribe on delete.
+  $list_fields = array_keys(array_filter($field_definitions, function (FieldDefinitionInterface $field) {
+    return (($field->getType() == 'mailchimp_lists_subscription') && ($field->getSetting('unsubscribe_on_delete')));
+  }));
+
+  foreach ($list_fields as $field) {
+    // Additional foreach to support multiple values.
+    foreach ($entity->get($field) as $item) {
+      mailchimp_lists_process_subscribe_form_choices(array('subscribe' => FALSE), $item, $entity);
     }
   }
-  */
 }
 
 /**
