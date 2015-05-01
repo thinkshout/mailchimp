@@ -166,8 +166,10 @@ class MailchimpListsSubscription extends FieldItemBase {
     $element = parent::fieldSettingsForm($form, $form_state);
 
     $storage = $form_state->getStorage();
-    $mc_list_id = $storage['field']->getSetting('mc_list_id');
-
+    if (!isset($storage['field'])) {
+      drupal_set_message(t('Select a list to sync with on the Field Settings tab before configuring the field instance.'), 'error');
+      return $element;
+    }
     $settings = $this->getSettings();
 
     $element['show_interest_groups'] = array(
@@ -225,7 +227,6 @@ class MailchimpListsSubscription extends FieldItemBase {
         $element['merge_fields'][$mergevar['tag']]['#description'] = t("Only 'required' and 'calculated' fields are allowed to be synced with Mailchimp 'required' merge fields.");
       }
     }
-
     return $element;
   }
 
