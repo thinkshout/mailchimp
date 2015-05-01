@@ -190,14 +190,14 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
 /**
  * Delete a MailChimp campaign and the local entity.
  */
-function mailchimp_campaign_delete_campaign($cid) {
+function mailchimp_campaign_delete_campaign(MailchimpCampaign $campaign) {
   $mcapi = mailchimp_get_api_object();
 
   $result = NULL;
 
   // Delete campaign from MailChimp.
   try {
-    $result = $mcapi->campaigns->delete($cid);
+    $result = $mcapi->campaigns->delete($campaign->id());
   }
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
@@ -213,10 +213,10 @@ function mailchimp_campaign_delete_campaign($cid) {
   }
   elseif (isset($result['complete']) && ($result['complete'] === TRUE)) {
     // Delete campaign from the database.
-    mailchimp_campaign_delete($cid);
+    $campaign->delete();
 
     \Drupal::logger('mailchimp_campaign')->info('MailChimp campaign {cid} was deleted.', array(
-      'cid' => $cid));
+      'cid' => $campaign->id()));
 
     return TRUE;
   }
@@ -478,18 +478,4 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $reset = FALS
   }
 
   return $controller->loadMultiple($campaign_ids);
-}
-
-/**
- * Delete a campaign.
- */
-function mailchimp_campaign_delete($cid) {
-  return mailchimp_campaign_delete_multiple(array($cid));
-}
-
-/**
- * Delete multiple campaigns.
- */
-function mailchimp_campaign_delete_multiple($campaign_ids) {
-  return entity_get_controller('mailchimp_campaign')->delete($campaign_ids);
 }

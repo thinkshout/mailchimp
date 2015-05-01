@@ -50,8 +50,9 @@ class MailchimpCampaignDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->entity->delete();
-    drupal_set_message($this->t('MailChimp Campaign %label has been deleted.', array('%label' => $this->entity->label())));
+    if (mailchimp_campaign_delete_campaign($this->entity)) {
+      drupal_set_message($this->t('MailChimp Campaign %label has been deleted.', array('%label' => $this->entity->label())));
+    }
 
     $form_state->setRedirectUrl($this->getCancelUrl());
   }
