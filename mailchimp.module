@@ -1003,7 +1003,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
       break;
 
     case 'email':
-      if (element_info_property('emailfield', '#type')) {
+      if (\Drupal::service('element_info')->getInfoProperty('emailfield', '#type')) {
         // Set to an HTML5 email type if 'emailfield' is supported:
         $input['#type'] = 'emailfield';
       }
