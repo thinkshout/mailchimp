@@ -169,12 +169,12 @@ function _mailchimp_list_cmp($a, $b) {
 
 /**
  * Wrapper around MCAPI->Lists->mergeVars.
- * 
+ *
  * @param array $list_ids
  *   Array of MailChimp list IDs.
  * @param bool $reset
  *   Set to TRUE if mergevars should not be loaded from cache.
- * 
+ *
  * @return array
  *   Struct describing mergevars for the specified lists.
  */
@@ -334,9 +334,12 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $doub
     $result = $mcapi->lists->subscribe($list_id, array('email' => $email), $merge_vars, $format, $double_optin, $update_existing, $replace_interests, $confirm);
 
     if (isset($result['email'])) {
-      // TODO: D8 equivalent of module_invoke_all()
-      //module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
-      // Clear user cache, just in case there's some cruft leftover:
+      \Drupal::moduleHandler()->invokeAll(
+        'mailchimp_subscribe_user',
+        array($list_id, $email, $merge_vars)
+      );
+
+//       Clear user cache, just in case there's some cruft leftover:
 
       mailchimp_cache_clear_member($list_id, $email);
 
@@ -539,8 +542,7 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
     $result = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
 
     if ($result) {
-      // TODO: D8 equivalent of module_invoke_all()
-      //module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
+      \Drupal::moduleHandler()->invokeAll('mailchimp_unsubscribe_user', array($list_id, $email));
     }
 
     // Clear user cache:
@@ -824,8 +826,7 @@ function mailchimp_process_webhook() {
   }
 
   // Allow other modules to act on a webhook.
-  // TODO: D8 equivalent of module_invoke_all()
-  //module_invoke_all('mailchimp_process_webhook', $type, $data);
+  \Drupal::moduleHandler()->invokeAll('mailchimp_process_webhook', array($type, $data));
 
   // Log event:
   \Drupal::logger('mailchimp')->info('Webhook type {type} has been processed.', array(
@@ -1032,7 +1033,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
 
 /**
  * Implements hook_cron().
- * 
+ *
  * Processes queued MailChimp actions.
  */
 function mailchimp_cron() {
