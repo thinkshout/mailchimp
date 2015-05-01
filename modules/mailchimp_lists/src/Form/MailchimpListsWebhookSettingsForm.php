@@ -119,7 +119,7 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
       ), 'warning');
     }
 
-    parent::submitForm($form, $form_state);
+    $form_state->setRedirect('mailchimp_lists.overview');
   }
 
 }
