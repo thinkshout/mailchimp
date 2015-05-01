@@ -24,7 +24,7 @@ class MailchimpListsController extends ControllerBase {
   public function overview() {
     $content = array();
 
-    $lists_admin_url = Url::fromUri('https://admin.mailchimp.com/lists/');
+    $lists_admin_url = Url::fromUri('https://admin.mailchimp.com/lists/', array('attributes' => array('target' => '_blank')));
 
     $lists_empty_message = t('You don\'t have any lists configured in your
       MailChimp account, (or you haven\'t configured your API key correctly on
@@ -47,7 +47,7 @@ class MailchimpListsController extends ControllerBase {
 
       $webhook_status = $enabled_webhook_actions . ' of ' . $total_webhook_actions . ' enabled (' . \Drupal::l(t('update'), $webhook_url) . ')';
 
-      $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id']);
+      $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id'], array('attributes' => array('target' => '_blank')));
 
       $content['lists_table'][$mc_list['id']]['name'] = array(
         '#markup' => \Drupal::l($mc_list['name'], $list_url),

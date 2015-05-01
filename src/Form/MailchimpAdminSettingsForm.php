@@ -32,7 +32,7 @@ class MailchimpAdminSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('mailchimp.settings');
 
-    $mc_api_url = Url::fromUri('http://admin.mailchimp.com/account/api');
+    $mc_api_url = Url::fromUri('http://admin.mailchimp.com/account/api', array('attributes' => array('target' => '_blank')));
     $form['api_key'] = array(
       '#type' => 'textfield',
       '#title' => t('Mailchimp API Key'),

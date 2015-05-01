@@ -123,7 +123,7 @@ class MailchimpListsSubscription extends FieldItemBase {
     }
 
     $refresh_lists_url = Url::fromRoute('mailchimp_lists.refresh');
-    $mailchimp_url = Url::fromUri('https://admin.mailchimp.com');
+    $mailchimp_url = Url::fromUri('https://admin.mailchimp.com', array('attributes' => array('target' => '_blank')));
 
     $element['mc_list_id'] = array(
       '#type' => 'select',

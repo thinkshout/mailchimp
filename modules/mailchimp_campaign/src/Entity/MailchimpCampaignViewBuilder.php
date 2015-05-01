@@ -47,7 +47,7 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
       }
     }
 
-    $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $entity->list['web_id']);
+    $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $entity->list['web_id'], array('attributes' => array('target' => '_blank')));
     $archive_url = Url::fromUri($entity->mc_data['archive_url']);
 
     $fields = array(
@@ -57,9 +57,7 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
       ),
       'list' => array(
         'label' => t('MailChimp List'),
-        'value' => \Drupal::l($entity->list['name'], $list_url, array(
-          'attributes' => array('target' => '_blank'),
-        )),
+        'value' => \Drupal::l($entity->list['name'], $list_url),
       ),
       'list_segment' => array(
         'label' => t('List Segment'),
