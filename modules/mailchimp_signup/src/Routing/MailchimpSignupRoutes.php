@@ -21,7 +21,7 @@ class MailchimpSignupRoutes {
 
     $signups = mailchimp_signup_load_multiple();
 
-    /* @var $campaign \Drupal\mailchimp_signup\Entity\MailchimpSignup */
+    /* @var $signup \Drupal\mailchimp_signup\Entity\MailchimpSignup */
     foreach ($signups as $signup) {
       if ((intval($signup->mode) == MAILCHIMP_SIGNUP_PAGE) || (intval($signup->mode) == MAILCHIMP_SIGNUP_BOTH)) {
         $routes['mailchimp_signup.' . $signup->id] = new Route(
