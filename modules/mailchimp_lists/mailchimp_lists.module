@@ -10,6 +10,7 @@ use Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManager;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Field\FieldItemList;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\Core\Field\FieldDefinitionInterface;
 
@@ -263,9 +264,8 @@ function _mailchimp_lists_mergevars_populate($merge_fields, EntityInterface $ent
       $object = $entity;
 
       foreach ($elements as $element) {
-        // TODO: EntityListWrapper probably needs to change for D8.
-        if ($object instanceof EntityListWrapper) {
-          $object = $object[0];
+        if ($object instanceof FieldItemList) {
+          $object = $object->get(0);
         }
 
         /* @var $property \Drupal\Core\Field\FieldItemInterface */
