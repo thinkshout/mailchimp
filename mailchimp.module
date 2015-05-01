@@ -538,8 +538,7 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
     $result = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
 
     if ($result) {
-      // TODO: D8 equivalent of module_invoke_all()
-      //module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
+      \Drupal::moduleHandler()->invokeAll('mailchimp_unsubscribe_success', array($list_id, $email));
     }
 
     // Clear user cache:

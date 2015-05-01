@@ -24,10 +24,25 @@
  * @param $list_id
  * @param $email
  * @param $merge_vars
+ *
  * @ingroup mailchimp
  */
 function hook_mailchimp_subscribe_success($list_id, $email, $merge_vars) {}
 
+/**
+ * Perform an action when an email is successfully unsubscribed from a list.
+ *
+ * @param $list_id
+ * @param $email
+ *
+ * @ingroup mailchimp
+ */
+function hook_mailchimp_unsubscribe_success($list_id, $email) {}
+
+
+/**
+ * @} End of "addtogroup hooks".
+ */
 // TODO: Is this hook used anywhere?
 
 function hook_mailchimp_lists_mergevars_alter(&$mergevars, $entity, $entity_type) {}
