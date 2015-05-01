@@ -269,8 +269,12 @@ class MailchimpSignupForm extends EntityForm {
 
     $signup->save();
 
+    \Drupal::service('router.builder')->setRebuildNeeded();
+
     $form_state->setRedirect('mailchimp_signup.admin');
   }
+
+
 
   public function exist($id) {
     $entity = $this->entityQuery->get('mailchimp_signup')
