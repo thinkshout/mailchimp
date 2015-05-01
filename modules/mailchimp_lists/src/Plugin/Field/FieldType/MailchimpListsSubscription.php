@@ -164,21 +164,24 @@ class MailchimpListsSubscription extends FieldItemBase {
    */
   public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
     $element = parent::fieldSettingsForm($form, $form_state);
+    $mc_list_id = $this->getFieldDefinition()->getSetting('mc_list_id');
 
-    $storage = $form_state->getStorage();
-    $mc_list_id = $storage['field']->getSetting('mc_list_id');
-
-    $settings = $this->getSettings();
+    if (empty($mc_list_id)) {
+      drupal_set_message(t('Select a list to sync with on the Field Settings tab before configuring the field instance.'), 'error');
+      return $element;
+    }
+    $this->definition;
+    $instance_settings = $this->definition->getSettings();
 
     $element['show_interest_groups'] = array(
       '#title' => "Enable Interest Groups",
       '#type' => "checkbox",
-      '#default_value' => $settings['show_interest_groups'],
+      '#default_value' => $instance_settings['show_interest_groups'],
     );
     $element['interest_groups_label'] = array(
       '#title' => "Interest Groups Label",
       '#type' => "textfield",
-      '#default_value' => !empty($settings['show_interest_groups']) ? $settings['show_interest_groups'] : 'Interest Groups',
+      '#default_value' => !empty($instance_settings['show_interest_groups']) ? $instance_settings['show_interest_groups'] : 'Interest Groups',
     );
     $element['merge_fields'] = array(
       '#type' => 'fieldset',
@@ -191,14 +194,14 @@ class MailchimpListsSubscription extends FieldItemBase {
       '#title' => "Unsubscribe on deletion",
       '#type' => "checkbox",
       '#description' => t('Unsubscribe entities from this list when they are deleted.'),
-      '#default_value' => $settings['unsubscribe_on_delete'],
+      '#default_value' => $instance_settings['unsubscribe_on_delete'],
     );
 
-    $mv_defaults = $this->getSetting('merge_fields');
+    $mv_defaults = $instance_settings['merge_fields'];
     $mergevars = mailchimp_get_mergevars(array($mc_list_id));
 
-    $fields = $this->getFieldmapOptions($form['field']['entity_type']['#value'], $form['field']['bundle']['#value']);
-    $required_fields = $this->getFieldmapOptions($form['field']['entity_type']['#value'], $form['field']['bundle']['#value'], TRUE);
+    $fields = $this->getFieldmapOptions($this->getFieldDefinition()->entity_type, $this->getFieldDefinition()->bundle);
+    $required_fields = $this->getFieldmapOptions($this->getFieldDefinition()->entity_type, $this->getFieldDefinition()->bundle, TRUE);
 
     // Prevent this subscription field appearing as a merge field option.
     $field_name = $this->getFieldDefinition()->getName();
@@ -225,7 +228,6 @@ class MailchimpListsSubscription extends FieldItemBase {
         $element['merge_fields'][$mergevar['tag']]['#description'] = t("Only 'required' and 'calculated' fields are allowed to be synced with Mailchimp 'required' merge fields.");
       }
     }
-
     return $element;
   }
 

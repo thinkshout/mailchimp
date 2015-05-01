@@ -334,13 +334,9 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $doub
     $result = $mcapi->lists->subscribe($list_id, array('email' => $email), $merge_vars, $format, $double_optin, $update_existing, $replace_interests, $confirm);
 
     if (isset($result['email'])) {
-      \Drupal::moduleHandler()->invokeAll(
-        'mailchimp_subscribe_user',
-        array($list_id, $email, $merge_vars)
-      );
+      \Drupal::moduleHandler()->invokeAll('mailchimp_subscribe_success', array($list_id, $email, $merge_vars));
 
-//       Clear user cache, just in case there's some cruft leftover:
-
+      // Clear user cache, just in case there's some cruft leftover:
       mailchimp_cache_clear_member($list_id, $email);
 
       \Drupal::logger('mailchimp')->error('{email} was subscribed to list {list}.', array(
@@ -542,7 +538,7 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
     $result = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
 
     if ($result) {
-      \Drupal::moduleHandler()->invokeAll('mailchimp_unsubscribe_user', array($list_id, $email));
+      \Drupal::moduleHandler()->invokeAll('mailchimp_unsubscribe_success', array($list_id, $email));
     }
 
     // Clear user cache:

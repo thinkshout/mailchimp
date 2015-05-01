@@ -176,7 +176,7 @@ class MailchimpSignupPageForm extends FormBase {
     $mailchimp_lists = $form_state->getValue('mailchimp_lists');
 
     // If we only have one list we won't have checkbox values to investigate.
-    if (count($this->signup->mc_lists) == 1) {
+    if (count(array_filter($this->signup->mc_lists)) == 1) {
       $subscribe_lists[0] = array(
         'subscribe' => reset($this->signup->mc_lists),
         'interest_groups' => isset($mailchimp_lists['interest_groups']) ? $mailchimp_lists['interest_groups'] : NULL,
