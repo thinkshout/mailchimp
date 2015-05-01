@@ -44,6 +44,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
+    $site_config = \Drupal::config('system.site');
 
     // Attach campaign JS and CSS.
     $form['#attached']['library'][] = 'mailchimp_campaign/campaign-form';
@@ -113,7 +114,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#type' => 'textfield',
       '#title' => t('From Email'),
       '#description' => t('the From: email address for your campaign message.'),
-      '#default_value' => ($campaign) ? $campaign->mc_data['from_email'] : variable_get('site_mail'),
+      '#default_value' => (!empty($campaign->mc_data)) ? $campaign->mc_data['from_email'] : $site_config->get('mail'),
       '#size' => 40,
       '#maxlength' => 255,
       '#required' => TRUE,
@@ -122,7 +123,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#type' => 'textfield',
       '#title' => t('From Name'),
       '#description' => t('the From: name for your campaign message (not an email address)'),
-      '#default_value' => ($campaign) ? $campaign->mc_data['from_name'] : variable_get('site_name'),
+      '#default_value' => (!empty($campaign->mc_data)) ? $campaign->mc_data['from_name'] : $site_config->get('name'),
       '#size' => 40,
       '#maxlength' => 255,
       '#required' => TRUE,
