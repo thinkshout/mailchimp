@@ -176,6 +176,9 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     $controller = \Drupal::entityManager()->getStorage('mailchimp_campaign');
     $controller->resetCache(array($campaign->getMcCampaignId()));
 
+    $cache = \Drupal::cache('mailchimp');
+    $cache->invalidate('campaigns');
+
     return TRUE;
   }
   elseif (isset($result['status']) && ($result['status'] == 'error')) {
