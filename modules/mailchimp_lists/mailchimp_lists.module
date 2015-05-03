@@ -8,7 +8,7 @@
 use Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManager;
-use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -19,9 +19,8 @@ module_load_include('inc', 'mailchimp_lists', 'includes/mailchimp_lists.field');
  * Implements hook_entity_delete().
  */
 function mailchimp_lists_entity_delete($entity, $type) {
-
   // Only act on content entities.
-  if (!($entity instanceof FieldableEntityInterface)) {
+  if (!($entity instanceof ContentEntityInterface)) {
     return;
   }
 
@@ -35,6 +34,7 @@ function mailchimp_lists_entity_delete($entity, $type) {
     return (($field->getType() == 'mailchimp_lists_subscription') && ($field->getSetting('unsubscribe_on_delete')));
   }));
 
+  /* @var $item \Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription */
   foreach ($list_fields as $field) {
     // Additional foreach to support multiple values.
     foreach ($entity->get($field) as $item) {
