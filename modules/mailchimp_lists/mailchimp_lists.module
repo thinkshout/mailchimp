@@ -53,14 +53,11 @@ function mailchimp_lists_load_email(MailchimpListsSubscription $instance, Entity
 
   if (empty($merge_fields) || !isset($merge_fields['EMAIL'])) {
     if ($log_errors) {
-
-      // TODO: Update log message with correct values.
-
-      //\Drupal::logger('mailchimp_lists')->notice('Mailchimp Lists field "{field}" on {entity} -> {bundle} has no EMAIL field configured, subscription actions cannot take place.', array(
-      //  'field' => $instance['field_name'],
-      //  'entity' => $instance['entity_type'],
-      //  'bundle' => $instance['bundle'],
-      //));
+      \Drupal::logger('mailchimp_lists')->notice('Mailchimp Lists field "{field}" on {entity} -> {bundle} has no EMAIL field configured, subscription actions cannot take place.', array(
+        'field' => $instance->getFieldDefinition()->getName(),
+        'entity' => $entity->getEntityType()->getLabel(),
+        'bundle' => $entity->bundle(),
+      ));
     }
 
     return FALSE;
