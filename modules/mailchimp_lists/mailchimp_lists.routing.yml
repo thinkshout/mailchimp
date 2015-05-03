@@ -5,6 +5,7 @@ mailchimp_lists.overview:
     _title: 'Mailchimp Lists'
   requirements:
     _permission: 'administer mailchimp'
+    _mailchimp_configuration_access_check: 'TRUE'
 
 mailchimp_lists.refresh:
   path: 'admin/config/services/mailchimp/list_cache_clear'
@@ -37,3 +38,4 @@ mailchimp_lists.fields:
     _title: 'Mailchimp Subscription Fields'
   requirements:
     _permission: 'administer mailchimp'
+    _mailchimp_configuration_access_check: 'TRUE'

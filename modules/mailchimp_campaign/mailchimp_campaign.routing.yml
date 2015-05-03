@@ -5,6 +5,7 @@ mailchimp_campaign.overview:
     _title: 'MailChimp Campaigns'
   requirements:
     _permission: 'administer mailchimp'
+    _mailchimp_configuration_access_check: 'TRUE'
 
 entity.mailchimp_campaign.view:
   path: 'admin/config/services/mailchimp/campaigns/{mailchimp_campaign}'

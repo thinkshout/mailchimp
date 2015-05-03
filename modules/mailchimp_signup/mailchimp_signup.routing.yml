@@ -6,6 +6,7 @@ mailchimp_signup.admin:
     _title: 'Signup Forms'
   requirements:
     _permission: 'administer mailchimp_signup'
+    _mailchimp_configuration_access_check: 'TRUE'
 
 mailchimp_signup.add:
   path: '/admin/config/services/mailchimp/signup/add'

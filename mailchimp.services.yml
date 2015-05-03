@@ -6,3 +6,9 @@ services:
     factory_method: get
     factory_service: cache_factory
     arguments: ['mailchimp']
+
+  access_check.mailchimp.configuration:
+    class: Drupal\mailchimp\Access\MailchimpConfigurationAccessCheck
+    arguments: ['@current_user']
+    tags:
+      - { name: access_check, applies_to: _mailchimp_configuration_access_check }
