@@ -8,6 +8,7 @@ namespace Drupal\mailchimp_signup\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\mailchimp_signup\Entity\MailchimpSignup;
 
 /**
@@ -164,6 +165,8 @@ class MailchimpSignupPageForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    global $base_url;
+
     $list_details = mailchimp_get_lists($this->signup->mc_lists);
 
     $subscribe_lists = array();
@@ -218,10 +221,9 @@ class MailchimpSignupPageForm extends FormBase {
       drupal_set_message($this->signup->settings['confirmation_message'], 'status');
     }
 
-    // TODO: Redirect to form destination.
-    //if (!empty($this->signup->settings['destination'])) {
-    //  $form_state['redirect'] = $this->signup->settings['destination'];
-    //}
+    $destination_url = Url::fromUri($base_url . '/' . $this->signup->settings['destination']);
+
+    $form_state->setRedirectUrl($destination_url);
   }
 
 }
