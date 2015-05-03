@@ -471,7 +471,9 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
  */
 function mailchimp_campaign_load_multiple($campaign_ids = array(), $reset = FALSE) {
   if (empty($campaign_ids)) {
-    $campaign_ids = NULL;
+    $campaign_ids = Drupal::entityQuery('mailchimp_campaign')
+      ->sort('created', 'DESC')
+      ->execute();
   }
 
   $controller = \Drupal::entityManager()->getStorage('mailchimp_campaign');
