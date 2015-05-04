@@ -164,13 +164,12 @@ function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $i
   $settings = $instance->getFieldDefinition()->getSettings();
 
   if (isset($entity->original)) {
-
     /* @var $original \Drupal\Core\Entity\EntityInterface */
     $original = $entity->original;
 
     // First compare Interest Group settings.
-    if ($settings['show_interest_groups']) {
 
+    if ($settings['show_interest_groups']) {
       $field_name = $instance->getFieldDefinition()->field_name;
 
       /* @var $old_field_settings \Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription */
@@ -198,30 +197,32 @@ function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $i
       }
     }
 
-    /*
-    foreach ($instance['settings']['mergefields'] as $property) {
+    // Compare merge field settings.
+
+    foreach ($settings['merge_fields'] as $property) {
       $elements = explode(':', $property);
-      $new_object = $new_entity_wrapper;
-      $old_object = $old_entity_wrapper;
+
+      $new_object = $entity;
+      $old_object = $original;
+
       foreach ($elements as $element) {
-        if ($new_object instanceof EntityListWrapper) {
-          $new_object = $new_object[0];
-          $old_object = $old_object[0];
-        }
-        if ($new_object->value() === NULL || !isset($new_object->{$element})) {
+        if (!isset($new_object->{$element})) {
           $new_object = NULL;
           break;
         }
+
+        /* @var $new_object \Drupal\Core\Field\FieldItemList */
         $new_object = $new_object->{$element};
+        /* @var $old_object \Drupal\Core\Field\FieldItemList */
         $old_object = $old_object->{$element};
-      }
-      if (isset($new_object)) {
-        if ($new_object->value() !== $old_object->value()) {
-          return TRUE;
+
+        if (isset($new_object)) {
+          if ($new_object->getString() !== $old_object->getString()) {
+            return TRUE;
+          }
         }
       }
     }
-    */
   }
   // We don't have an old entity to compare values so we have to retrieve our
   // old settings from Mailchimp. This means the only possible change is in our
