@@ -123,7 +123,7 @@ function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
 
 /**
  * Implements hook_forms().
- * 
+ *
  * This allows each field's subscription-form rendering to have a unique form
  * ID. If this weren't the case, multiple forms getting rendered on a single
  * entity display would have submit button conflicts.
@@ -214,7 +214,7 @@ function mailchimp_lists_subscribe_form_submit($form, &$form_state) {
  * Processor for various list form submissions.
  *
  * Subscription blocks, user settings, and new user creation.
- * 
+ *
  * @array $choices
  *   An array representing the form values selected.
  * @array $instance
@@ -286,7 +286,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
  * This is necessary due to the nature of the field implementation of
  * subscriptions. If we don't do this, we send an update to mailchimp every time
  * an entity is updated.
- * 
+ *
  * returns bool
  */
 function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $email, $choices) {
@@ -383,6 +383,16 @@ function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type
         $object = $object->{$element};
       }
       $mergevars[$label] = isset($object) ? $object->value() : NULL;
+      if (is_array($mergevars[$label])) {
+        // Array values cannot be passed to to MailChimp. So, convert it to
+        // single value using token replacement.
+        // This fix mainly targets the user roles array (which
+        // contains an array of integers) to comma-separated role names.
+        $replaced = token_generate($entity_type, array($property => $label), array($entity_type => $entity));
+        if (isset($replaced[$label])) {
+          $mergevars[$label] = $replaced[$label];
+        }
+      }
     }
   }
   drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
@@ -655,7 +665,7 @@ function mailchimp_lists_action_info() {
 
 /**
  * Action function for the Add To Segment action.
- * 
+ *
  * Does the actual subscription work. Builds a queue of segment adds and then
  * intermittently builds a batched API action from the queue and sends to
  * Mailchimp.
