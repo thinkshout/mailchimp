@@ -13,9 +13,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\field\Entity\FieldConfig;
 
-// TODO: Remove once file is empty.
-module_load_include('inc', 'mailchimp_lists', 'includes/mailchimp_lists.field');
-
 /**
  * Implements hook_entity_delete().
  */
