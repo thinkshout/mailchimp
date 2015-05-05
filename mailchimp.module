@@ -1040,7 +1040,9 @@ function mailchimp_cron() {
   $queue_count = $queue->numberOfItems();
 
   if ($queue_count > 0) {
-    $batch_limit = $this->config('mailchimp.settings')->get('batch_limit', 100);
+    $config = \Drupal::config('mailchimp.settings');
+
+    $batch_limit = $config->get('batch_limit');
     $batch_size = ($queue_count < $batch_limit) ? $queue_count : $batch_limit;
     $count = 0;
 
