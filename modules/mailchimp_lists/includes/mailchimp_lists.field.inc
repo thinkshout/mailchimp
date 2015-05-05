@@ -5,44 +5,6 @@
  * Field hooks.
  */
 
-use Drupal\Core\Form\FormStateInterface;
-
-/**
- * Implements hook_form_FORM_ID_alter().
- */
-function mailchimp_lists_form_field_storage_config_edit_form_alter(&$form, FormStateInterface &$form_state, $form_id) {
-  $storage = $form_state->getStorage();
-
-  /* @var $field_config \Drupal\field\Entity\FieldConfig */
-  $field_config = $storage['field_config'];
-
-  if ($field_config->field_type == 'mailchimp_lists_subscription') {
-    // Hide the cardinality setting:
-    $form['cardinality_container']['cardinality_number']['#default_value'] = 1;
-    $form['cardinality_container']['#access'] = FALSE;
-
-    $form['#validate'][] = 'mailchimp_lists_form_field_ui_field_edit_form_validate';
-  }
-}
-
-/**
- * Validation handler for mailchimp_lists_form_field_ui_field_edit_form.
- *
- * Ensure cardinality is set to 1 on mailchimp_lists_subscription fields.
- */
-function mailchimp_lists_form_field_ui_field_edit_form_validate(&$form, FormStateInterface &$form_state) {
-  $storage = $form_state->getStorage();
-
-  /* @var $field_config \Drupal\field\Entity\FieldConfig */
-  $field_config = $storage['field_config'];
-
-  if ($field_config->field_type == 'mailchimp_lists_subscription') {
-
-    if ($form_state->getValue('cardinality_number') != 1) {
-      $form_state->setErrorByName('cardinality_number', t('Cardinality on mailchimp lists fields must be set to 1.'));
-    }
-  }
-}
 
 // TODO: Update mailchimp_lists_field_get for D8.
 
