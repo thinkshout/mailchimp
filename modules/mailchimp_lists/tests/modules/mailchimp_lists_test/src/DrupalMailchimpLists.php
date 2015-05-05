@@ -191,7 +191,6 @@ class DrupalMailchimpLists {
       return $response;
     }
     else {
-      $this->errorMessage = 'Could not add ' . $email_address . ' to non-existant list: ' . $id;
       return NULL;
     }
   }
@@ -217,17 +216,9 @@ class DrupalMailchimpLists {
 
           return TRUE;
         }
-        else {
-          $this->errorMessage = 'Could not unsubscribe ' . $email_address . ' from: ' . $id . ': not currently subscribed.';
-        }
-      }
-      else {
-        $this->errorMessage = 'Could not unsubscribe ' . $email_address . ' from: ' . $id . ': address not on list';
       }
     }
-    else {
-      $this->errorMessage = 'Could not unsubscribe ' . $email_address . ' from non-existant list: ' . $id;
-    }
+
     return FALSE;
   }
 
