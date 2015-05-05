@@ -7,26 +7,6 @@
 
 use Drupal\Core\Form\FormStateInterface;
 
-// TODO: Move field validation into MailchimpListsSubscription.
-
-/**
- * Implements hook_field_validate().
- */
-function mailchimp_lists_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
-  if ($instance['required'] && $entity !== NULL) {
-    foreach ($items as $delta => $item) {
-      if (!$item['subscribe']) {
-        $errors[$field['field_name']][$langcode][$delta][] = array(
-          'error' => 'mailchimp_lists_required',
-          'message' => t('Subscription to Mailchimp List %name is required.', array('%name' => $instance['label'])),
-        );
-        return FALSE;
-      }
-    }
-  }
-  return TRUE;
-}
-
 /**
  * Implements hook_form_FORM_ID_alter().
  */
