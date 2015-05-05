@@ -339,7 +339,7 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $doub
       // Clear user cache, just in case there's some cruft leftover:
       mailchimp_cache_clear_member($list_id, $email);
 
-      \Drupal::logger('mailchimp')->error('{email} was subscribed to list {list}.', array(
+      \Drupal::logger('mailchimp')->notice('{email} was subscribed to list {list}.', array(
         'email' => $merge_vars['EMAIL'],
         'list' => $list_id,
       ));
