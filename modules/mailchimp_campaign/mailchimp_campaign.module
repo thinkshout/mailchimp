@@ -209,15 +209,12 @@ function mailchimp_campaign_overview_page() {
 
   $rows = array();
   foreach ($campaigns as $campaign) {
-    $actions = array();
-    $actions[] = l(t('View Archive'), $campaign->mc_data['archive_url'], array( 'attributes' => array('target' => '_blank'),));
-    $actions[] = l(t('View'), 'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id);
-    if($campaign->mc_data['status'] == 'save') {
-      $actions[] = l(t('Send'),'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id . '/send');
-    }
-    else {
-      $actions[] = t('Sent');
-    }
+    $actions = array(
+       l(t('View Archive'), $campaign->mc_data['archive_url'], array(
+          'attributes' => array('target' => '_blank'),
+        )),
+       l(t('View'), 'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id),
+    );
 
     $rows[] = array(
       l($campaign->label(),
