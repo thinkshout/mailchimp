@@ -73,6 +73,7 @@ class MailchimpCampaignController extends ControllerBase {
         $category = FALSE;
         // Templates are grouped into categories, so we go hunting for our
         // template ID in each category.
+        $template_category = array();
         foreach($templates as $category_name => $template_category) {
           if (isset($template_category[$campaign->mc_data['template_id']])) {
             $category = $category_name;

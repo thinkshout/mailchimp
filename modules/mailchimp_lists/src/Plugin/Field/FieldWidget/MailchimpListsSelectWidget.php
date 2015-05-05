@@ -36,6 +36,7 @@ class MailchimpListsSelectWidget extends WidgetBase {
 
     $subscribe_default = $instance->getSubscribe();
 
+    $email = NULL;
     if (!empty($instance->getEntity())) {
       $email = mailchimp_lists_load_email($instance, $instance->getEntity(), FALSE);
       if ($email) {

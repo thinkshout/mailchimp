@@ -156,7 +156,7 @@ class DrupalMailchimpLists {
 
     $email_address = $email['email'];
 
-    if (isset($lists[$id])) {
+    if (FALSE && isset($lists[$id])) {
       if (!isset($lists[$id]['data']['members'])) {
         $lists[$id]['data']['members'] = array();
       }

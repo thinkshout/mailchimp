@@ -208,7 +208,10 @@ class MailchimpCampaignForm extends ContentEntityForm {
         }
 
         $form['content'][$section . '_wrapper'] += $this->getEntityImportFormElements($entity_type, $section);
-        $form['content'][$section . '_wrapper'] += $this->getMergeVarsFormElements($merge_vars, $mailchimp_lists[$list_id]['name']);
+
+        if (!empty($list_id)) {
+          $form['content'][$section . '_wrapper'] += $this->getMergeVarsFormElements($merge_vars, $mailchimp_lists[$list_id]['name']);
+        }
       }
     }
     else {
@@ -582,6 +585,8 @@ class MailchimpCampaignForm extends ContentEntityForm {
    */
   private function getEntitiesForContentImport() {
     $entity_info = \Drupal::entityManager()->getDefinitions();
+
+    $filtered_entities = array();
 
     foreach ($entity_info as $key => $entity) {
       $entity_keys = $entity->getKeys();
