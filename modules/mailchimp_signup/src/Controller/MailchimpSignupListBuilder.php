@@ -24,7 +24,6 @@ class MailchimpSignupListBuilder extends ConfigEntityListBuilder {
     $header['label'] = $this->t('Label');
     $header['display_modes'] = $this->t('Display Modes');
     $header['lists'] = $this->t('MailChimp Lists');
-    $header['access'] = $this->t('Page Access');
 
     return $header + parent::buildHeader();
   }
@@ -39,7 +38,6 @@ class MailchimpSignupListBuilder extends ConfigEntityListBuilder {
     $page_url = Url::fromUri($base_url . '/' . $entity->settings['path']);
 
     $modes = NULL;
-    $block_only = FALSE;
     $mc_lists = mailchimp_get_lists();
 
     switch ($entity->mode) {
@@ -63,22 +61,9 @@ class MailchimpSignupListBuilder extends ConfigEntityListBuilder {
       }
     }
 
-    if ($block_only) {
-      $access = 'N/A - this form only exists as a block';
-    }
-    else {
-      $all_roles_allowed = user_roles(FALSE, 'mailchimp_signup_all_forms' . $entity->name);
-      $page_roles_allowed = user_roles(FALSE, 'mailchimp_signup_form_' . $entity->name);
-      $roles_allowed = array_merge($all_roles_allowed, $page_roles_allowed);
-      $access = implode(', ', $roles_allowed);
-      $permissions_url = Url::fromRoute('user.admin_permissions');
-      $actions[] = \Drupal::l(t('Permissions'), $permissions_url, array('fragment' => 'edit-mailchimp-signup-all-forms'));
-    }
-
     $row['label'] = $this->getLabel($entity) . ' (Machine name: ' . $entity->id() . ')';
     $row['display_modes'] = $modes;
     $row['lists'] = implode(', ', $list_labels);
-    $row['access'] = $access;
 
     return $row + parent::buildRow($entity);
   }
