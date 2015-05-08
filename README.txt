@@ -31,26 +31,12 @@ respective README's for more details.
   * You need to have a MailChimp API Key.
   * You need to have at least one list created in MailChimp to use the
     mailchimp_lists module.
-  * The MCAPI library must be downloaded into your libraries folder. 7.x-3.x
-    uses the 2.0.x version of the Mailchimp API, where 7.x-2.x used the 1.3
-    version. Make sure you have the new version. It's available at:
-    https://bitbucket.org/mailchimp/mailchimp-api-php/downloads ("Tags" tab)
-    or by using the included example drush make file.
-    Proper libraries structure:
-
-    - libraries/
-      - mailchimp/
-        - docs/
-        - src/
-          - Mailchimp.php
-          - Mailchimp/
-        - README.md
-        - composer.json
-
-  * At the time of writing, version 2.0.4 of the Mailchimp API library was the
-    latest. If you are using a later version and have issues, consider switching
-    to version 2.0.4.
-    (https://bitbucket.org/mailchimp/mailchimp-api-php/get/2.0.4.zip)
+  * The MCAPI library must be installed using Composer Manager. Composer manager
+    scans modules for composer.json files and installs any dependencies into
+    the Drupal core vendor directory. Learn more at
+    https://www.drupal.org/project/composer_manager.
+  * The composer.json file in the root of this module has details on the
+    proper version of the API to use.
 
 ## Configuration
   1. Direct your browser to admin/config/services/mailchimp to configure the
@@ -65,7 +51,7 @@ respective README's for more details.
   3. Copy your newly created API key and go to the
   [Mailchimp config](http://example.com/admin/config/services/mailchimp) page in
   your Drupal site and paste it into the Mailchimp API Key field.
-  
+
   4. Batch limit - Maximum number of changes to process in a single cron run.
   Mailchimp suggest keeping this below 10000.
 
@@ -87,6 +73,8 @@ respective README's for more details.
   * mailchimp_activity: Display a tab on any entity with an email address
     showing the email, subscribe, and unsubscribe history for that email address
     on your Mailchimp account.
+    IMPORTANT: This module has not yet been ported to Drupal 8, but will be in
+    subsequent releases.
 
 ## Related Modules
 ### Mandrill
