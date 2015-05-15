@@ -269,7 +269,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
 }
 
 /**
- * Helper function to avoid sending superfluous updates to Mailchimp.
+ * Helper function to avoid sending superfluous updates to MailChimp.
  *
  * This is necessary due to the nature of the field implementation of
  * subscriptions. If we don't do this, we send an update to MailChimp every time
