@@ -99,8 +99,8 @@ function mailchimp_signup_form($form, &$form_state, MailchimpSignup $signup) {
 
   $form['settings']['update_message'] = array(
     '#type' => 'textfield',
-    '#title' => 'Update Message',
-    '#description' => 'This message will appear after a successful submission of this form and if the email used is already subscribing. Leave blank for no message, but make sure you configure a destination in that case unless you really want to confuse your site visitors.',
+    '#title' => t('Update Message'),
+    '#description' => t('This message will appear after a successful submission of this form and if the email used is already subscribing. Leave blank for no message, but make sure you configure a destination in that case unless you really want to confuse your site visitors.'),
     '#default_value' => isset($signup->settings['update_message']) ? $signup->settings['update_message'] : 'Your subscription has been updated.',
   );
 
@@ -207,11 +207,11 @@ function mailchimp_signup_form($form, &$form_state, MailchimpSignup $signup) {
     '#description' => t('If set, subscribers will be able to select applicable interest groups on the signup form.'),
   );
 
-  $form['subscription_settings']['preserve_interest_groups'] = array(
+  $form['subscription_settings']['replace_interests'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Preserve interest groups on resubscription.'),
-    '#default_value' => isset($signup->settings['preserve_interest_groups']) ? $signup->settings['preserve_interest_groups'] : TRUE,
-    '#description' => t('If set, subscribers interest groups will be preserved when they are already subscribing.'),
+    '#title' => t('Replace interest groups on resubscription.'),
+    '#default_value' => isset($signup->settings['replace_interests']) ? $signup->settings['replace_interests'] : TRUE,
+    '#description' => t('If set, existing subscriber interest groups will be replaced when they re-subscribe.'),
   );
 
   $form['save'] = array(

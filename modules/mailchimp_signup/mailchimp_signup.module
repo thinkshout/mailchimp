@@ -258,7 +258,7 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
   $lists_count = (!empty($lists)) ? count($lists) : 0;
 
   if (empty($lists)) {
-    drupal_set_message('The subscription service is currently unavailable. Please try again later.', 'warning');
+    drupal_set_message(t('The subscription service is currently unavailable. Please try again later.'), 'warning');
   }
 
   $list = array();
@@ -384,10 +384,10 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
     }
   }
   if (count($successes) && isset($signup->settings['confirmation_message']) && strlen($signup->settings['confirmation_message']) && empty($member)) {
-    drupal_set_message(check_plain($signup->settings['confirmation_message']), 'status');
+    drupal_set_message(t(check_plain($signup->settings['confirmation_message'])), 'status');
   }
   if (count($successes) && isset($signup->settings['update_message']) && strlen($signup->settings['update_message']) && !empty($member)) {
-    drupal_set_message($signup->settings['update_message'], 'status');
+    drupal_set_message(t(check_plain($signup->settings['update_message'])), 'status');
   }
   if (!empty($signup->settings['destination'])) {
     $form_state['redirect'] = $signup->settings['destination'];
