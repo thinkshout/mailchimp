@@ -273,7 +273,7 @@ function mailchimp_signup_form_submit($form, &$form_state) {
   $signup->settings['doublein'] = $form_state['values']['doublein'];
   $signup->settings['send_welcome'] = $form_state['values']['send_welcome'];
   $signup->settings['include_interest_groups'] = $form_state['values']['include_interest_groups'];
-  $signup->settings['preserve_interest_groups'] = $form_state['values']['preserve_interest_groups'];
+  $signup->settings['replace_interests'] = $form_state['values']['replace_interests'];
   if ($signup->save()) {
     if (isset($form_state['values']['settings']['path'])) {
       if (!isset($prior_settings['path']) || $prior_settings['path'] != $signup->settings['path'] || !($signup->mode & MAILCHIMP_SIGNUP_PAGE)) {

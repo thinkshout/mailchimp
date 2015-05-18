@@ -371,7 +371,8 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
     if (isset($list_choices['interest_groups'])) {
       $mergevars['GROUPINGS'] = mailchimp_reformat_groupings($list_choices['interest_groups']);
     }
-    $result = mailchimp_subscribe($list_id, $email, $mergevars, $signup->settings['doublein'], $signup->settings['send_welcome'], 'html', TRUE, !$signup->settings['preserve_interest_groups']);
+
+    $result = mailchimp_subscribe($list_id, $email, $mergevars, $signup->settings['doublein'], $signup->settings['send_welcome'], 'html', TRUE, $signup->settings['replace_interests']);
     // Let other modules act on the results in hook_form_alter.
     $form_state['mailchimp_results'] = $result;
     if (empty($result)) {
