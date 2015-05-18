@@ -365,11 +365,13 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
   // Loop through the selected lists and try to subscribe:
   foreach ($subscribe_lists as $list_choices) {
     $list_id = $list_choices['subscribe'];
+    // Load possible existing member.
+    $member = mailchimp_get_memberinfo($list_id, $email);
     $mergevars = $merge_values;
     if (isset($list_choices['interest_groups'])) {
       $mergevars['GROUPINGS'] = mailchimp_reformat_groupings($list_choices['interest_groups']);
     }
-    $result = mailchimp_subscribe($list_id, $email, $mergevars, $signup->settings['doublein'], $signup->settings['send_welcome']);
+    $result = mailchimp_subscribe($list_id, $email, $mergevars, $signup->settings['doublein'], $signup->settings['send_welcome'], 'html', TRUE, !$signup->settings['preserve_interest_groups']);
     // Let other modules act on the results in hook_form_alter.
     $form_state['mailchimp_results'] = $result;
     if (empty($result)) {
@@ -381,8 +383,11 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
       $successes[] = $list_details[$list_id]['name'];
     }
   }
-  if (count($successes) && isset($signup->settings['confirmation_message']) && strlen($signup->settings['confirmation_message'])) {
+  if (count($successes) && isset($signup->settings['confirmation_message']) && strlen($signup->settings['confirmation_message']) && empty($member)) {
     drupal_set_message(check_plain($signup->settings['confirmation_message']), 'status');
+  }
+  if (count($successes) && isset($signup->settings['update_message']) && strlen($signup->settings['update_message']) && !empty($member)) {
+    drupal_set_message($signup->settings['update_message'], 'status');
   }
   if (!empty($signup->settings['destination'])) {
     $form_state['redirect'] = $signup->settings['destination'];

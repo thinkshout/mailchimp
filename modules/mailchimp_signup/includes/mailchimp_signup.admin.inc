@@ -97,6 +97,13 @@ function mailchimp_signup_form($form, &$form_state, MailchimpSignup $signup) {
     '#default_value' => isset($signup->settings['confirmation_message']) ? $signup->settings['confirmation_message'] : t('You have been successfully subscribed.'),
   );
 
+  $form['settings']['update_message'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Update Message',
+    '#description' => 'This message will appear after a successful submission of this form and if the email used is already subscribing. Leave blank for no message, but make sure you configure a destination in that case unless you really want to confuse your site visitors.',
+    '#default_value' => isset($signup->settings['update_message']) ? $signup->settings['update_message'] : 'Your subscription has been updated.',
+  );
+
   $form['settings']['destination'] = array(
     '#type' => 'textfield',
     '#title' => t('Form destination page'),
@@ -200,6 +207,13 @@ function mailchimp_signup_form($form, &$form_state, MailchimpSignup $signup) {
     '#description' => t('If set, subscribers will be able to select applicable interest groups on the signup form.'),
   );
 
+  $form['subscription_settings']['preserve_interest_groups'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Preserve interest groups on resubscription.'),
+    '#default_value' => isset($signup->settings['preserve_interest_groups']) ? $signup->settings['preserve_interest_groups'] : TRUE,
+    '#description' => t('If set, subscribers interest groups will be preserved when they are already subscribing.'),
+  );
+
   $form['save'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
@@ -259,6 +273,7 @@ function mailchimp_signup_form_submit($form, &$form_state) {
   $signup->settings['doublein'] = $form_state['values']['doublein'];
   $signup->settings['send_welcome'] = $form_state['values']['send_welcome'];
   $signup->settings['include_interest_groups'] = $form_state['values']['include_interest_groups'];
+  $signup->settings['preserve_interest_groups'] = $form_state['values']['preserve_interest_groups'];
   if ($signup->save()) {
     if (isset($form_state['values']['settings']['path'])) {
       if (!isset($prior_settings['path']) || $prior_settings['path'] != $signup->settings['path'] || !($signup->mode & MAILCHIMP_SIGNUP_PAGE)) {
