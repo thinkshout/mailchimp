@@ -97,9 +97,21 @@ function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
     return FALSE;
   }
 
-  $property = $instance['settings']['mergefields']['EMAIL'];
-  $values = _mailchimp_lists_field_value($property, $entity, $instance['entity_type']);
-  $email = !empty($values[0]) ? $values[0] : NULL;
+  // This function can be called when creating a form for a new entity, in which
+  // case there will be no existing entity to inspect in order to figure out
+  // what the email address is. For example, the user registration form. So we
+  // need to skip the rest of this code if there is no ID for the entity.
+  list($id, $vid, $bundle) = entity_extract_ids($instance['entity_type'], $entity);
+  if (!isset($id) || $id === 0) {
+    return FALSE;
+  }
+
+  // Expand the token used in the email merge field.
+  $tokens = array();
+  foreach ($instance['settings']['mergefields'] as $key => $token) {
+    $tokens[$key] = token_replace($token, array($instance['entity_type'] => $entity), array('clear' => TRUE));
+  }
+  $email = $tokens['EMAIL'];
 
   if (valid_email_address($email)) {
     return $email;
@@ -301,18 +313,12 @@ function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $
       }
     }
 
-    foreach ($instance['settings']['mergefields'] as $property) {
-      if (!empty($property)) {
-        $old_value = _mailchimp_lists_field_value($property, $old_entity_wrapper, $instance['entity_type']);
-        $new_value = _mailchimp_lists_field_value($property, $new_entity_wrapper, $instance['entity_type']);
-        // The _MailChimp_lists_field_value() returns an array of values, but
-        // this comparison will still work fine for our purposes since == on an
-        // array will verify they have matching key/value pairs. If they do not
-        // then we can assume the value of the field changed.
-        if ($new_value != $old_value) {
-          return TRUE;
-        }
-      }
+    // Expand tokens for both the new entity and the old one, then compare the
+    // values to see if anything has changed.
+    $mergevars_new = mailchimp_mergevars_populate($instance['settings']['mergefields'], $entity, $instance['entity_type']);
+    $mergevars_old = mailchimp_mergevars_populate($instance['settings']['mergefields'], $entity->original, $instance['entity_type']);
+    if ($mergevars_new != $mergevars_old) {
+      return TRUE;
     }
   }
   // We don't have an old entity to compare values so we have to retrieve our
@@ -346,82 +352,9 @@ function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $
  * Helper function to complete a MailChimp-API-ready mergevars array.
  */
 function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type) {
-  $mergevars = array();
-  foreach ($mergefields as $label => $field) {
-    if (!empty($field) && strlen($field)) {
-      // For normal fields this is just the field name. For entity reference
-      // fields like a term_reference field this is field_name:property so we
-      // can determine which property from the referenced entity to use here.
-      $values = _mailchimp_lists_field_value($field, $entity, $entity_type);
-
-      // If there are multiple values combine them together into a single comma
-      // separated string.
-      $mergevars[$label] = implode(', ', $values);
-    }
-  }
-
+  $mergevars = mailchimp_mergevars_populate($mergefields, $entity, $entity_type);
   drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
   return $mergevars;
-}
-
-/**
- * Retrieve the value(s) of any property or field for the given entity.
- *
- * @param (string) $field
- *   Name of the field or property to retrieve the value for. For properties
- *   like $user->uid, or simple fields like $user->field_first_name, this would
- *   simply be the string 'uid', or 'field_first_name'. For more complex fields
- *   like term reference fields this would be a string like 'field_tags:name'.
- *   Where 'field_tags' is the name of the field that points to another entity
- *   and ':name' is the property or field on the referenced entity to retrieve
- *   a value for.
- * @param (object) $entity
- *   The entity to extract the value from.
- * @param (string) $entity_type
- *   The type of entity we are dealing with.
- *
- * @return array
- *   An array of values retrieved for $field, or an empty array if no values
- *   are found.
- */
-function _mailchimp_lists_field_value($field, $entity, $entity_type) {
-  $wrapper = entity_metadata_wrapper($entity_type, $entity);
-  // Figure out if we're dealing directly with a field or property, or if we
-  // have a referenced entity and need to get the value of a child element.
-  list($element, $child_element) = array_pad(explode(':', $field, 2), 2, FALSE);
-
-  $values = array();
-  // If this is a multi-value field or property we need to get the value of
-  // each row.
-  if ($wrapper->{$element} instanceof EntityListWrapper) {
-    foreach ($wrapper->{$element} as $ref_item) {
-      // If $property is set, we're dealing with a reference to another entity
-      // or a nested value within a field like field_image:title.
-      if ($child_element) {
-        // Sometimes elements in a list have a label(), so we'll use that if we
-        // can. This will allow for using 'authenticated user' instead of just
-        // '1' for properties like $user->roles. Otherwise we can just fallback
-        // to whatever the field/property value is.
-        $values[] = ($ref_item->{$child_element}->label()) ? $ref_item->{$child_element}->label() : $ref_item->{$child_element}->value();
-      }
-      else {
-        $values[] = ($ref_item->label()) ? $ref_item->label() : $ref_item->value();
-      }
-    }
-  }
-  // Handle single value fields.
-  else {
-    // Make sure we can handle referenced entities properly.
-    if ($child_element) {
-      $values[] = $wrapper->{$element}->{$child_element}->value();
-    }
-    else {
-      $values[] = $wrapper->{$element}->value();
-    }
-  }
-
-  sort($values);
-  return $values;
 }
 
 /**
@@ -644,7 +577,9 @@ function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $
   }
 
   foreach ($properties as $key => $property) {
-    $keypath = $prefix ? $prefix . ':' . $key : $key;
+    // Include the entity type at the beginning of token names since tokens use
+    // the format [entity_type:entity_property].
+    $keypath = $prefix ? $prefix . ':' . $key : $entity_type . ':' . $key;
     $type = isset($property['type']) ? entity_property_extract_innermost_type($property['type']) : 'text';
     $is_entity = ($type == 'entity') || (bool) entity_get_info($type);
     $required_property = isset($property['required']) ? $property['required'] : FALSE;
@@ -661,11 +596,15 @@ function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $
       if (isset($property['field']) && $property['field'] && !empty($property['property info'])) {
         foreach ($property['property info'] as $sub_key => $sub_prop) {
           $label = isset($tree) ? $tree . ' - ' . $property['label'] : $property['label'];
-          $options[$label][$keypath . ':' . $sub_key] = $sub_prop['label'];
+          // Convert paths to full token syntax for parsing later.
+          $token = '[' . $keypath . ']';
+          $options[$label][$token] = $sub_prop['label'];
         }
       }
       else {
-        $options[$keypath] = $property['label'];
+        // Convert paths to full token syntax for parsing later.
+        $token = '[' . $keypath . ']';
+        $options[$token] = $property['label'];
       }
     }
   }

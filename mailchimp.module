@@ -1349,3 +1349,32 @@ function mailchimp_variable_info($options) {
 
   return $variable;
 }
+
+/**
+ * Replace an array of merge field placeholder tokens with their values.
+ *
+ * @param array $mergefields
+ *   An array of merge fields and token place holders to be expanded. The key
+ *   of the array is the MailChimp field name, the value is the token that
+ *   should be expanded.
+ * @param object $entity
+ *   The entity that contains the values to use for token replacement.
+ * @param string $entity_type
+ *   The entity type of the entity being used.
+ *
+ * @return mixed
+ *   Associative array of MailChimp fields with values taken from the provided
+ *   entity.
+ */
+function mailchimp_mergevars_populate($mergefields, $entity, $entity_type) {
+  $mergevars = drupal_static(__FUNCTION__, array());
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+
+  if (!isset($mergevars[$bundle . ':' . $id])) {
+    foreach ($mergefields as $key => $token) {
+      $mergevars[$bundle . ':' . $id][$key] = token_replace($token, array($entity_type => $entity), array('clear' => TRUE));
+    }
+  }
+
+  return $mergevars[$bundle . ':' . $id];
+}
