@@ -635,9 +635,9 @@ function mailchimp_lists_action_info() {
  * Mailchimp.
  */
 function mailchimp_lists_add_to_segment_action($entity, $context = array()) {
-  $entity_info = entity_get_info($context['entity_type']);
+  list($id, $vid, $bundle) = entity_extract_ids($context['entity_type'], $entity);
   $list_id = $context['mc_list_id'];
-  $field_instance = field_info_instance($context['entity_type'], $context['mailchimp_field'], $entity->{$entity_info['entity keys']['bundle']});
+  $field_instance = field_info_instance($context['entity_type'], $context['mailchimp_field'], $bundle);
   $email = mailchimp_lists_load_email($field_instance, $entity);
   $queue_id = 'mailchimp_lists_action_' . $list_id . '_' . $context['segment_id'];
   if ($email) {
