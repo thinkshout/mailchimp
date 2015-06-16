@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Mailchimp lists module.
+ * MailChimp lists module.
  */
 
 module_load_include('inc', 'mailchimp_lists', 'includes/mailchimp_lists.field');
@@ -462,7 +462,7 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
 }
 
 /**
- * Batch processor for member mergevar updates to submit batches to Mailchimp.
+ * Batch processor for member mergevar updates to submit batches to MailChimp.
  */
 function mailchimp_lists_execute_mergevar_batch_update($list_id, &$context) {
   if (!isset($context['sandbox']['progress'])) {
@@ -481,7 +481,7 @@ function mailchimp_lists_execute_mergevar_batch_update($list_id, &$context) {
     }
     $batch_size = count($batch);
     $context['sandbox']['progress'] += $batch_size;
-    $context['message'] = t('Updating Mailchimp mergevars for items %count - %next.',
+    $context['message'] = t('Updating MailChimp mergevars for items %count - %next.',
       array(
         '%count' => $context['sandbox']['progress'],
         '%next' => $context['sandbox']['progress'] + $batch_size,
@@ -525,7 +525,7 @@ function mailchimp_lists_populate_member_batch_complete($success, $results, $ope
 function mailchimp_lists_mollom_form_list() {
   $forms = array();
   $forms['mailchimp_lists_subscribe_form'] = array(
-    'title' => t('Mailchimp Newsletter Subscription Fields'),
+    'title' => t('MailChimp Newsletter Subscription Fields'),
   );
 
   return $forms;
@@ -632,19 +632,19 @@ function mailchimp_lists_action_info() {
  * 
  * Does the actual subscription work. Builds a queue of segment adds and then
  * intermittently builds a batched API action from the queue and sends to
- * Mailchimp.
+ * MailChimp.
  */
 function mailchimp_lists_add_to_segment_action($entity, $context = array()) {
-  $entity_info = entity_get_info($context['entity_type']);
+  list($id, $vid, $bundle) = entity_extract_ids($context['entity_type'], $entity);
   $list_id = $context['mc_list_id'];
-  $field_instance = field_info_instance($context['entity_type'], $context['mailchimp_field'], $entity->{$entity_info['entity keys']['bundle']});
+  $field_instance = field_info_instance($context['entity_type'], $context['mailchimp_field'], $bundle);
   $email = mailchimp_lists_load_email($field_instance, $entity);
   $queue_id = 'mailchimp_lists_action_' . $list_id . '_' . $context['segment_id'];
   if ($email) {
     mailchimp_segment_add_subscriber($list_id, $context['segment_id'], $email, TRUE, $queue_id);
   }
-  // Send to Mailchimp in a batch when we are done, or when we reach 10000, as
-  // 10000 records is the maximum batch size Mailchimp recommends.
+  // Send to MailChimp in a batch when we are done, or when we reach 10000, as
+  // 10000 records is the maximum batch size MailChimp recommends.
   if ($context['progress']['current'] == $context['progress']['total'] || !($context['progress']['current'] % 10000)) {
     $batch_queue = DrupalQueue::get($queue_id);
     $batch_queue->createQueue();
