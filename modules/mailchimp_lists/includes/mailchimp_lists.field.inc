@@ -173,8 +173,9 @@ function _mailchimp_lists_field_instance_settings_form_process($form, &$form_sta
   // If the AJAX checkbox to toggle between advanced and basic input mode has
   // been clicked we can use that info here to override what is stored in the
   // database.
-  if (isset($form_state['values']) && isset($form_state['values']['instance']['settings']['mergefields']['advanced'])) {
-    $use_advanced_mode = (bool) $form_state['values']['instance']['settings']['mergefields']['advanced'];
+  // TODO: figure out why 'mergefields' is in 'input' but not 'values'
+  if (isset($form_state['input']) && isset($form_state['input']['instance']['settings']['mergefields']['advanced'])) {
+    $use_advanced_mode = (bool) $form_state['input']['instance']['settings']['mergefields']['advanced'];
   }
 
   $form['#description'] = $use_advanced_mode ? t('Use tokens like [user:mail] which will be replaced with the appropriate value before sending them to MailChimp.') : t('Multi-value fields will only sync their first value to MailChimp.');
