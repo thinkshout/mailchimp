@@ -577,6 +577,9 @@ function mailchimp_lists_fieldmap_options($entity_type, $entity_bundle = NULL, $
   }
 
   foreach ($properties as $key => $property) {
+    // The entity_token module uses - instead of _ for all property and field
+    // names so we need to ensure that we match that pattern.
+    $key = str_replace('_', '-', $key);
     // Include the entity type at the beginning of token names since tokens use
     // the format [entity_type:entity_property].
     $keypath = $prefix ? $prefix . ':' . $key : $entity_type . ':' . $key;

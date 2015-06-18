@@ -164,7 +164,7 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
  */
 function _mailchimp_lists_field_instance_settings_form_process($form, &$form_state) {
   $field = $form['#field'];
-  $instance = $form['#instance'];
+  $instance = $instance = isset($form_state['mailchimp']['instance']) ? $form_state['mailchimp']['instance'] : $form['#instance'];
   $mc_list_id = $form['#mc_list_id'];
 
   $mv_defaults = $instance['settings']['mergefields'];
@@ -249,6 +249,18 @@ function _mailchimp_lists_field_instance_settings_form_process($form, &$form_sta
   );
 
   return $form;
+}
+
+/**
+ * Validation callback for MailChimp field instance settings form element.
+ */
+function _mailchimp_lists_field_instance_settings_validate($form, &$form_state) {
+  // Store the new values in the form state.
+  $instance = $form['#instance'];
+  if (isset($form_state['values']['instance'])) {
+    $instance = drupal_array_merge_deep($instance, $form_state['values']['instance']);
+  }
+  $form_state['mailchimp']['instance'] = $instance;
 }
 
 /**
