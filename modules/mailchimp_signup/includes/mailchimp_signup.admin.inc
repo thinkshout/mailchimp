@@ -6,7 +6,7 @@
  */
 
 /**
- * Return a form for adding/editing a mailchimp signup form.
+ * Return a form for adding/editing a MailChimp signup form.
  */
 function mailchimp_signup_form($form, &$form_state, MailchimpSignup $signup) {
   // Store the existing list for updating on submit.

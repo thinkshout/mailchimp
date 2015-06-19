@@ -52,6 +52,7 @@ function mailchimp_lists_update_7002(&$sandbox) {
           foreach ($field_instance['settings']['mergefields'] as $key => $value) {
             if (!empty($value)) {
               // Convert to token syntax like [user:mail].
+              $value = str_replace('_', '-', $value);
               $field_instance['settings']['mergefields'][$key] = '[' . $entity_type . ':' . $value . ']';
             }
           }
