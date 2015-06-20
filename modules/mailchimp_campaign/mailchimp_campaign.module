@@ -325,7 +325,7 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
     catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
       watchdog('mailchimp_campaign',
-        'An error occurred while creating this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
+        'An error occurred while creating this campaign: @msg', array('@msg' => $e->getMessage()), WATCHDOG_ERROR);
       return NULL;
     }
     if (isset($result['status']) && ($result['status'] == 'save')) {
@@ -345,7 +345,7 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
     catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
       watchdog('mailchimp_campaign',
-        'An error occurred while updating this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
+        'An error occurred while updating this campaign: @msg', array('@msg' => $e->getMessage()), WATCHDOG_ERROR);
       return NULL;
     }
   }
@@ -391,7 +391,7 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
     watchdog('mailchimp_campaign',
-      'An error occurred while sending to this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
+      'An error occurred while sending to this campaign: @msg', array('@msg' => $e->getMessage()), WATCHDOG_ERROR);
     return FALSE;
   }
 
@@ -428,7 +428,7 @@ function mailchimp_campaign_delete_campaign($cid) {
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
     watchdog('mailchimp_campaign',
-      'An error occurred while deleting this campaign: ' . $e->getMessage(), WATCHDOG_ERROR);
+      'An error occurred while deleting this campaign: @msg', array('@msg' => $e->getMessage()), WATCHDOG_ERROR);
     return FALSE;
   }
 
@@ -697,7 +697,7 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
     watchdog('mailchimp_campaign',
-      'An error occurred getting report data from MailChimp: ' . $e->getMessage(), WATCHDOG_ERROR);
+      'An error occurred getting report data from MailChimp: @msg', array('@msg' => $e->getMessage()), WATCHDOG_ERROR);
   }
 
   if (empty($response)) {
@@ -808,7 +808,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
     }
     catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
-      watchdog('mailchimp_campaign', 'An error occurred while getting campaigns: ' . $e->getMessage(), WATCHDOG_ERROR);
+      watchdog('mailchimp_campaign', 'An error occurred while getting campaigns: @msg', array('@msg' => $e->getMessage()), WATCHDOG_ERROR);
       return NULL;
     }
 
@@ -847,7 +847,7 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
     watchdog('mailchimp_campaign',
-      'An error occurred getting list segments for list ID ' . $list_id . ': ' . $e->getMessage(), WATCHDOG_ERROR);
+      'An error occurred getting list segments for list ID %list_id: @msg', array('%list_id' => $list_id, '@msg' => $e->getMessage()), WATCHDOG_ERROR);
     return NULL;
   }
 
@@ -877,7 +877,7 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
   }
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
-    watchdog('mailchimp_campaign', 'An error occurred testing a list segment: ' . $e->getMessage(), WATCHDOG_ERROR);
+    watchdog('mailchimp_campaign', 'An error occurred testing a list segment: @msg', array('@msg' => $e->getMessage()), WATCHDOG_ERROR);
     return NULL;
   }
 
