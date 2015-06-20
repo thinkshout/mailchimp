@@ -326,19 +326,21 @@ function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $
   // interest group settings, so we only analyze those:
   else {
     $member_info = mailchimp_get_memberinfo($field['settings']['mc_list_id'], $email);
-    foreach ($member_info['merges']['GROUPINGS'] as $grouping) {
-      if (!isset($choices['interest_groups'][$grouping['id']])) {
-        return TRUE;
-      }
-      else {
-        if (!is_array($choices['interest_groups'][$grouping['id']])) {
-          // Standardize formatting of choices:
-          $choices['interest_groups'][$grouping['id']] = array($choices['interest_groups'][$grouping['id']] => $choices['interest_groups'][$grouping['id']]);
+    if (isset($member_info['merges']['GROUPINGS'])) {
+      foreach ($member_info['merges']['GROUPINGS'] as $grouping) {
+        if (!isset($choices['interest_groups'][$grouping['id']])) {
+          return TRUE;
         }
-        foreach ($grouping['groups'] as $group) {
-          $selected = isset($choices['interest_groups'][$grouping['id']][$group['name']]) && $choices['interest_groups'][$grouping['id']][$group['name']];
-          if (($group['interested'] && !$selected) || (!$group['interested'] && $selected)) {
-            return TRUE;
+        else {
+          if (!is_array($choices['interest_groups'][$grouping['id']])) {
+            // Standardize formatting of choices:
+            $choices['interest_groups'][$grouping['id']] = array($choices['interest_groups'][$grouping['id']] => $choices['interest_groups'][$grouping['id']]);
+          }
+          foreach ($grouping['groups'] as $group) {
+            $selected = isset($choices['interest_groups'][$grouping['id']][$group['name']]) && $choices['interest_groups'][$grouping['id']][$group['name']];
+            if (($group['interested'] && !$selected) || (!$group['interested'] && $selected)) {
+              return TRUE;
+            }
           }
         }
       }
