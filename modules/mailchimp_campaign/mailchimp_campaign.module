@@ -690,7 +690,7 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
 
   try {
     if (!$mcapi) {
-      throw new MailchimpException('Cannot get campaign stats without Mailchimp API. Check API key has been entered.');
+      throw new MailchimpException('Cannot get campaign stats without MailChimp API. Check API key has been entered.');
     }
     $response = $mcapi->reports->summary($campaign->mc_campaign_id);
   }
@@ -802,7 +802,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
     $mcapi = mailchimp_get_api_object();
     try {
       if (!$mcapi) {
-        throw new MailchimpException('Cannot get list without Mailchimp API. Check API key has been entered.');
+        throw new MailchimpException('Cannot get list without MailChimp API. Check API key has been entered.');
       }
       $response = $mcapi->campaigns->getList(array('campaign_id' => implode(',', $to_refresh)));
     }
@@ -840,7 +840,7 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
 
   try {
     if (!$mcapi) {
-      throw new MailchimpException('Cannot get list segments without Mailchimp API. Check API key has been entered.');
+      throw new MailchimpException('Cannot get list segments without MailChimp API. Check API key has been entered.');
     }
     $response = $mcapi->lists->segments($list_id, $type);
   }
@@ -870,7 +870,7 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
 
   try {
     if (!$mcapi) {
-      throw new MailchimpException('Cannot get campaign list segment without Mailchimp API. Check API key has been entered.');
+      throw new MailchimpException('Cannot get campaign list segment without MailChimp API. Check API key has been entered.');
     }
     $result = $mcapi->campaigns->segmentTest($list_id,
       array('saved_segment_id' => $list_segment_id));
