@@ -170,7 +170,7 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
   // Add the title and description to lists for anonymous users or if requested:
   $form[$wrapper_key]['subscribe'] = array(
     '#type' => 'checkbox',
-    '#title' => 'Subscribe',
+    '#title' => t('Subscribe'),
     '#disabled' => $instance['required'],
     '#required' => $instance['required'],
     '#default_value' => $instance['required'] || $is_subscribed,
