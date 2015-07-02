@@ -421,7 +421,7 @@ function mailchimp_campaign_get_merge_vars_form_elements($merge_vars, $list_name
 
   $form['merge_vars']['content'] = array(
     '#type' => 'item',
-    '#title' => t('MailChimp merge variables'),
+    '#title' => 'MailChimp merge variables',
     '#markup' => _mailchimp_campaign_build_merge_vars_html($merge_vars),
     '#description' => t(
       'Insert merge variables from the %list_name list or one of the !standard_link.',
@@ -523,7 +523,7 @@ function _mailchimp_campaign_get_entities_for_content_import() {
  */
 function _mailchimp_campaign_build_entity_option_list($entity_info) {
   $options = array(
-    '' => t('-- Select --'),
+    '' => '-- Select --',
   );
   foreach ($entity_info as $entity_id => $entity_data) {
     // Exclude MailChimp entities.

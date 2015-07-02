@@ -44,7 +44,7 @@ function mailchimp_menu() {
 
   $items['admin/config/services/mailchimp'] = array(
     'title' => 'MailChimp',
-    'description' => t('Manage MailChimp Settings.'),
+    'description' => 'Manage MailChimp Settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_admin_settings'),
     'access arguments' => array('administer mailchimp'),
@@ -52,7 +52,7 @@ function mailchimp_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/config/services/mailchimp/global'] = array(
-    'title' => t('Global Settings'),
+    'title' => 'Global Settings',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
@@ -83,7 +83,7 @@ function mailchimp_permission() {
   return array(
     'administer mailchimp' => array(
       'title' => t('administer mailchimp'),
-      'description' => t('Access the MailChimp configuration options.'),
+      'description' => t('Access the mailchimp configuration options.'),
     ),
   );
 }
@@ -99,7 +99,7 @@ function mailchimp_apikey_ready_access($permission) {
 }
 
 /**
- * Get a MailChimp API object for communication with the MailChimp server.
+ * Get a Mailchimp API object for communication with the mailchimp server.
  *
  * @return DrupalMailchimp
  *   The default return value is an instance of DrupalMailchimp, although that
@@ -126,7 +126,7 @@ function mailchimp_get_api_object() {
 
   $api_key = variable_get('mailchimp_api_key', '');
   if (!strlen($api_key)) {
-    watchdog('mailchimp', t('MailChimp Error: API Key cannot be blank.'), array(), WATCHDOG_ERROR);
+    watchdog('mailchimp', 'Mailchimp Error: API Key cannot be blank.', array(), WATCHDOG_ERROR);
     return NULL;
   }
   // Set the timeout to something that won't take down the Drupal site:
@@ -174,7 +174,7 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
     try {
       $mcapi = mailchimp_get_api_object();
       if (!$mcapi) {
-        throw new MailchimpException('Cannot get lists without MailChimp API. Check API key has been entered.');
+        throw new MailchimpException('Cannot get lists without Mailchimp API. Check API key has been entered.');
       }
       $result = $mcapi->lists->getList(array(), 0, 100);
       if ($result['total'] > 0) {
@@ -195,7 +195,7 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
       cache_set('lists', $lists, 'cache_mailchimp', CACHE_TEMPORARY);
     }
     catch (Exception $e) {
-      watchdog('mailchimp', 'An error occurred requesting list information from MailChimp. "%message"', array(
+      watchdog('mailchimp', 'An error occurred requesting list information from Mailchimp. "%message"', array(
         '%message' => $e->getMessage(),
       ), WATCHDOG_ERROR);
     }
@@ -263,7 +263,7 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
     $last_list_id = NULL;
     try {
       if (!$mcapi) {
-        throw new MailchimpException('Cannot get merge vars without MailChimp API. Check API key has been entered.');
+        throw new MailchimpException('Cannot get merge vars without Mailchimp API. Check API key has been entered.');
       }
       $result = $mcapi->lists->mergeVars($list_ids);
       if ($result['success_count']) {
@@ -948,7 +948,7 @@ function mailchimp_webhook_add($list_id, $url, $actions = array(), $sources = ar
     $result = $mcapi->lists->webhookAdd($list_id, $url, $actions, $sources);
   }
   catch (Exception $e) {
-    watchdog('mailchimp', t('An error occurred adding webhook for list @list. "%message"'), array(
+    watchdog('mailchimp', 'An error occurred adding webhook for list @list. "%message"', array(
       '@list' => $list_id,
       '%message' => $e->getMessage(),
     ), WATCHDOG_ERROR);

@@ -98,15 +98,15 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
   );
   $form['double_opt_in'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Require subscribers to Double Opt-in'),
-    '#description' => t('New subscribers will be sent a link with an email they must follow to confirm their subscription.'),
+    '#title' => 'Require subscribers to Double Opt-in',
+    '#description' => 'New subscribers will be sent a link with an email they must follow to confirm their subscription.',
     '#default_value' => isset($this_field['settings']['double_opt_in']) ? $this_field['settings']['double_opt_in'] : FALSE,
     '#disabled' => $disabled,
   );
   $form['send_welcome'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Send a welcome email to new subscribers'),
-    '#description' => t('New subscribers will be sent a welcome email once they are confirmed.'),
+    '#title' => 'Send a welcome email to new subscribers',
+    '#description' => 'New subscribers will be sent a welcome email once they are confirmed.',
     '#default_value' => isset($this_field['settings']['send_welcome']) ? $this_field['settings']['send_welcome'] : FALSE,
     '#disabled' => $disabled,
   );
@@ -121,13 +121,13 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
   $form = array();
   $mc_list_id = $field['settings']['mc_list_id'];
   $form['show_interest_groups'] = array(
-    '#title' => t('Enable Interest Groups'),
-    '#type' => 'checkbox',
+    '#title' => "Enable Interest Groups",
+    '#type' => "checkbox",
     '#default_value' => $instance['settings']['show_interest_groups'],
   );
   $form['interest_groups_title'] = array(
-    '#title' => t('Interest Groups Label'),
-    '#type' => 'textfield',
+    '#title' => "Interest Groups Label",
+    '#type' => "textfield",
     '#default_value' => isset($instance['settings']['interest_groups_title']) ? $instance['settings']['interest_groups_title'] : "Interest Groups",
   );
 
@@ -146,8 +146,8 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
   );
 
   $form['unsubscribe_on_delete'] = array(
-    '#title' => t('Unsubscribe on deletion'),
-    '#type' => 'checkbox',
+    '#title' => "Unsubscribe on deletion",
+    '#type' => "checkbox",
     '#description' => t('Unsubscribe entities from this list when they are deleted.'),
     '#default_value' => $instance['settings']['unsubscribe_on_delete'],
   );
