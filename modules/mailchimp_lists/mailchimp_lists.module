@@ -238,6 +238,9 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
     if ($choices['subscribe']) {
       $function = 'add';
     }
+    elseif (isset($field['settings']['unsubscribe_action'])) {
+      $function = $field['settings']['unsubscribe_action'];
+    }
     else {
       $function = 'remove';
     }
@@ -258,6 +261,10 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
     switch ($function) {
       case 'add':
         $ret = mailchimp_subscribe($list_id, $email, $mergevars, $field['settings']['double_opt_in'], $field['settings']['send_welcome']);
+        break;
+
+      case 'unsubscribe':
+        $ret = mailchimp_unsubscribe($list_id, $email, FALSE);
         break;
 
       case 'remove':

@@ -110,6 +110,16 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
     '#default_value' => isset($this_field['settings']['send_welcome']) ? $this_field['settings']['send_welcome'] : FALSE,
     '#disabled' => $disabled,
   );
+  $form['unsubscribe_action'] = array(
+    '#type' => 'radios',
+    '#title' => t('Action to take when unchecking this field'),
+    '#description' => t('When this field gets unchecked you can choose if the subscriber gets unsubscribed (to keep the subscriber data in MailChimp) or completely removed from the Mailchimp list.'),
+    '#options' => array(
+      'unsubscribe' => t('Unsubscribe from list'),
+      'remove' => t('Remove from list'),
+    ),
+    '#default_value' => isset($this_field['settings']['unsubscribe_action']) ? $this_field['settings']['unsubscribe_action'] : 'remove',
+  );
 
   return $form;
 }
