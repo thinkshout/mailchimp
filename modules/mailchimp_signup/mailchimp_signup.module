@@ -39,6 +39,8 @@ function mailchimp_signup_menu() {
     if (intval($signup->mode) == MAILCHIMP_SIGNUP_PAGE || intval($signup->mode) == MAILCHIMP_SIGNUP_BOTH) {
       $items[$signup->settings['path']] = array(
         'title' => $signup->title,
+        'title callback' => 'mailchimp_signup_title',
+        'title arguments' => array($signup->identifier()),
         'page callback' => 'mailchimp_signup_page',
         'page arguments' => array($signup->identifier()),
         'access callback' => 'user_access',
@@ -48,6 +50,14 @@ function mailchimp_signup_menu() {
     }
   }
   return $items;
+}
+
+/**
+ * callback function for translatable title
+ */
+function mailchimp_signup_title($signup_id){
+  $signup = mailchimp_signup_load($signup_id);
+  return mailchimp_signup_tt("field:mailchimp_signup:form:$signup->mcs_id:title", $signup->title);
 }
 
 /**
@@ -251,7 +261,7 @@ function mailchimp_signup_forms($form_id, $args) {
 function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
   $form['#attributes'] = array('class' => array('mailchimp-signup-subscribe-form'));
   $form['description'] = array(
-    '#markup' => filter_xss($signup->settings['description']),
+    '#markup' => mailchimp_signup_tt("field:mailchimp_signup:form:$signup->mcs_id:description", filter_xss($signup->settings['description'])),
   );
   $form['mailchimp_lists'] = array('#tree' => TRUE);
   $lists = mailchimp_get_lists($signup->mc_lists);
@@ -304,6 +314,7 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
   );
   foreach ($signup->settings['mergefields'] as $tag => $mergevar) {
     if (!empty($mergevar)) {
+      $mergevar['name'] = mailchimp_signup_tt("field:mailchimp_signup:form:$signup->mcs_id:mergefield:$tag", $mergevar['name']);
       $form['mergevars'][$tag] = mailchimp_insert_drupal_form_tag($mergevar);
       if (empty($lists)) {
         $form['mergevars'][$tag]['#disabled'] = TRUE;
@@ -314,7 +325,7 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
   $form['submit'] = array(
     '#type' => 'submit',
     '#weight' => 10,
-    '#value' => $signup->settings['submit_button'],
+    '#value' => mailchimp_signup_tt("field:mailchimp_signup:form:$signup->mcs_id:submit_button", $signup->settings['submit_button']),
     '#disabled' => (empty($lists)),
   );
 
@@ -382,7 +393,8 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
     }
   }
   if (count($successes) && isset($signup->settings['confirmation_message']) && strlen($signup->settings['confirmation_message'])) {
-    drupal_set_message(check_plain($signup->settings['confirmation_message']), 'status');
+    $message = mailchimp_signup_tt("field:mailchimp_signup:form:$signup->mcs_id:confirmation_message", check_plain($signup->settings['confirmation_message']));
+    drupal_set_message($message, 'status');
   }
   if (!empty($signup->settings['destination'])) {
     $form_state['redirect'] = $signup->settings['destination'];
@@ -397,6 +409,22 @@ function mailchimp_signup_entity_delete($entity, $type) {
     if ($entity->mode & MAILCHIMP_SIGNUP_PAGE) {
       menu_rebuild();
     }
+  }
+}
+
+/**
+ * Wrapper function for i18n_string() if i18nstrings enabled.
+ */
+function mailchimp_signup_tt($name, $string, $langcode = NULL, $update = FALSE) {
+  if (function_exists('i18n_string')) {
+    $options = array(
+      'langcode' => $langcode,
+      'update' => $update,
+    );
+    return i18n_string($name, $string, $options);
+  }
+  else {
+    return $string;
   }
 }
 
