@@ -368,7 +368,40 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
       $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
     }
   }
+
+  // Make a distinction between whether the field is edited by the system or the user.
+  // This is important to prevent unwanted subscription overwrites.
+  // @see _mailchimp_lists_field_postsave()
+  if (isset($element['#entity'])) {
+    // The field is edited via the UI.
+    $element['is_default'] = array(
+      '#type' => 'value',
+      '#value' => FALSE,
+    );
+  }
+  else {
+    // The field is NOT edited via the UI.
+    $element['is_default'] = array(
+      '#type' => 'value',
+      '#value' => TRUE,
+    );
+  }
+
+  $element['#element_validate'] = array('mailchimp_lists_field_widget_form_validate');
+
   return $element;
+}
+
+/**
+ * Validation callback for mailchimp_lists_select widget.
+ */
+function mailchimp_lists_field_widget_form_validate(&$element, &$form_state) {
+  if (isset($element['#access']) && !$element['#access']) {
+    // When the field is not accessible, do not accept any values.
+    // Else the default value will be send to MailChimp, which causes
+    // an existing subscription to be overwritten.
+    form_set_value($element, NULL, $form_state);
+  }
 }
 
 /**
@@ -603,7 +636,17 @@ function _mailchimp_lists_field_postsave($entity_type, $entity, $field, $instanc
       $entity->is_new = (($entity_wrapper->getIdentifier() === FALSE) || ($entity_wrapper->getIdentifier() === NULL));
     }
 
-    if ($entity->is_new && empty($entity->{$instance['field_name']})) {
+    // Check if the field is empty or is set by the system via field_get_default_value().
+    if (empty($items[0]) || !empty($item[0]['is_default'])) {
+      // Check if this email is already subscribed.
+      $email = mailchimp_lists_load_email($instance, $entity);
+      $list_id = $field['settings']['mc_list_id'];
+      $subscribed = mailchimp_is_subscribed($list_id, $email);
+      if ($subscribed) {
+        // The mail address is already subscribed. Do not overwrite the subscription.
+        return;
+      }
+
       $choices = $instance['default_value'][0];
     }
 
