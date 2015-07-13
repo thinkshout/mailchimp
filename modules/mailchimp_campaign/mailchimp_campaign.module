@@ -645,10 +645,19 @@ function mailchimp_campaign_process_callback($matches = array()) {
 
   $entities = entity_load($entity_type, array($entity_id));
   if (!empty($entities)) {
+    // Prevent session information from being rendered.
+    drupal_save_session(FALSE);
+    // Force the current user to anonymous to prevent access bypass.
+    $original_user = $GLOBALS['user'];
+    $GLOBALS['user'] = drupal_anonymous_user();
+    // Render the entity.
     $render_array = entity_view($entity_type, $entities, $view_mode, NULL, TRUE);
     // Remove contextual links.
     _mailchimp_campaign_recursive_unset($render_array[$entity_type][$entity_id], '#contextual_links');
     $content = render($render_array);
+    // Restore the user.
+    $GLOBALS['user'] = $original_user;
+    drupal_save_session(TRUE);
   }
 
   return $content;
