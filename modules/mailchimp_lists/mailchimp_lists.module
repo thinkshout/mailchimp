@@ -739,7 +739,7 @@ function mailchimp_lists_add_to_segment_action_form($context, &$form_state) {
         ':input[name="segment"]' => array('value' => 0),
       ),
       'invisible' => array(
-        ':input[name="mc_list_id"]' => array('value' => ''),
+        ':input[name="mailchimp_field"]' => array('value' => ''),
       ),
     ),
   );
