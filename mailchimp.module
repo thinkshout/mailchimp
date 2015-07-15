@@ -1351,6 +1351,23 @@ function mailchimp_variable_info($options) {
 }
 
 /**
+ * Implementation of hook_form_alter()
+ */
+
+function mailchimp_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
+  $batch = variable_get('mailchimp_cron');
+  if ($batch == 1) {
+    $form['#submit'][] = 'batch_process_warning';
+  }
+}
+
+function batch_process_warning($form, &$form_state) {
+  if (['mailchimp_cron'] == TRUE) {
+    drupal_set_message('If list is set to batch processing, subscription settings are queued and the Subscribe checkbox will show up as checked as soon as the queued process starts.');
+  }
+}
+
+/**
  * Replace an array of merge field placeholder tokens with their values.
  *
  * @param array $mergefields
