@@ -1351,6 +1351,11 @@ function mailchimp_variable_info($options) {
 }
 
 /**
+ * The Subscription checkbox for batch processing doesn't appear as checked
+ * until Cron is run. The help text below provides a warning message about this.
+ */
+
+/**
  * Implementation of hook_form_alter()
  */
 
