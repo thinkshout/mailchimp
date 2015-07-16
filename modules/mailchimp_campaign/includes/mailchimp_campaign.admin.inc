@@ -656,3 +656,42 @@ function mailchimp_campaign_send_form_submit($form, &$form_state) {
   );
   drupal_goto('admin/config/services/mailchimp/campaigns');
 }
+
+/**
+ * Send test campaign form.
+ */
+function mailchimp_campaign_send_test_form($form, &$form_state, MailChimpCampaign $campaign) {
+  $form_state['campaign'] = $campaign;
+
+  $form['recipients'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Test recipients'),
+    '#size' => 100,
+    '#default_value' => isset($_SESSION['mailchimp_campaign_test']) ? $_SESSION['mailchimp_campaign_test'] : '',
+    '#description' => t('Enter one or more e-mail addresses separated by commas.'),
+  );
+
+  return confirm_form($form,
+    t('Confirm test for %name?', array('%name' => $campaign->label())),
+    'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id,
+    t('This action will send a test message through MailChimp to the recipients specified above.'),
+    t('Send test')
+  );
+}
+
+/**
+ * Submit handler for mailchimp_campaign_send_test_form().
+ */
+function mailchimp_campaign_send_test_form_submit($form, &$form_state) {
+  $campaign = $form_state['campaign'];
+  $recipients = explode(',', $form_state['values']['recipients']);
+  $recipients = array_map('trim', $recipients);
+
+  mailchimp_campaign_send_test_campaign($campaign, $recipients);
+  $_SESSION['mailchimp_campaign_test'] = implode(', ', $recipients);
+
+  drupal_set_message(t('Campaign %name test message sent.',
+      array('%name' => $campaign->label()))
+  );
+  drupal_goto('admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id);
+}
