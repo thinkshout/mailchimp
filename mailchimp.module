@@ -1373,6 +1373,28 @@ function batch_process_warning($form, &$form_state) {
 }
 
 /**
+ * The Subscription checkbox for batch processing doesn't appear as checked
+ * until Cron is run. The help text below provides a warning message about this.
+ */
+
+/**
+ * Implementation of hook_form_alter()
+ */
+
+function mailchimp_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
+  $batch = variable_get('mailchimp_cron');
+  if ($batch == 1) {
+    $form['#submit'][] = 'batch_process_warning';
+  }
+}
+
+function batch_process_warning($form, &$form_state) {
+  if (['mailchimp_cron'] == TRUE) {
+    drupal_set_message('Your new subscription preference has been saved. It will be completed and the box will be checked once the website runs its automated maintenance routine, usually within 24 hours.');
+  }
+}
+
+/**
  * Replace an array of merge field placeholder tokens with their values.
  *
  * @param array $mergefields
