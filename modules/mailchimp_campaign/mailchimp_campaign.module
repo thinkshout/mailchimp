@@ -92,16 +92,6 @@ function mailchimp_campaign_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
   );
-  $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/send-test'] = array(
-    'title' => 'Send Test',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mailchimp_campaign_send_test_form', 5),
-    'access callback' => 'mailchimp_campaign_access',
-    'access arguments' => array(5, FALSE),
-    'file' => 'includes/mailchimp_campaign.admin.inc',
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 1,
-  );
   $items['admin/config/services/mailchimp/campaigns/%mailchimp_campaign/edit'] = array(
     'title' => 'Edit',
     'description' => 'Edit a MailChimp campaign.',
@@ -411,41 +401,6 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
       array('%name' => $campaign->label())
     );
     entity_get_controller('mailchimp_campaign')->resetCache(array($campaign->identifier()));
-    return TRUE;
-  }
-  elseif (isset($result['status']) && ($result['status'] == 'error')) {
-    // Display and log error, if any.
-    $message = 'MailChimp error. The campaign was not sent.';
-    _mailchimp_campaign_mcapi_error_message($result, $message);
-  }
-  return FALSE;
-}
-
-/**
- * Send MailChimp campaign.
- */
-function mailchimp_campaign_send_test_campaign(MailChimpCampaign $campaign, $recipients = array()) {
-  $mcapi = mailchimp_get_api_object();
-
-  // Send campaign.
-  try {
-    if (!$mcapi) {
-      throw new MailchimpException('Cannot send campaign without Mailchimp API. Check API key has been entered.');
-    }
-    $result = $mcapi->campaigns->sendTest($campaign->mc_campaign_id, $recipients);
-  }
-  catch (Mailchimp_Error $e) {
-    drupal_set_message($e->getMessage(), 'error');
-    watchdog('mailchimp_campaign',
-      'An error occurred while sending a test of this campaign: @msg', array('@msg' => $e->getMessage()), WATCHDOG_ERROR);
-    return FALSE;
-  }
-
-  if (isset($result['complete']) && ($result['complete'] === TRUE)) {
-    // Log action, and notify the user.
-    watchdog('mailchimp_campaign', 'MailChimp test message for campaign %name has been sent to %recipients.',
-      array('%name' => $campaign->label(), '%recipients' => implode(', ', $recipients))
-    );
     return TRUE;
   }
   elseif (isset($result['status']) && ($result['status'] == 'error')) {
