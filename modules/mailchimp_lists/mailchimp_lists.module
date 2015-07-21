@@ -88,7 +88,7 @@ function mailchimp_lists_load_email($instance, $entity, $log_errors = TRUE) {
 
   if (!isset($instance['settings']['mergefields']['EMAIL'])) {
     if ($log_errors) {
-      watchdog('mailchimp_lists', 'Mailchimp Lists field "@field" on @entity -> @bundle has no EMAIL field configured, subscription actions cannot take place.', array(
+      watchdog('mailchimp_lists', 'MailChimp Lists field "@field" on @entity -> @bundle has no EMAIL field configured, subscription actions cannot take place.', array(
         '@field' => $instance['field_name'],
         '@entity' => $instance['entity_type'],
         '@bundle' => $instance['bundle'],
@@ -391,7 +391,7 @@ function mailchimp_lists_update_member_merge_values($entity_type, $bundle_name, 
     ),
     'finished' => 'mailchimp_lists_populate_member_batch_complete',
     'title' => t('Processing Merge Variable Updates'),
-    'init_message' => t('Starting Mailchimp Merge Variable Update.'),
+    'init_message' => t('Starting MailChimp Merge Variable Update.'),
     'progress_message' => t('Processed @current out of @total.'),
     'error_message' => t('MailChimp Merge Variable Update Failed.'),
   );
@@ -697,7 +697,7 @@ function mailchimp_lists_add_to_segment_action_form($context, &$form_state) {
   }
   $form['mailchimp_field'] = array(
     '#type' => 'select',
-    '#title' => "Select a Mailchimp List",
+    '#title' => "Select a MailChimp List",
     '#options' => $mailchimp_field_options,
     '#required' => TRUE,
     '#ajax' => array(
@@ -801,10 +801,10 @@ function mailchimp_lists_add_to_segment_action_views_bulk_operations_form($optio
   }
   $form['mailchimp_field'] = array(
     '#type' => 'select',
-    '#title' => t('REQUIRED: Mailchimp List Field(s)'),
+    '#title' => t('REQUIRED: MailChimp List Field(s)'),
     '#options' => $field_options,
     '#multiple' => TRUE,
-    '#description' => t('Select the mailchimp fields for which to allow segmentation.'),
+    '#description' => t('Select the MailChimp fields for which to allow segmentation.'),
     '#default_value' => isset($options['mailchimp_field']) ? $options['mailchimp_field'] : NULL,
     '#states' => array(
       'required' => array(
