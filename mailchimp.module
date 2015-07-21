@@ -1351,12 +1351,10 @@ function mailchimp_variable_info($options) {
 }
 
 /**
- * The Subscription checkbox for batch processing doesn't appear as checked
- * until Cron is run. The help text below provides a warning message about this.
- */
-
-/**
  * Implementation of hook_form_alter()
+ *
+ * The Subscription checkbox for batch processing does not appear as checked
+ * until cron is run. The help text below provides a warning message about this.
  */
 
 function mailchimp_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
@@ -1368,7 +1366,7 @@ function mailchimp_form_user_profile_form_alter(&$form, &$form_state, $form_id) 
 
 function batch_process_warning($form, &$form_state) {
   if (['mailchimp_cron'] == TRUE) {
-    drupal_set_message('If list is set to batch processing, subscription settings are queued and the Subscribe checkbox will show up as checked as soon as the queued process starts.');
+    drupal_set_message(t('Mailing list subscription settings will update soon.'));
   }
 }
 
