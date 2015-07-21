@@ -14,8 +14,8 @@ function mailchimp_lists_menu() {
   $items = array();
 
   $items['admin/config/services/mailchimp/lists'] = array(
-    'title' => 'Lists',
-    'description' => 'Display MailChimp Lists and configure Webhooks.',
+    'title' => t('Lists'),
+    'description' => t('Display MailChimp Lists and configure Webhooks.'),
     'page callback' => 'mailchimp_lists_overview_page',
     'access callback' => 'mailchimp_apikey_ready_access',
     'access arguments' => array('administer mailchimp'),
@@ -24,8 +24,8 @@ function mailchimp_lists_menu() {
     'weight' => 10,
   );
   $items['admin/config/services/mailchimp/fields'] = array(
-    'title' => 'Fields',
-    'description' => 'Display MailChimp Subscription Fields and trigger merge variable updates.',
+    'title' => t('Fields'),
+    'description' => t('Display MailChimp Subscription Fields and trigger merge variable updates.'),
     'page callback' => 'mailchimp_lists_fields_overview_page',
     'access callback' => 'mailchimp_apikey_ready_access',
     'access arguments' => array('administer mailchimp'),
@@ -34,7 +34,7 @@ function mailchimp_lists_menu() {
     'weight' => 10,
   );
   $items['admin/config/services/mailchimp/lists/%/webhook/%'] = array(
-    'title' => 'Enable/disable Webhooks',
+    'title' => t('Enable/disable Webhooks'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_lists_webhook_form', 5, 7),
     'access callback' => 'mailchimp_apikey_ready_access',
@@ -42,7 +42,7 @@ function mailchimp_lists_menu() {
     'file' => 'includes/mailchimp_lists.admin.inc',
   );
   $items['admin/config/services/mailchimp/lists/update_mergevars/%/%/%'] = array(
-    'title' => 'Mass Update Merge Variables',
+    'title' => t('Mass Update Merge Variables'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_lists_update_mergevars_form', 6, 7, 8),
     'access callback' => 'mailchimp_apikey_ready_access',
@@ -697,7 +697,7 @@ function mailchimp_lists_add_to_segment_action_form($context, &$form_state) {
   }
   $form['mailchimp_field'] = array(
     '#type' => 'select',
-    '#title' => "Select a MailChimp List",
+    '#title' => t('Select a MailChimp List'),
     '#options' => $mailchimp_field_options,
     '#required' => TRUE,
     '#ajax' => array(
