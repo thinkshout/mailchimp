@@ -311,7 +311,8 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
     }
   }
 
-  $form['submit'] = array(
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#weight' => 10,
     '#value' => $signup->settings['submit_button'],
