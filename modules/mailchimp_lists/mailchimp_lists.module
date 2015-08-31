@@ -131,6 +131,7 @@ function mailchimp_lists_cron() {
 
   // Claim items off the queue and organize them into batches:
   if ($queue_count > 0) {
+    $lists_by_mc_id = array();
     $batches_add = array();
     $batches_rem = array();
     $count = 0;
@@ -139,6 +140,9 @@ function mailchimp_lists_cron() {
     while ($count < $batch_size) {
       if ($item = $queue->claimItem()) {
         $list = mailchimp_lists_load($item->data['list_id']);
+        $mc_list_id = $list->mc_list_id;
+        // Store this list object so we can reference it later by its MC ID.
+        $lists_by_mc_id[$mc_list_id] = $list;
         // If all we have is an anonymous email, load it. We check for a value
         // first to be backwards-compatible with versions that didn't pass the
         // raw email into the queue item.
@@ -163,11 +167,11 @@ function mailchimp_lists_cron() {
             if (!empty($item->data['groupings'])) {
               $mergevars['GROUPINGS'] = $item->data['groupings'];
             }
-            $batches_add[$list->mc_list_id][] = $mergevars;
+            $batches_add[$mc_list_id][] = $mergevars;
             break;
 
           case 'remove':
-            $batches_rem[$list->mc_list_id][] = $email;
+            $batches_rem[$mc_list_id][] = $email;
             break;
         }
 
@@ -203,7 +207,9 @@ function mailchimp_lists_cron() {
     $add_count = $update_count = 0;
     foreach ($batches_add as $listid => $batch) {
       if (count($batch)) {
-        $ret = $mcapi->listBatchSubscribe($listid, $batch, TRUE, TRUE);
+        $list_settings = $lists_by_mc_id[$listid]->settings;
+        $double_opt_in = $list_settings['doublein'];
+        $ret = $mcapi->listBatchSubscribe($listid, $batch, $double_opt_in, TRUE);
         if ($ret['error_count'] > 0) {
           foreach ((array) $ret['errors'] as $error) {
             watchdog('mailchimp', 'MCAPI Error: %errmsg', array('%errmsg' => $error['message']), WATCHDOG_ERROR);
