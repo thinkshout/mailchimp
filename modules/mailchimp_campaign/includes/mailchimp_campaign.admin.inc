@@ -358,7 +358,7 @@ function mailchimp_campaign_get_entity_import_form_elements($entity_type, $secti
       // Pass entity type as first parameter to autocomplete callback.
       '#autocomplete_path' => 'admin/config/services/mailchimp/campaigns/entities/' . $entity_type,
     );
-    $form['entity_import']['entity_id']['#attributes']['id'] = $section . '-entity-import-entity-id';
+    $form['entity_import']['entity_id']['#id'] = $section . '-entity-import-entity-id';
 
     $form['entity_import']['entity_view_mode'] = array(
       '#type' => 'select',
