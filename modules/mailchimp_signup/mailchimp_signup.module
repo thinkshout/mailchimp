@@ -261,7 +261,8 @@ function mailchimp_signup_forms($form_id, $args) {
 function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
   $form['#attributes'] = array('class' => array('mailchimp-signup-subscribe-form'));
   $form['description'] = array(
-    '#markup' => mailchimp_signup_tt("field:mailchimp_signup:form:$signup->mcs_id:description", filter_xss_admin($signup->settings['description'])),
+    '#markup' => mailchimp_signup_tt("field:mailchimp_signup:form:$signup->mcs_id:description", filter_xss($signup->settings['description'])),
+
     '#prefix' => '<div class="mailchimp-signup-subscribe-form-description">',
     '#suffix' => '</div>'
   );
