@@ -510,25 +510,33 @@ function mailchimp_update_local_cache($function, $args) {
  */
 function mailchimp_update_local_cached_groupings($args, &$cache) {
   $lists = cache_get('lists', 'cache_mailchimp');
-  $list_data = $lists->data[$args['list_id']];
-  foreach ($list_data['intgroups'] as $idx => $group_settings) {
-    $interests = array();
-    foreach ($group_settings['groups'] as $group) {
-      if (!empty($args['merge_vars']['GROUPINGS'][$idx]['groups'][$group['name']])) {
-        $interested = TRUE;
+  if (!$lists) {
+    $list_data = mailchimp_get_list($args['list_id']);
+  }
+  else {
+    $list_data = $lists->data[$args['list_id']];
+  }
+
+  if (!empty($list_data['intgroups'])) {
+    foreach ($list_data['intgroups'] as $idx => $group_settings) {
+      $interests = array();
+      foreach ($group_settings['groups'] as $group) {
+        if (!empty($args['merge_vars']['GROUPINGS'][$idx]['groups'][$group['name']])) {
+          $interested = TRUE;
+        }
+        else {
+          $interested = FALSE;
+        }
+        $interests[] = array(
+          'name' => $group['name'],
+          'interested' => $interested,
+        );
       }
-      else {
-        $interested = FALSE;
+      if (empty($cache['merges']['GROUPINGS'][$idx])) {
+        $cache['merges']['GROUPINGS'][$idx] = $group_settings;
       }
-      $interests[] = array(
-        'name' => $group['name'],
-        'interested' => $interested,
-      );
+      $cache['merges']['GROUPINGS'][$idx]['groups'] = $interests;
     }
-    if (empty($cache['merges']['GROUPINGS'][$idx])) {
-      $cache['merges']['GROUPINGS'][$idx] = $group_settings;
-    }
-    $cache['merges']['GROUPINGS'][$idx]['groups'] = $interests;
   }
 }
 
