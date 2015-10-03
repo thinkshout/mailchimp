@@ -477,11 +477,16 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
   }
   else {
     if ($email) {
-      if (mailchimp_is_subscribed($field['settings']['mc_list_id'], $email)) {
-        $status = t('Subscribed to %list', array('%list' => $mc_list['name']));
-      }
-      else {
-        $status = t('Not subscribed to %list', array('%list' => $mc_list['name']));
+      $member_info = mailchimp_get_memberinfo($field['settings']['mc_list_id'], $email);
+      switch ($member_info['status']) {
+        case 'subscribed':
+          $status = t('Subscribed to %list', array('%list' => $mc_list['name']));
+          break;
+        case 'pending':
+          $status = t('Pending confirmation for %list', array('%list' => $mc_list['name']));
+          break;
+        default:
+          $status = t('Not subscribed to %list', array('%list' => $mc_list['name']));
       }
     }
     else {
