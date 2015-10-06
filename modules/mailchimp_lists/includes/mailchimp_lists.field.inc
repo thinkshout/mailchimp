@@ -478,7 +478,8 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
   else {
     if ($email) {
       $member_info = mailchimp_get_memberinfo($field['settings']['mc_list_id'], $email);
-      switch ($member_info['status']) {
+      $member_status = (isset($member_info['status'])) ? $member_info['status'] : NULL;
+      switch ($member_status) {
         case 'subscribed':
           $status = t('Subscribed to %list', array('%list' => $mc_list['name']));
           break;
