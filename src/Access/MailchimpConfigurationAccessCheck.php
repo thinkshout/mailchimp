@@ -28,8 +28,9 @@ class MailchimpConfigurationAccessCheck implements AccessInterface {
    */
   public function access(AccountInterface $account) {
     $config = \Drupal::config('mailchimp.settings');
+    $api_key = $config->get('api_key');
 
-    return AccessResult::allowedIf(!empty($config->get('api_key')));
+    return AccessResult::allowedIf(!empty($api_key));
   }
 
 }
