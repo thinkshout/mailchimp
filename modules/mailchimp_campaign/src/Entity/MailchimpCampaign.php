@@ -40,8 +40,8 @@ use Drupal\mailchimp_campaign\MailchimpCampaignInterface;
  *     "uuid" = "uuid"
  *   },
  *   links = {
- *     "edit-form" = "entity.mailchimp_campaign.edit_form",
- *     "delete-form" = "entity.mailchimp_campaign.delete_form"
+ *     "edit-form" = "/admin/config/services/mailchimp/campaign/{mailchimp_campaign}",
+ *     "delete-form" = "/admin/config/services/mailchimp/campaign/{mailchimp_campaign}/delete"
  *   }
  * )
  */

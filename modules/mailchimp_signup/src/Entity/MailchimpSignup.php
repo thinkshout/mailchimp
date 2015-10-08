@@ -34,8 +34,8 @@ use Drupal\mailchimp_signup\MailchimpSignupInterface;
  *     "uuid" = "uuid",
  *   },
  *   links = {
- *     "edit-form" = "entity.mailchimp_signup.edit_form",
- *     "delete-form" = "entity.mailchimp_signup.delete_form"
+ *     "edit-form" = "/admin/config/services/mailchimp/signup/{mailchimp_signup}",
+ *     "delete-form" = "/admin/config/services/mailchimp/signup/{mailchimp_signup}/delete"
  *   }
  * )
  */
