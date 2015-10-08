@@ -101,29 +101,31 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
   else {
     try {
       $mcapi = mailchimp_get_api_object();
-      $result = $mcapi->lists->getList(array(), 0, 100);
+      if ($mcapi != null) {
+        $result = $mcapi->lists->getList(array(), 0, 100);
 
-      if ($result['total'] > 0) {
-        foreach ($result['data'] as $list) {
-          if ($list['stats']['group_count']) {
-            // Append interest groups:
-            $list['intgroups'] = $mcapi->lists->interestGroupings($list['id']);
+        if ($result['total'] > 0) {
+          foreach ($result['data'] as $list) {
+            if ($list['stats']['group_count']) {
+              // Append interest groups:
+              $list['intgroups'] = $mcapi->lists->interestGroupings($list['id']);
+            }
+
+            $lists[$list['id']] = $list;
           }
 
-          $lists[$list['id']] = $list;
+          // Append mergefields.
+          $mergevar_settings = $mcapi->lists->mergeVars($list_ids);
+
+          foreach ($mergevar_settings['data'] as $mergevars) {
+            $lists[$mergevars['id']]['mergevars'] = $mergevars['merge_vars'];
+          }
         }
 
-        // Append mergefields.
-        $mergevar_settings = $mcapi->lists->mergeVars($list_ids);
+        uasort($lists, '_mailchimp_list_cmp');
 
-        foreach ($mergevar_settings['data'] as $mergevars) {
-          $lists[$mergevars['id']]['mergevars'] = $mergevars['merge_vars'];
-        }
+        $cache->set('lists', $lists);
       }
-
-      uasort($lists, '_mailchimp_list_cmp');
-
-      $cache->set('lists', $lists);
     }
     catch (Exception $e) {
       \Drupal::logger('mailchimp')->error('An error occurred requesting list information from Mailchimp. "{message}"', array(
