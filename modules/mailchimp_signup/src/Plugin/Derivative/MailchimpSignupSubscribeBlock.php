@@ -28,8 +28,6 @@ class MailchimpSignupSubscribeBlock extends DeriverBase {
 
         $this->derivatives[$signup->id] = $base_plugin_definition;
         $this->derivatives[$signup->id]['admin_label'] = t('Mailchimp Subscription Form: @name', array('@name' => $signup->label()));
-        $this->derivatives[$signup->id]['cache'] = DRUPAL_NO_CACHE;
-
       }
     }
 
