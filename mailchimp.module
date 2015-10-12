@@ -1068,5 +1068,5 @@ function mailchimp_cron() {
  * @see \Egulias\EmailValidator\EmailValidator::isValid()
  */
 function mailchimp_validate_email($mail) {
-  return \Drupal::service('email.validator')->isValid($mail);
+  return \Drupal::service('email.validator')->isValid($mail['#value']);
 }
