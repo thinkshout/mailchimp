@@ -138,7 +138,7 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
     }
     return $this->entityManager()
       ->getAccessControlHandler($this->entityTypeId)
-      ->access($this, $operation, $this->activeLangcode, $account, $return_as_object);
+      ->access($this, $operation, $account, $return_as_object);
   }
 
   /**
