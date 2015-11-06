@@ -41,10 +41,20 @@ class MailchimpCampaignController extends ControllerBase {
       $archive_url = Url::fromUri($campaign->mc_data['archive_url']);
       $campaign_url = Url::fromRoute('entity.mailchimp_campaign.view', array('mailchimp_campaign' => $campaign_id));
       $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list['web_id'], array('attributes' => array('target' => '_blank')));
+      $send_url = Url::fromRoute('entity.mailchimp_campaign.send', array('mailchimp_campaign' => $campaign_id));
+
+      if ($campaign->mc_data['status'] === "save") {
+        $send_link = \Drupal::l(t("Send"), $send_url);
+      }
+      else {
+        $send_link = t("Sent");
+      }
+
 
       $actions = array(
         \Drupal::l(t('View Archive'), $archive_url),
         \Drupal::l(t('View'), $campaign_url),
+        $send_link,
       );
 
       $content['campaigns_table'][$campaign_id]['title'] = array(
