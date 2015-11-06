@@ -150,9 +150,8 @@ class MailchimpSignupPageForm extends FormBase {
     // For forms that allow subscribing to multiple lists
     // ensure at least one list is checked.
     if (count($signup->mc_lists) > 1) {
-      $values = $form_state->getValues();
-      foreach ($values['mailchimp_lists'] as $list) {
-        if ($list['subscribe']) {
+      foreach ($signup->mc_lists as $list) {
+        if ($list) {
           return;
         }
       }
