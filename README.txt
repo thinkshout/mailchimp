@@ -12,8 +12,8 @@ respective README's for more details.
   * API integration
   * Support for an unlimited number of mailing lists
   * Have anonymous sign up forms to subscribe site visitors to any combination
-    of Mailchimp lists
-  * Mailchimp list subscription via entity fields, allowing subscription rules
+    of MailChimp lists
+  * MailChimp list subscription via entity fields, allowing subscription rules
     to be governed by entity controls, permissions, and UI
   * Allow users to subscribe during registration by adding a field to Users
   * Map Entity field values to your MailChimp merge fields
@@ -22,16 +22,16 @@ respective README's for more details.
   * Subscription forms can be created as pages or as blocks, with one or more
     list subscriptions on a single form
   * Include merge fields & interest groups on anonymous subscription forms
-  * Create & send Mailchimp Campaigns from within Drupal, using Drupal entities
+  * Create & send MailChimp Campaigns from within Drupal, using Drupal entities
     as content.
-  * Display a history of Mailchimp email and subscription activity on a tab for
+  * Display a history of MailChimp email and subscription activity on a tab for
     any Entity with an email address.
 
 ## Installation Notes
   * You need to have a MailChimp API Key.
   * You need to have at least one list created in MailChimp to use the
     mailchimp_lists module.
-  * The MCAPI library must be installed using Composer Manager. Composer manager
+  * The MCAPI library must be installed using Composer Manager. Composer Manager
     scans modules for composer.json files and installs any dependencies into
     the Drupal core vendor directory. Learn more at
     https://www.drupal.org/project/composer_manager.
@@ -42,37 +42,37 @@ respective README's for more details.
   1. Direct your browser to admin/config/services/mailchimp to configure the
   module.
 
-  2. You will need to put in your Mailchimp API key for your Mailchimp account.
-  If you do not have a Mailchimp account, go to
+  2. You will need to put in your MailChimp API key for your MailChimp account.
+  If you do not have a MailChimp account, go to
   [http://www.mailchimp.com]([http://www.mailchimp.com) and sign up for a new
   account. Once you have set up your account and are logged in, visit:
   Account Settings -> Extras -> API Keys to generate a key.
 
   3. Copy your newly created API key and go to the
   [Mailchimp config](http://example.com/admin/config/services/mailchimp) page in
-  your Drupal site and paste it into the Mailchimp API Key field.
+  your Drupal site and paste it into the MailChimp API Key field.
 
   4. Batch limit - Maximum number of changes to process in a single cron run.
-  Mailchimp suggest keeping this below 10000.
+  MailChimp suggest keeping this below 10000.
 
 ## Submodules
-  * mailchimp_signup: Create anonymous signup forms for your Mailchimp Lists,
+  * mailchimp_signup: Create anonymous signup forms for your MailChimp Lists,
     and display them as blocks or as standalone pages. Provide multiple-list
     subscription from a single form, include merge variables as desired, and
     optionally include Interest Group selection.
   * mailchimp_lists: Subscribe any entity with an email address to MailChimp
     lists by creating a mailchimp_list field, and allow anyone who can edit such
     an entity to subscribe, unsubscribe, and update member information. Also
-    allows other entity fields to be synced to Mailchimp list Merge Fields. Add
-    a Mailchimp Subscription field to your User bundle to allow Users to control
+    allows other entity fields to be synced to MailChimp list Merge Fields. Add
+    a MailChimp Subscription field to your User bundle to allow Users to control
     their own subscriptions and subscribe during registration.
   * mailchimp_campaigns: Create and send campaigns directly from Drupal, or just
-    create them and use the Mailchimp UI to send them. Embed content from your
+    create them and use the MailChimp UI to send them. Embed content from your
     Drupal site by dropping in any Entity with a title and a View Mode
     configured into any area of your email template.
   * mailchimp_activity: Display a tab on any entity with an email address
     showing the email, subscribe, and unsubscribe history for that email address
-    on your Mailchimp account.
+    on your MailChimp account.
     IMPORTANT: This module has not yet been ported to Drupal 8, but will be in
     subsequent releases.
 
