@@ -50,7 +50,9 @@ function mailchimp_lists_form_field_storage_config_edit_form_alter(&$form, FormS
   /* @var $field_config \Drupal\field\Entity\FieldConfig */
   $field_config = $storage['field_config'];
 
-  if ($field_config->field_type == 'mailchimp_lists_subscription') {
+  $field_type = $field_config->get('field_type');
+
+  if ($field_type == 'mailchimp_lists_subscription') {
     // Hide the cardinality setting:
     $form['cardinality_container']['cardinality_number']['#default_value'] = 1;
     $form['cardinality_container']['#access'] = FALSE;
