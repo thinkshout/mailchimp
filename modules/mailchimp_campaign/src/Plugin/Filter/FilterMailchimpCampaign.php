@@ -11,7 +11,7 @@ use Drupal\filter\FilterProcessResult;
 use Drupal\filter\Plugin\FilterBase;
 
 /**
- * Provides a filter to add content to and covert URLs for MailChimp campaigns.
+ * Provides a filter to add content to and convert URLs for MailChimp campaigns.
  *
  * @Filter(
  *   id = "filter_mailchimp_campaign",
