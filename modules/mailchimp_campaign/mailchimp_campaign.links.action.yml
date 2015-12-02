@@ -1,0 +1,5 @@
+mailchimp_campaign.add:
+  route_name: 'mailchimp_campaign.add'
+  title: 'Add MailChimp Campaign'
+  appears_on:
+    - mailchimp_campaign.overview

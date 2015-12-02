@@ -1,0 +1,36 @@
+campaign-form:
+  version: 1.x
+  css:
+    component:
+      css/mailchimp_campaign.css: {}
+  js:
+    js/mailchimp_campaign.utils.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal.autocomplete
+
+campaign-view:
+  version: 1.x
+  js:
+    js/mailchimp_campaign.utils.js: {}
+  css:
+    component:
+      css/mailchimp_campaign.css: {}
+  dependencies:
+
+
+campaign-stats:
+  version: 1.x
+  js:
+    js/mailchimp_campaign.js: {}
+  dependencies:
+    - core/drupalSettings
+
+google-jsapi:
+  remote: https://www.google.com/jsapi
+  license:
+    name: Apache License 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+    gpl-compatible: true
+  js:
+    https://www.google.com/jsapi: { type: external }

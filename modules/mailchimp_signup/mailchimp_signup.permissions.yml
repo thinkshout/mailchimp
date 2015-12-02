@@ -1,0 +1,9 @@
+administer mailchimp signup entities:
+  title: 'Administer Mailchimp Signup Entities.'
+  description: 'Access the mailchimp signup configuration options.'
+  restrict access: TRUE
+
+access mailchimp signup pages:
+  title: 'Access all Mailchimp Signup Pages.'
+  description: 'This does not affect Signup Blocks; only Pages.'
+  restrict access: TRUE

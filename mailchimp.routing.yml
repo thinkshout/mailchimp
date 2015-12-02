@@ -1,0 +1,15 @@
+mailchimp.admin:
+  path: 'admin/config/services/mailchimp'
+  defaults:
+    _form: '\Drupal\mailchimp\Form\MailchimpAdminSettingsForm'
+    _title: 'Mailchimp'
+  requirements:
+    _permission: 'administer mailchimp'
+
+mailchimp.webhook_endpoint:
+  path: 'mailchimp/webhook/{hash}'
+  defaults:
+    _controller: '\Drupal\mailchimp\Controller\MailchimpWebhookController::endpoint'
+    _title: 'Mailchimp Webhook Endpoint'
+  requirements:
+   _permission: 'access content'

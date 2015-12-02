@@ -1,0 +1,11 @@
+name: MailChimp Lists
+type: module
+description: Manage and integrate MailChimp lists.
+package: MailChimp
+core: 8.x
+configure: mailchimp_lists.overview
+
+dependencies:
+ - field
+ - mailchimp
+ - options

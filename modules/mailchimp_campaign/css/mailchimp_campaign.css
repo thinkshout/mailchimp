@@ -1,0 +1,36 @@
+details#entity-import .form-type-select, details#entity-import .form-type-textfield, div.content-entity-lookup-wrapper {
+    display: inline-block!important;
+    margin-right: 10px!important;
+}
+
+details#entity-import .form-item {
+    padding: 0!important;
+}
+
+div.form-type-item {
+    clear: both;
+    margin: 5px auto 5px auto!important;
+}
+
+div.filter-guidelines-mailchimp_campaign ul.tips li {
+    list-style-type: none;
+    margin: 0!important;
+}
+
+/* Campaign View */
+.field {
+  padding: 0.5em;
+}
+
+.field h3.field-label {
+  border-bottom: 2px solid #f5f5f5;
+  margin-top: 0;
+  max-width: 50%;
+  padding: 0.5em;
+}
+
+.field.campaign-content {
+  background: #f1f1f1;
+  border: 2px solid #f5f5f5;
+  padding: 1em;
+}

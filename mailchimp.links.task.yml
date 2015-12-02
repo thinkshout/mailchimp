@@ -1,0 +1,4 @@
+mailchimp.admin:
+  route_name: mailchimp.admin
+  base_route: mailchimp.admin
+  title: 'Global Settings'

@@ -1,0 +1,5 @@
+api_key: ''
+cron: FALSE
+batch_limit: 100
+api_classname: 'Drupal\mailchimp\DrupalMailchimp'
+test_mode: FALSE

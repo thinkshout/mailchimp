@@ -1,0 +1,22 @@
+format: mailchimp_campaign
+name: 'MailChimp campaign'
+status: true
+weight: 0
+roles:
+  - authenticated
+filters:
+  # Entity token and URL filter.
+  filter_mailchimp_campaign:
+    id: filter_mailchimp_campaign
+    provider: filter
+    status: true
+    weight: 0
+    settings: {  }
+  # HTML corrector filter.
+  filter_htmlcorrector:
+    id: filter_htmlcorrector
+    provider: filter
+    status: true
+    weight: 1
+    settings: {  }
+langcode: en

@@ -1,0 +1,6 @@
+name: 'MailChimp Test'
+type: module
+description: 'MailChimp Test Module.'
+package: Testing
+version: VERSION
+core: 8.x

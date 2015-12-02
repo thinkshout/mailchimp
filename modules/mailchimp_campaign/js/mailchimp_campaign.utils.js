@@ -14,7 +14,7 @@
     attach: function(context, settings) {
       // Keep track of which textfield was last selected/focused.
       $('textarea', context).focus(function() {
-        Drupal.settings.mailchimpCampaignFocusedField = this;
+        drupalSettings.mailchimpCampaignFocusedField = this;
         console.log('Got text field focus: ' + $(this).attr('id'));
       });
 
@@ -29,7 +29,7 @@
         $('#' + section + '-entity-import-tag-field').hide();
 
         // Get the last selected text field.
-        var target_element = Drupal.settings.mailchimpCampaignFocusedField;
+        var target_element = drupalSettings.mailchimpCampaignFocusedField;
 
         // Get the selected entity ID.
         var entity_id = '';
@@ -70,7 +70,7 @@
         }
 
         // Unset last focused field.
-        Drupal.settings.mailchimpCampaignFocusedField = null;
+        drupalSettings.mailchimpCampaignFocusedField = null;
       });
 
       /**
@@ -78,7 +78,7 @@
        */
       $('.add-merge-var', context).unbind('click').bind('click', function() {
         // Get the last selected text field.
-        var target_element = Drupal.settings.mailchimpCampaignFocusedField;
+        var target_element = drupalSettings.mailchimpCampaignFocusedField;
 
         // Get the merge var.
         var element_id = $(this).attr('id');
@@ -93,7 +93,7 @@
         }
 
         // Unset last focused field.
-        Drupal.settings.mailchimpCampaignFocusedField = null;
+        drupalSettings.mailchimpCampaignFocusedField = null;
       });
     },
 

@@ -1,0 +1,98 @@
+# Schema for the configuration files of the mailchimp_signup module.
+
+mailchimp_signup.mailchimp_signup.*:
+  type: config_entity
+  label: 'Mailchimp Signup config'
+  mapping:
+    id:
+      type: string
+      label: 'Machine Name'
+    title:
+      type: string
+      label: 'Title'
+    uuid:
+      type: string
+      label: 'UUID'
+    mc_lists:
+      type: sequence
+      label: 'Mailchimp List(s)'
+    mode:
+      type: int
+      label: 'Mode'
+    title:
+      type: string
+      label: 'Title'
+    mergefields:
+      type: sequence
+      label: 'Mergefields'
+      sequence:
+        type: mailchimp_signup_mergefield.[%key]
+    description:
+      type: string
+      label: 'Description'
+    doublein:
+      type: boolean
+      label: 'Double-Opt-In'
+    send_welcome:
+      type: boolean
+      label: 'Send Welcome'
+    include_interest_groups:
+      type: boolean
+      label: 'Include Interest Groups'
+    status:
+      type: boolean
+      label: 'Status'
+    settings:
+      type: mapping
+      label: 'Settings'
+      mapping:
+        path:
+          type: string
+          label: 'Path'
+        submit_button:
+          type: string
+          label: 'Submit Button'
+        confirmation_message:
+          type: string
+          label: 'Confirmation Message'
+        destination:
+          type: string
+          label: 'Destination'
+
+mailchimp_signup_mergefield.*:
+  type: mapping
+  mapping:
+    name:
+      type: string
+      label: 'Name'
+    req:
+      type: boolean
+      label: 'Required'
+    field_type:
+      type: string
+      label: 'Type'
+    public:
+      type: boolean
+      label: 'Public'
+    show:
+      type: boolean
+      label: 'Show'
+    order:
+      type: integer
+      label: 'Order'
+    default:
+      type: string
+      label: 'Default'
+    helptext:
+      type: string
+      label: ''
+    size:
+      type: integer
+      label: 'Size'
+    tag:
+      type: string
+      label: 'Tag'
+    id:
+      type: integer
+      label: 'ID'
+

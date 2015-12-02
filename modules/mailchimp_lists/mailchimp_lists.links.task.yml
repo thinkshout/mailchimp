@@ -1,0 +1,8 @@
+mailchimp_lists.overview:
+  title: 'Lists'
+  route_name: mailchimp_lists.overview
+  base_route: mailchimp.admin
+mailchimp_lists.fields:
+  title: 'Fields'
+  route_name: mailchimp_lists.fields
+  base_route: mailchimp.admin

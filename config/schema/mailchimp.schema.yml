@@ -1,0 +1,21 @@
+# Schema for the configuration files of the mailchimp module.
+
+mailchimp.settings:
+  type: mapping
+  label: 'Mailchimp settings'
+  mapping:
+    api_key:
+      type: string
+      label: 'Mailchimp API Integration Key'
+    cron:
+      type: boolean
+      label: 'Queue subscription operations for cron'
+    batch_limit:
+      type: integer
+      label: 'Batch limit'
+    api_classname:
+      type: string
+      label: 'Mailchimp API Class Name'
+    test_mode:
+      type: boolean
+      label: 'Whether mailchimp send is currently in test mode'

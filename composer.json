@@ -1,0 +1,14 @@
+{
+  "name": "drupal/mailchimp",
+  "description": "Mailchimp is an integration with the Mailchimp Mass email tool.",
+  "homepage": "http://drupal.org/project/mailchimp",
+  "license": "GPL-2.0+",
+  "require": {
+    "mailchimp/mailchimp": ">=2.0.4"
+  },
+  "autoload": {
+    "psr-0": {
+      "Mailchimp": "src/"
+    }
+  }
+}
