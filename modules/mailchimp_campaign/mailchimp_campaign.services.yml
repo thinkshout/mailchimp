@@ -1,9 +1,4 @@
 services:
- mailchimp_campaign.module_installer:
-    class: Drupal\mailchimp_campaign\MailchimpInstaller
-    tags:
-      - { name: module_install.module_installer }
-    lazy: false
  filter.uninstall_validator:
     class: Drupal\mailchimp_campaign\MailchimpCampaignUninstallValidator
     tags:
