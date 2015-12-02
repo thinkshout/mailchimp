@@ -9,4 +9,5 @@ files:
  - tests/mailchimp_campaigns.test
 
 dependencies:
+ - filter
  - mailchimp_lists

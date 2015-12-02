@@ -1,6 +1,9 @@
 format: mailchimp_campaign
 name: 'MailChimp campaign'
 status: true
+dependencies:
+ config:
+  - filter.format.mailchimp_campaign
 weight: 0
 roles:
   - authenticated
