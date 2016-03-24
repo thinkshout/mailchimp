@@ -7,13 +7,17 @@
 
 namespace Drupal\mailchimp_test;
 
+use Drupal\Core\Config\ConfigCollectionInfo;
+use Drupal\Core\Config\ConfigCrudEvent;
+use Drupal\Core\Config\ConfigFactoryOverrideBase;
 use Drupal\Core\Config\ConfigFactoryOverrideInterface;
+use Drupal\Core\Config\ConfigRenameEvent;
 use Drupal\Core\Config\StorageInterface;
 
 /**
  * Tests module overrides for configuration.
  */
-class ConfigOverrider implements ConfigFactoryOverrideInterface {
+class ConfigOverrider extends ConfigFactoryOverrideBase implements ConfigFactoryOverrideInterface {
 
   /**
    * {@inheritdoc}
@@ -46,4 +50,39 @@ class ConfigOverrider implements ConfigFactoryOverrideInterface {
     return NULL;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheableMetadata($name) {
+    // Not required for test case config.
+    return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addCollections(ConfigCollectionInfo $collection_info) {
+    // Not required for test case config.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onConfigDelete(ConfigCrudEvent $event) {
+    // Not required for test case config.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onConfigRename(ConfigRenameEvent $event) {
+    // Not required for test case config.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onConfigSave(ConfigCrudEvent $event) {
+    // Not required for test case config.
+  }
 }

@@ -1,7 +1,7 @@
 # Schema for the configuration files of the mailchimp module.
 
 mailchimp.settings:
-  type: mapping
+  type: config_object
   label: 'Mailchimp settings'
   mapping:
     api_key:
