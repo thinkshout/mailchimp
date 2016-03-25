@@ -200,8 +200,10 @@ class MailchimpListsSubscription extends FieldItemBase {
     $mv_defaults = $instance_settings['merge_fields'];
     $mergevars = mailchimp_get_mergevars(array($mc_list_id));
 
-    $fields = $this->getFieldmapOptions($this->getFieldDefinition()->entity_type, $this->getFieldDefinition()->bundle);
-    $required_fields = $this->getFieldmapOptions($this->getFieldDefinition()->entity_type, $this->getFieldDefinition()->bundle, TRUE);
+    $field_config = $this->getFieldDefinition();
+
+    $fields = $this->getFieldmapOptions($field_config->get('entity_type'), $field_config->get('bundle'));
+    $required_fields = $this->getFieldmapOptions($field_config->get('entity_type'), $field_config->get('bundle'), TRUE);
 
     // Prevent this subscription field appearing as a merge field option.
     $field_name = $this->getFieldDefinition()->getName();
