@@ -149,8 +149,8 @@ class MailchimpSignupForm extends EntityForm {
     $form['mc_lists_config']['mc_lists'] = array(
       '#type' => 'checkboxes',
       '#title' => t('MailChimp Lists'),
-      '#description' => t('Select which lists to show on your signup form. You can create additional lists at !MailChimp.',
-        array('!MailChimp' => \Drupal::l(t('MailChimp'), $mc_admin_url))),
+      '#description' => t('Select which lists to show on your signup form. You can create additional lists at @MailChimp.',
+        array('@MailChimp' => \Drupal::l(t('MailChimp'), $mc_admin_url))),
       '#options' => $options,
       '#default_value' => is_array($signup->mc_lists) ? $signup->mc_lists : array(),
       '#required' => TRUE,

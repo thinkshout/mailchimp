@@ -131,10 +131,10 @@ class MailchimpListsSubscription extends FieldItemBase {
       '#multiple' => FALSE,
       '#description' => t('Available MailChimp lists which are not already
         attached to Mailchimp Subscription Fields. If there are no options,
-        make sure you have created a list at !MailChimp first, then !cacheclear.',
+        make sure you have created a list at @MailChimp first, then @cacheclear.',
         array(
-          '!MailChimp' => \Drupal::l('MailChimp', $mailchimp_url),
-          '!cacheclear' => \Drupal::l('clear your list cache', $refresh_lists_url),
+          '@MailChimp' => \Drupal::l('MailChimp', $mailchimp_url),
+          '@cacheclear' => \Drupal::l('clear your list cache', $refresh_lists_url),
         )),
       '#options' => $options,
       '#default_value' => $this->getSetting('mc_list_id'),
