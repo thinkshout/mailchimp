@@ -28,9 +28,9 @@ class MailchimpListsController extends ControllerBase {
 
     $lists_empty_message = t('You don\'t have any lists configured in your
       MailChimp account, (or you haven\'t configured your API key correctly on
-      the Global Settings tab). Head over to !link and create some lists, then
+      the Global Settings tab). Head over to @link and create some lists, then
       come back here and click "Refresh lists from MailChimp"',
-      array('!link' => \Drupal::l(t('MailChimp'), $lists_admin_url)));
+      array('@link' => \Drupal::l(t('MailChimp'), $lists_admin_url)));
 
     $content['lists_table'] = array(
       '#type' => 'table',
