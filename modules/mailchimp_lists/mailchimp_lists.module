@@ -16,7 +16,7 @@ use Drupal\field\Entity\FieldConfig;
 /**
  * Implements hook_entity_delete().
  */
-function mailchimp_lists_entity_delete($entity, $type) {
+function mailchimp_lists_entity_delete($entity) {
   // Only act on content entities.
   if (!($entity instanceof ContentEntityInterface)) {
     return;
