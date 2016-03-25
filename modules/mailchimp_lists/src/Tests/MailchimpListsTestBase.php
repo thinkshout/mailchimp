@@ -8,7 +8,7 @@
 namespace Drupal\mailchimp_lists\Tests;
 
 use Drupal\simpletest\WebTestBase;
-use Drupal\mailchimp_lists_test\ConfigOverrider;
+use Drupal\mailchimp_lists_test\MailchimpListsConfigOverrider;
 
 /**
  * Sets up MailChimp Lists module tests.
@@ -24,7 +24,7 @@ abstract class MailchimpListsTestBase extends WebTestBase {
 
     parent::setUp();
 
-    \Drupal::configFactory()->addOverride(new ConfigOverrider());
+    \Drupal::configFactory()->addOverride(new MailchimpListsConfigOverrider());
   }
 
 }

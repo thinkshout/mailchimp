@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\mailchimp_test\ConfigOverrider.
+ * Contains \Drupal\mailchimp_test\MailchimpConfigOverrider.
  */
 
 namespace Drupal\mailchimp_test;
@@ -17,7 +17,7 @@ use Drupal\Core\Config\StorageInterface;
 /**
  * Tests module overrides for configuration.
  */
-class ConfigOverrider extends ConfigFactoryOverrideBase implements ConfigFactoryOverrideInterface {
+class MailchimpConfigOverrider extends ConfigFactoryOverrideBase implements ConfigFactoryOverrideInterface {
 
   /**
    * {@inheritdoc}
