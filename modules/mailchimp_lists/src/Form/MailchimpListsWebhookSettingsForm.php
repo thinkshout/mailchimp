@@ -43,9 +43,9 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
 
     $form['webhook_actions'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Enabled webhook actions for the !name list',
+      '#title' => t('Enabled webhook actions for the @name list',
         array(
-          '!name' => $list['name'],
+          '@name' => $list['name'],
         )),
       '#tree' => TRUE,
     );

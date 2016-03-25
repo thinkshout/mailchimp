@@ -632,10 +632,10 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#title' => 'MailChimp merge variables',
       '#markup' => $this->buildMergeVarsHtml($merge_vars),
       '#description' => t(
-        'Insert merge variables from the %list_name list or one of the !standard_link.',
+        'Insert merge variables from the %list_name list or one of the @standard_link.',
         array(
           '%list_name' => $list_name,
-          '!standard_link' => \Drupal::l(t('standard MailChimp merge variables'), $merge_vars_url),
+          '@standard_link' => \Drupal::l(t('standard MailChimp merge variables'), $merge_vars_url),
         )
       ),
     );
