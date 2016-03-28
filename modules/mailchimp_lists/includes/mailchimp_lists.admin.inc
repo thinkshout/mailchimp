@@ -13,7 +13,7 @@ function mailchimp_lists_overview_page() {
   $rows = array();
   $webhook_url = mailchimp_webhook_url();
   foreach ($mc_lists as $mc_list) {
-    $webhooks = mailchimp_webhook_get($mc_list['id']);
+    $webhooks = mailchimp_webhook_get($mc_list->id);
     $enabled = FALSE;
     if ($webhooks) {
       foreach ($webhooks as $webhook) {
@@ -25,14 +25,14 @@ function mailchimp_lists_overview_page() {
     }
     if ($enabled) {
       // This is a webhook for this MailChimp Module.
-      $webhook_status = t('ENABLED') . '(' . l(t('disable'), 'admin/config/services/mailchimp/lists/' . $mc_list['id'] . '/webhook/disable') . ')';
+      $webhook_status = t('ENABLED') . '(' . l(t('disable'), 'admin/config/services/mailchimp/lists/' . $mc_list->id . '/webhook/disable') . ')';
     }
     else {
-      $webhook_status = t('disabled') . ' (' . l(t('enable'), 'admin/config/services/mailchimp/lists/' . $mc_list['id'] . '/webhook/enable') . ')';
+      $webhook_status = t('disabled') . ' (' . l(t('enable'), 'admin/config/services/mailchimp/lists/' . $mc_list->id . '/webhook/enable') . ')';
     }
     $rows[] = array(
-      l($mc_list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id']),
-      $mc_list['stats']['member_count'],
+      l($mc_list->name, 'https://admin.mailchimp.com/lists'),
+      $mc_list->stats->member_count,
       $webhook_status,
     );
 
@@ -56,7 +56,7 @@ function mailchimp_lists_overview_page() {
   else {
     $options = t('Currently Available MailChimp lists').':<i>';
     foreach ($mc_lists as $mc_list) {
-      $options .= ' ' . $mc_list['name'] . ',';
+      $options .= ' ' . $mc_list->name . ',';
     }
     $options = rtrim($options, ',');
     $options .= ".</i><br />" . $refresh_link;

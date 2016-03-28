@@ -114,7 +114,7 @@ function mailchimp_apikey_ready_access($permission) {
  */
 function mailchimp_get_api_object($classname = 'Mailchimp') {
   $mailchimp = &drupal_static(__FUNCTION__);
-  if (isset($mailchimp)) {
+  if (isset($mailchimp) && $mailchimp instanceof $classname) {
     return $mailchimp;
   }
 
@@ -141,7 +141,7 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
   $timeout = 60;
 
   $classname = '\Mailchimp\\' . $classname;
-  $mailchimp = new $classname($api_key, NULL, $timeout);
+  $mailchimp = new $classname($api_key, 'apikey', $timeout);
 
   return $mailchimp;
 }
@@ -178,26 +178,30 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
   if ($cache) {
     $lists = $cache->data;
   }
-  // Query lists from the MCAPI and store in cache:
+  // Query lists from the MailChimp API and store in cache:
   else {
     try {
-      $mcapi = mailchimp_get_api_object();
-      if (!$mcapi) {
+      /* @var $mc_lists \Mailchimp\MailchimpLists */
+      $mc_lists = mailchimp_get_api_object('MailchimpLists');
+      if (!$mc_lists) {
         throw new MailchimpException('Cannot get lists without MailChimp API. Check API key has been entered.');
       }
-      $result = $mcapi->lists->getList(array(), 0, 100);
-      if ($result['total'] > 0) {
-        foreach ($result['data'] as $list) {
-          if ($list['stats']['group_count']) {
+
+      $result = $mc_lists->getLists();
+
+      if ($result->total_items > 0) {
+        foreach ($result->lists as $list) {
+          $int_categories = $mc_lists->getInterestCategories($list->id);
+          if ($int_categories->total_items > 0) {
             // Append interest groups:
-            $list['intgroups'] = $mcapi->lists->interestGroupings($list['id']);
+            $list->intgroups = $int_categories->categories;
           }
-          $lists[$list['id']] = $list;
+          $lists[$list->id] = $list;
         }
         // Append mergefields:
-        $mergevar_settings = $mcapi->lists->mergeVars($list_ids);
-        foreach ($mergevar_settings['data'] as $mergevars) {
-          $lists[$mergevars['id']]['mergevars'] = $mergevars['merge_vars'];
+        $mergefields = $mc_lists->getMergeFields($list->id);
+        if ($mergefields->total_items > 0) {
+          $lists[$list->id]->mergevars = $mergefields->merge_fields;
         }
       }
       uasort($lists, '_mailchimp_list_cmp');
@@ -236,10 +240,10 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
  *   One of the values -1, 0, 1
  */
 function _mailchimp_list_cmp($a, $b) {
-  if ($a['name'] == $b['name']) {
+  if ($a->name == $b->name) {
     return 0;
   }
-  return ($a['name'] < $b['name']) ? -1 : 1;
+  return ($a->name < $b->name) ? -1 : 1;
 }
 
 /**
@@ -1018,11 +1022,14 @@ function mailchimp_get_lists_for_email($email) {
  */
 function mailchimp_webhook_get($list_id) {
   try {
-    $mcapi = mailchimp_get_api_object();
-    if (!$mcapi) {
+    /* @var $mc_lists \Mailchimp\MailchimpLists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
+    if (!$mc_lists) {
       throw new MailchimpException('Cannot get webhook without MailChimp API. Check API key has been entered.');
     }
-    $result = $mcapi->lists->webhooks($list_id);
+    // TODO: Get new API method for webhooks.
+    $result = FALSE;
+    //$result = $mcapi->lists->webhooks($list_id);
   }
   catch (Exception $e) {
     watchdog('mailchimp', 'An error occurred reading webhooks for list @list. "%message"', array(
