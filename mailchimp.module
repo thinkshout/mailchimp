@@ -19,17 +19,21 @@ define('MAILCHIMP_STATUS_SENDING', 'sending');
  */
 function mailchimp_libraries_info() {
   $libraries['mailchimp'] = array(
-    'name' => 'MailChimp MCAPI',
-    'vendor url' => 'http://apidocs.mailchimp.com/api/2.0',
-    'download url' => 'https://bitbucket.org/mailchimp/mailchimp-api-php/get/2.0.6.zip',
-    'path' => 'src',
+    'name' => 'MailChimp API',
+    'vendor url' => 'https://github.com/thinkshout/mailchimp-api-php',
+    'download url' => 'https://github.com/thinkshout/mailchimp-api-php/archive/1.0.zip',
     'version arguments' => array(
       'file' => 'composer.json',
-      // Version 2.0.6
-      'pattern' => '/\"version": \"((\d+)\.(\d+)\.(\d+))\",/',
+      // Version 1.0
+      'pattern' => '/\"version": \"((\d+)\.(\d+))\",/',
     ),
     'files' => array(
-      'php' => array('Mailchimp.php'),
+      'php' => array(
+        'src/Mailchimp.php',
+        'src/MailchimpLists.php',
+        'src/MailchimpReports.php',
+        'vendor/autoload.php',
+      ),
     ),
   );
 
@@ -101,11 +105,14 @@ function mailchimp_apikey_ready_access($permission) {
 /**
  * Get a MailChimp API object for communication with the MailChimp server.
  *
- * @return DrupalMailchimp
- *   The default return value is an instance of DrupalMailchimp, although that
+ * @param string $classname
+ *   The MailChimp API class to instantiate.
+ *
+ * @return Mailchimp
+ *   The default return value is an instance of Mailchimp, although that
  *   can be overridden.
  */
-function mailchimp_get_api_object() {
+function mailchimp_get_api_object($classname = 'Mailchimp') {
   $mailchimp = &drupal_static(__FUNCTION__);
   if (isset($mailchimp)) {
     return $mailchimp;
@@ -114,10 +121,11 @@ function mailchimp_get_api_object() {
   // We allow the class name to be overridden, following the example of core's
   // mailsystem, in order to use alternate MailChimp classes. The bundled tests
   // use this approach to extend the MailChimp class with a test server.
-  $classname = variable_get('mailchimp_api_classname', 'DrupalMailchimp');
+  //$classname = variable_get('mailchimp_api_classname', 'DrupalMailchimp');
 
   $library = libraries_load('mailchimp');
-  if (!$library['installed'] && ($classname != 'MailChimpTest')) {
+  //if (!$library['installed'] && ($classname != 'MailChimpTest')) {
+  if (!$library['installed']) {
     $msg = t('Failed to load MailChimp PHP library. Please refer to the installation requirements.');
     watchdog('mailchimp', $msg, array(), WATCHDOG_ERROR);
     drupal_set_message($msg, 'error');
@@ -130,9 +138,10 @@ function mailchimp_get_api_object() {
     return NULL;
   }
   // Set the timeout to something that won't take down the Drupal site:
-  $options = array('timeout' => 60);
+  $timeout = 60;
 
-  $mailchimp = new $classname($api_key, $options);
+  $classname = '\Mailchimp\\' . $classname;
+  $mailchimp = new $classname($api_key, NULL, $timeout);
 
   return $mailchimp;
 }
