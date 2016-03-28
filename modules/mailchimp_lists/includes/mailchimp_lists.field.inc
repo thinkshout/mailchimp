@@ -194,33 +194,33 @@ function _mailchimp_lists_field_instance_settings_form_process($form, &$form_sta
   $fields = mailchimp_lists_fieldmap_options($instance['entity_type'], $instance['bundle']);
   $required_fields = mailchimp_lists_fieldmap_options($instance['entity_type'], $instance['bundle'], TRUE);
   unset($fields[$field['field_name']]);
-  foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
-    $default_value = isset($mv_defaults[$mergevar['tag']]) ? $mv_defaults[$mergevar['tag']] : -1;
+  foreach ($mergevars[$mc_list_id] as $mergevar) {
+    $default_value = isset($mv_defaults[$mergevar->tag]) ? $mv_defaults[$mergevar->tag] : -1;
     // If the advanced UI is enabled we use a textfield here, otherwise use a
     // select field.
-    $form[$mergevar['tag']] = array(
+    $form[$mergevar->tag] = array(
       '#type' => $use_advanced_mode ? 'textfield' : 'select',
-      '#title' => check_plain($mergevar['name']),
+      '#title' => check_plain($mergevar->name),
       '#default_value' => $default_value ? $default_value : '',
-      '#required' => $mergevar['req'],
+      '#required' => $mergevar->required,
     );
-    if (!$mergevar['req'] || $mergevar['tag'] === 'EMAIL') {
+    if (!$mergevar->required || ($mergevar->tag === 'EMAIL')) {
       // Add select field options when using basic UI.
       if (!$use_advanced_mode) {
-        $form[$mergevar['tag']]['#options'] = $fields;
+        $form[$mergevar->tag]['#options'] = $fields;
       }
 
-      if ($mergevar['tag'] === 'EMAIL') {
-        $form[$mergevar['tag']]['#description'] = t('Any entity with an empty or invalid email address field value will simply be ignored by the MailChimp subscription system. <em>This is why the Email field is the only required merge field which can sync to non-required fields.</em>');
+      if ($mergevar->tag === 'EMAIL') {
+        $form[$mergevar->tag]['#description'] = t('Any entity with an empty or invalid email address field value will simply be ignored by the MailChimp subscription system. <em>This is why the Email field is the only required merge field which can sync to non-required fields.</em>');
       }
     }
     else {
       // Add options for select fields when using basic UI.
       if (!$use_advanced_mode) {
-        $form[$mergevar['tag']]['#options'] = $required_fields;
+        $form[$mergevar->tag]['#options'] = $required_fields;
       }
 
-      $form[$mergevar['tag']]['#description'] = t("Only 'required' and 'calculated' fields are allowed to be synced with MailChimp 'required' merge fields.");
+      $form[$mergevar->tag]['#description'] = t("Only 'required' and 'calculated' fields are allowed to be synced with MailChimp 'required' merge fields.");
     }
   }
 
@@ -231,7 +231,7 @@ function _mailchimp_lists_field_instance_settings_form_process($form, &$form_sta
     // Add element validator for each text field. This allows the token module
     // to provide feedback on token syntax.
     foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
-      $form[$mergevar['tag']] += array(
+      $form[$mergevar->tag] += array(
         '#element_validate' => array('token_element_validate'),
         '#token_types' => array($instance['entity_type']),
       );
@@ -364,7 +364,8 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
       );
     }
     $groups_default = isset($instance['default_value'][0]['interest_groups']) ? $instance['default_value'][0]['interest_groups'] : array();
-    if ($mc_list->stats->group_count) {
+
+    if (!empty($mc_list->intgroups)) {
       $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
     }
   }

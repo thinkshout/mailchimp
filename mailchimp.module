@@ -608,11 +608,21 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = 'html'
 function mailchimp_update_member_process($list_id, $email, $merge_vars, $format, $replace_interests) {
   $result = FALSE;
   try {
-    $mcapi = mailchimp_get_api_object();
-    if (!$mcapi) {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object();
+    if (!$mc_lists) {
       throw new MailchimpException('Cannot update member without MailChimp API. Check API key has been entered.');
     }
-    $result = $mcapi->lists->updateMember($list_id, array('email' => $email), $merge_vars, $format, $replace_interests);
+
+    $parameters = array(
+      'email_type' => $format,
+      'merge_fields' => $merge_vars,
+    );
+
+    $mc_lists->updateMember($list_id, $email, $parameters);
+
+    // TODO: Update interest groups.
+    //$result = $mcapi->lists->updateMember($list_id, array('email' => $email), $merge_vars, $format, $replace_interests);
     if (isset($result['email'])) {
       watchdog('mailchimp', '@email was updated in list @list_id.', array(
         '@email' => $email,
@@ -648,11 +658,14 @@ function mailchimp_get_members($list_id, $status = 'subscribed', $options = arra
   $results = FALSE;
   if (lock_acquire('mailchimp_get_members', 60)) {
     try {
-      $mcapi = mailchimp_get_api_object();
-      if (!$mcapi) {
+      /* @var \Mailchimp\MailchimpLists $mc_lists */
+      $mc_lists = mailchimp_get_api_object('MailchimpLists');
+      if (!$mc_lists) {
         throw new MailchimpException('Cannot get members without MailChimp API. Check API key has been entered.');
       }
-      $results = $mcapi->lists->members($list_id, $status, $options);
+
+      $options['status'] = $status;
+      $results = $mc_lists->getMembers($list_id, $options);
     }
     catch (Exception $e) {
       watchdog('mailchimp', 'An error occurred pulling member info for a list. "%message"', array(
@@ -746,11 +759,16 @@ function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FAL
 function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $notify) {
   $result = FALSE;
   try {
-    $mcapi = mailchimp_get_api_object();
-    if (!$mcapi) {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
+    if (!$mc_lists) {
       throw new MailchimpException('Cannot unsubscribe from list without MailChimp API. Check API key has been entered.');
     }
-    $result = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
+
+    $result = $mc_lists->removeMember($list_id, $email);
+
+    // TODO: Find out how $delete, $goodbye, $notify work with the v3 API.
+    //$result = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
     if ($result) {
       module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
     }
@@ -788,12 +806,13 @@ function mailchimp_get_segments($list_id, $reset = NULL) {
   // Query segments from the MCAPI and store in cache:
   $segments = array();
   try {
-    $mcapi = mailchimp_get_api_object();
-    if (!$mcapi) {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
+    if (!$mc_lists) {
       throw new MailchimpException('Cannot get list segments without MailChimp API. Check API key has been entered.');
     }
-    $segments = $mcapi->lists->segments($list_id);
-    cache_set($list_id . '-segments', $segments, 'cache_mailchimp', CACHE_TEMPORARY);
+    $result = $mc_lists->getSegments($list_id);
+    cache_set($list_id . '-segments', $result->segments, 'cache_mailchimp', CACHE_TEMPORARY);
   }
   catch (Exception $e) {
     watchdog('mailchimp', 'An error occurred requesting list segment information from MailChimp. "%message"', array(
@@ -822,18 +841,21 @@ function mailchimp_get_segments($list_id, $reset = NULL) {
 function mailchimp_segment_create($list_id, $name, $type, $segment_options = NULL) {
   $segment_id = FALSE;
   try {
-    $mcapi = mailchimp_get_api_object();
-    if (!$mcapi) {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object();
+    if (!$mc_lists) {
       throw new MailchimpException('Cannot add list segment without MailChimp API. Check API key has been entered.');
     }
-    $options = array(
+    $parameters = array(
       'type' => $type,
-      'name' => $name,
     );
     if ($type == 'saved') {
-      $options['segment_opts'] = $segment_options;
+      $parameters['options'] = $segment_options;
     }
-    $segment_id = $mcapi->lists->segmentAdd($list_id, $options);
+    $result = $mc_lists->addSegment($list_id, $name, $parameters);
+    if (!empty($result->segment)) {
+      $segment_id = $result->segment->id;
+    }
     // Clear the segment cache:
     mailchimp_get_segments($list_id, TRUE);
   }
@@ -909,12 +931,19 @@ function mailchimp_segment_add_subscriber($list_id, $segment_id, $email, $batch 
 function mailchimp_segment_batch_add_subscribers($list_id, $segment_id, $batch) {
   $count = 0;
   try {
-    $mcapi = mailchimp_get_api_object();
-    if (!$mcapi) {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object();
+    if (!$mc_lists) {
       throw new MailchimpException('Cannot batch add segment subscribers without MailChimp API. Check API key has been entered.');
     }
-    $results = $mcapi->lists->staticSegmentMembersAdd($list_id, $segment_id, $batch);
-    $count = isset($results['success_count']) ? $results['success_count'] : 0;
+
+    $parameters = array(
+      'static_segment' => $batch,
+    );
+
+    $result = $mc_lists->updateSegment($list_id, $segment_id, $parameters);
+
+    $count = isset($result->member_count) ? $result->member_count : 0;
   }
   catch (Exception $e) {
     watchdog('mailchimp', 'An error occurred on batch segment add. List: @list_id Segment: @segment_id. "%message"', array(
@@ -1235,11 +1264,11 @@ function mailchimp_webhook_url() {
 function mailchimp_interest_groups_form_elements($mc_list, $default_values = array(), $email = NULL) {
   $return = array();
   foreach ($mc_list->intgroups as $group) {
-    if ($group['form_field'] == 'hidden') {
+    if ($group->type == 'hidden') {
       continue;
     }
     // Set the form field type:
-    switch ($group['form_field']) {
+    switch ($group->type) {
       case 'radio':
         $field_type = 'radios';
         break;
@@ -1249,7 +1278,7 @@ function mailchimp_interest_groups_form_elements($mc_list, $default_values = arr
         break;
 
       default:
-        $field_type = $group['form_field'];
+        $field_type = $group->type;
     }
 
     // Extract the field options:
@@ -1257,19 +1286,20 @@ function mailchimp_interest_groups_form_elements($mc_list, $default_values = arr
     if ($field_type == 'select') {
       $options[''] = '-- select --';
     }
-    foreach ($group['groups'] as $option) {
-      $options[$option['name']] = $option['name'];
-    }
+    // TODO: Find equivalent in v3 API.
+    //foreach ($group['groups'] as $option) {
+      //$options[$option['name']] = $option['name'];
+    //}
     // Grab the default values for this group:
     if ($email) {
       $memberinfo = mailchimp_get_memberinfo($mc_list->id, $email);
       if (isset($memberinfo['merges']['GROUPINGS'])) {
         $default_values = array();
         foreach ($memberinfo['merges']['GROUPINGS'] as $membergroup) {
-          if ($membergroup['id'] == $group['id']) {
+          if ($membergroup['id'] == $group->id) {
             foreach ($membergroup['groups'] as $option) {
               if ($option['interested']) {
-                $default_values[$group['id']][] = $option['name'];
+                $default_values[$group->id][] = $option['name'];
               }
             }
             break;
@@ -1277,11 +1307,11 @@ function mailchimp_interest_groups_form_elements($mc_list, $default_values = arr
         }
       }
     }
-    $return[$group['id']] = array(
+    $return[$group->id] = array(
       '#type' => $field_type,
-      '#title' => $group['name'],
+      '#title' => $group->title,
       '#options' => $options,
-      '#default_value' => isset($default_values[$group['id']]) ? $default_values[$group['id']] : array(),
+      '#default_value' => isset($default_values[$group->id]) ? $default_values[$group->id] : array(),
       '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $mc_list->id)),
     );
   }

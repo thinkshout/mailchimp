@@ -408,16 +408,16 @@ function mailchimp_lists_get_subscribers($field, &$context) {
   }
   $limit = 100;
   $options = array(
-    'start' => $context['sandbox']['progress'] / $limit,
-    'limit' => $limit,
+    'offset' => $context['sandbox']['progress'] / $limit,
+    'count' => $limit,
   );
   $matches = mailchimp_get_members($field['settings']['mc_list_id'], 'subscribed', $options);
   if ($matches) {
     if (!isset($context['sandbox']['max'])) {
-      $context['sandbox']['max'] = $matches['total'];
+      $context['sandbox']['max'] = $matches->total_items;
     }
-    foreach ($matches['data'] as $result) {
-      $context['results']['subscribers'][strtolower($result['email'])] = $result;
+    foreach ($matches->members as $result) {
+      $context['results']['subscribers'][strtolower($result->email_address)] = $result;
       $context['sandbox']['progress']++;
     }
     $context['message'] = t('Check subscription status for contact %count of %total.', array('%count' => $context['sandbox']['progress'], '%total' => $context['sandbox']['max']));
