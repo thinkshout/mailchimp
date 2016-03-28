@@ -148,7 +148,7 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
     return array();
   }
   // Determine if a user is subscribed to the list.
-  $is_subscribed = mailchimp_is_subscribed($mc_list['id'], $email);
+  $is_subscribed = mailchimp_is_subscribed($mc_list->id, $email);
   $wrapper_key = 'mailchimp_' . $instance['field_name'];
   $form_state['settings'] = array(
     'wrapper_key' => $wrapper_key,
@@ -178,7 +178,7 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
   // Present interest groups:
   if ($instance['settings']['show_interest_groups'] && $settings['show_interest_groups']) {
     // Perform test in case error comes back from MCAPI when getting groups:
-    if (is_array($mc_list['intgroups'])) {
+    if (is_array($mc_list->intgroups)) {
       $form[$wrapper_key]['interest_groups'] = array(
         '#type' => 'fieldset',
         '#title' => isset($settings['interest_groups_label']) ? $settings['interest_groups_label'] : t('Interest Groups'),

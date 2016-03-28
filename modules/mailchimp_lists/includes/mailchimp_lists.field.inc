@@ -45,7 +45,7 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
   $lists_exist = count($lists) > 0;
   $options = array('' => t('-- Select --'));
   foreach ($lists as $mc_list) {
-    $options[$mc_list['id']] = $mc_list['name'];
+    $options[$mc_list->id] = $mc_list->name;
   }
   // Grab the fields list.
   $fields = field_info_fields();
@@ -364,7 +364,7 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
       );
     }
     $groups_default = isset($instance['default_value'][0]['interest_groups']) ? $instance['default_value'][0]['interest_groups'] : array();
-    if ($mc_list['stats']['group_count']) {
+    if ($mc_list->stats->group_count) {
       $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
     }
   }
@@ -481,13 +481,13 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
       $member_status = (isset($member_info['status'])) ? $member_info['status'] : NULL;
       switch ($member_status) {
         case 'subscribed':
-          $status = t('Subscribed to %list', array('%list' => $mc_list['name']));
+          $status = t('Subscribed to %list', array('%list' => $mc_list->name));
           break;
         case 'pending':
-          $status = t('Pending confirmation for %list', array('%list' => $mc_list['name']));
+          $status = t('Pending confirmation for %list', array('%list' => $mc_list->name));
           break;
         default:
-          $status = t('Not subscribed to %list', array('%list' => $mc_list['name']));
+          $status = t('Not subscribed to %list', array('%list' => $mc_list->name));
       }
     }
     else {
@@ -599,7 +599,7 @@ function mailchimp_lists_field_get($entity, array $options, $name, $entity_type,
   $val = array('subscribe' => $subscribed);
   if ($context['instance']['settings']['show_interest_groups']) {
     $mc_list = mailchimp_get_list($context['field']['settings']['mc_list_id']);
-    if (isset($mc_list['intgroups'])) {
+    if (isset($mc_list->intgroups)) {
       $val['interest_groups'] = array();
       $interest_group_settings = mailchimp_interest_groups_form_elements($mc_list, array(), $email);
       foreach ($interest_group_settings as $id => $group) {

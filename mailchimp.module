@@ -181,7 +181,7 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
   // Query lists from the MailChimp API and store in cache:
   else {
     try {
-      /* @var $mc_lists \Mailchimp\MailchimpLists */
+      /* @var \Mailchimp\MailchimpLists $mc_lists */
       $mc_lists = mailchimp_get_api_object('MailchimpLists');
       if (!$mc_lists) {
         throw new MailchimpException('Cannot get lists without MailChimp API. Check API key has been entered.');
@@ -197,11 +197,12 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
             $list->intgroups = $int_categories->categories;
           }
           $lists[$list->id] = $list;
-        }
-        // Append mergefields:
-        $mergefields = $mc_lists->getMergeFields($list->id);
-        if ($mergefields->total_items > 0) {
-          $lists[$list->id]->mergevars = $mergefields->merge_fields;
+
+          // Append mergefields:
+          $mergefields = $mc_lists->getMergeFields($list->id);
+          if ($mergefields->total_items > 0) {
+            $lists[$list->id]->mergevars = $mergefields->merge_fields;
+          }
         }
       }
       uasort($lists, '_mailchimp_list_cmp');
@@ -271,25 +272,23 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
   }
 
   // Get the uncached merge vars from MailChimp.
-  if (count($list_ids)) {
-    $mcapi = mailchimp_get_api_object();
-    $last_list_id = NULL;
+  foreach ($list_ids as $list_id) {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
     try {
-      if (!$mcapi) {
+      if (!$mc_lists) {
         throw new MailchimpException('Cannot get merge vars without MailChimp API. Check API key has been entered.');
       }
-      $result = $mcapi->lists->mergeVars($list_ids);
-      if ($result['success_count']) {
-        foreach ($result['data'] as $list_mergevars) {
-          $last_list_id = $list_mergevars['id'];
-          $mergevars[$last_list_id] = $list_mergevars;
-          cache_set($last_list_id . '-mergevars', $list_mergevars, 'cache_mailchimp', CACHE_TEMPORARY);
-        }
+      $result = $mc_lists->getMergeFields($list_id);
+
+      if ($result->total_items > 0) {
+        $mergevars[$list_id] = $result->merge_fields;
+        cache_set($list_id . '-mergevars', $result->merge_fields, 'cache_mailchimp', CACHE_TEMPORARY);
       }
     }
     catch (Exception $e) {
       watchdog('mailchimp', 'An error occurred requesting mergevars for list @list. "%message"', array(
-        '@list' => $last_list_id,
+        '@list' => $list_id,
         '%message' => $e->getMessage(),
       ), WATCHDOG_ERROR);
     }
@@ -324,12 +323,14 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
 
   // Query lists from the MCAPI and store in cache:
   $memberinfo = array();
-  $mcapi = mailchimp_get_api_object();
+
+  /* @var \Mailchimp\MailchimpLists $mc_lists */
+  $mc_lists = mailchimp_get_api_object('MailchimpLists');
   try {
-    if (!$mcapi) {
+    if (!$mc_lists) {
       throw new MailchimpException('Cannot get member info without MailChimp API. Check API key has been entered.');
     }
-    $result = $mcapi->lists->memberInfo($list_id, array(array('email' => $email)));
+    $result = $mc_lists->getMemberInfo($list_id, $email);
     if ($result['success_count']) {
       $memberinfo = reset($result['data']);
       cache_set($list_id . '-' . $email, $memberinfo, 'cache_mailchimp', CACHE_TEMPORARY);
@@ -408,11 +409,31 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin
 function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $format = 'html', $update_existing = TRUE, $replace_interests = TRUE, $confirm = TRUE) {
   $result = FALSE;
   try {
-    $mcapi = mailchimp_get_api_object();
-    if (!$mcapi) {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
+    if (!$mc_lists) {
       throw new MailchimpException('Cannot subscribe to list without MailChimp API. Check API key has been entered.');
     }
-    $result = $mcapi->lists->subscribe($list_id, array('email' => $email), $merge_vars, $format, $double_optin, $update_existing, $replace_interests, $confirm);
+
+    $parameters = array(
+      'status' => 'subscribed',
+      'email_type' => $format,
+    );
+
+    if (!empty($merge_vars)) {
+      $merge_fields = new stdClass();
+      foreach ($merge_vars as $var => $value) {
+        $merge_fields->$var = $value;
+      }
+
+      $parameters['merge_fields'] = $merge_fields;
+    }
+
+    $result = $mc_lists->addMember($list_id, $email, $parameters);
+
+    // TODO: Determine how to map parameters from old API.
+    //$result = $mcapi->lists->subscribe($list_id, array('email' => $email), $merge_vars, $format, $double_optin, $update_existing, $replace_interests, $confirm);
+
     if (isset($result['email'])) {
       module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
       // Clear user cache, just in case there's some cruft leftover:
@@ -1022,7 +1043,7 @@ function mailchimp_get_lists_for_email($email) {
  */
 function mailchimp_webhook_get($list_id) {
   try {
-    /* @var $mc_lists \Mailchimp\MailchimpLists */
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
     $mc_lists = mailchimp_get_api_object('MailchimpLists');
     if (!$mc_lists) {
       throw new MailchimpException('Cannot get webhook without MailChimp API. Check API key has been entered.');
@@ -1213,7 +1234,7 @@ function mailchimp_webhook_url() {
  */
 function mailchimp_interest_groups_form_elements($mc_list, $default_values = array(), $email = NULL) {
   $return = array();
-  foreach ($mc_list['intgroups'] as $group) {
+  foreach ($mc_list->intgroups as $group) {
     if ($group['form_field'] == 'hidden') {
       continue;
     }
@@ -1241,7 +1262,7 @@ function mailchimp_interest_groups_form_elements($mc_list, $default_values = arr
     }
     // Grab the default values for this group:
     if ($email) {
-      $memberinfo = mailchimp_get_memberinfo($mc_list['id'], $email);
+      $memberinfo = mailchimp_get_memberinfo($mc_list->id, $email);
       if (isset($memberinfo['merges']['GROUPINGS'])) {
         $default_values = array();
         foreach ($memberinfo['merges']['GROUPINGS'] as $membergroup) {
@@ -1261,7 +1282,7 @@ function mailchimp_interest_groups_form_elements($mc_list, $default_values = arr
       '#title' => $group['name'],
       '#options' => $options,
       '#default_value' => isset($default_values[$group['id']]) ? $default_values[$group['id']] : array(),
-      '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $mc_list['id'])),
+      '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $mc_list->id)),
     );
   }
   return $return;
@@ -1296,13 +1317,13 @@ function mailchimp_reformat_groupings($interest_groups) {
 function mailchimp_insert_drupal_form_tag($mergevar) {
   // Insert common FormAPI properties:
   $input = array(
-    '#title' => t('@mergevar', array('@mergevar' => $mergevar['name'])),
-    '#weight' => $mergevar['order'],
-    '#required' => $mergevar['req'],
-    '#default_value' => $mergevar['default'],
+    '#title' => t('@mergevar', array('@mergevar' => $mergevar->name)),
+    '#weight' => $mergevar->display_order,
+    '#required' => $mergevar->required,
+    '#default_value' => $mergevar->default_value,
   );
 
-  switch ($mergevar['field_type']) {
+  switch ($mergevar->type) {
     case 'address':
       // Sub-array of address elements according to MailChimp specs.
       // https://apidocs.mailchimp.com/api/2.0/lists/subscribe.php
@@ -1346,7 +1367,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
       // Creates options, we must delete array keys to have relevant information
       // on MailChimp.
       $choices = array();
-      foreach ($mergevar['choices'] as $choice) {
+      foreach ($mergevar->choices as $choice) {
         $choices[$choice] = $choice;
       }
 
@@ -1384,12 +1405,12 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
       // This is a standard input[type=text] or something we can't handle with
       // Drupal FormAPI.
       $input['#type'] = 'textfield';
-      $input['#size'] = $mergevar['size'];
+      $input['#size'] = $mergevar->options->size;
       break;
   }
 
   // Special cases for MailChimp hidden defined fields:
-  if ($mergevar['public'] == FALSE) {
+  if ($mergevar->public === FALSE) {
     $input['#type'] = 'hidden';
   }
 

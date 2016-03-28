@@ -131,7 +131,7 @@ function mailchimp_lists_webhook_form($form, &$form_state, $list_id, $action) {
       t('Are you sure you want to &action webhooks for %name?',
         array(
           '&action' => t($action),
-          '%name' => $list['name'],
+          '%name' => $list->name,
         )),
       'admin/config/services/mailchimp/lists',
       t('You can change this setting back from the mailchimp administrative UI.'),
@@ -204,7 +204,7 @@ function mailchimp_lists_update_mergevars_form($form, &$form_state, $entity_type
     return confirm_form($form,
       t('Update Merge Fields on %list for all @entity_type -- @bundle entities?',
         array(
-          '%list' => $list['name'],
+          '%list' => $list->name,
           '@entity_type' => $entity_type,
           '@bundle' => $bundle_name,
         )),
