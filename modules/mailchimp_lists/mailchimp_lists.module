@@ -552,7 +552,7 @@ function mailchimp_lists_enabled_webhook_actions($list_id) {
 
   $webhook_url = mailchimp_webhook_url();
 
-  $webhooks = mailchimp_webhook_get($list_id);
+//  $webhooks = mailchimp_webhook_get($list_id);
 
   if ($webhooks) {
     foreach ($webhooks as $webhook) {

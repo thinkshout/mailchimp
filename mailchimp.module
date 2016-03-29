@@ -670,22 +670,22 @@ function mailchimp_get_lists_for_email($email) {
  *
  * @see Mailchimp_Lists::webhooks()
  */
-function mailchimp_webhook_get($list_id) {
-  try {
-    $mcapi = mailchimp_get_api_object();
-    $result = $mcapi->lists->webhooks($list_id);
-  }
-  catch (Exception $e) {
-    \Drupal::logger('mailchimp')->error('An error occurred reading webhooks for list {list}. "{message}"', array(
-      'list' => $list_id,
-      'message' => $e->getMessage(),
-    ));
-
-    return FALSE;
-  }
-
-  return $result;
-}
+//function mailchimp_webhook_get($list_id) {
+//  try {
+//    $mcapi = mailchimp_get_api_object();
+//    $result = $mcapi->lists->webhooks($list_id);
+//  }
+//  catch (Exception $e) {
+//    \Drupal::logger('mailchimp')->error('An error occurred reading webhooks for list {list}. "{message}"', array(
+//      'list' => $list_id,
+//      'message' => $e->getMessage(),
+//    ));
+//
+//    return FALSE;
+//  }
+//
+//  return $result;
+//}
 
 /**
  * Adds a webhook to a MailChimp list.
