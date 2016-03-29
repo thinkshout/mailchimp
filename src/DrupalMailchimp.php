@@ -52,18 +52,18 @@ class DrupalMailchimp extends Mailchimp {
 
     $this->debug = isset($opts['debug']) ? TRUE : FALSE;
 
-    $this->folders = new \Mailchimp_Folders($this);
-    $this->templates = new \Mailchimp_Templates($this);
-    $this->users = new \Mailchimp_Users($this);
-    $this->helper = new \Mailchimp_Helper($this);
-    $this->mobile = new \Mailchimp_Mobile($this);
-    $this->ecomm = new \Mailchimp_Ecomm($this);
-    $this->neapolitan = new \Mailchimp_Neapolitan($this);
-    $this->lists = new \Mailchimp_Lists($this);
-    $this->campaigns = new \Mailchimp_Campaigns($this);
-    $this->vip = new \Mailchimp_Vip($this);
-    $this->reports = new \Mailchimp_Reports($this);
-    $this->gallery = new \Mailchimp_Gallery($this);
+//    $this->folders = new \Mailchimp_Folders($this);
+//    $this->templates = new \Mailchimp_Templates($this);
+//    $this->users = new \Mailchimp_Users($this);
+//    $this->helper = new \Mailchimp_Helper($this);
+//    $this->mobile = new \Mailchimp_Mobile($this);
+//    $this->ecomm = new \Mailchimp_Ecomm($this);
+//    $this->neapolitan = new \Mailchimp_Neapolitan($this);
+//    $this->lists = new \Mailchimp_Lists($this);
+//    $this->campaigns = new \Mailchimp_Campaigns($this);
+//    $this->vip = new \Mailchimp_Vip($this);
+//    $this->reports = new \Mailchimp_Reports($this);
+//    $this->gallery = new \Mailchimp_Gallery($this);
 
     // Temporary code until call() is re-written. Allows parent::call() to 
     // function.
