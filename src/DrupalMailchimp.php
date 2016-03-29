@@ -8,7 +8,7 @@
 namespace Drupal\mailchimp;
 
 use Drupal\Component\Serialization\Json;
-use Mailchimp;
+use Mailchimp\Mailchimp;
 
 
 /**
