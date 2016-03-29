@@ -143,7 +143,7 @@ class MailchimpSignupForm extends EntityForm {
     $lists = mailchimp_get_lists();
     $options = array();
     foreach ($lists as $mc_list) {
-      $options[$mc_list['id']] = $mc_list['name'];
+      $options[$mc_list->id] = $mc_list->name;
     }
     $mc_admin_url = Url::fromUri('https://admin.mailchimp.com', array('attributes' => array('target' => '_blank')));
     $form['mc_lists_config']['mc_lists'] = array(
