@@ -8,6 +8,7 @@
 define('MAILCHIMP_QUEUE_CRON', 'mailchimp');
 define('MAILCHIMP_BATCH_QUEUE_CRON', 'mailchimp_batch');
 
+// TODO: Confirm names for v3 API.
 define('MAILCHIMP_STATUS_SENT', 'sent');
 define('MAILCHIMP_STATUS_SAVE', 'save');
 define('MAILCHIMP_STATUS_PAUSED', 'paused');
@@ -30,8 +31,10 @@ function mailchimp_libraries_info() {
     'files' => array(
       'php' => array(
         'src/Mailchimp.php',
+        'src/MailchimpCampaigns.php',
         'src/MailchimpLists.php',
         'src/MailchimpReports.php',
+        'src/MailchimpTemplates.php',
         'vendor/autoload.php',
       ),
     ),
@@ -977,17 +980,16 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
   }
 
   try {
-    $mcapi = mailchimp_get_api_object();
-    if (!$mcapi) {
+    /* @var \Mailchimp\MailchimpCampaigns $mc_campaigns */
+    $mc_campaigns = mailchimp_get_api_object();
+    if (!$mc_campaigns) {
       throw new MailchimpException('Cannot get list without MailChimp API. Check API key has been entered.');
     }
-    $filters = array(
-      'campaign_id' => $campaign_id,
-    );
-    $results = $mcapi->campaigns->getList($filters, 0, 1);
-    if (isset($results['total']) && $results['total']) {
-      $campaign_data = $results['data'][0];
-      cache_set('campaign_' . $campaign_id, $campaign_data, 'cache_mailchimp', CACHE_TEMPORARY);
+
+    $response = $mc_campaigns->getCampaign($campaign_id);
+
+    if (!empty($response->id)) {
+      cache_set('campaign_' . $campaign_id, $response, 'cache_mailchimp', CACHE_TEMPORARY);
     }
     else {
       $campaign_data = FALSE;
