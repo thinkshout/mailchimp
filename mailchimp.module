@@ -203,13 +203,14 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
 
   // Get the uncached merge vars from MailChimp.
   if (count($list_ids)) {
-    $mcapi = mailchimp_get_api_object();
+    /* @var \Mailchimp\MailchimpLists $mcapi */
+    $mcapi = mailchimp_get_api_object('MailchimpLists');
     $last_list_id = NULL;
 
     try {
-      $result = $mcapi->lists->mergeVars($list_ids);
-      if ($result['success_count']) {
-        foreach ($result['data'] as $list_mergevars) {
+      $result = $mcapi->getMergeFields($list_id);
+      if ($result->success_count) {
+        foreach ($result->data as $list_mergevars) {
           $last_list_id = $list_mergevars['id'];
           $mergevars[$last_list_id] = $list_mergevars;
           $cache->set($last_list_id . '-mergevars', $list_mergevars);
