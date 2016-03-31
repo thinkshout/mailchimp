@@ -412,14 +412,18 @@ function mailchimp_campaign_save_campaign($template, $options, $settings, $templ
  * Send MailChimp campaign.
  */
 function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
-  $mcapi = mailchimp_get_api_object();
+  /* @var \Mailchimp\MailchimpCampaigns $mc_campaign */
+  $mc_campaign = mailchimp_get_api_object('MailchimpCampaigns');
 
   // Send campaign.
   try {
-    if (!$mcapi) {
+    if (!$mc_campaign) {
       throw new MailchimpException('Cannot send campaign without Mailchimp API. Check API key has been entered.');
     }
-    $result = $mcapi->campaigns->send($campaign->mc_campaign_id);
+
+    $mc_campaign->send($campaign->mc_campaign_id);
+
+    return TRUE;
   }
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
@@ -428,6 +432,7 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     return FALSE;
   }
 
+  /*
   if (isset($result['complete']) && ($result['complete'] === TRUE)) {
     // Log action, and notify the user.
     watchdog('mailchimp_campaign', 'MailChimp campaign %name has been sent.',
@@ -441,6 +446,8 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
     $message = 'MailChimp error. The campaign was not sent.';
     _mailchimp_campaign_mcapi_error_message($result, $message);
   }
+  */
+
   return FALSE;
 }
 
@@ -448,14 +455,18 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
  * Send MailChimp campaign.
  */
 function mailchimp_campaign_send_test_campaign(MailChimpCampaign $campaign, $recipients = array()) {
-  $mcapi = mailchimp_get_api_object();
+  /* @var \Mailchimp\MailchimpCampaigns $mc_campaigns */
+  $mc_campaigns = mailchimp_get_api_object('MailchimpCampaigns');
 
   // Send campaign.
   try {
-    if (!$mcapi) {
+    if (!$mc_campaigns) {
       throw new MailchimpException('Cannot send campaign without Mailchimp API. Check API key has been entered.');
     }
-    $result = $mcapi->campaigns->sendTest($campaign->mc_campaign_id, $recipients);
+
+    $mc_campaigns->sendTest($campaign->mc_campaign_id, $recipients, \Mailchimp\MailchimpCampaigns::EMAIL_TYPE_HTML);
+
+    return TRUE;
   }
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
@@ -464,6 +475,7 @@ function mailchimp_campaign_send_test_campaign(MailChimpCampaign $campaign, $rec
     return FALSE;
   }
 
+  /*
   if (isset($result['complete']) && ($result['complete'] === TRUE)) {
     // Log action, and notify the user.
     watchdog('mailchimp_campaign', 'MailChimp test message for campaign %name has been sent to %recipients.',
@@ -476,6 +488,8 @@ function mailchimp_campaign_send_test_campaign(MailChimpCampaign $campaign, $rec
     $message = 'MailChimp error. The campaign was not sent.';
     _mailchimp_campaign_mcapi_error_message($result, $message);
   }
+  */
+
   return FALSE;
 }
 
@@ -483,15 +497,19 @@ function mailchimp_campaign_send_test_campaign(MailChimpCampaign $campaign, $rec
  * Delete a MailChimp campaign and the local entity.
  */
 function mailchimp_campaign_delete_campaign($cid) {
-  $mcapi = mailchimp_get_api_object();
+  /* @var \Mailchimp\MailchimpCampaigns $mc_campaigns */
+  $mc_campaigns = mailchimp_get_api_object();
 
   $result = NULL;
   // Delete campaign from MailChimp.
   try {
-    if (!$mcapi) {
+    if (!$mc_campaigns) {
       throw new MailchimpException('Cannot delete campaign without Mailchimp API. Check API key has been entered.');
     }
-    $result = $mcapi->campaigns->delete($cid);
+
+    $mc_campaigns->delete($cid);
+
+    return TRUE;
   }
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
@@ -500,6 +518,7 @@ function mailchimp_campaign_delete_campaign($cid) {
     return FALSE;
   }
 
+  /*
   if (isset($result['status']) && ($result['status'] == 'error')) {
     // Display and log error, if any.
     $message = 'MailChimp error. The campaign was not deleted.';
@@ -511,6 +530,8 @@ function mailchimp_campaign_delete_campaign($cid) {
     watchdog('mailchimp_campaign', 'MailChimp campaign %cid was deleted.', array('%cid' => $cid));
     return TRUE;
   }
+  */
+
   return FALSE;
 }
 
