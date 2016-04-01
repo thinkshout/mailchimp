@@ -469,8 +469,9 @@ function mailchimp_get_members($list_id, $status = 'subscribed', $options = arra
 
   if ($lock->acquire('mailchimp_get_members', 60)) {
     try {
-      $mcapi = mailchimp_get_api_object();
-      $results = $mcapi->lists->members($list_id, $status, $options);
+      /* @var \Mailchimp\MailchimpLists $mcapi */
+      $mcapi = mailchimp_get_api_object('MailchimpLists');
+      $results = $mcapi->getMembers($list_id, $status, $options);
     }
     catch (Exception $e) {
       \Drupal::logger('mailchimp')->error('An error occurred pulling member info for a list. "{message}"', array(
