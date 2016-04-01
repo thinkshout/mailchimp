@@ -38,29 +38,35 @@ class MailchimpSignupListBuilder extends ConfigEntityListBuilder {
     $block_url = Url::fromRoute('block.admin_display');
     $page_url = Url::fromUri($base_url . '/' . $entity->settings['path']);
 
+    $block_mode = [
+      '#title' => $this->t('Block'),
+      '#type' => 'link',
+      '#url' => $block_url
+    ];
+
+    $page_mode = [
+      '#title' => $this->t('Page'),
+      '#type' => 'link',
+      '#url' => $page_url
+    ];
+
     $modes = NULL;
     $mc_lists = mailchimp_get_lists();
 
     switch ($entity->mode) {
       case MAILCHIMP_SIGNUP_BLOCK:
-        $mode_url = Link::fromTextAndUrl('Block', $block_url);
-        $modes = $mode_url->toRenderable();
-
+        $modes = $block_mode;
         break;
       case MAILCHIMP_SIGNUP_PAGE:
-        $mode_url = Link::fromTextAndUrl('Page', $page_url);
-        $modes = $mode_url->toRenderable();
+        $modes = $page_mode;
         break;
       case MAILCHIMP_SIGNUP_BOTH:
-        $block_link = Link::fromTextAndUrl('Block', $block_url);
-        $page_link = Link::fromTextAndUrl('Page', $page_url);
-
         $modes = array(
-          'block_link' => $block_link->toRenderable(),
+          'block_link' => $block_mode,
           'separator' => array(
             '#markup' => ' and ',
           ),
-          'page_link' => $page_link->toRenderable(),
+          'page_link' => $page_mode
         );
         break;
     }
@@ -69,8 +75,12 @@ class MailchimpSignupListBuilder extends ConfigEntityListBuilder {
     foreach ($entity->mc_lists as $list_id) {
       if (!empty($list_id)) {
         $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_lists[$list_id]->id, array('attributes' => array('target' => '_blank')));
-        $list_link = Link::fromTextAndUrl($mc_lists[$list_id]->name, $list_url);
-        $list_labels[] = $list_link->toRenderable();
+        $list_link = [
+          '#title' => $this->t($mc_lists[$list_id]->name),
+          '#type' => 'link',
+          '#url' => $list_url
+        ];
+        $list_labels[] = $list_link;
         $list_labels[] = array('#markup' => ', ');
       }
     }
