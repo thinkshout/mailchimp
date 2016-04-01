@@ -96,7 +96,7 @@ class MailchimpListsSubscription extends FieldItemBase {
     $lists = mailchimp_get_lists();
     $options = array('' => t('-- Select --'));
     foreach ($lists as $mc_list) {
-      $options[$mc_list['id']] = $mc_list['name'];
+      $options[$mc_list->id] = $mc_list->name;
     }
 
     $field_map = \Drupal::entityManager()->getFieldMap();
