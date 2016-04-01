@@ -386,10 +386,10 @@ function mailchimp_lists_get_subscribers(FieldConfig $field, &$context) {
 
   if ($matches) {
     if (!isset($context['sandbox']['max'])) {
-      $context['sandbox']['max'] = $matches['total'];
+      $context['sandbox']['max'] = $matches->total;
     }
 
-    foreach ($matches['data'] as $result) {
+    foreach ($matches->data as $result) {
       $context['results']['subscribers'][strtolower($result['email'])] = $result;
       $context['sandbox']['progress']++;
     }
