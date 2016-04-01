@@ -1430,7 +1430,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
         // Set to standard text type if 'emailfield' isn't defined:
         $input['#type'] = 'textfield';
       };
-      $input['#size'] = $mergevar['size'];
+      $input['#size'] = $mergevar->options->size;
       break;
 
     default:
