@@ -792,8 +792,8 @@ function mailchimp_lists_mailchimp_lists_merge_values($mergevars, $account, $lis
  * Return all available lists for a given user.
  *
  * @param <drupal_user> $account
- *   Optional account to get available lists for. Otherwise returns a general
- *   list.
+ *   Optional account to get available lists for. Otherwise returns lists
+ *   available to the currently authenticated user.
  * @param <array> $conditions
  *   List settings to filter the results by (uses logical "AND").
  *   Options include the following (see mailchimp_lists_list_form_submit()):
