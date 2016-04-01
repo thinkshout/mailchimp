@@ -70,7 +70,8 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
  *   New or existing campaign ID.
  */
 function mailchimp_campaign_save_campaign($template, $options, $segment_options = NULL, $campaign_id = NULL) {
-  $mcapi = mailchimp_get_api_object();
+  /* @var \Mailchimp\MailchimpCampaigns $mcapi */
+  $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
 
   $options += array(
     'generate_text' => TRUE,
@@ -117,26 +118,43 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
   else {
     // Updates must be sent one type at a time.
     try {
-      $mcapi->campaigns->update($campaign_id, 'options', $options);
-      $mcapi->campaigns->update($campaign_id, 'segment_opts', $segment_options);
-      $mcapi->campaigns->update($campaign_id, 'content', $content);
+      if (!$mc_campaigns) {
+        throw new MailchimpException('Cannot update campaign without Mailchimp API. Check API key has been entered.');
+      }
+
+      $mc_campaigns->updateCampaign($campaign_id, \Mailchimp\MailchimpCampaigns::CAMPAIGN_TYPE_REGULAR);
+
+      // TODO: Convert to v3 API.
+
+      //$mcapi->campaigns->update($campaign_id, 'options', $options);
+      //$mcapi->campaigns->update($campaign_id, 'segment_opts', $segment_options);
+      //$mcapi->campaigns->update($campaign_id, 'content', $content);
     }
     catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
-      \Drupal::logger('mailchimp_campaign')->error('An error occurred while updating this campaign: {message}', array(
-        'message' => $e->getMessage()));
+      watchdog('mailchimp_campaign',
+        'An error occurred while updating this campaign: @msg', array('@msg' => $e->getMessage()), WATCHDOG_ERROR);
       return NULL;
     }
   }
 
-  if (isset($result['status']) && ($result['status'] == 'error')) {
+  if (!isset($result->id)) {
     // Display and log error, if any.
     $message = 'MailChimp error. The campaign was not saved.';
     _mailchimp_campaign_mcapi_error_message($result, $message);
   }
   else {
     drupal_set_message(t('Campaign %name (%cid) was successfully saved.',
-      array('%name' => $options['title'], '%cid' => $campaign_id)));
+      array('%name' => $options->title, '%cid' => $campaign_id)));
+
+    // Save the campaign entity:
+    $campaign = entity_create('mailchimp_campaign', array(
+      'mc_campaign_id' => $campaign_id,
+      'template' => $template,
+      'is_new' => $is_new,
+    ));
+
+    mailchimp_campaign_save($campaign);
 
     // Clear cached data for this campaign.
     mailchimp_campaign_get_campaigns(array($campaign_id), TRUE);
