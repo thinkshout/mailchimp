@@ -498,7 +498,7 @@ function mailchimp_campaign_send_test_campaign(MailChimpCampaign $campaign, $rec
  */
 function mailchimp_campaign_delete_campaign($cid) {
   /* @var \Mailchimp\MailchimpCampaigns $mc_campaigns */
-  $mc_campaigns = mailchimp_get_api_object();
+  $mc_campaigns = mailchimp_get_api_object('MailchimpCampaigns');
 
   $result = NULL;
   // Delete campaign from MailChimp.
