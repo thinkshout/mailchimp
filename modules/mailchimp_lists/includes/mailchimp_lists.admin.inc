@@ -260,9 +260,9 @@ function mailchimp_lists_list_form($form, &$form_state, MailchimpList $list = NU
     '#description' => t('<p>Choose which roles may subscribe to this list. All
       users will see the lists they\'re eligible for at the !subscribe and in
       the subscription block. Lists assigned to the Authenticated role may
-      also apear in the registration form if that option is selected below.
-      Authenticated user may also manage their list settings from their profile.
-      The Anonymous role may <em>only</em> be set for free form lists.</p>',
+      also appear in the registration form if that option is selected below.
+      Authenticated users may also manage their list settings from their
+      profile.</p>',
       array(
         '!subscribe' => l(t('newsletter subscription page'),
           'mailchimp/subscribe'),
