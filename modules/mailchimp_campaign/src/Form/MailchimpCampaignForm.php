@@ -417,14 +417,14 @@ class MailchimpCampaignForm extends ContentEntityForm {
       $options[''] = $no_selection_label;
     }
     foreach ($list as $index => $item) {
-      if (!isset($item['id'])) {
+      if (!isset($item->id)) {
         $label = isset($labels[$index]) ? $labels[$index] : $index;
         if (count($item)) {
           $options[$label] = $this->buildOptionList($item, FALSE, $labels);
         }
       }
       else {
-        $options[$item['id']] = $item['name'];
+        $options[$item->id] = $item->name;
       }
     }
 

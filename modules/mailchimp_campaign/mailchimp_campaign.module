@@ -248,20 +248,21 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
   }
   // Query lists from the MailChimp API and store in cache.
   else {
-    if ($mcapi = mailchimp_get_api_object()) {
+    /* @var \Mailchimp\MailchimpCampaigns $mcapi */
+    if ($mcapi = mailchimp_get_api_object('MailchimpCampaigns')) {
       $template_types = array(
         'user' => 1,
         'base' => 1,
         'gallery' => 1,
       );
 
-      $response = $mcapi->templates->getList($template_types);
+      $response = $mcapi->getCampaigns($template_types);
 
       foreach ($template_types as $type => $chosen) {
         if ($chosen) {
           $all_templates[$type] = array();
 
-          foreach ($response[$type] as $template) {
+          foreach ($response->$type as $template) {
             $all_templates[$type][$template['id']] = $template;
           }
         }
