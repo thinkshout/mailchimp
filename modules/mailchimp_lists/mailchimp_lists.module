@@ -263,7 +263,20 @@ function mailchimp_lists_form_user_register_form_alter(&$form, &$form_state, $fo
 function mailchimp_lists_user_insert(&$edit, $account, $category) {
   // @todo: pay attention to user status.
   if (isset($edit['mailchimp_lists']) && count($edit['mailchimp_lists']) > 0) {
-    mailchimp_lists_process_subscribe_form_choices($edit['mailchimp_lists'], $account);
+
+    // Remove MailChimp list option values unless a user has chosen to
+    // subscribe.
+    // This avoids unsubscribing users from lists they have have subscribed
+    // to before creating an account.
+    foreach ($edit['mailchimp_lists'] as $key => $list_options) {
+      if ($list_options['subscribe'] !== 1) {
+        unset($edit['mailchimp_lists'][$key]);
+      }
+    }
+
+    if (!empty($edit['mailchimp_lists'])) {
+      mailchimp_lists_process_subscribe_form_choices($edit['mailchimp_lists'], $account);
+    }
   }
 
   // Handle required lists:
