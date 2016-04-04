@@ -223,25 +223,22 @@ function mailchimp_activity_page($entity, MailchimpActivityEntity $mailchimp_act
 
       if (!empty($list_activity['activity'])) {
         foreach ($list_activity['activity'] as $activity) {
-          if (!empty($activity['campaign_id'])) {
-            if (empty($campaign_index[$activity['campaign_id']]['details'])) {
-              $campaign_index[$activity['campaign_id']]['details'] = mailchimp_get_campaign_data($activity['campaign_id']);
-            }
+          if (!empty($activity->campaign_id)) {
             $title = array(
               'data' => array(
                 '#type' => 'link',
-                '#title' => $campaign_index[$activity['campaign_id']]['title'],
-                '#href' => $campaign_index[$activity['campaign_id']]['details']['archive_url'],
+                '#title' => $campaign_index[$activity->campaign_id]->settings->title,
+                '#href' => $campaign_index[$activity->campaign_id]->archive_url,
               ),
             );
           }
           else {
-            $title = $activity['title'];
+            $title = $activity->title;
           }
           $rows[] = array(
             $title,
-            $activity['action'],
-            $activity['timestamp'],
+            $activity->action,
+            $activity->timestamp,
           );
         }
       }
