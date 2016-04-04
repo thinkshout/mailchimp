@@ -1250,7 +1250,7 @@ function mailchimp_webhook_url() {
 /**
  * Helper function to generate form elements for a list's interest groups.
  *
- * @param array $mc_list
+ * @param array $list
  *   Fully loaded array with mailchimp list settings as returned by
  *   mailchimp_get_list()
  * @param array $default_values
@@ -1263,12 +1263,18 @@ function mailchimp_webhook_url() {
  * @return array
  *   A collection of form elements, one per interest group.
  */
-function mailchimp_interest_groups_form_elements($mc_list, $default_values = array(), $email = NULL) {
+function mailchimp_interest_groups_form_elements($list, $default_values = array(), $email = NULL) {
   $return = array();
-  foreach ($mc_list->intgroups as $group) {
+  foreach ($list->intgroups as $group) {
     if ($group->type == 'hidden') {
       continue;
     }
+
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
+
+    $interests = $mc_lists->getInterests($list->id, $group->id);
+
     // Set the form field type:
     switch ($group->type) {
       case 'radio':
@@ -1288,13 +1294,14 @@ function mailchimp_interest_groups_form_elements($mc_list, $default_values = arr
     if ($field_type == 'select') {
       $options[''] = '-- select --';
     }
-    // TODO: Find equivalent in v3 API.
-    //foreach ($group['groups'] as $option) {
-      //$options[$option['name']] = $option['name'];
-    //}
+
+    foreach ($interests->interests as $interest) {
+      $options[$interest->name] = $interest->name;
+    }
+
     // Grab the default values for this group:
     if ($email) {
-      $memberinfo = mailchimp_get_memberinfo($mc_list->id, $email);
+      $memberinfo = mailchimp_get_memberinfo($list->id, $email);
       if (isset($memberinfo['merges']['GROUPINGS'])) {
         $default_values = array();
         foreach ($memberinfo['merges']['GROUPINGS'] as $membergroup) {
@@ -1314,7 +1321,7 @@ function mailchimp_interest_groups_form_elements($mc_list, $default_values = arr
       '#title' => $group->title,
       '#options' => $options,
       '#default_value' => isset($default_values[$group->id]) ? $default_values[$group->id] : array(),
-      '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $mc_list->id)),
+      '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $list->id)),
     );
   }
   return $return;
