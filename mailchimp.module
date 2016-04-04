@@ -334,8 +334,8 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
       throw new MailchimpException('Cannot get member info without MailChimp API. Check API key has been entered.');
     }
     $result = $mc_lists->getMemberInfo($list_id, $email);
-    if ($result['success_count']) {
-      $memberinfo = reset($result['data']);
+    if (!empty($result->id)) {
+      $memberinfo = $result;
       cache_set($list_id . '-' . $email, $memberinfo, 'cache_mailchimp', CACHE_TEMPORARY);
     }
   }
@@ -1275,6 +1275,10 @@ function mailchimp_interest_groups_form_elements($list, $default_values = array(
 
     $interests = $mc_lists->getInterests($list->id, $group->id);
 
+    if (!empty($email)) {
+      $memberinfo = mailchimp_get_memberinfo($list->id, $email);
+    }
+
     // Set the form field type:
     switch ($group->type) {
       case 'radio':
@@ -1295,27 +1299,19 @@ function mailchimp_interest_groups_form_elements($list, $default_values = array(
       $options[''] = '-- select --';
     }
 
+    $default_values = array();
+
+    // Set interest options and default values.
     foreach ($interests->interests as $interest) {
       $options[$interest->name] = $interest->name;
-    }
 
-    // Grab the default values for this group:
-    if ($email) {
-      $memberinfo = mailchimp_get_memberinfo($list->id, $email);
-      if (isset($memberinfo['merges']['GROUPINGS'])) {
-        $default_values = array();
-        foreach ($memberinfo['merges']['GROUPINGS'] as $membergroup) {
-          if ($membergroup['id'] == $group->id) {
-            foreach ($membergroup['groups'] as $option) {
-              if ($option['interested']) {
-                $default_values[$group->id][] = $option['name'];
-              }
-            }
-            break;
-          }
+      if (isset($memberinfo)) {
+        if (isset($memberinfo->interests->{$interest->id}) && ($memberinfo->interests->{$interest->id} === TRUE)) {
+          $default_values[$group->id][] = $interest->name;
         }
       }
     }
+
     $return[$group->id] = array(
       '#type' => $field_type,
       '#title' => $group->title,
