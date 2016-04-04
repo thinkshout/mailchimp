@@ -798,13 +798,15 @@ function _mailchimp_campaign_recursive_unset(&$array, $unwanted_key) {
  *   A renderable array for the campaign stats page.
  */
 function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
-  $mcapi = mailchimp_get_api_object();
+  /* @var \Mailchimp\MailchimpReports $mc_reports */
+  $mc_reports = mailchimp_get_api_object('MailchimpReports');
 
   try {
-    if (!$mcapi) {
+    if (!$mc_reports) {
       throw new MailchimpException('Cannot get campaign stats without MailChimp API. Check API key has been entered.');
     }
-    $response = $mcapi->reports->summary($campaign->mc_campaign_id);
+
+    $result = $mc_reports->getCampaignSummary($campaign->mc_campaign_id);
   }
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
@@ -812,27 +814,38 @@ function mailchimp_campaign_stats_page(MailChimpCampaign $campaign) {
       'An error occurred getting report data from MailChimp: @msg', array('@msg' => $e->getMessage()), WATCHDOG_ERROR);
   }
 
-  if (empty($response)) {
-    return t('The campaign stats are unavailable at this time.');
-  }
-
   // Tabular summary:
-  $rows = array();
-  foreach ($response as $key => $stat) {
-    if (is_array($stat)) {
-      break;
+  $rows = array(
+    array(t('Emails sent'), $result->emails_sent),
+    array(t('Abuse reports'), $result->abuse_reports),
+    array(t('Unsubscribed'), $result->unsubscribed),
+  );
+
+  $stat_groups = array('bounces', 'forwards', 'opens', 'clicks', 'facebook_likes', 'list_stats');
+
+  foreach ($stat_groups as $group) {
+    $rows[] = array(
+      'data' => array(
+        array(
+          'data' => '<strong>' . drupal_ucfirst(str_replace('_', ' ', $group)) . '</strong>',
+          'colspan' => 2,
+        ),
+      ),
+    );
+
+    foreach ($result->{$group} as $key => $stat) {
+      $rows[] = array($key, drupal_ucfirst(str_replace('_', ' ', $stat)));
     }
-    $rows[] = array($key, drupal_ucfirst(str_replace('_', ' ', $stat)));
   }
 
   // Time series chart data:
   $settings = array();
-  foreach ($response['timeseries'] as $series) {
+  foreach ($result->timeseries as $series) {
     $settings['mailchimp_campaign']['stats'][] = array(
-      'timestamp' => $series['timestamp'],
-      'emails_sent' => isset($series['emails_sent']) ? $series['emails_sent'] : 0,
-      'unique_opens' => $series['unique_opens'],
-      'recipients_click' => $series['recipients_click'],
+      'timestamp' => $series->timestamp,
+      'emails_sent' => $series->emails_sent,
+      'unique_opens' => $series->unique_opens,
+      'recipients_click' => $series->recipients_clicks,
     );
   }
 
