@@ -164,7 +164,7 @@ function mailchimp_campaign_campaign_form($form, &$form_state, MailChimpCampaign
         $form_state['values']['content'][$section . '_wrapper']['entity_import']['entity_type'] : NULL;
 
       $form['content'][$section . '_wrapper'] += mailchimp_campaign_get_entity_import_form_elements($entity_type, $section);
-      $form['content'][$section . '_wrapper'] += mailchimp_campaign_get_merge_vars_form_elements($merge_vars, $mailchimp_lists[$list_id]['name']);
+      $form['content'][$section . '_wrapper'] += mailchimp_campaign_get_merge_vars_form_elements($merge_vars, $mailchimp_lists[$list_id]->name);
     }
   }
   else {
@@ -275,16 +275,16 @@ function mailchimp_campaign_campaign_form_validate($form, &$form_state) {
 function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
   $values = $form_state['values'];
 
-  $segment_options = NULL;
+  $options = (object) array(
+    'list_id' => $values['list_id'],
+  );
+
   if (isset($values['list_segment_id']) && !empty($values['list_segment_id'])) {
-    $segment_options = (object) array(
+    $options->segment_opts = (object) array(
       'saved_segment_id' => (int) $values['list_segment_id'],
     );
   }
-  $options = (object) array(
-    'list_id' => $values['list_id'],
-    'segment_opts' => $segment_options,
-  );
+
   $settings = (object) array(
     'subject_line' => $values['subject'],
     'title' => $values['title'],
@@ -572,8 +572,8 @@ function _mailchimp_campaign_build_merge_vars_html($merge_vars) {
     $rows = array();
     foreach ($merge_vars as $var) {
       $rows[] = array(
-        $var['name'],
-        '<a id="merge-var-' . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a>',
+        $var->name,
+        '<a id="merge-var-' . $var->tag . '" class="add-merge-var" href="javascript:void(0);">*|' . $var->tag . '|*</a>',
       );
     }
     $table = theme('table', array('rows' => $rows));

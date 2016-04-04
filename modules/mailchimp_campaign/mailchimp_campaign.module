@@ -229,18 +229,25 @@ function mailchimp_campaign_overview_page() {
       $actions[] = t('Sent');
     }
 
+    $campaign_template = NULL;
+    foreach ($templates as $template_set) {
+      foreach ($template_set as $template) {
+        if ($template->id == $campaign->mc_data->settings->template_id) {
+          $campaign_template = $template;
+        }
+      }
+    }
+
     $rows[] = array(
       l($campaign->label(),
         'admin/config/services/mailchimp/campaigns/' . $campaign->mc_campaign_id),
       $campaign->mc_data->settings->subject_line,
       $campaign->mc_data->status,
-      // TODO: Fix for v3 API.
-      //l($campaign->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list['web_id'],
-      //  array(
-      //    'attributes' => array('target' => '_blank'),
-      //  )),
-      '',
-      isset($templates[$campaign->mc_data->settings->template_id]) ? $templates[$campaign->mc_data->settings->template_id]['name'] : '',
+      l($campaign->list->name, 'https://admin.mailchimp.com/lists/',
+        array(
+          'attributes' => array('target' => '_blank'),
+        )),
+      ($campaign_template != NULL) ? $campaign_template->name : '',
       $campaign->mc_data->create_time,
       implode(' | ', $actions),
     );
@@ -390,7 +397,7 @@ function mailchimp_campaign_save_campaign($template, $options, $settings, $templ
   }
   else {
     drupal_set_message(t('Campaign %name (%cid) was successfully saved.',
-      array('%name' => $options->title, '%cid' => $campaign_id)));
+      array('%name' => $settings->title, '%cid' => $campaign_id)));
 
     // Save the campaign entity:
     $campaign = entity_create('mailchimp_campaign', array(
@@ -508,7 +515,9 @@ function mailchimp_campaign_delete_campaign($cid) {
     }
 
     $mc_campaigns->delete($cid);
+    mailchimp_campaign_delete($cid);
 
+    watchdog('mailchimp_campaign', 'MailChimp campaign %cid was deleted.', array('%cid' => $cid));
     return TRUE;
   }
   catch (Mailchimp_Error $e) {

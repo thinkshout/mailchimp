@@ -23,8 +23,8 @@ class MailChimpCampaignController extends EntityAPIController {
       $campaign->mc_data = $mc_campaigns[$mc_campaign_id];
 
       // Lists are cached separately, but we want to load them here.
-      if (isset($campaign->mc_data->list_id) && $campaign->mc_data->list_id) {
-        $campaign->list = mailchimp_get_list($campaign->mc_data->list_id);
+      if (isset($campaign->mc_data->recipients->list_id) && $campaign->mc_data->recipients->list_id) {
+        $campaign->list = mailchimp_get_list($campaign->mc_data->recipients->list_id);
       }
 
       if (!empty($campaign->mc_data->settings->template_id)) {

@@ -35,11 +35,11 @@ class MailChimpCampaign extends Entity {
 
     $list_segment_name = 'N/A';
 
-    $list_segments = mailchimp_campaign_get_list_segments($this->list['id'], 'saved');
+    $list_segments = mailchimp_campaign_get_list_segments($this->list->id, 'saved');
     if (isset($this->mc_data->recipients->segment_opts->saved_segment_id)) {
       foreach ($list_segments as $list_segment) {
-        if ($list_segment['id'] == $this->mc_data->recipients->segment_opts->saved_segment_id) {
-          $list_segment_name = $list_segment['name'];
+        if ($list_segment->id == $this->mc_data->recipients->segment_opts->saved_segment_id) {
+          $list_segment_name = $list_segment->name;
         }
       }
     }
@@ -51,7 +51,7 @@ class MailChimpCampaign extends Entity {
       ),
       'list' => array(
         'label' => t('MailChimp List'),
-        'value' => l($this->list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $this->list['web_id'], array(
+        'value' => l($this->list->name, 'https://admin.mailchimp.com/lists/', array(
           'attributes' => array('target' => '_blank'),
         )),
       ),
