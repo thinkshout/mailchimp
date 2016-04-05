@@ -325,6 +325,20 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
     }
   }
 
+  // Build content parameters.
+  $content_parameters = array();
+
+  if (!empty($template_id)) {
+    // Use template sections as campaign content.
+    $content_parameters['template'] = (object) array(
+      'id' => (int) $template_id,
+      'sections' => (object) $content['sections'],
+    );
+  } else if (isset($content['html'])) {
+    // Use HTML as campaign content.
+    $content_parameters['html'] = $content['html'];
+  }
+
   /* @var \Mailchimp\MailchimpCampaigns $mc_campaigns */
   $mc_campaigns = mailchimp_get_api_object('MailchimpCampaigns');
 
@@ -339,20 +353,7 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
       $result = $mc_campaigns->addCampaign(\Mailchimp\MailchimpCampaigns::CAMPAIGN_TYPE_REGULAR, $recipients, $settings);
 
       if (!empty($result->id)) {
-        $parameters = array();
-
-        if (!empty($template_id)) {
-          // Use template sections as campaign content.
-          $parameters['template'] = (object) array(
-            'id' => (int) $template_id,
-            'sections' => (object) $content['sections'],
-          );
-        } else if (isset($content['html'])) {
-          // Use HTML as campaign content.
-          $parameters['html'] = $content['html'];
-        }
-
-        $mc_campaigns->setCampaignContent($result->id, $parameters);
+        $mc_campaigns->setCampaignContent($result->id, $content_parameters);
       }
     }
     catch (Mailchimp_Error $e) {
@@ -366,19 +367,17 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
     }
   }
   else {
-    // Updates must be sent one type at a time.
+    // Update an existing campaign.
     try {
       if (!$mc_campaigns) {
         throw new MailchimpException('Cannot update campaign without Mailchimp API. Check API key has been entered.');
       }
 
-      $mc_campaigns->updateCampaign($campaign_id, \Mailchimp\MailchimpCampaigns::CAMPAIGN_TYPE_REGULAR);
+      $result = $mc_campaigns->updateCampaign($campaign_id, \Mailchimp\MailchimpCampaigns::CAMPAIGN_TYPE_REGULAR, $recipients, $settings);
 
-      // TODO: Convert to v3 API.
-
-      //$mcapi->campaigns->update($campaign_id, 'options', $options);
-      //$mcapi->campaigns->update($campaign_id, 'segment_opts', $segment_options);
-      //$mcapi->campaigns->update($campaign_id, 'content', $content);
+      if (!empty($result->id)) {
+        $mc_campaigns->setCampaignContent($result->id, $content_parameters);
+      }
     }
     catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
