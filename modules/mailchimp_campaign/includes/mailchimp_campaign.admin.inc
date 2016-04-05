@@ -292,7 +292,7 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
     'reply_to' => $values['from_email'],
   );
 
-  $template_content = _mailchimp_campaign_parse_template_content($values['content']);
+  $template_content = (isset($values['content'])) ? _mailchimp_campaign_parse_template_content($values['content']) : array();
 
   $campaign_id = (isset($form_state['campaign']) ? $form_state['campaign']->mc_campaign_id : NULL);
   mailchimp_campaign_save_campaign($template_content, $recipients, $settings, $values['template_id'], $campaign_id);
