@@ -6,7 +6,7 @@
 
 namespace Drupal\mailchimp_campaign\Form;
 
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\ContentEntityForm;
@@ -277,31 +277,34 @@ class MailchimpCampaignForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $options = array(
-      'title' => $form_state->getValue('title'),
-      'subject' => $form_state->getValue('subject'),
-      'list_id' => $form_state->getValue('list_id'),
-      'from_email' => $form_state->getValue('from_email'),
-      'from_name' => SafeMarkup::checkPlain($form_state->getValue('from_name')),
-      'template_id' => $form_state->getValue('template_id'),
+    $values = $form_state->getValues();
+
+    $recipients = (object) array(
+      'list_id' => $values['list_id'],
     );
-    $segment_options = NULL;
-    if (!empty($form_state->getValue('list_segment_id')) && !empty($form_state->getValue('list_segment_id'))) {
-      $segment_options = array(
-        'saved_segment_id' => $form_state->getValue('list_segment_id'),
+
+    if (isset($values->list_segement_id) && !empty($values->list_segment_id)) {
+      $recipients->segment_opts = (object) array(
+        'saved_segment_id' => (int) $values->list_segment_id,
       );
     }
 
+    $settings = (object) array(
+      'subject_line' => $values['subject'],
+      'title' => $values['title'],
+      'from_name' => Html::escape($values['from_name']),
+      'reply_to' => $values['from_email'],
+    );
+
     $template_content = $this->parseTemplateContent($form_state->getValue('content'));
 
-    $existing_campaign_id = (!empty($form_state->getValue('campaign'))) ? $form_state->getValue('campaign')->mc_campaign_id : NULL;
-    $campaign_id = mailchimp_campaign_save_campaign($template_content, $options, $segment_options, $existing_campaign_id);
+    $campaign_id = (!empty($form_state->getValue('campaign'))) ? $form_state->getValue('campaign')->mc_campaign_id : NULL;
+    mailchimp_campaign_save_campaign($template_content, $recipients, $settings, $values['template_id'], $campaign_id);
 
-    /* @var $campaign \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
-    $campaign = $this->getEntity();
-    $campaign->setMcCampaignId($campaign_id);
-    $campaign->setTemplate($template_content);
-    $campaign->save();
+    /* @var \Mailchimp\MailchimpCampaigns $mcapi */
+    $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
+//    $mcapi->setTemplate($template_content);
+//    $mcapi->save();
 
     // Clear campaigns cache.
     $cache = \Drupal::cache('mailchimp');
@@ -412,23 +415,23 @@ class MailchimpCampaignForm extends ContentEntityForm {
    *   Associative array of item IDs to name.
    */
   private function buildOptionList($list, $no_selection_label = '-- Select --', $labels = array()) {
-    $options = array();
+    $recipients = array();
     if ($no_selection_label) {
-      $options[''] = $no_selection_label;
+      $recipients[''] = $no_selection_label;
     }
     foreach ($list as $index => $item) {
       if (!isset($item->id)) {
         $label = isset($labels[$index]) ? $labels[$index] : $index;
         if (count($item)) {
-          $options[$label] = $this->buildOptionList($item, FALSE, $labels);
+          $recipients[$label] = $this->buildOptionList($item, FALSE, $labels);
         }
       }
       else {
-        $options[$item->id] = $item->name;
+        $recipients[$item->id] = $item->name;
       }
     }
 
-    return $options;
+    return $recipients;
   }
 
   /**
@@ -444,18 +447,18 @@ class MailchimpCampaignForm extends ContentEntityForm {
    *   Associative array of entity IDs to name.
    */
   private function buildEntityOptionList($entity_info) {
-    $options = array(
+    $recipients = array(
       '' => '-- Select --',
     );
 
     foreach ($entity_info as $entity_id => $entity_data) {
       // Exclude MailChimp entities.
       if (strpos($entity_id, 'mailchimp') === FALSE) {
-        $options[$entity_id] = $entity_data->getLabel();
+        $recipients[$entity_id] = $entity_data->getLabel();
       }
     }
 
-    return $options;
+    return $recipients;
   }
 
   /**
@@ -468,15 +471,15 @@ class MailchimpCampaignForm extends ContentEntityForm {
    *   Associative array of view mode IDs to name.
    */
   private function buildEntityViewModeOptionList($entity_type) {
-    $options = array();
+    $recipients = array();
 
     $view_modes = \Drupal::entityManager()->getViewModes($entity_type);
 
     foreach ($view_modes as $view_mode_id => $view_mode_data) {
-      $options[$view_mode_id] = $view_mode_data['label'];
+      $recipients[$view_mode_id] = $view_mode_data['label'];
     }
 
-    return $options;
+    return $recipients;
   }
 
   /**
