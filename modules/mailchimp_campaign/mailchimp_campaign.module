@@ -942,14 +942,6 @@ function mailchimp_campaign_get_campaigns($campaign_ids, $reset = FALSE) {
       return NULL;
     }
 
-    /*
-    if (isset($response['total']) && $response['total'] > 0) {
-      foreach ($response['data'] as $campaign) {
-        $campaigns[$campaign['id']] = $campaign;
-      }
-    }
-    */
-
     cache_set('campaigns', $campaigns, 'cache_mailchimp');
   }
 

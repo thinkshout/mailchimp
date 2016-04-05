@@ -443,9 +443,6 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $doub
 
     $result = $mc_lists->addMember($list_id, $email, $parameters);
 
-    // TODO: Determine how to map parameters from old API.
-    //$result = $mcapi->lists->subscribe($list_id, array('email' => $email), $merge_vars, $format, $double_optin, $update_existing, $replace_interests, $confirm);
-
     if (isset($result['email'])) {
       module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
       // Clear user cache, just in case there's some cruft leftover:
