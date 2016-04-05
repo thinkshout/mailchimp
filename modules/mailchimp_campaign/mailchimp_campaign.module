@@ -61,8 +61,6 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
  *   Associative array of template content indexed by section IDs.
  * @param object $recipients
  *   Associative array of template values.
- * @param array $segment_options
- *   Associative array of list segment options.
  * @param string $campaign_id
  *   The ID of the campaign to save, if updating.
  *
@@ -93,13 +91,6 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
     $content = array(
       'sections' => mailchimp_campaign_render_template($template),
     );
-  }
-
-  // Test for valid list segment, if selected.
-  if ($segment_options != NULL) {
-    if (mailchimp_test_list_segment($options['list_id'], $segment_options['saved_segment_id']) === NULL) {
-      return NULL;
-    }
   }
 
   // Save campaign to MailChimp. (Only regular campaigns are supported).
