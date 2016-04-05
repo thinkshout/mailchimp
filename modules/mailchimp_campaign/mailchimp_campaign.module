@@ -408,7 +408,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
   $cache = \Drupal::cache('mailchimp');
   $cached_campaigns = $cache->get('campaigns');
 
-  $mc_campaigns = array();
+  $campaigns = array();
   foreach ($mc_campaign_ids as $id) {
     if (!isset($cached_campaigns->data[$id])
       || ($cached_campaigns->data[$id]['status'] == MAILCHIMP_STATUS_SENDING)
@@ -416,7 +416,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
       $to_refresh[] = $id;
     }
     else {
-      $mc_campaigns[$id] = $cached_campaigns->data[$id];
+      $campaigns[$id] = $cached_campaigns->data[$id];
     }
   }
 
@@ -446,16 +446,10 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
       return NULL;
     }
 
-    if (isset($response->total) && $response->total > 0) {
-      foreach ($response->data as $mc_campaign) {
-        $mc_campaigns[$mc_campaign['id']] = $mc_campaign;
-      }
-    }
-
-    $cache->set('campaigns', $mc_campaigns);
+    $cache->set('campaigns', $campaigns);
   }
 
-  return $mc_campaigns;
+  return $campaigns;
 }
 
 /**
