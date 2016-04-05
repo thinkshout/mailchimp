@@ -477,7 +477,7 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
     return NULL;
   }
 
-  return $response[$type];
+  return $response->$type;
 }
 
 /**

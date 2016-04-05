@@ -59,13 +59,13 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#title' => t('Title'),
       '#description' => t('An internal name to use for this campaign. By default, the campaign subject will be used.'),
       '#required' => FALSE,
-      '#default_value' => ($campaign) ? $campaign->mc_data['title'] : '',
+      '#default_value' => ($campaign) ? $campaign->mc_data->settings->title : '',
     );
     $form['subject'] = array(
       '#type' => 'textfield',
       '#title' => t('Subject'),
       '#required' => TRUE,
-      '#default_value' => ($campaign) ? $campaign->mc_data['subject'] : '',
+      '#default_value' => ($campaign) ? $campaign->mc_data->settings->subject_line : '',
     );
     $mailchimp_lists = mailchimp_get_lists();
     $form['list_id'] = array(
@@ -73,7 +73,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#title' => t('List'),
       '#description' => t('Select the list this campaign should be sent to.'),
       '#options' => $this->buildOptionList($mailchimp_lists),
-      '#default_value' => ($campaign) ? $campaign->mc_data['list_id'] : -1,
+      '#default_value' => ($campaign) ? $campaign->mc_data->recipients->list_id : -1,
       '#required' => TRUE,
       '#ajax' => array(
         'callback' => 'Drupal\mailchimp_campaign\Form\MailchimpCampaignForm::listSegmentCallback',
@@ -84,7 +84,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       $list_id = $form_state->getValue('list_id');
     }
     elseif ($campaign && $campaign->mc_data) {
-      $list_id = $campaign->mc_data['list_id'];
+      $list_id = $campaign->mc_data->id;
       if (isset($campaign->mc_data['saved_segment']['id'])) {
         $segment_id = $campaign->mc_data['saved_segment']['id'];
       }
@@ -237,7 +237,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
 
       $form['content'][$section . '_wrapper'] += $this->getEntityImportFormElements($entity_type, $section);
 
-      $list_name = (!empty($list_id)) ? $mailchimp_lists[$list_id]['name'] : '';
+      $list_name = (!empty($list_id)) ? $mailchimp_lists[$list_id]->name : '';
       $form['content'][$section . '_wrapper'] += $this->getMergeVarsFormElements($merge_vars, $list_name);
     }
 

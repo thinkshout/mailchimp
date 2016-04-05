@@ -36,12 +36,12 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
     }
 
     // Get the template name.
-    $mc_template = mailchimp_campaign_get_template($entity->mc_data['template_id']);
-    $mc_template_name = isset($mc_template) ? $mc_template['name'] : '';
+    $mc_template = mailchimp_campaign_get_template($entity->mc_data->settings->template_id);
+    $mc_template_name = isset($mc_template) ? $mc_template->name : '';
 
     $list_segment_name = 'N/A';
 
-    $list_segments = mailchimp_campaign_get_list_segments($entity->list['id'], 'saved');
+    $list_segments = mailchimp_campaign_get_list_segments($entity->list->id, 'saved');
     if (isset($entity->mc_data['saved_segment']['id'])) {
       foreach ($list_segments as $list_segment) {
         if ($list_segment['id'] == $entity->mc_data['saved_segment']['id']) {

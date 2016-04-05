@@ -23,7 +23,7 @@ class MailchimpCampaignAccessControlHandler extends EntityAccessControlHandler {
    */
   public function access(EntityInterface $entity, $operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
     /* @var $entity \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
-    $status = $entity->mc_data['status'];
+    $status = $entity->mc_data->status;
     switch ($operation) {
       case 'send':
       case 'edit':
