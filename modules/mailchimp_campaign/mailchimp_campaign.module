@@ -4,6 +4,7 @@
  * Module file for mailchimp_campaign.
  */
 
+use \Mailchimp\MailchimpAPIException;
 use \Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
 
 ///**
@@ -99,7 +100,7 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
     try {
       $result = $mcapi->campaigns->create('regular', $options, $content, $segment_options);
     }
-    catch (Mailchimp_Error $e) {
+    catch (MailchimpAPIException $e) {
       drupal_set_message($e->getMessage(), 'error');
       \Drupal::logger('mailchimp_campaign')->error('An error occurred while creating this campaign: {message}', array(
         'message' => $e->getMessage()));
@@ -112,8 +113,8 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
   else {
     // Updates must be sent one type at a time.
     try {
-      if (!$mc_campaigns) {
-        throw new MailchimpException('Cannot update campaign without Mailchimp API. Check API key has been entered.');
+      if (!$mcapi) {
+        throw new MailchimpAPIException('Cannot update campaign without Mailchimp API. Check API key has been entered.');
       }
 
       $mc_campaigns->updateCampaign($campaign_id, \Mailchimp\MailchimpCampaigns::CAMPAIGN_TYPE_REGULAR);
@@ -124,7 +125,7 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
       //$mcapi->campaigns->update($campaign_id, 'segment_opts', $segment_options);
       //$mcapi->campaigns->update($campaign_id, 'content', $content);
     }
-    catch (Mailchimp_Error $e) {
+    catch (MailchimpAPIException $e) {
       drupal_set_message($e->getMessage(), 'error');
       watchdog('mailchimp_campaign',
         'An error occurred while updating this campaign: @msg', array('@msg' => $e->getMessage()), WATCHDOG_ERROR);
@@ -172,7 +173,7 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
   try {
     $result = $mcapi->campaigns->send($campaign->getMcCampaignId());
   }
-  catch (Mailchimp_Error $e) {
+  catch (MailchimpAPIException $e) {
     drupal_set_message($e->getMessage(), 'error');
     \Drupal::logger('mailchimp_campaign')->error('An error occurred while sending to this campaign: {message}', array(
       'message' => $e->getMessage()));
@@ -214,7 +215,7 @@ function mailchimp_campaign_delete_campaign(MailchimpCampaign $campaign) {
   try {
     $result = $mcapi->campaigns->delete($campaign->id());
   }
-  catch (Mailchimp_Error $e) {
+  catch (MailchimpAPIException $e) {
     drupal_set_message($e->getMessage(), 'error');
     \Drupal::logger('mailchimp_campaign')->error('An error occurred while deleting this campaign: {message}', array(
       'message' => $e->getMessage()));
@@ -400,7 +401,8 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
     try {
       $response = $mcapi->campaigns->getList(array('campaign_id' => implode(',', $to_refresh)));
     }
-    catch (Mailchimp_Error $e) {
+
+    catch (MailchimpAPIException $e) {
       drupal_set_message($e->getMessage(), 'error');
       \Drupal::logger('mailchimp_campaign')->error('An error occurred while getting campaigns: {message}', array(
         'message' => $e->getMessage()));
@@ -437,7 +439,7 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
   try {
     $response = $mcapi->lists->segments($list_id, $type);
   }
-  catch (Mailchimp_Error $e) {
+  catch (MailchimpAPIException $e) {
     drupal_set_message($e->getMessage(), 'error');
     \Drupal::logger('mailchimp_campaign')->error('An error occurred getting list segments for list ID {list_id}: {message} ', array(
       'list_id' => $list_id,
@@ -468,7 +470,7 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
     $result = $mcapi->campaigns->segmentTest($list_id,
       array('saved_segment_id' => $list_segment_id));
   }
-  catch (Mailchimp_Error $e) {
+  catch (MailchimpAPIException $e) {
     drupal_set_message($e->getMessage(), 'error');
     \Drupal::logger('mailchimp_campaign')->error('An error occurred testing a list segment: {message}', array(
       'message' => $e->getMessage()));
