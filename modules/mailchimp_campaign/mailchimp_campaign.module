@@ -314,10 +314,6 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
  *   An array with all configuration and content for a Mailchimp Template.
  */
 function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
-//  $cache = \Drupal::cache('mailchimp');
-//
-//  $cached_template = $cache->get('template_' . $template_id);
-//
   $all_templates = mailchimp_campaign_list_templates($reset);
 
   foreach ($all_templates as $type) {
