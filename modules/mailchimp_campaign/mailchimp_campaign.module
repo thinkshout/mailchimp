@@ -59,7 +59,7 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
  *
  * @param array $template
  *   Associative array of template content indexed by section IDs.
- * @param array $options
+ * @param object $recipients
  *   Associative array of template values.
  * @param array $segment_options
  *   Associative array of list segment options.
@@ -69,18 +69,21 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
  * @return string
  *   New or existing campaign ID.
  */
-function mailchimp_campaign_save_campaign($template, $options, $segment_options = NULL, $campaign_id = NULL) {
+function mailchimp_campaign_save_campaign($template, $recipients, $settings, $template_id, $campaign_id = NULL) {
   /* @var \Mailchimp\MailchimpCampaigns $mcapi */
   $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
 
-  $options += array(
-    'generate_text' => TRUE,
-    'tracking' => array(
-      'opens' => TRUE,
-      'html_clicks' => TRUE,
-      'text_clicks' => TRUE,
-    ),
-  );
+//  $recipients = (object) array(
+//    'generate_text' => TRUE,
+//    'tracking' => array(
+//      'opens' => TRUE,
+//      'html_clicks' => TRUE,
+//      'text_clicks' => TRUE,
+//    ),
+//  );
+
+  // Allow alter of template and options used in campaign
+  \Drupal::moduleHandler()->alter('mailchimp_campaign', $recipients, $template, $campaign_id);
 
   // Convert template to content by running through formatter.
   if (isset($template['html'])) {
@@ -126,7 +129,7 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
 
       // TODO: Convert to v3 API.
 
-      //$mcapi->campaigns->update($campaign_id, 'options', $options);
+      //$mcapi->campaigns->update($campaign_id, 'options', $recipients);
       //$mcapi->campaigns->update($campaign_id, 'segment_opts', $segment_options);
       //$mcapi->campaigns->update($campaign_id, 'content', $content);
     }
@@ -145,7 +148,7 @@ function mailchimp_campaign_save_campaign($template, $options, $segment_options 
   }
   else {
     drupal_set_message(t('Campaign %name (%cid) was successfully saved.',
-      array('%name' => $options->title, '%cid' => $campaign_id)));
+      array('%name' => $recipients->title, '%cid' => $campaign_id)));
 
     // Save the campaign entity:
     $campaign = entity_create('mailchimp_campaign', array(
