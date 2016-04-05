@@ -305,18 +305,6 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
  * @throws MailchimpException
  */
 function mailchimp_campaign_save_campaign($template, $recipients, $settings, $template_id, $campaign_id = NULL) {
-  // TODO: Update for v3 API.
-  /*
-  $options += array(
-    'generate_text' => TRUE,
-    'tracking' => array(
-      'opens' => TRUE,
-      'html_clicks' => TRUE,
-      'text_clicks' => TRUE,
-    ),
-  );
-  */
-
   // Allow alter of template and options used in campaign
   drupal_alter('mailchimp_campaign', $recipients, $template, $campaign_id);
 
@@ -366,8 +354,6 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
 
         $mc_campaigns->setCampaignContent($result->id, $parameters);
       }
-
-      //$result = $mcapi->campaigns->create('regular', $options, $content, $segment_options);
     }
     catch (Mailchimp_Error $e) {
       drupal_set_message($e->getMessage(), 'error');
