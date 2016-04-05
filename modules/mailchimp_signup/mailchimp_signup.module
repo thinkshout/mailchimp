@@ -389,11 +389,11 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
     $form_state['mailchimp_results'] = $result;
     if (empty($result)) {
       drupal_set_message(t('There was a problem with your newsletter signup to %list.', array(
-        '%list' => $list_details[$list_id]['name'],
+        '%list' => $list_details[$list_id]->name,
       )), 'warning');
     }
     else {
-      $successes[] = $list_details[$list_id]['name'];
+      $successes[] = $list_details[$list_id]->name;
     }
   }
   if (count($successes) && isset($signup->settings['confirmation_message']) && strlen($signup->settings['confirmation_message'])) {

@@ -423,12 +423,22 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $doub
     );
 
     if (!empty($merge_vars)) {
-      $merge_fields = new stdClass();
-      foreach ($merge_vars as $var => $value) {
-        $merge_fields->$var = $value;
+      // Set interests.
+      $interest_groups = (isset($merge_vars['GROUPINGS'])) ? $merge_vars['GROUPINGS'] : array();
+      if (!empty($interest_groups)) {
+        $interests = array();
+        for ($i = 0; $i < count($interest_groups); $i++) {
+          foreach ($interest_groups[$i]['groups'] as $interest_id) {
+            $interests[$interest_id] = TRUE;
+          }
+        }
       }
 
-      $parameters['merge_fields'] = $merge_fields;
+      $parameters['interests'] = (object) $interests;
+
+      // Set merge fields.
+      unset($merge_vars['GROUPINGS']);
+      $parameters['merge_fields'] = (object) $merge_vars;
     }
 
     $result = $mc_lists->addMember($list_id, $email, $parameters);
@@ -1246,7 +1256,7 @@ function mailchimp_interest_groups_form_elements($list, $default_values = array(
     /* @var \Mailchimp\MailchimpLists $mc_lists */
     $mc_lists = mailchimp_get_api_object('MailchimpLists');
 
-    $interests = $mc_lists->getInterests($list->id, $group->id);
+    $interest_data = $mc_lists->getInterests($list->id, $group->id);
 
     if (!empty($email)) {
       $memberinfo = mailchimp_get_memberinfo($list->id, $email);
@@ -1275,12 +1285,12 @@ function mailchimp_interest_groups_form_elements($list, $default_values = array(
     $default_values = array();
 
     // Set interest options and default values.
-    foreach ($interests->interests as $interest) {
-      $options[$interest->name] = $interest->name;
+    foreach ($interest_data->interests as $interest) {
+      $options[$interest->id] = $interest->name;
 
       if (isset($memberinfo)) {
         if (isset($memberinfo->interests->{$interest->id}) && ($memberinfo->interests->{$interest->id} === TRUE)) {
-          $default_values[$group->id][] = $interest->name;
+          $default_values[$group->id][] = $interest->id;
         }
       }
     }
