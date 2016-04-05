@@ -7,36 +7,36 @@
 use \Mailchimp\MailchimpAPIException;
 use \Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
 
-///**
-// * Implements hook_entity_storage_load()
-// */
-//function mailchimp_campaign_entity_storage_load(array $entities, $entity_type) {
-//  if ($entity_type != 'mailchimp_campaign') {
-//    return;
-//  }
-//
-//  $ids = array();
-//  if (!empty($entities)) {
-//    /* @var \Mailchimp\MailchimpCampaigns $mc_campaigns */
-//    foreach ($entities as $campaign) {
-//      $ids[] = $campaign->getMcCampaignId();
-//    }
-//  }
-//  $mc_campaigns = mailchimp_campaign_get_campaigns($ids);
-//
-//  foreach ($entities as $mc_campaign_id => $campaign) {
-//    $campaign->mc_data = $mc_campaigns[$mc_campaign_id];
-//
-//    // Lists are cached separately, but we want to load them here.
-//    if (isset($campaign->mc_data['list_id']) && $campaign->mc_data['list_id']) {
-//      $campaign->list = mailchimp_get_list($campaign->mc_data['list_id']);
-//    }
-//
-//    if (isset($campaign->mc_data['template_id']) && $campaign->mc_data['template_id']) {
-//      $campaign->mc_template = mailchimp_campaign_get_template($campaign->mc_data['template_id']);
-//    }
-//  }
-//}
+/**
+ * Implements hook_entity_storage_load()
+ */
+function mailchimp_campaign_entity_storage_load(array $entities, $entity_type) {
+  if ($entity_type != 'mailchimp_campaign') {
+    return;
+  }
+
+  $ids = array();
+  if (!empty($entities)) {
+    /* @var $campaign \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
+    foreach ($entities as $campaign) {
+      $ids[] = $campaign->getMcCampaignId();
+    }
+  }
+  $mc_campaigns = mailchimp_campaign_get_campaigns($ids);
+
+  foreach ($entities as $mc_campaign_id => $campaign) {
+    $campaign->mc_data = $mc_campaigns[$mc_campaign_id];
+
+    // Lists are cached separately, but we want to load them here.
+    if (isset($campaign->mc_data->recipients->list_id) && $campaign->mc_data->recipients->list_id) {
+      $campaign->list = mailchimp_get_list($campaign->mc_data->recipients->list_id);
+    }
+
+    if (isset($campaign->mc_data->settings->template_id) && $campaign->mc_data->settings->template_id) {
+      $campaign->mc_template = mailchimp_campaign_get_template($campaign->mc_data->settings->template_id);
+    }
+  }
+}
 
 /**
  * Implements hook_theme().
