@@ -283,14 +283,14 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
         'gallery' => 1,
       );
 
-      $response = $mcapi->getCampaigns($template_types);
-
       foreach ($template_types as $type => $chosen) {
         if ($chosen) {
           $all_templates[$type] = array();
 
-          foreach ($response->$type as $template) {
-            $all_templates[$type][$template['id']] = $template;
+          $response = $mc_templates->getTemplates(array('type' => $type));
+
+          foreach ($response->templates as $template) {
+            $all_templates[$type][$template->id] = $template;
           }
         }
       }
@@ -314,10 +314,10 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
  *   An array with all configuration and content for a Mailchimp Template.
  */
 function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
-  $cache = \Drupal::cache('mailchimp');
-
-  $cached_template = $cache->get('template_' . $template_id);
-
+//  $cache = \Drupal::cache('mailchimp');
+//
+//  $cached_template = $cache->get('template_' . $template_id);
+//
   $all_templates = mailchimp_campaign_list_templates($reset);
 
   foreach ($all_templates as $type) {
