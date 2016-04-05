@@ -426,8 +426,8 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
       return NULL;
     }
 
-    if (isset($response['total']) && $response['total'] > 0) {
-      foreach ($response['data'] as $mc_campaign) {
+    if (isset($response->total) && $response->total > 0) {
+      foreach ($response->data as $mc_campaign) {
         $mc_campaigns[$mc_campaign['id']] = $mc_campaign;
       }
     }
