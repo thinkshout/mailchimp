@@ -789,8 +789,6 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
 
     $result = $mc_lists->removeMember($list_id, $email);
 
-    // TODO: Find out how $delete, $goodbye, $notify work with the v3 API.
-    //$result = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
     if ($result) {
       module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
     }
