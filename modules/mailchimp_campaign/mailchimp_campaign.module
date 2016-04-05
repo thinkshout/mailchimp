@@ -351,12 +351,20 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
       $result = $mc_campaigns->addCampaign(\Mailchimp\MailchimpCampaigns::CAMPAIGN_TYPE_REGULAR, $recipients, $settings);
 
       if (!empty($result->id)) {
-        $mc_campaigns->setCampaignContent($result->id, array(
-          'template' => (object) array(
+        $parameters = array();
+
+        if (!empty($template_id)) {
+          // Use template sections as campaign content.
+          $parameters['template'] = (object) array(
             'id' => (int) $template_id,
             'sections' => (object) $content['sections'],
-          ),
-        ));
+          );
+        } else if (isset($content['html'])) {
+          // Use HTML as campaign content.
+          $parameters['html'] = $content['html'];
+        }
+
+        $mc_campaigns->setCampaignContent($result->id, $parameters);
       }
 
       //$result = $mcapi->campaigns->create('regular', $options, $content, $segment_options);
