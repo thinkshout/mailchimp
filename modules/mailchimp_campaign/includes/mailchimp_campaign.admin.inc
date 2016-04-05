@@ -275,12 +275,12 @@ function mailchimp_campaign_campaign_form_validate($form, &$form_state) {
 function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
   $values = $form_state['values'];
 
-  $options = (object) array(
+  $recipients = (object) array(
     'list_id' => $values['list_id'],
   );
 
   if (isset($values['list_segment_id']) && !empty($values['list_segment_id'])) {
-    $options->segment_opts = (object) array(
+    $recipients->segment_opts = (object) array(
       'saved_segment_id' => (int) $values['list_segment_id'],
     );
   }
@@ -295,7 +295,7 @@ function mailchimp_campaign_campaign_form_submit($form, &$form_state) {
   $template_content = _mailchimp_campaign_parse_template_content($values['content']);
 
   $campaign_id = (isset($form_state['campaign']) ? $form_state['campaign']->mc_campaign_id : NULL);
-  mailchimp_campaign_save_campaign($template_content, $options, $settings, $values['template_id'], $campaign_id);
+  mailchimp_campaign_save_campaign($template_content, $recipients, $settings, $values['template_id'], $campaign_id);
 
   cache_clear_all('mailchimp_campaign_campaigns', 'cache');
 
