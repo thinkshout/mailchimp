@@ -6,6 +6,7 @@
 
 use \Mailchimp\MailchimpAPIException;
 use \Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
+use Drupal\Core\Cache\CacheBackendInterface;
 
 /**
  * Implements hook_entity_storage_load()
@@ -329,7 +330,8 @@ function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
         /* @var \Mailchimp\MailchimpTemplates $mc_templates */
         if ($mc_templates = mailchimp_get_api_object('MailchimpTemplates')) {
           $template->info = $mc_templates->getTemplateContent($template_id);
-          \Drupal::cache()->set('template_' . $template_id, $template->info, 'cache_mailchimp', CACHE_TEMPORARY);
+          $tags = array('cache_mailchimp');
+          \Drupal::cache()->set('template_' . $template_id, $template->info, CacheBackendInterface::CACHE_PERMANENT, $tags);
         }
       }
 //      if (!$reset && !empty($cached_template)) {
