@@ -515,3 +515,16 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $reset = FALS
 
   return $controller->loadMultiple($campaign_ids);
 }
+
+/**
+ * Saves a campaign.
+ */
+function mailchimp_campaign_save(MailChimpCampaign $campaign) {
+  $campaign->updated = REQUEST_TIME;
+  // Set the creation timestamp if not set.
+  if (!isset($campaign->created) || empty($campaign->created)) {
+    $campaign->created = REQUEST_TIME;
+  }
+
+  return $campaign->save();
+}
