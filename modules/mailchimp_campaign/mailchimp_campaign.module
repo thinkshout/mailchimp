@@ -140,8 +140,9 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
     }
     catch (MailchimpAPIException $e) {
       drupal_set_message($e->getMessage(), 'error');
-      watchdog('mailchimp_campaign',
-        'An error occurred while updating this campaign: @msg', array('@msg' => $e->getMessage()), WATCHDOG_ERROR);
+      \Drupal::logger('mailchimp_campaign')->error(
+        'An error occurred while updating this campaign: @msg',
+        array('@msg' => $e->getMessage()));
       return NULL;
     }
   }
