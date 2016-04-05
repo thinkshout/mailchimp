@@ -182,7 +182,7 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
  *   TRUE if campaign is sent successfully.
  */
 function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
-  $mcapi = mailchimp_get_api_object();
+  $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
 
   try {
     $result = $mcapi->campaigns->send($campaign->getMcCampaignId());
@@ -221,7 +221,7 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
  * Delete a MailChimp campaign and the local entity.
  */
 function mailchimp_campaign_delete_campaign(MailchimpCampaign $campaign) {
-  $mcapi = mailchimp_get_api_object();
+  $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
 
   $result = NULL;
 
@@ -275,8 +275,8 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
   }
   // Query lists from the MailChimp API and store in cache.
   else {
-    /* @var \Mailchimp\MailchimpCampaigns $mcapi */
-    if ($mcapi = mailchimp_get_api_object('MailchimpCampaigns')) {
+    /* @var \Mailchimp\MailchimpTemplates $mc_templates */
+    if ($mc_templates = mailchimp_get_api_object('MailchimpTemplates')) {
       $template_types = array(
         'user' => 1,
         'base' => 1,
@@ -329,9 +329,10 @@ function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
         $template['info'] = $cached_template->data;
       }
       else {
-        if ($mcapi = mailchimp_get_api_object()) {
-          $template['info'] = $mcapi->templates->info($template_id);
-          $cache->set('template_' . $template_id, $template['info']);
+        /* @var \Mailchimp\MailchimpTemplates $mc_templates */
+        if ($mc_templates = mailchimp_get_api_object('MailchimpTemplates')) {
+          $template->info = $mc_templates->getTemplateContent($template_id);
+          \Drupal::cache()->set('template_' . $template_id, $template->info, 'cache_mailchimp', CACHE_TEMPORARY);
         }
       }
 
@@ -410,7 +411,8 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
   }
 
   if (!empty($to_refresh)) {
-    $mcapi = mailchimp_get_api_object();
+    /* @var \Mailchimp\MailchimpCampaigns $mcapi */
+    $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
 
     try {
       $response = $mcapi->campaigns->getList(array('campaign_id' => implode(',', $to_refresh)));
@@ -448,7 +450,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
  *   Array of MailChimp list segments.
  */
 function mailchimp_campaign_get_list_segments($list_id, $type) {
-  $mcapi = mailchimp_get_api_object();
+  $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
 
   try {
     $response = $mcapi->lists->segments($list_id, $type);
@@ -478,7 +480,7 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
  *   The number of subscribers contained in the segment.
  */
 function mailchimp_test_list_segment($list_id, $list_segment_id) {
-  $mcapi = mailchimp_get_api_object();
+  $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
 
   try {
     $result = $mcapi->campaigns->segmentTest($list_id,
