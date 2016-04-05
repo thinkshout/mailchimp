@@ -8,7 +8,6 @@
 define('MAILCHIMP_QUEUE_CRON', 'mailchimp');
 define('MAILCHIMP_BATCH_QUEUE_CRON', 'mailchimp_batch');
 
-// TODO: Confirm names for v3 API.
 define('MAILCHIMP_STATUS_SENT', 'sent');
 define('MAILCHIMP_STATUS_SAVE', 'save');
 define('MAILCHIMP_STATUS_PAUSED', 'paused');
