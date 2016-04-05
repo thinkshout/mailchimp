@@ -1006,41 +1006,6 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
 }
 
 /**
- * Wrapper around MCAPI->helper->campaignsForEmail().
- *
- * Returns all IDs of campaigns that have included a given email address.
- *
- * @param string $email
- *   Email address to search.
- *
- * @return array
- *   Campaign structs containing id, title, subject, send_time, type.
- */
-function mailchimp_get_campaigns_for_email($email) {
-  try {
-    /* @var \Mailchimp\MailchimpCampaigns $mc_campaigns */
-    $mc_campaigns = mailchimp_get_api_object('MailchimpCampaigns');
-    if (!$mc_campaigns) {
-      throw new MailchimpException('Cannot get campaigns without MailChimp API. Check API key has been entered.');
-    }
-
-    // TODO: Limit to campaigns for this email address if possible.
-    //$campaign_list = $mcapi->helper->campaignsForEmail(array('email' => $email));
-
-    $result = $mc_campaigns->getCampaigns();
-    $campaign_list = ($result->total_items > 0) ? $result->campaigns : array();
-  }
-  catch (Exception $e) {
-    watchdog('mailchimp', 'An error occurred retreiving campaign data for @email. "%message"', array(
-      '@email' => $email,
-      '%message' => $e->getMessage(),
-    ), WATCHDOG_ERROR);
-    $campaign_list = array();
-  }
-  return $campaign_list;
-}
-
-/**
  * Wrapper around MCAPI->helper->listsForEmail().
  *
  * Returns all lists a given email address is currently subscribed to.
