@@ -325,8 +325,9 @@ function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
       $template = $type[$template_id];
 
       // Get template details from cache or the MailChimp API.
-      if (!$reset && !empty($cached_template)) {
-        $template['info'] = $cached_template->data;
+      $cache = $reset ? NULL : \Drupal::cache()->get('template_' . $template_id, 'cache_mailchimp');
+      if ($cache) {
+        $template->info = $cache->data;
       }
       else {
         /* @var \Mailchimp\MailchimpTemplates $mc_templates */
@@ -335,6 +336,15 @@ function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
           \Drupal::cache()->set('template_' . $template_id, $template->info, 'cache_mailchimp', CACHE_TEMPORARY);
         }
       }
+//      if (!$reset && !empty($cached_template)) {
+//        $template['info'] = $cached_template->data;
+//      }
+//      else {
+//        if ($mcapi = mailchimp_get_api_object()) {
+//          $template['info'] = $mcapi->templates->info($template_id);
+//          $cache->set('template_' . $template_id, $template['info']);
+//        }
+//      }
 
       return $template;
     }
