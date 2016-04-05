@@ -327,11 +327,11 @@ function mailchimp_campaign_save_campaign($template, $options, $settings, $templ
   }
 
   // Test for valid list segment, if selected.
-  //if ($segment_options != NULL) {
-    //if (mailchimp_test_list_segment($options['list_id'], $segment_options['saved_segment_id']) === NULL) {
-      //return NULL;
-    //}
-  //}
+  if (isset($options->segment_opts)) {
+    if (mailchimp_test_list_segment($options->list_id, $options->segment_opts->saved_segment_id) === NULL) {
+      return NULL;
+    }
+  }
 
   /* @var \Mailchimp\MailchimpCampaigns $mc_campaigns */
   $mc_campaigns = mailchimp_get_api_object('MailchimpCampaigns');
@@ -1005,19 +1005,15 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
  *   The number of subscribers contained in the segment.
  */
 function mailchimp_test_list_segment($list_id, $list_segment_id) {
-  return 0;
-
-  // TODO: Find alternative in v3 API.
-
-  /*
-  $mcapi = mailchimp_get_api_object();
+  /* @var \Mailchimp\MailchimpLists $mc_lists */
+  $mc_lists = mailchimp_get_api_object('MailchimpLists');
 
   try {
-    if (!$mcapi) {
+    if (!$mc_lists) {
       throw new MailchimpException('Cannot get campaign list segment without MailChimp API. Check API key has been entered.');
     }
-    $result = $mcapi->campaigns->segmentTest($list_id,
-      array('saved_segment_id' => $list_segment_id));
+
+    $result = $mc_lists->getSegmentMembers($list_id, $list_segment_id);
   }
   catch (Mailchimp_Error $e) {
     drupal_set_message($e->getMessage(), 'error');
@@ -1025,8 +1021,7 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
     return NULL;
   }
 
-  return $result['total'];
-  */
+  return $result->total_items;
 }
 
 /**
