@@ -462,10 +462,11 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
  *   Array of MailChimp list segments.
  */
 function mailchimp_campaign_get_list_segments($list_id, $type) {
-  $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
+  /* @var \Mailchimp\MailchimpLists $mcapi */
+  $mcapi = mailchimp_get_api_object('MailchimpLists');
 
   try {
-    $response = $mcapi->lists->segments($list_id, $type);
+    $response = $mcapi->getSegments($list_id, $type);
   }
   catch (MailchimpAPIException $e) {
     drupal_set_message($e->getMessage(), 'error');
