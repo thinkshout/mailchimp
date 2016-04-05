@@ -415,23 +415,23 @@ class MailchimpCampaignForm extends ContentEntityForm {
    *   Associative array of item IDs to name.
    */
   private function buildOptionList($list, $no_selection_label = '-- Select --', $labels = array()) {
-    $recipients = array();
+    $options = array();
     if ($no_selection_label) {
-      $recipients[''] = $no_selection_label;
+      $options[''] = $no_selection_label;
     }
     foreach ($list as $index => $item) {
       if (!isset($item->id)) {
         $label = isset($labels[$index]) ? $labels[$index] : $index;
         if (count($item)) {
-          $recipients[$label] = $this->buildOptionList($item, FALSE, $labels);
+          $options[$label] = $this->buildOptionList($item, FALSE, $labels);
         }
       }
       else {
-        $recipients[$item->id] = $item->name;
+        $options[$item->id] = $item->name;
       }
     }
 
-    return $recipients;
+    return $options;
   }
 
   /**
@@ -447,18 +447,18 @@ class MailchimpCampaignForm extends ContentEntityForm {
    *   Associative array of entity IDs to name.
    */
   private function buildEntityOptionList($entity_info) {
-    $recipients = array(
+    $options = array(
       '' => '-- Select --',
     );
 
     foreach ($entity_info as $entity_id => $entity_data) {
       // Exclude MailChimp entities.
       if (strpos($entity_id, 'mailchimp') === FALSE) {
-        $recipients[$entity_id] = $entity_data->getLabel();
+        $options[$entity_id] = $entity_data->getLabel();
       }
     }
 
-    return $recipients;
+    return $options;
   }
 
   /**
@@ -471,15 +471,15 @@ class MailchimpCampaignForm extends ContentEntityForm {
    *   Associative array of view mode IDs to name.
    */
   private function buildEntityViewModeOptionList($entity_type) {
-    $recipients = array();
+    $options = array();
 
     $view_modes = \Drupal::entityManager()->getViewModes($entity_type);
 
     foreach ($view_modes as $view_mode_id => $view_mode_data) {
-      $recipients[$view_mode_id] = $view_mode_data['label'];
+      $options[$view_mode_id] = $view_mode_data['label'];
     }
 
-    return $recipients;
+    return $options;
   }
 
   /**
