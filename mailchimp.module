@@ -440,7 +440,7 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $doub
 
     $result = $mc_lists->addMember($list_id, $email, $parameters);
 
-    if (isset($result['email'])) {
+    if (isset($result->id)) {
       module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
       // Clear user cache, just in case there's some cruft leftover:
       mailchimp_cache_clear_member($list_id, $email);
