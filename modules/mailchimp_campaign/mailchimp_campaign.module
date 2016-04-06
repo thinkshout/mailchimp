@@ -389,12 +389,7 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
 
   }
 
-  if (!isset($result->id)) {
-    // Display and log error, if any.
-    $message = 'MailChimp error. The campaign was not saved.';
-    _mailchimp_campaign_mcapi_error_message($result, $message);
-  }
-  else {
+  if (!empty($result->id)) {
     drupal_set_message(t('Campaign %name (%cid) was successfully saved.',
       array('%name' => $settings->title, '%cid' => $campaign_id)));
 
@@ -594,24 +589,6 @@ function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
     }
   }
   return NULL;
-}
-
-/**
- * Set and log error messages after MailChimp API errors.
- */
-function _mailchimp_campaign_mcapi_error_message($result, $message, $variables = array()) {
-  $mcapi_error_message = 'MailChimp error code: %errorCode, MailChimp error message: %errorMessage.';
-  $mcapi_error_variables = array(
-    '%errorCode' => $result['code'],
-    '%errorMessage' => $result['message'],
-  );
-
-  $human = t($message, $variables) . ' ' . t($mcapi_error_message, $mcapi_error_variables);
-  drupal_set_message($human, 'error');
-
-  $watchdog = $message . ' ' . $mcapi_error_message;
-  $variables = $variables + $mcapi_error_variables;
-  watchdog('mailchimp_campaign', $watchdog, $variables, WATCHDOG_ERROR);
 }
 
 /**
