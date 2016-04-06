@@ -472,7 +472,7 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
   else {
     if ($email) {
       $member_info = mailchimp_get_memberinfo($field['settings']['mc_list_id'], $email);
-      $member_status = (isset($member_info['status'])) ? $member_info['status'] : NULL;
+      $member_status = (isset($member_info->status)) ? $member_info->status : NULL;
       switch ($member_status) {
         case 'subscribed':
           $status = t('Subscribed to %list', array('%list' => $mc_list->name));
@@ -492,23 +492,25 @@ function mailchimp_lists_field_formatter_view($entity_type, $entity, $field, $in
       '#description' => t('@mc_list_description', array('@mc_list_description' => $instance['description'])),
     );
     if ($instance['settings']['show_interest_groups'] && $display['settings']['show_interest_groups']) {
-      $memberinfo = mailchimp_get_memberinfo($field['settings']['mc_list_id'], $email);
-      if (isset($memberinfo['merges']['GROUPINGS'])) {
+      if (!empty($mc_list->intgroups)) {
+
         $element['interest_groups'] = array(
           '#type' => 'fieldset',
           '#title' => t('Interest Groups'),
           '#weight' => 100,
         );
-        foreach ($memberinfo['merges']['GROUPINGS'] as $grouping) {
+
+        foreach ($mc_list->intgroups as $interest_group) {
           $items = array();
-          foreach ($grouping['groups'] as $interest) {
-            if ($interest['interested']) {
-              $items[] = $interest['name'];
+          foreach ($interest_group->interests as $interest) {
+            if (isset($member_info->interests->{$interest->id}) && ($member_info->interests->{$interest->id} === TRUE)) {
+              $items[] = $interest->name;
             }
           }
-          if (count($items)) {
-            $element['interest_groups'][$grouping['id']] = array(
-              '#title' => $grouping['name'],
+
+          if (count($items) > 0) {
+            $element['interest_groups'][$interest_group->id] = array(
+              '#title' => $interest_group->title,
               '#theme' => 'item_list',
               '#items' => $items,
               '#type' => 'ul',
