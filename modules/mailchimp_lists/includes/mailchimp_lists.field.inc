@@ -103,13 +103,6 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
     '#default_value' => isset($this_field['settings']['double_opt_in']) ? $this_field['settings']['double_opt_in'] : FALSE,
     '#disabled' => $disabled,
   );
-  $form['send_welcome'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Send a welcome email to new subscribers'),
-    '#description' => t('New subscribers will be sent a welcome email once they are confirmed.'),
-    '#default_value' => isset($this_field['settings']['send_welcome']) ? $this_field['settings']['send_welcome'] : FALSE,
-    '#disabled' => $disabled,
-  );
   $form['unsubscribe_action'] = array(
     '#type' => 'radios',
     '#title' => t('Action to take when unchecking this field'),

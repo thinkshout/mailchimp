@@ -200,13 +200,6 @@ function mailchimp_signup_form($form, &$form_state, MailchimpSignup $signup) {
     '#default_value' => isset($signup->settings['doublein']) ? $signup->settings['doublein'] : FALSE,
   );
 
-  $form['subscription_settings']['send_welcome'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Send a welcome email to new subscribers'),
-    '#description' => t('New subscribers will be sent a welcome email once they are confirmed.'),
-    '#default_value' => isset($signup->settings['send_welcome']) ? $signup->settings['send_welcome'] : FALSE,
-  );
-
   $form['subscription_settings']['include_interest_groups'] = array(
     '#type' => 'checkbox',
     '#title' => t('Include interest groups on subscription form.'),
@@ -271,7 +264,6 @@ function mailchimp_signup_form_submit($form, &$form_state) {
   $signup->settings['mergefields'] = $mergefields;
   $signup->settings['description'] = $form_state['values']['description'];
   $signup->settings['doublein'] = $form_state['values']['doublein'];
-  $signup->settings['send_welcome'] = $form_state['values']['send_welcome'];
   $signup->settings['include_interest_groups'] = $form_state['values']['include_interest_groups'];
   if ($signup->save()) {
     if (isset($form_state['values']['settings']['path'])) {
