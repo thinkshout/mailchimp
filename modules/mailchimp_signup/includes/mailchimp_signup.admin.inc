@@ -152,21 +152,7 @@ function mailchimp_signup_form($form, &$form_state, MailchimpSignup $signup) {
     );
     $mc_lists = !empty($form_state['values']['mc_lists']) ? $form_state['values']['mc_lists'] : $signup->mc_lists;
     $mergevar_settings = mailchimp_get_mergevars(array_filter($mc_lists));
-    // Set default mergevar for all lists.
-    $form_state['mergevar_options'] = array(
-      'EMAIL' => (object) array(
-        'tag' => 'EMAIL',
-        'name' => 'Email Address',
-        'type' => 'email',
-        'required' => TRUE,
-        'default_value' => '',
-        'public' => TRUE,
-        'display_order' => 1,
-        'options' => (object) array(
-          'size' => 25,
-        ),
-      )
-    );
+    $form_state['mergevar_options'] = array();
     foreach ($mergevar_settings as $list_mergevars) {
       foreach ($list_mergevars as $mergevar) {
         $form_state['mergevar_options'][$mergevar->tag] = $mergevar;
