@@ -539,7 +539,8 @@ function mailchimp_update_local_cache($function, $args) {
   // Handle unsubscribes.
   if ($function == 'mailchimp_unsubscribe_process') {
     $cache['status'] = 'unsubscribed';
-    $cache['merges']['GROUPINGS'] = array();
+    // Reset interests.
+    $cache->interests = new stdClass();
   }
   // Handle subscribes.
   if ($function == 'mailchimp_subscribe_process') {
@@ -556,51 +557,9 @@ function mailchimp_update_local_cache($function, $args) {
       }
       $cache['merges'][$key] = $value;
     }
-    // Update cached groupings.
-    mailchimp_update_local_cached_groupings($args, $cache);
   }
   // Store the data back in the local cache.
   cache_set($list_id . '-' . $email, $cache, 'cache_mailchimp', CACHE_TEMPORARY);
-}
-
-/**
- * Updates the locally cached interest group data.
- *
- * @array $args
- *   The args that would be sent if this was a MailChimp API call.
- * @array &$cache
- *   The current cache information for the user.
- */
-function mailchimp_update_local_cached_groupings($args, &$cache) {
-  $lists = cache_get('lists', 'cache_mailchimp');
-  if (!$lists) {
-    $list_data = mailchimp_get_list($args['list_id']);
-  }
-  else {
-    $list_data = $lists->data[$args['list_id']];
-  }
-
-  if (!empty($list_data->intgroups)) {
-    foreach ($list_data->intgroups as $idx => $group_settings) {
-      $interests = array();
-      foreach ($group_settings['groups'] as $group) {
-        if (!empty($args['merge_vars']['GROUPINGS'][$idx]['groups'][$group['name']])) {
-          $interested = TRUE;
-        }
-        else {
-          $interested = FALSE;
-        }
-        $interests[] = array(
-          'name' => $group['name'],
-          'interested' => $interested,
-        );
-      }
-      if (empty($cache['merges']['GROUPINGS'][$idx])) {
-        $cache['merges']['GROUPINGS'][$idx] = $group_settings;
-      }
-      $cache['merges']['GROUPINGS'][$idx]['groups'] = $interests;
-    }
-  }
 }
 
 /**
