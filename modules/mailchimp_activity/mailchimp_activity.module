@@ -134,25 +134,20 @@ function mailchimp_activity_get_member_activity($list_id, $email, $reset = FALSE
       }
 
       $result = $mc_lists->getMemberActivity($list_id, $email);
-    }
-    catch (Mailchimp_Error $e) {
-      drupal_set_message($e->getMessage(), 'error');
-      watchdog('mailchimp_campaign', 'An error occurred while getting activity: ' . $e->getMessage(), WATCHDOG_ERROR);
-      return NULL;
-    }
-    if ($result->total_items > 0) {
-      $memberactivity = $result->activity;
-      cache_set('activity_' . $list_id . '_' . $email, $memberactivity, 'cache_mailchimp', CACHE_TEMPORARY);
-    }
-    /*
-    if ($result['error_count'] > 0) {
-      foreach ($result['errors'] as $error) {
-        watchdog('mailchimp_activity',
-          'An error occurred getting activity for email "' . $error['email'] . '": ' . $error['error'], WATCHDOG_ERROR);
+
+      if ($result->total_items > 0) {
+        $memberactivity = $result->activity;
+        cache_set('activity_' . $list_id . '_' . $email, $memberactivity, 'cache_mailchimp', CACHE_TEMPORARY);
       }
     }
-    */
-
+    catch (Exception $e) {
+      drupal_set_message($e->getMessage(), 'error');
+      watchdog('mailchimp_activity', 'An error occurred while getting activity for email "%email": %message', array(
+        '%email' => $email,
+        '%message' => $e->getMessage(),
+        ), WATCHDOG_ERROR);
+      return NULL;
+    }
   }
 
   return $memberactivity;
