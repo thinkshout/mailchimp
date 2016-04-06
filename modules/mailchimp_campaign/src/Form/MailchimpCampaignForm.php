@@ -49,7 +49,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
     // Attach campaign JS and CSS.
     $form['#attached']['library'][] = 'mailchimp_campaign/campaign-form';
 
-    /* @var $campaign \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
+    /* @var \Mailchimp\MailchimpCampaigns $campaign */
     $campaign = $this->entity;
 
     $form_state->set('campaign', $campaign);
