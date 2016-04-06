@@ -17,7 +17,7 @@ function mailchimp_lists_overview_page() {
     $enabled = FALSE;
     if ($webhooks) {
       foreach ($webhooks as $webhook) {
-        if ($webhook_url == $webhook['url']) {
+        if ($webhook_url == $webhook->url) {
           $enabled = TRUE;
           continue;
         }
@@ -145,7 +145,7 @@ function mailchimp_lists_webhook_form($form, &$form_state, $list_id, $action) {
  * Submit handler for mailchimp_lists_webhook_form().
  */
 function mailchimp_lists_webhook_form_submit($form, &$form_state) {
-  $list_id = $form_state['list']['id'];
+  $list_id = $form_state['list']->id;
   switch ($form_state['action']) {
     case 'enable':
       $result = mailchimp_webhook_add(
@@ -170,7 +170,7 @@ function mailchimp_lists_webhook_form_submit($form, &$form_state) {
   if ($result) {
     drupal_set_message(t('Webhooks for list "%name" have been %action.',
       array(
-        '%name' => $form_state['list']['name'],
+        '%name' => $form_state['list']->name,
         '%action' => $form_state['action'] . 'd',
       )
     ));
@@ -178,7 +178,7 @@ function mailchimp_lists_webhook_form_submit($form, &$form_state) {
   else {
     drupal_set_message(t('Unable to perform webhook action "%action" for list "%name".',
       array(
-        '%name' => $form_state['list']['name'],
+        '%name' => $form_state['list']->name,
         '%action' => $form_state['action'],
       )
     ), 'warning');
