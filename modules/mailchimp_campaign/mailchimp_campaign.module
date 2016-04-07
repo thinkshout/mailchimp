@@ -150,15 +150,6 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
     drupal_set_message(t('Campaign %name (%cid) was successfully saved.',
       array('%name' => $recipients->title, '%cid' => $campaign_id)));
 
-    // Save the campaign entity:
-    $campaign = entity_create('mailchimp_campaign', array(
-      'mc_campaign_id' => $campaign_id,
-      'template' => $template,
-      'is_new' => $is_new,
-    ));
-
-    mailchimp_campaign_save($campaign);
-
     // Clear cached data for this campaign.
     mailchimp_campaign_get_campaigns(array($campaign_id), TRUE);
   }
