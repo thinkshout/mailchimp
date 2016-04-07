@@ -145,7 +145,7 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
    * {@inheritdoc}
    */
   public function label() {
-    return $this->getMcCampaignId();
+    return $this->values['mc_data']->settings->title;
   }
 
 }
