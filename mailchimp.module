@@ -404,19 +404,20 @@ function mailchimp_is_subscribed($list_id, $email, $reset = FALSE) {
  * @return bool
  *   True on success.
  */
-function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $format = 'html') {
+function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $interests = array(), $double_optin = FALSE, $format = 'html') {
   if (variable_get('mailchimp_cron', FALSE)) {
     $args = array(
       'list_id' => $list_id,
       'email' => $email,
       'merge_vars' => $merge_vars,
+      'interests' => $interests,
       'double_optin' => $double_optin,
       'format' => $format,
     );
     return mailchimp_addto_queue('mailchimp_subscribe_process', $args);
   }
 
-  return mailchimp_subscribe_process($list_id, $email, $merge_vars, $double_optin, $format);
+  return mailchimp_subscribe_process($list_id, $email, $merge_vars, $interests, $double_optin, $format);
 }
 
 /**
@@ -427,7 +428,7 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $double_optin
  * @return bool
  *   True on success.
  */
-function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $double_optin = FALSE, $format = 'html') {
+function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $interests = array(), $double_optin = FALSE, $format = 'html') {
   $result = FALSE;
   try {
     /* @var \Mailchimp\MailchimpLists $mc_lists */
@@ -442,25 +443,26 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $doub
       'email_type' => $format,
     );
 
-    if (!empty($merge_vars)) {
-      // Set interests.
-      $interest_groups = (isset($merge_vars['GROUPINGS'])) ? $merge_vars['GROUPINGS'] : array();
-      if (!empty($interest_groups)) {
-        $interests = array();
-        for ($i = 0; $i < count($interest_groups); $i++) {
-          foreach ($interest_groups[$i]['groups'] as $interest_id) {
-            $interests[$interest_id] = TRUE;
-          }
+    // Set interests.
+    if (!empty($interests)) {
+      $selected_interests = array();
+      foreach ($interests as $interest_group) {
+        foreach ($interest_group as $interest_id => $interest_status) {
+          $selected_interests[$interest_id] = ($interest_status !== 0);
         }
       }
 
-      $parameters['interests'] = (object) $interests;
+      if (!empty($selected_interests)) {
+        $parameters['interests'] = (object) $selected_interests;
+      }
+    }
 
-      // Set merge fields.
-      unset($merge_vars['GROUPINGS']);
+    // Set merge fields.
+    if (!empty($merge_vars)) {
       $parameters['merge_fields'] = (object) $merge_vars;
     }
 
+    // Add member to list.
     $result = $mc_lists->addMember($list_id, $email, $parameters);
 
     if (isset($result->id)) {
@@ -551,10 +553,6 @@ function mailchimp_update_local_cache($function, $args) {
       $function == 'mailchimp_subscribe_process') {
     // Update cached merge vars.
     foreach ($args['merge_vars'] as $key => $value) {
-      // Groups are handled separately since the format needs re-written.
-      if ($key == 'GROUPINGS') {
-        continue;
-      }
       $cache['merges'][$key] = $value;
     }
   }
@@ -570,18 +568,19 @@ function mailchimp_update_local_cache($function, $args) {
  * @return bool
  *   Success or failure.
  */
-function mailchimp_update_member($list_id, $email, $merge_vars, $format = 'html') {
+function mailchimp_update_member($list_id, $email, $merge_vars, $interests, $format = 'html') {
   if (variable_get('mailchimp_cron', FALSE)) {
     $args = array(
       'list_id' => $list_id,
       'email' => $email,
       'merge_vars' => $merge_vars,
+      'interests' => $interests,
       'format' => $format,
     );
     return mailchimp_addto_queue('mailchimp_update_member_process', $args);
   }
 
-  return mailchimp_update_member_process($list_id, $email, $merge_vars, $format);
+  return mailchimp_update_member_process($list_id, $email, $merge_vars, $interests, $format);
 }
 
 /**
@@ -592,7 +591,7 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = 'html'
  * @return bool
  *   Success or failure.
  */
-function mailchimp_update_member_process($list_id, $email, $merge_vars, $format) {
+function mailchimp_update_member_process($list_id, $email, $merge_vars, $interests, $format) {
   $result = FALSE;
   try {
     /* @var \Mailchimp\MailchimpLists $mc_lists */
@@ -606,25 +605,26 @@ function mailchimp_update_member_process($list_id, $email, $merge_vars, $format)
       'email_type' => $format,
     );
 
-    if (!empty($merge_vars)) {
-      // Set interests.
-      $interest_groups = (isset($merge_vars['GROUPINGS'])) ? $merge_vars['GROUPINGS'] : array();
-      if (!empty($interest_groups)) {
-        $interests = array();
-        for ($i = 0; $i < count($interest_groups); $i++) {
-          foreach ($interest_groups[$i]['groups'] as $interest_id) {
-            $interests[$interest_id] = TRUE;
-          }
+    // Set interests.
+    if (!empty($interests)) {
+      $selected_interests = array();
+      foreach ($interests as $interest_group) {
+        foreach ($interest_group as $interest_id => $interest_status) {
+          $selected_interests[$interest_id] = ($interest_status !== 0);
         }
       }
 
-      $parameters['interests'] = (object) $interests;
+      if (!empty($selected_interests)) {
+        $parameters['interests'] = (object) $selected_interests;
+      }
+    }
 
-      // Set merge fields.
-      unset($merge_vars['GROUPINGS']);
+    // Set merge fields.
+    if (!empty($merge_vars)) {
       $parameters['merge_fields'] = (object) $merge_vars;
     }
 
+    // Update member.
     $result = $mc_lists->updateMember($list_id, $email, $parameters);
 
     if (isset($result->id)) {
@@ -1305,23 +1305,6 @@ function mailchimp_interest_groups_form_elements($list, $default_values = array(
     );
   }
   return $return;
-}
-
-/**
- * Helper function to make an API-ready array from an interest group form.
- */
-function mailchimp_reformat_groupings($interest_groups) {
-  $groupings = array();
-  foreach ($interest_groups as $key => $groups) {
-    if (is_array($groups)) {
-      $groups = array_filter($groups);
-      $groupings[] = array('id' => $key, 'groups' => $groups);
-    }
-    else {
-      $groupings[] = array('id' => $key, 'groups' => array($groups => $groups));
-    }
-  }
-  return $groupings;
 }
 
 /**

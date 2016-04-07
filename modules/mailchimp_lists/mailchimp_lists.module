@@ -254,13 +254,10 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
     }
     else {
       $mergevars = _mailchimp_lists_mergevars_populate($instance['settings']['mergefields'], $entity, $instance['entity_type']);
-      if (!empty($choices['interest_groups'])) {
-        $mergevars['GROUPINGS'] = mailchimp_reformat_groupings($choices['interest_groups']);
-      }
     }
     switch ($function) {
       case 'add':
-        $ret = mailchimp_subscribe($list_id, $email, $mergevars, $field['settings']['double_opt_in']);
+        $ret = mailchimp_subscribe($list_id, $email, $mergevars, $choices['interest_groups'], $field['settings']['double_opt_in']);
         break;
 
       case 'unsubscribe':
@@ -273,7 +270,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
 
       case 'update':
         if (_mailchimp_lists_subscription_has_changed($instance, $field, $entity, $email, $choices)) {
-          $ret = mailchimp_update_member($list_id, $email, $mergevars);
+          $ret = mailchimp_update_member($list_id, $email, $mergevars, $choices['interest_groups']);
         }
         else {
           $ret = TRUE;
@@ -333,22 +330,16 @@ function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $
   // interest group settings, so we only analyze those:
   else {
     $member_info = mailchimp_get_memberinfo($field['settings']['mc_list_id'], $email);
-    if (isset($member_info['merges']['GROUPINGS'])) {
-      foreach ($member_info['merges']['GROUPINGS'] as $grouping) {
-        if (!isset($choices['interest_groups'][$grouping['id']])) {
+
+    foreach ($choices['interest_groups'] as $interest_group) {
+      foreach ($interest_group as $interest_id => $interest_status) {
+        // Check for new interest selected.
+        if (($interest_status !== 0) && empty($member_info->interests->{$interest_id})) {
           return TRUE;
         }
-        else {
-          if (!is_array($choices['interest_groups'][$grouping['id']])) {
-            // Standardize formatting of choices:
-            $choices['interest_groups'][$grouping['id']] = array($choices['interest_groups'][$grouping['id']] => $choices['interest_groups'][$grouping['id']]);
-          }
-          foreach ($grouping['groups'] as $group) {
-            $selected = isset($choices['interest_groups'][$grouping['id']][$group['name']]) && $choices['interest_groups'][$grouping['id']][$group['name']];
-            if (($group['interested'] && !$selected) || (!$group['interested'] && $selected)) {
-              return TRUE;
-            }
-          }
+        // Check for existing interest unselected.
+        if (($interest_status === 0) && !empty($member_info->interests->{$interest_id})) {
+          return TRUE;
         }
       }
     }
