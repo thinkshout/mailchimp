@@ -298,17 +298,18 @@ class MailchimpCampaignForm extends ContentEntityForm {
 
     $template_content = $this->parseTemplateContent($form_state->getValue('content'));
 
-    $campaign_id = (!empty($form_state->getValue('campaign'))) ? $form_state->getValue('campaign')->mc_campaign_id : NULL;
-    mailchimp_campaign_save_campaign($template_content, $recipients, $settings, $values['template_id'], $campaign_id);
+    $existing_campaign_id = (!empty($form_state->getValue('campaign'))) ? $form_state->getValue('campaign')->mc_campaign_id : NULL;
+    $campaign_id = mailchimp_campaign_save_campaign($template_content, $recipients, $settings, $values['template_id'], $existing_campaign_id);
 
-    /* @var \Mailchimp\MailchimpCampaigns $mcapi */
-    $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
-//    $mcapi->setTemplate($template_content);
-//    $mcapi->save();
+    /* @var $campaign \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
+    $campaign = $this->getEntity();
+    $campaign->setMcCampaignId($campaign_id);
+    $campaign->setTemplate($template_content);
+    $campaign->save();
 
     // Clear campaigns cache.
     $cache = \Drupal::cache('mailchimp');
-    $cache->deleteAll('mailchimp_campaign_campaigns');
+    $cache->deleteAll();
 
     $form_state->setRedirect('mailchimp_campaign.overview');
   }

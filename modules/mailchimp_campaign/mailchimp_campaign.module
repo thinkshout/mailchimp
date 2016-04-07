@@ -387,7 +387,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
   $campaigns = array();
   foreach ($mc_campaign_ids as $id) {
     if (!isset($cached_campaigns->data[$id])
-      || ($cached_campaigns->data[$id]['status'] == MAILCHIMP_STATUS_SENDING)
+      || ($cached_campaigns->data[$id]->status == MAILCHIMP_STATUS_SENDING)
       || $reset) {
       $to_refresh[] = $id;
     }
