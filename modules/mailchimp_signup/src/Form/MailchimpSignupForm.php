@@ -187,12 +187,12 @@ class MailchimpSignupForm extends EntityForm {
       $mergevar_options = $this->getMergevarOptions($mc_lists);
 
       foreach ($mergevar_options as $mergevar) {
-        $form['mc_lists_config']['mergefields'][$mergevar['tag']] = array(
+        $form['mc_lists_config']['mergefields'][$mergevar->tag] = array(
           '#type' => 'checkbox',
-          '#title' => SafeMarkup::checkPlain($mergevar['name']),
-          '#default_value' => isset($signup->settings['mergefields'][$mergevar['tag']]) ? !empty($signup->settings['mergefields'][$mergevar['tag']]) : TRUE,
-          '#required' => $mergevar['req'],
-          '#disabled' => $mergevar['req'],
+          '#title' => SafeMarkup::checkPlain($mergevar->name),
+          '#default_value' => isset($signup->settings['mergefields'][$mergevar->tag]) ? !empty($signup->settings['mergefields'][$mergevar->tag]) : TRUE,
+          '#required' => $mergevar->required,
+          '#disabled' => $mergevar->required,
         );
       }
     }
@@ -287,9 +287,9 @@ class MailchimpSignupForm extends EntityForm {
     $mergevar_settings = mailchimp_get_mergevars(array_filter($mc_lists));
     $mergevar_options = array();
     foreach ($mergevar_settings as $list_mergevars) {
-      foreach ($list_mergevars['merge_vars'] as $mergevar) {
-        if ($mergevar['public']) {
-          $mergevar_options[$mergevar['tag']] = $mergevar;
+      foreach ($list_mergevars as $mergevar) {
+        if ($mergevar->public) {
+          $mergevar_options[] = $mergevar;
         }
       }
     }
