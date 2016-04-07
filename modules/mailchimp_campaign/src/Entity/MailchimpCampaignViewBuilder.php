@@ -68,7 +68,7 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
       ),
       'from_email' => array(
         'label' => t('From Email'),
-        'value' => $entity->mc_data->settings->from_email,
+        'value' => $entity->mc_data->settings->reply_to,
       ),
       'from_name' => array(
         'label' => t('From Name'),
