@@ -7,7 +7,7 @@
 
 use Drupal\Core\Site\Settings;
 use Drupal\Component\Utility\Crypt;
-use Mailchimp\Mailchimp;
+use Mailchimp\MailchimpAPIException;
 
 define('MAILCHIMP_QUEUE_CRON', 'mailchimp');
 
@@ -203,23 +203,45 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
 
   // Get the uncached merge vars from MailChimp.
   if (count($list_ids)) {
-    /* @var \Mailchimp\MailchimpLists $mcapi */
-    $mcapi = mailchimp_get_api_object('MailchimpLists');
-    $last_list_id = NULL;
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
+    $list_id = NULL;
 
     try {
-      $result = $mcapi->getMergeFields($list_id);
-      if ($result->success_count) {
-        foreach ($result->data as $list_mergevars) {
-          $last_list_id = $list_mergevars['id'];
-          $mergevars[$last_list_id] = $list_mergevars;
-          $cache->set($last_list_id . '-mergevars', $list_mergevars);
+      if (!$mc_lists) {
+        throw new MailchimpAPIException('Cannot get merge vars without MailChimp API. Check API key has been entered.');
+      }
+
+      foreach ($list_ids as $list_id) {
+        // Add default EMAIL merge var for all lists.
+        $mergevars[$list_id] = array(
+          (object) array(
+            'tag' => 'EMAIL',
+            'name' => 'Email Address',
+            'type' => 'email',
+            'required' => TRUE,
+            'default_value' => '',
+            'public' => TRUE,
+            'display_order' => 1,
+            'options' => (object) array(
+              'size' => 25,
+            ),
+          ),
+        );
+
+        $result = $mc_lists->getMergeFields($list_id);
+
+        if ($result->total_items > 0) {
+          $mergevars[$list_id] = array_merge($mergevars[$list_id], $result->merge_fields);
         }
+
+        \Drupal::cache()->set($list_id . '-mergevars', $result->merge_fields);
       }
     }
+
     catch (Exception $e) {
       \Drupal::logger('mailchimp')->error('An error occurred requesting mergevars for list {list}. "{message}"', array(
-        'list' => $last_list_id,
+        'list' => $list_id,
         'message' => $e->getMessage()
       ));
     }
@@ -973,13 +995,13 @@ function mailchimp_reformat_groupings($interest_groups) {
 function mailchimp_insert_drupal_form_tag($mergevar) {
   // Insert common FormAPI properties:
   $input = array(
-    '#title' => t('@mergevar', array('@mergevar' => $mergevar['name'])),
-    '#weight' => $mergevar['order'],
-    '#required' => $mergevar['req'],
-    '#default_value' => $mergevar['default'],
+    '#title' => t('@mergevar', array('@mergevar' => $mergevar->name)),
+    '#weight' => $mergevar->order,
+    '#required' => $mergevar->required,
+    '#default_value' => $mergevar->default,
   );
 
-  switch ($mergevar['field_type']) {
+  switch ($mergevar->field_type) {
     case 'dropdown':
       // Dropdown is mapped to <select> element in Drupal Form API.
       $input['#type'] = 'select';
@@ -987,7 +1009,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
       // Creates options, we must delete array keys to have relevant information
       // on MailChimp.
       $choices = array();
-      foreach ($mergevar['choices'] as $choice) {
+      foreach ($mergevar->choices as $choice) {
         $choices[$choice] = $choice;
       }
 
@@ -1002,7 +1024,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
       // Creates options, we must delete array keys to have relevant information
       // on MailChimp.
       $choices = array();
-      foreach ($mergevar['choices'] as $choice) {
+      foreach ($mergevar->choices as $choice) {
         $choices[$choice] = $choice;
       }
 
