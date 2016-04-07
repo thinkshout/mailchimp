@@ -181,7 +181,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
           drupal_set_message(t('WARNING: This template has repeating sections, which are not supported. You may want to select a different template.'), 'warning');
         }
       }
-      foreach ($mc_template['info']['default_content'] as $section => $content) {
+      foreach ($mc_template->info->sections as $section => $content) {
         // Set the default value and text format to either saved campaign values
         // or defaults coming from the MailChimp template.
         $default_value = $content;
@@ -283,9 +283,9 @@ class MailchimpCampaignForm extends ContentEntityForm {
       'list_id' => $values['list_id'],
     );
 
-    if (isset($values->list_segement_id) && !empty($values->list_segment_id)) {
+    if (isset($values['list_segement_id']) && !empty($values['list_segment_id'])) {
       $recipients->segment_opts = (object) array(
-        'saved_segment_id' => (int) $values->list_segment_id,
+        'saved_segment_id' => (int) $values['list_segment_id'],
       );
     }
 
