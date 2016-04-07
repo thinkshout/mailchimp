@@ -65,7 +65,7 @@ mailchimp_signup_mergefield.*:
     name:
       type: string
       label: 'Name'
-    req:
+    required:
       type: boolean
       label: 'Required'
     field_type:
