@@ -95,18 +95,16 @@ class MailchimpCampaignForm extends ContentEntityForm {
       $list_segments = mailchimp_campaign_get_list_segments($list_id, 'saved');
     }
 
+    $form['list_segment_id'] = array(
+      '#type' => 'select',
+      '#title' => t('List Segment'),
+      '#description' => t('Select the list segment this campaign should be sent to.'),
+    );
     if (!empty($list_segments)) {
-      $form['list_segment_id'] = array(
-        '#type' => 'select',
-        '#title' => t('List Segment'),
-        '#description' => t('Select the list segment this campaign should be sent to.'),
-        '#options' => $this->buildOptionList($list_segments, '-- Entire list --'),
-        '#default_value' => (isset($segment_id)) ? $segment_id : '',
-      );
+      $form['list_segment_id']['#options'] = $this->buildOptionList($list_segments, '-- Entire list --');
+      $form['list_segment_id']['#default_value'] = (isset($segment_id)) ? $segment_id : '';
     }
-    else {
-      $form['list_segment_id'] = array();
-    }
+
     $form['list_segment_id']['#prefix'] = '<div id="list-segments-wrapper">';
     $form['list_segment_id']['#suffix'] = '</div>';
 
