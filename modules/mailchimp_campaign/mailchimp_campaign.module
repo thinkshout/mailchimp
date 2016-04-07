@@ -75,15 +75,6 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
   /* @var \Mailchimp\MailchimpCampaigns $mcapi */
   $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
 
-//  $recipients = (object) array(
-//    'generate_text' => TRUE,
-//    'tracking' => array(
-//      'opens' => TRUE,
-//      'html_clicks' => TRUE,
-//      'text_clicks' => TRUE,
-//    ),
-//  );
-
   // Allow alter of template and options used in campaign
   \Drupal::moduleHandler()->alter('mailchimp_campaign', $recipients, $template, $campaign_id);
 
