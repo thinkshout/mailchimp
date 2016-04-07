@@ -79,24 +79,24 @@ class MailchimpSignupPageForm extends FormBase {
     if ($lists_count > 1) {
       foreach ($lists as $list) {
         // Wrap in a div:
-        $wrapper_key = 'mailchimp_' . $list['web_id'];
+        $wrapper_key = 'mailchimp_' . $list->id;
 
         $form['mailchimp_lists'][$wrapper_key] = array(
-          '#prefix' => '<div id="mailchimp-newsletter-' . $list['web_id'] . '" class="mailchimp-newsletter-wrapper">',
+          '#prefix' => '<div id="mailchimp-newsletter-' . $list->id . '" class="mailchimp-newsletter-wrapper">',
           '#suffix' => '</div>',
         );
 
         $form['mailchimp_lists'][$wrapper_key]['subscribe'] = array(
           '#type' => 'checkbox',
-          '#title' => $list['name'],
-          '#return_value' => $list['id'],
+          '#title' => $list->name,
+          '#return_value' => $list->id,
           '#default_value' => 0,
         );
 
-        if ($this->signup->settings['include_interest_groups'] && isset($list['intgroups'])) {
+        if ($this->signup->settings['include_interest_groups'] && isset($list->intgroups)) {
           $form['mailchimp_lists'][$wrapper_key]['interest_groups'] = array(
             '#type' => 'fieldset',
-            '#title' => t('Interest Groups for %label', array('%label' => $list['name'])),
+            '#title' => t('Interest Groups for %label', array('%label' => $list->name)),
             '#states' => array(
               'invisible' => array(
                 ':input[name="mailchimp_lists[' . $wrapper_key . '][subscribe]"]' => array('checked' => FALSE),
@@ -109,14 +109,14 @@ class MailchimpSignupPageForm extends FormBase {
     }
     else {
       $list = reset($lists);
-      if ($this->signup->settings['include_interest_groups'] && isset($list['intgroups'])) {
+      if ($this->signup->settings['include_interest_groups'] && isset($list->intgroups)) {
         $form['mailchimp_lists']['#weight'] = 9;
         $form['mailchimp_lists']['interest_groups'] = mailchimp_interest_groups_form_elements($list);
       }
     }
 
     $form['mergevars'] = array(
-      '#prefix' => '<div id="mailchimp-newsletter-' . $list['web_id'] . '-mergefields" class="mailchimp-newsletter-mergefields">',
+      '#prefix' => '<div id="mailchimp-newsletter-' . $list->id . '-mergefields" class="mailchimp-newsletter-mergefields">',
       '#suffix' => '</div>',
       '#tree' => TRUE,
     );
@@ -187,7 +187,7 @@ class MailchimpSignupPageForm extends FormBase {
     else {
       // We can look at the checkbox values now.
       foreach ($mailchimp_lists as $list) {
-        if ($list['subscribe']) {
+        if ($list->subscribe) {
           $subscribe_lists[] = $list;
         }
       }
