@@ -85,8 +85,8 @@ class MailchimpCampaignForm extends ContentEntityForm {
     }
     elseif ($campaign && $campaign->mc_data) {
       $list_id = $campaign->mc_data->id;
-      if (isset($campaign->mc_data['saved_segment']['id'])) {
-        $segment_id = $campaign->mc_data['saved_segment']['id'];
+      if (isset($campaign->mc_data->saved_segment->id)) {
+        $segment_id = $campaign->mc_data->saved_segment->id;
       }
     }
 
@@ -112,7 +112,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#type' => 'textfield',
       '#title' => t('From Email'),
       '#description' => t('the From: email address for your campaign message.'),
-      '#default_value' => (!empty($campaign->mc_data)) ? $campaign->mc_data['from_email'] : $site_config->get('mail'),
+      '#default_value' => (!empty($campaign->mc_data)) ? $campaign->mc_data->settings->reply_to : $site_config->get('mail'),
       '#size' => 40,
       '#maxlength' => 255,
       '#required' => TRUE,
@@ -121,7 +121,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#type' => 'textfield',
       '#title' => t('From Name'),
       '#description' => t('the From: name for your campaign message (not an email address)'),
-      '#default_value' => (!empty($campaign->mc_data)) ? $campaign->mc_data['from_name'] : $site_config->get('name'),
+      '#default_value' => (!empty($campaign->mc_data)) ? $campaign->mc_data->settings->from_name : $site_config->get('name'),
       '#size' => 40,
       '#maxlength' => 255,
       '#required' => TRUE,
@@ -137,7 +137,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#title' => t('Template'),
       '#description' => t('Select a MailChimp user template to use. Due to a limitation in the API, only templates that do not contain repeating sections are available. If empty, the default template will be applied.'),
       '#options' => $this->buildOptionList(mailchimp_campaign_list_templates(), '-- Select --', $template_type_labels),
-      '#default_value' => ($campaign) ? $campaign->mc_data['template_id'] : -1,
+      '#default_value' => ($campaign) ? $campaign->mc_data->settings->template_id : -1,
       '#ajax' => array(
         'callback' => 'Drupal\mailchimp_campaign\Form\MailchimpCampaignForm::templateCallback',
       ),
