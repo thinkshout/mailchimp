@@ -83,10 +83,10 @@ class MailchimpCampaignForm extends ContentEntityForm {
     if (!empty($form_state->getValue('list_id'))) {
       $list_id = $form_state->getValue('list_id');
     }
-    elseif ($campaign && $campaign->mc_data) {
-      $list_id = $campaign->mc_data->id;
-      if (isset($campaign->mc_data->saved_segment->id)) {
-        $segment_id = $campaign->mc_data->saved_segment->id;
+    elseif ($campaign && $campaign->list) {
+      $list_id = $campaign->list->id;
+      if (isset($campaign->list->saved_segment->id)) {
+        $segment_id = $campaign->list->saved_segment->id;
       }
     }
 
@@ -210,7 +210,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
         $form['content'][$section . '_wrapper'] += $this->getEntityImportFormElements($entity_type, $section);
 
         if (!empty($list_id)) {
-          $form['content'][$section . '_wrapper'] += $this->getMergeVarsFormElements($merge_vars, $mailchimp_lists[$list_id]['name']);
+          $form['content'][$section . '_wrapper'] += $this->getMergeVarsFormElements($merge_vars, $mailchimp_lists[$list_id]->name);
         }
       }
     }
