@@ -277,14 +277,16 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
     }
   }
 
-  // Get the uncached merge vars from MailChimp.
-  foreach ($list_ids as $list_id) {
-    /* @var \Mailchimp\MailchimpLists $mc_lists */
-    $mc_lists = mailchimp_get_api_object('MailchimpLists');
-    try {
-      if (!$mc_lists) {
-        throw new MailchimpException('Cannot get merge vars without MailChimp API. Check API key has been entered.');
-      }
+  /* @var \Mailchimp\MailchimpLists $mc_lists */
+  $mc_lists = mailchimp_get_api_object('MailchimpLists');
+
+  try {
+    if (!$mc_lists) {
+      throw new MailchimpException('Cannot get merge vars without MailChimp API. Check API key has been entered.');
+    }
+
+    // Get the uncached merge vars from MailChimp.
+    foreach ($list_ids as $list_id) {
 
       // Add default EMAIL merge var for all lists.
       $mergevars[$list_id] = array(
@@ -310,12 +312,12 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
 
       cache_set($list_id . '-mergevars', $result->merge_fields, 'cache_mailchimp', CACHE_TEMPORARY);
     }
-    catch (Exception $e) {
-      watchdog('mailchimp', 'An error occurred requesting mergevars for list @list. "%message"', array(
-        '@list' => $list_id,
-        '%message' => $e->getMessage(),
-      ), WATCHDOG_ERROR);
-    }
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred requesting mergevars for list @list. "%message"', array(
+      '@list' => $list_id,
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
   }
 
   return $mergevars;
