@@ -5,8 +5,10 @@
  */
 
 use \Mailchimp\MailchimpAPIException;
+use \Mailchimp\MailchimpCampaigns;
 use \Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Entity;
 
 /**
  * Implements hook_entity_storage_load()
@@ -221,14 +223,25 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
 /**
  * Delete a MailChimp campaign and the local entity.
  */
-function mailchimp_campaign_delete_campaign(MailchimpCampaign $campaign) {
-  $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
+function mailchimp_campaign_delete_campaign($campaign) {
+  /* @var \Mailchimp\MailchimpCampaigns $mc_campaign */
+  $mc_campaign = mailchimp_get_api_object('MailchimpCampaigns');
 
   $result = NULL;
 
   // Delete campaign from MailChimp.
   try {
-    $result = $mcapi->campaigns->delete($campaign->id());
+    if (!$mc_campaign) {
+      throw new MailchimpAPIException('Cannot delete campaign without Mailchimp API. Check API key has been entered.');
+    }
+
+    $mc_campaign->delete($campaign->mc_data->id);
+    mailchimp_campaign_delete($campaign);
+
+    \Drupal::logger('mailchimp_campaign')->info('MailChimp campaign {cid} was deleted.', array(
+      'cid' => $campaign->id()));
+
+    return TRUE;
   }
   catch (MailchimpAPIException $e) {
     drupal_set_message($e->getMessage(), 'error');
@@ -236,23 +249,6 @@ function mailchimp_campaign_delete_campaign(MailchimpCampaign $campaign) {
       'message' => $e->getMessage()));
     return FALSE;
   }
-
-  if (isset($result['status']) && ($result['status'] == 'error')) {
-    // Display and log error, if any.
-    $message = 'MailChimp error. The campaign was not deleted.';
-    _mailchimp_campaign_mcapi_error_message($result, $message);
-  }
-  elseif (isset($result['complete']) && ($result['complete'] === TRUE)) {
-    // Delete campaign from the database.
-    $campaign->delete();
-
-    \Drupal::logger('mailchimp_campaign')->info('MailChimp campaign {cid} was deleted.', array(
-      'cid' => $campaign->id()));
-
-    return TRUE;
-  }
-
-  return FALSE;
 }
 
 /**
@@ -540,4 +536,31 @@ function mailchimp_campaign_save(MailChimpCampaign $campaign) {
   }
 
   return $campaign->save();
+}
+
+/**
+ * Delete a campaign.
+ */
+function mailchimp_campaign_delete($cid) {
+  return mailchimp_campaign_delete_multiple(array($cid));
+}
+
+/**
+ * Delete multiple campaigns.
+ */
+function mailchimp_campaign_delete_multiple($campaign_ids) {
+  return \Drupal::entityManager()->getStorage('mailchimp_campaign')->delete($campaign_ids);
+}
+
+/**
+ * Display a campaign.
+ *
+ * @param object $campaign
+ *   A fully loaded campaign object.
+ *
+ * @return array
+ *   Renderable elements.
+ */
+function mailchimp_campaign_view($campaign) {
+  return $campaign->view();
 }
