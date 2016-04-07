@@ -176,8 +176,10 @@ class MailchimpCampaignForm extends ContentEntityForm {
     $entity_type = NULL;
 
     if ($mc_template) {
-      if (strpos($mc_template['info']['source'], 'mc:repeatable')) {
-        drupal_set_message(t('WARNING: This template has repeating sections, which are not supported. You may want to select a different template.'), 'warning');
+      foreach ($mc_template->info->sections as $section => $content) {
+        if (substr($section, 0, 6) == 'repeat') {
+          drupal_set_message(t('WARNING: This template has repeating sections, which are not supported. You may want to select a different template.'), 'warning');
+        }
       }
       foreach ($mc_template['info']['default_content'] as $section => $content) {
         // Set the default value and text format to either saved campaign values
