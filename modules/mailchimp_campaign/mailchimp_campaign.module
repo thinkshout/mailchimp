@@ -188,7 +188,7 @@ function mailchimp_campaign_send_campaign(MailchimpCampaign $campaign) {
     $mc_campaign->send($campaign->mc_data->id);
     $result = $mc_campaign->getCampaign($campaign->mc_data->id);
 
-    if ($result->status == MAILCHIMP_STATUS_SENT) {
+    if (($result->status == MAILCHIMP_STATUS_SENDING) || ($result->status == MAILCHIMP_STATUS_SENT)) {
       // Log action, and notify the user.
       \Drupal::logger('mailchimp_campaign')->error('MailChimp campaign {name} has been sent.', array(
         'name' => $campaign->label()));
@@ -197,7 +197,9 @@ function mailchimp_campaign_send_campaign(MailchimpCampaign $campaign) {
       $controller->resetCache(array($campaign->getMcCampaignId()));
 
       $cache = \Drupal::cache('mailchimp');
+
       $cache->invalidate('campaigns');
+      $cache->invalidate('campaign_' . $campaign->mc_data->id);
 
       return TRUE;
     }
