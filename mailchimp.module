@@ -106,20 +106,28 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
 
         if ($result->total_items > 0) {
           foreach ($result->lists as $list) {
-            $int_categories = $mcapi->getInterestCategories($list->id);
-            if ($int_categories->total_items > 0) {
-              // Append interest groups:
-              $list->intgroups = $int_categories->categories;
+            $int_category_data = $mcapi->getInterestCategories($list->id);
+            if ($int_category_data->total_items > 0) {
+
+              $list->intgroups = array();
+              foreach ($int_category_data->categories as $interest_category) {
+                $interest_data = $mcapi->getInterests($list->id, $interest_category->id);
+
+                if ($interest_data->total_items > 0) {
+                  $interest_category->interests = $interest_data->interests;
+                }
+
+                $list->intgroups[] = $interest_category;
+              }
             }
 
             $lists[$list->id] = $list;
-          }
 
-          // Append mergefields.
-          $mergefields = $mcapi->getMergeFields($list->id);
-
-          if ($mergefields->total_items > 0) {
-            $lists[$list->id]->mergevars = $mergefields->merge_fields;
+            // Append mergefields:
+            $mergefields = $mcapi->getMergeFields($list->id);
+            if ($mergefields->total_items > 0) {
+              $lists[$list->id]->mergevars = $mergefields->merge_fields;
+            }
           }
         }
 
@@ -475,10 +483,37 @@ function mailchimp_update_member_process($list_id, $email, $merge_vars, $format,
   $result = FALSE;
 
   try {
-    $mcapi = $mcapi = mailchimp_get_api_object();
-    $result = $mcapi->lists->updateMember($list_id, array('email' => $email), $merge_vars, $format, $replace_interests);
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mcapi = mailchimp_get_api_object('MailchimpLists');
 
-    if (isset($result['email'])) {
+    $parameters = array(
+      'status' => 'subscribed',
+      'email_type' => $format,
+    );
+
+    // Set interests.
+    if (!empty($interests)) {
+      $selected_interests = array();
+      foreach ($interests as $interest_group) {
+        foreach ($interest_group as $interest_id => $interest_status) {
+          $selected_interests[$interest_id] = ($interest_status !== 0);
+        }
+      }
+
+      if (!empty($selected_interests)) {
+        $parameters['interests'] = (object) $selected_interests;
+      }
+    }
+
+    // Set merge fields.
+    if (!empty($merge_vars)) {
+      $parameters['merge_fields'] = (object) $merge_vars;
+    }
+
+    // Update member.
+    $result = $mcapi->updateMember($list_id, $email, $parameters);
+
+    if (isset($result->id)) {
       \Drupal::logger('mailchimp')->notice('{email} was updated in list {list_id}.', array(
         'email' => $email,
         'list' => $list_id,
@@ -593,13 +628,17 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
   $result = FALSE;
 
   try {
-    $mcapi = mailchimp_get_api_object();
-    $result = $mcapi->lists->unsubscribe($list_id, array('email' => $email), $delete, $goodbye, $notify);
-
-    if ($result) {
-      \Drupal::moduleHandler()->invokeAll('mailchimp_unsubscribe_success', array($list_id, $email));
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
+    if (!$mc_lists) {
+      throw new MailchimpException('Cannot unsubscribe from list without MailChimp API. Check API key has been entered.');
     }
 
+    $result = $mc_lists->removeMember($list_id, $email);
+
+    if ($result) {
+      module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
+    }
     // Clear user cache:
     mailchimp_cache_clear_member($list_id, $email);
   }
@@ -641,16 +680,13 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
   }
 
   try {
-    $mcapi = mailchimp_get_api_object();
+    /* @var \Mailchimp\MailchimpCampaigns $mcapi */
+    $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
 
-    $filters = array(
-      'campaign_id' => $campaign_id,
-    );
+    $response = $mcapi->getCampaign($campaign_id);
 
-    $results = $mcapi->campaigns->getList($filters, 0, 1);
-
-    if (isset($results['total']) && $results['total']) {
-      $campaign_data = $results['data'][0];
+    if (!empty($response->id)) {
+      $campaign_data = $response;
       $cache->set('campaign_' . $campaign_id, $campaign_data);
     }
   }
@@ -665,32 +701,6 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
 }
 
 /**
- * Returns data for campaigns that have included a given email address.
- *
- * @param string $email
- *   Email address to search.
- *
- * @return array
- *   Campaign structs containing id, title, subject, send_time, type.
- */
-function mailchimp_get_campaigns_for_email($email) {
-  try {
-    $mcapi = mailchimp_get_api_object();
-    $campaign_list = $mcapi->helper->campaignsForEmail(array('email' => $email));
-  }
-  catch (Exception $e) {
-    \Drupal::logger('mailchimp')->error('An error occurred retreiving campaign data for {email}. "{message}"', array(
-      'email' => $email,
-      'message' => $e->getMessage(),
-    ));
-
-    $campaign_list = array();
-  }
-
-  return $campaign_list;
-}
-
-/**
  * Returns all lists a given email address is currently subscribed to.
  *
  * @param string $email
@@ -701,8 +711,9 @@ function mailchimp_get_campaigns_for_email($email) {
  */
 function mailchimp_get_lists_for_email($email) {
   try {
-    $mcapi = mailchimp_get_api_object();
-    $lists = $mcapi->helper->listsForEmail(array('email' => $email));
+    /* @var \Mailchimp\MailchimpLists $mcapi */
+    $mcapi = mailchimp_get_api_object('MailchimpLists');
+    $lists = $mcapi->getListsForEmail($email);
   }
   catch (Exception $e) {
     \Drupal::logger('mailchimp')->error('An error occurred retreiving lists data for {email}. "{message}"', array(
@@ -913,9 +924,8 @@ function mailchimp_webhook_url() {
 /**
  * Helper function to generate form elements for a list's interest groups.
  *
- * @param array $mc_list
- *   Fully loaded array with mailchimp list settings as returned by
- *   mailchimp_get_list()
+ * @param object $list
+ *   MailChimp list object as returned by mailchimp_get_list().
  * @param array $default_values
  *   Array of default values to use if no group subscription values already
  *   exist at Mailchimp.
@@ -926,7 +936,7 @@ function mailchimp_webhook_url() {
  * @return array
  *   A collection of form elements, one per interest group.
  */
-function mailchimp_interest_groups_form_elements($mc_list, $default_values = array(), $email = NULL) {
+function mailchimp_interest_groups_form_elements($list, $default_values = array(), $email = NULL) {
   $return = array();
   foreach ($list->intgroups as $group) {
     if ($group->type == 'hidden') {
@@ -984,25 +994,6 @@ function mailchimp_interest_groups_form_elements($mc_list, $default_values = arr
     );
   }
   return $return;
-}
-
-/**
- * Helper function to make an API-ready array from an interest group form.
- */
-function mailchimp_reformat_groupings($interest_groups) {
-  $groupings = array();
-
-  foreach ($interest_groups as $key => $groups) {
-    if (is_array($groups)) {
-      $groups = array_filter($groups);
-      $groupings[] = array('id' => $key, 'groups' => $groups);
-    }
-    else {
-      $groupings[] = array('id' => $key, 'groups' => array($groups => $groups));
-    }
-  }
-
-  return $groupings;
 }
 
 /**
