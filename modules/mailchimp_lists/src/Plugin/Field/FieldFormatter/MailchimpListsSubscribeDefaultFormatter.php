@@ -90,10 +90,10 @@ class MailchimpListsSubscribeDefaultFormatter extends FormatterBase {
 
       if ($email) {
         if (mailchimp_is_subscribed($field_settings['mc_list_id'], $email)) {
-          $status = t('Subscribed to %list', array('%list' => $mc_list['name']));
+          $status = t('Subscribed to %list', array('%list' => $mc_list->name));
         }
         else {
-          $status = t('Not subscribed to %list', array('%list' => $mc_list['name']));
+          $status = t('Not subscribed to %list', array('%list' => $mc_list->name));
         }
       }
       else {
@@ -103,28 +103,31 @@ class MailchimpListsSubscribeDefaultFormatter extends FormatterBase {
         '#markup' => $status,
         '#description' => t('@mc_list_description', array(
           '@mc_list_description' => $item->getFieldDefinition()
-              ->getDescription()
+            ->getDescription()
         )),
       );
 
       if ($field_settings['show_interest_groups'] && $this->getSetting('show_interest_groups')) {
-        $memberinfo = mailchimp_get_memberinfo($field_settings['mc_list_id'], $email);
-        if (isset($memberinfo['merges']['GROUPINGS'])) {
+        $member_info = mailchimp_get_memberinfo($field_settings['mc_list_id'], $email);
+
+        if (!empty($mc_list->intgroups)) {
           $elements[$delta]['interest_groups'] = array(
             '#type' => 'fieldset',
             '#title' => t('Interest Groups'),
             '#weight' => 100,
           );
-          foreach ($memberinfo['merges']['GROUPINGS'] as $grouping) {
+
+          foreach ($mc_list->intgroups as $interest_group) {
             $items = array();
-            foreach ($grouping['groups'] as $interest) {
-              if ($interest['interested']) {
-                $items[] = $interest['name'];
+            foreach ($interest_group->interests as $interest) {
+              if (isset($member_info->interests->{$interest->id}) && ($member_info->interests->{$interest->id} === TRUE)) {
+                $items[] = $interest->name;
               }
             }
-            if (count($items)) {
-              $elements[$delta]['interest_groups'][$grouping['id']] = array(
-                '#title' => $grouping['name'],
+
+            if (count($items) > 0) {
+              $elements[$delta]['interest_groups'][$interest_group->id] = array(
+                '#title' => $interest_group->title,
                 '#theme' => 'item_list',
                 '#items' => $items,
                 '#type' => 'ul',
@@ -132,10 +135,10 @@ class MailchimpListsSubscribeDefaultFormatter extends FormatterBase {
             }
           }
         }
+
       }
     }
 
     return $elements;
   }
-
 }

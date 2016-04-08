@@ -85,7 +85,7 @@ class MailchimpListsSelectWidget extends WidgetBase {
         $groups_default = array();
       }
 
-      if ($mc_list['stats']['group_count']) {
+      if (!empty($mc_list->intgroups)) {
         $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
       }
     }

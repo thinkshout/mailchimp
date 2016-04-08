@@ -151,7 +151,7 @@ class DrupalMailchimpLists {
   /**
    * @see Mailchimp_Lists::subscribe()
    */
-  public function subscribe($id, $email, $merge_vars=null, $email_type='html', $double_optin=true, $update_existing=false, $replace_interests=true, $send_welcome=false) {
+  public function subscribe($id, $email, $merge_vars=null, $email_type='html', $double_optin=true, $send_welcome=false) {
     $lists = $this->list_data;
 
     $email_address = $email['email'];

@@ -210,13 +210,6 @@ class MailchimpSignupForm extends EntityForm {
       '#default_value' => isset($signup->settings['doublein']) ? $signup->settings['doublein'] : FALSE,
     );
 
-    $form['subscription_settings']['send_welcome'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Send a welcome email to new subscribers'),
-      '#description' => t('New subscribers will be sent a welcome email once they are confirmed.'),
-      '#default_value' => isset($signup->settings['send_welcome']) ? $signup->settings['send_welcome'] : FALSE,
-    );
-
     $form['subscription_settings']['include_interest_groups'] = array(
       '#type' => 'checkbox',
       '#title' => t('Include interest groups on subscription form.'),
@@ -260,7 +253,6 @@ class MailchimpSignupForm extends EntityForm {
     $signup->settings['mergefields'] = $mergefields;
     $signup->settings['description'] = $form_state->getValue('description');
     $signup->settings['doublein'] = $form_state->getValue('doublein');
-    $signup->settings['send_welcome'] = $form_state->getValue('send_welcome');
     $signup->settings['include_interest_groups'] = $form_state->getValue('include_interest_groups');
 
     // Clear path value if mode doesn't include signup page.

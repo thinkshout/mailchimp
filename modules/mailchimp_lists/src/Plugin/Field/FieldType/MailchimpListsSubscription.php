@@ -181,7 +181,7 @@ class MailchimpListsSubscription extends FieldItemBase {
     $element['interest_groups_label'] = array(
       '#title' => "Interest Groups Label",
       '#type' => "textfield",
-      '#default_value' => !empty($instance_settings['show_interest_groups']) ? $instance_settings['show_interest_groups'] : 'Interest Groups',
+      '#default_value' => !empty($instance_settings['interest_groups_label']) ? $instance_settings['interest_groups_label'] : 'Interest Groups',
     );
     $element['merge_fields'] = array(
       '#type' => 'fieldset',
@@ -211,23 +211,23 @@ class MailchimpListsSubscription extends FieldItemBase {
 
     $fields_flat = OptGroup::flattenOptions($fields);
 
-    foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
-      $default_value = isset($mv_defaults[$mergevar['tag']]) ? $mv_defaults[$mergevar['tag']] : -1;
-      $element['merge_fields'][$mergevar['tag']] = array(
+    foreach ($mergevars[$mc_list_id] as $mergevar) {
+      $default_value = isset($mv_defaults[$mergevar->tag]) ? $mv_defaults[$mergevar->tag] : -1;
+      $element['merge_fields'][$mergevar->tag] = array(
         '#type' => 'select',
-        '#title' => SafeMarkup::checkPlain($mergevar['name']),
+        '#title' => SafeMarkup::checkPlain($mergevar->name),
         '#default_value' => array_key_exists($default_value, $fields_flat) ? $default_value : '',
-        '#required' => $mergevar['req'],
+        '#required' => $mergevar->required,
       );
-      if (!$mergevar['req'] || $mergevar['tag'] === 'EMAIL') {
-        $element['merge_fields'][$mergevar['tag']]['#options'] = $fields;
-        if ($mergevar['tag'] === 'EMAIL') {
-          $element['merge_fields'][$mergevar['tag']]['#description'] = t('Any entity with an empty or invalid email address field value will simply be ignored by the Mailchimp subscription system. <em>This is why the Email field is the only required merge field which can sync to non-required fields.</em>');
+      if (!$mergevar->required || $mergevar->tag === 'EMAIL') {
+        $element['merge_fields'][$mergevar->tag]['#options'] = $fields;
+        if ($mergevar->tag === 'EMAIL') {
+          $element['merge_fields'][$mergevar->tag]['#description'] = t('Any entity with an empty or invalid email address field value will simply be ignored by the Mailchimp subscription system. <em>This is why the Email field is the only required merge field which can sync to non-required fields.</em>');
         }
       }
       else {
-        $element['merge_fields'][$mergevar['tag']]['#options'] = $required_fields;
-        $element['merge_fields'][$mergevar['tag']]['#description'] = t("Only 'required' and 'calculated' fields are allowed to be synced with Mailchimp 'required' merge fields.");
+        $element['merge_fields'][$mergevar->tag]['#options'] = $required_fields;
+        $element['merge_fields'][$mergevar->tag]['#description'] = t("Only 'required' and 'calculated' fields are allowed to be synced with Mailchimp 'required' merge fields.");
       }
     }
     return $element;

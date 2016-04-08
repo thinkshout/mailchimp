@@ -172,9 +172,9 @@ class MailchimpSignupPageForm extends FormBase {
     $subscribe_lists = array();
 
     // Filter out blank fields so we don't erase values on the Mailchimp side.
-    $merge_values = array_filter($form_state->getValue('mergevars'));
+    $mergevars = array_filter($form_state->getValue('mergevars'));
 
-    $email = $merge_values['EMAIL'];
+    $email = $mergevars['EMAIL'];
 
     $mailchimp_lists = $form_state->getValue('mailchimp_lists');
 
@@ -199,21 +199,16 @@ class MailchimpSignupPageForm extends FormBase {
     // Loop through the selected lists and try to subscribe.
     foreach ($subscribe_lists as $list_choices) {
       $list_id = $list_choices['subscribe'];
-      $mergevars = $merge_values;
 
-      if (isset($list_choices['interest_groups'])) {
-        $mergevars['GROUPINGS'] = mailchimp_reformat_groupings($list_choices['interest_groups']);
-      }
-
-      $result = mailchimp_subscribe($list_id, $email, $mergevars, $this->signup->settings['doublein'], $this->signup->settings['send_welcome']);
+      $result = mailchimp_subscribe($list_id, $email, $mergevars, $list_choices['interest_groups'], $this->signup->settings['doublein']);
 
       if (empty($result)) {
         drupal_set_message(t('There was a problem with your newsletter signup to %list.', array(
-          '%list' => $list_details[$list_id]['name'],
+          '%list' => $list_details[$list_id]->name,
         )), 'warning');
       }
       else {
-        $successes[] = $list_details[$list_id]['name'];
+        $successes[] = $list_details[$list_id]->name;
       }
     }
 
