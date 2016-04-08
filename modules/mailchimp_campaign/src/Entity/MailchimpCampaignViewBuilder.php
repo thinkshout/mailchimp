@@ -54,6 +54,11 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
     $archive_url = Url::fromUri($entity->mc_data->archive_url);
 
     $fields = array(
+      'title' => array(
+        'label' => t('Title'),
+        'value' => $entity->mc_data->settings->title,
+      ),
+
       'subject' => array(
         'label' => t('Subject'),
         'value' => $entity->mc_data->settings->subject_line,
