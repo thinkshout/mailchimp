@@ -373,8 +373,8 @@ function mailchimp_lists_get_subscribers(FieldConfig $field, &$context) {
   $limit = 100;
 
   $options = array(
-    'start' => $context['sandbox']['progress'] / $limit,
-    'limit' => $limit,
+    'offset' => $context['sandbox']['progress'] / $limit,
+    'count' => $limit,
   );
 
   $mc_list_id = $field->getFieldStorageDefinition()->getSetting('mc_list_id');
@@ -383,14 +383,12 @@ function mailchimp_lists_get_subscribers(FieldConfig $field, &$context) {
 
   if ($matches) {
     if (!isset($context['sandbox']['max'])) {
-      $context['sandbox']['max'] = $matches->total;
+      $context['sandbox']['max'] = $matches->total_items;
     }
-
-    foreach ($matches->data as $result) {
-      $context['results']['subscribers'][strtolower($result['email'])] = $result;
+    foreach ($matches->members as $result) {
+      $context['results']['subscribers'][strtolower($result->email_address)] = $result;
       $context['sandbox']['progress']++;
     }
-
     $context['message'] = t('Check subscription status for contact %count of %total.', array('%count' => $context['sandbox']['progress'], '%total' => $context['sandbox']['max']));
     $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
   }
@@ -411,10 +409,10 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
     $query_results = $query->execute();
 
     $context['sandbox']['progress'] = 0;
-    $context['sandbox']['max'] = isset($query_results[$entity_type]) ? count($query_results[$entity_type]) : 0;
+    $context['sandbox']['max'] = isset($query_results) ? count($query_results) : 0;
 
     if ($context['sandbox']['max']) {
-      $context['sandbox']['entity_ids'] = array_keys($query_results[$entity_type]);
+      $context['sandbox']['entity_ids'] = array_keys($query_results);
       $context['results']['update_queue'] = array();
     }
   }
@@ -422,16 +420,16 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
   if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
     $batch_size = 50;
     $item_ids = array_slice($context['sandbox']['entity_ids'], $context['sandbox']['progress'], $batch_size);
-    $entities = entity_load($entity_type, $item_ids);
+    $entities = \Drupal::entityManager()->getStorage($entity_type)->loadMultiple($item_ids);
 
     foreach ($entities as $entity) {
       $merge_vars = _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type);
 
       if ($merge_vars['EMAIL'] && isset($context['results']['subscribers'][strtolower($merge_vars['EMAIL'])])) {
         $context['results']['update_queue'][] = array(
-          'email' => array('email' => $merge_vars['EMAIL']),
+          'email' => $merge_vars['EMAIL'],
           // Preserve subscribers's email type selection:
-          'email_type' => $context['results']['subscribers'][strtolower($merge_vars['EMAIL'])]['email_type'],
+          'email_type' => $context['results']['subscribers'][strtolower($merge_vars['EMAIL'])]->email_type,
           'merge_vars' => $merge_vars,
         );
       }
@@ -475,8 +473,12 @@ function mailchimp_lists_execute_mergevar_batch_update($list_id, &$context) {
     $result = mailchimp_batch_update_members($list_id, $batch, FALSE, TRUE, FALSE);
 
     if ($result) {
-      $context['results']['updates'] += $result['update_count'];
-      $context['results']['errors'] += $result['error_count'];
+      /* @var \Mailchimp\Mailchimp $mc */
+      $mc = mailchimp_get_api_object();
+      $batch_result = $mc->getBatchOperation($result->id);
+
+      $context['results']['updates'] += count($context['results']['update_queue']);
+      $context['results']['errors'] += $batch_result->errored_operations;
     }
 
     $batch_size = count($batch);
