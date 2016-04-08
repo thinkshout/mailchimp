@@ -148,13 +148,6 @@ class MailchimpListsSubscription extends FieldItemBase {
       '#default_value' => $this->getSetting('double_opt_in'),
       '#disabled' => $has_data,
     );
-    $element['send_welcome'] = array(
-      '#type' => 'checkbox',
-      '#title' => 'Send a welcome email to new subscribers',
-      '#description' => 'New subscribers will be sent a welcome email once they are confirmed.',
-      '#default_value' => $this->getSetting('send_welcome'),
-      '#disabled' => $has_data,
-    );
 
     return $element;
   }
