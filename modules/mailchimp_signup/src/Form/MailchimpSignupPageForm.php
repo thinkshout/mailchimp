@@ -121,7 +121,8 @@ class MailchimpSignupPageForm extends FormBase {
       '#tree' => TRUE,
     );
 
-    foreach ($this->signup->settings['mergefields'] as $tag => $mergevar) {
+    foreach ($this->signup->settings['mergefields'] as $tag => $mergevar_str) {
+      $mergevar = unserialize($mergevar_str);
       if (!empty($mergevar)) {
         $form['mergevars'][$tag] = mailchimp_insert_drupal_form_tag($mergevar);
         if (empty($lists)) {

@@ -41,14 +41,9 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
 
   $config = \Drupal::config('mailchimp.settings');
 
-  // We allow the class name to be overridden, following the example of core's
-  // mailsystem, in order to use alternate MailChimp classes. The bundled tests
-  // use this approach to extend the MailChimp class with a test server.
-//  $classname = $config->get('api_classname');
-
   $classname = '\Mailchimp\\' . $classname;
 
-  if (!class_exists($classname) && ($classname != 'Drupal\mailchimp_test\DrupalMailchimp')) {
+  if (!class_exists($classname)) {
     $msg = t('Failed to load MailChimp PHP library. Please refer to the installation requirements.');
     \Drupal::logger('mailchimp')->error($msg);
     drupal_set_message($msg, 'error');
@@ -901,14 +896,22 @@ function mailchimp_webhook_url() {
  */
 function mailchimp_interest_groups_form_elements($mc_list, $default_values = array(), $email = NULL) {
   $return = array();
-
-  foreach ($mc_list['intgroups'] as $group) {
-    if ($group['form_field'] == 'hidden') {
+  foreach ($list->intgroups as $group) {
+    if ($group->type == 'hidden') {
       continue;
     }
 
-    // Set the form field type.
-    switch ($group['form_field']) {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
+
+    $interest_data = $mc_lists->getInterests($list->id, $group->id);
+
+    if (!empty($email)) {
+      $memberinfo = mailchimp_get_memberinfo($list->id, $email);
+    }
+
+    // Set the form field type:
+    switch ($group->type) {
       case 'radio':
         $field_type = 'radios';
         break;
@@ -918,49 +921,36 @@ function mailchimp_interest_groups_form_elements($mc_list, $default_values = arr
         break;
 
       default:
-        $field_type = $group['form_field'];
+        $field_type = $group->type;
     }
 
-    // Extract the field options.
+    // Extract the field options:
     $options = array();
     if ($field_type == 'select') {
       $options[''] = '-- select --';
     }
 
-    foreach ($group['groups'] as $option) {
-      $options[$option['name']] = $option['name'];
-    }
+    $default_values = array();
 
-    // Grab the default values for this group.
-    if ($email) {
-      $memberinfo = mailchimp_get_memberinfo($mc_list['id'], $email);
+    // Set interest options and default values.
+    foreach ($interest_data->interests as $interest) {
+      $options[$interest->id] = $interest->name;
 
-      if (isset($memberinfo['merges']['GROUPINGS'])) {
-        $default_values = array();
-
-        foreach ($memberinfo['merges']['GROUPINGS'] as $membergroup) {
-          if ($membergroup['id'] == $group['id']) {
-            foreach ($membergroup['groups'] as $option) {
-              if ($option['interested']) {
-                $default_values[$group['id']][] = $option['name'];
-              }
-            }
-
-            break;
-          }
+      if (isset($memberinfo)) {
+        if (isset($memberinfo->interests->{$interest->id}) && ($memberinfo->interests->{$interest->id} === TRUE)) {
+          $default_values[$group->id][] = $interest->id;
         }
       }
     }
 
-    $return[$group['id']] = array(
+    $return[$group->id] = array(
       '#type' => $field_type,
-      '#title' => $group['name'],
+      '#title' => $group->title,
       '#options' => $options,
-      '#default_value' => isset($default_values[$group['id']]) ? $default_values[$group['id']] : array(),
-      '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $mc_list['id'])),
+      '#default_value' => isset($default_values[$group->id]) ? $default_values[$group->id] : array(),
+      '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $list->id)),
     );
   }
-
   return $return;
 }
 
@@ -996,12 +986,48 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
   // Insert common FormAPI properties:
   $input = array(
     '#title' => t('@mergevar', array('@mergevar' => $mergevar->name)),
-    '#weight' => $mergevar->order,
+    '#weight' => $mergevar->display_order,
     '#required' => $mergevar->required,
-    '#default_value' => $mergevar->default,
+    '#default_value' => $mergevar->default_value,
   );
 
-  switch ($mergevar->field_type) {
+  switch ($mergevar->type) {
+    case 'address':
+      // Sub-array of address elements according to MailChimp specs.
+      // https://apidocs.mailchimp.com/api/2.0/lists/subscribe.php
+      $input['#type'] = 'container';
+      $input['#tree'] = TRUE;
+      $input['addr1'] = array(
+        '#title' => t('Address 1'),
+        '#type' => 'textfield',
+      );
+      $input['addr2'] = array(
+        '#title' => t('Address 2'),
+        '#type' => 'textfield',
+      );
+      $input['city'] = array(
+        '#title' => t('City'),
+        '#type' => 'textfield',
+      );
+      $input['state'] = array(
+        '#title' => t('State'),
+        '#type' => 'textfield',
+        '#size' => 2,
+        '#maxlength' => 2,
+      );
+      $input['zip'] = array(
+        '#title' => t('Zip'),
+        '#type' => 'textfield',
+        '#size' => 6,
+        '#maxlength' => 6,
+      );
+      $input['country'] = array(
+        '#title' => t('Country'),
+        '#type' => 'textfield',
+        '#size' => 2,
+        '#maxlength' => 2,
+      );
+      break;
     case 'dropdown':
       // Dropdown is mapped to <select> element in Drupal Form API.
       $input['#type'] = 'select';
@@ -1040,7 +1066,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
         // Set to standard text type if 'emailfield' isn't defined:
         $input['#type'] = 'textfield';
       };
-      $input['#size'] = $mergevar['size'];
+      $input['#size'] = $mergevar->options->size;
       $input['#element_validate'] = array('mailchimp_validate_email');
       break;
 
@@ -1048,12 +1074,12 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
       // This is a standard input[type=text] or something we can't handle with
       // Drupal FormAPI.
       $input['#type'] = 'textfield';
-      $input['#size'] = $mergevar['size'];
+      $input['#size'] = $mergevar->options->size;
       break;
   }
 
   // Special cases for MailChimp hidden defined fields:
-  if ($mergevar['public'] == FALSE) {
+  if ($mergevar->public === FALSE) {
     $input['#type'] = 'hidden';
   }
 

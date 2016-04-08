@@ -252,7 +252,8 @@ class MailchimpSignupForm extends EntityForm {
 
     foreach ($mergefields as $id => $val) {
       if ($val) {
-        $mergefields[$id] = $mergevar_options[$id];
+        // Can't store objects in configuration; serialize this.
+        $mergefields[$id] = serialize($mergevar_options[$id]);
       }
     }
 
@@ -289,7 +290,7 @@ class MailchimpSignupForm extends EntityForm {
     foreach ($mergevar_settings as $list_mergevars) {
       foreach ($list_mergevars as $mergevar) {
         if ($mergevar->public) {
-          $mergevar_options[] = $mergevar;
+          $mergevar_options[$mergevar->tag] = $mergevar;
         }
       }
     }
