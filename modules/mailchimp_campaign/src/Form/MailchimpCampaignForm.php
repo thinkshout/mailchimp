@@ -667,12 +667,12 @@ class MailchimpCampaignForm extends ContentEntityForm {
       );
 
       foreach ($merge_vars as $var) {
-        $element['mergevars_table'][$var['tag']]['name'] = array(
-          '#markup' => $var['name'],
+        $element['mergevars_table'][$var->name] = array(
+          '#markup' => $var->name,
         );
 
-        $element['mergevars_table'][$var['tag']]['link'] = array(
-          '#markup' => '<a id="merge-var-' . $var['tag'] . '" class="add-merge-var" href="javascript:void(0);">*|' . $var['tag'] . '|*</a>',
+        $element['mergevars_table'][$var->link] = array(
+          '#markup' => '<a id="merge-var-' . $var->tag . '" class="add-merge-var" href="javascript:void(0);">*|' . $var->tag . '|*</a>',
         );
       }
 
