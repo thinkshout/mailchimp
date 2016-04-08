@@ -936,7 +936,7 @@ function mailchimp_webhook_url() {
  * @return array
  *   A collection of form elements, one per interest group.
  */
-function mailchimp_interest_groups_form_elements($list, $default_values = array(), $email = NULL) {
+function mailchimp_interest_groups_form_elements($list, $defaults = array(), $email = NULL) {
   $return = array();
   foreach ($list->intgroups as $group) {
     if ($group->type == 'hidden') {
@@ -980,6 +980,11 @@ function mailchimp_interest_groups_form_elements($list, $default_values = array(
 
       if (isset($memberinfo)) {
         if (isset($memberinfo->interests->{$interest->id}) && ($memberinfo->interests->{$interest->id} === TRUE)) {
+          $default_values[$group->id][] = $interest->id;
+        }
+      }
+      else if (!empty($defaults)) {
+        if (isset($defaults[$group->id][$interest->id]) && !empty($defaults[$group->id][$interest->id])) {
           $default_values[$group->id][] = $interest->id;
         }
       }
