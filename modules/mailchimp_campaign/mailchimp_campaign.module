@@ -204,37 +204,28 @@ function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
  * Delete a MailChimp campaign and the local entity.
  */
 function mailchimp_campaign_delete_campaign(MailchimpCampaign $campaign) {
+  /* @var \Mailchimp\MailchimpCampaigns $mcapi */
   $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
 
   $result = NULL;
 
   // Delete campaign from MailChimp.
   try {
-    $result = $mcapi->campaigns->delete($campaign->id());
+    if (!$mcapi) {
+      throw new Exception('Cannot delete campaign without Mailchimp API. Check API key has been entered.');
+    }
+    $mcapi->delete($campaign->mc_data->id);
+    $campaign->delete();
+
+    return TRUE;
   }
-  catch (MailchimpAPIException $e) {
+
+  catch (Exception $e) {
     drupal_set_message($e->getMessage(), 'error');
     \Drupal::logger('mailchimp_campaign')->error('An error occurred while deleting this campaign: {message}', array(
       'message' => $e->getMessage()));
     return FALSE;
   }
-
-  if (isset($result['status']) && ($result['status'] == 'error')) {
-    // Display and log error, if any.
-    $message = 'MailChimp error. The campaign was not deleted.';
-    _mailchimp_campaign_mcapi_error_message($result, $message);
-  }
-  elseif (isset($result['complete']) && ($result['complete'] === TRUE)) {
-    // Delete campaign from the database.
-    $campaign->delete();
-
-    \Drupal::logger('mailchimp_campaign')->info('MailChimp campaign {cid} was deleted.', array(
-      'cid' => $campaign->id()));
-
-    return TRUE;
-  }
-
-  return FALSE;
 }
 
 /**
