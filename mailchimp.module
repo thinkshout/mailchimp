@@ -637,7 +637,7 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
     $result = $mc_lists->removeMember($list_id, $email);
 
     if ($result) {
-      module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
+      \Drupal::moduleHandler()->invokeAll('mailchimp_unsubscribe_success', array($list_id, $email));
     }
     // Clear user cache:
     mailchimp_cache_clear_member($list_id, $email);
