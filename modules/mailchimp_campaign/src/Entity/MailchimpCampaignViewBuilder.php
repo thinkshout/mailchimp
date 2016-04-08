@@ -42,10 +42,10 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
     $list_segment_name = 'N/A';
 
     $list_segments = mailchimp_campaign_get_list_segments($entity->list->id, 'saved');
-    if (isset($this->mc_data->recipients->segment_opts->saved_segment_id)) {
+    if (isset($entity->mc_data->recipients->segment_opts->saved_segment_id)) {
       foreach ($list_segments as $list_segment) {
-        if ($list_segment['id'] == $entity->mc_data['saved_segment']['id']) {
-          $list_segment_name = $list_segment['name'];
+        if ($list_segment->id == $this->mc_data->recipients->segment_opts->saved_segment_id) {
+          $list_segment_name = $list_segment->name;
         }
       }
     }
