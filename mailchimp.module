@@ -456,7 +456,7 @@ function mailchimp_addto_queue($function, $args) {
  *
  * @see Mailchimp_Lists::updateMember()
  */
-function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $replace_interests = TRUE) {
+function mailchimp_update_member($list_id, $email, $merge_vars, $interests = array(), $format = 'html') {
   $config = \Drupal::config('mailchimp.settings');
 
   if ($config->get('cron')) {
@@ -464,14 +464,14 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
       'list_id' => $list_id,
       'email' => $email,
       'merge_vars' => $merge_vars,
+      'interests' => $interests,
       'format' => $format,
-      'replace_interests' => $replace_interests,
     );
 
     return mailchimp_addto_queue('mailchimp_update_member_process', $args);
   }
 
-  return mailchimp_update_member_process($list_id, $email, $merge_vars, $format, $replace_interests);
+  return mailchimp_update_member_process($list_id, $email, $merge_vars, $interests, $format);
 }
 
 /**
@@ -479,7 +479,7 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $format = '', $r
  *
  * @see Mailchimp_Lists::updateMember()
  */
-function mailchimp_update_member_process($list_id, $email, $merge_vars, $format, $replace_interests) {
+function mailchimp_update_member_process($list_id, $email, $merge_vars, $interests, $format) {
   $result = FALSE;
 
   try {

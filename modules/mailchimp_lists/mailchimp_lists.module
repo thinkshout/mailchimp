@@ -204,7 +204,7 @@ function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $i
     // First compare Interest Group settings.
 
     if ($settings['show_interest_groups']) {
-      $field_name = $instance->getFieldDefinition()->field_name;
+      $field_name = $instance->getFieldDefinition()->getName();
 
       /* @var $old_field_settings \Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription */
       $old_field_settings = $original->{$field_name}->get(0);
