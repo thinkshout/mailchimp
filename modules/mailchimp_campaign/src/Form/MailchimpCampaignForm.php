@@ -164,7 +164,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
 
     if (isset($list_id)) {
       $merge_vars_list = mailchimp_get_mergevars(array($list_id));
-      $merge_vars = $merge_vars_list[$list_id]['merge_vars'];
+      $merge_vars = $merge_vars_list[$list_id];
     }
     else {
       $merge_vars = array();
