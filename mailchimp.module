@@ -465,9 +465,7 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $inte
     }
 
     // Add member to list.
-    $result = $mc_lists->addOrUpdateMember($list_id, $email, $parameters, TRUE);
-
-    $mc_lists->processBatchOperations();
+    $result = $mc_lists->addOrUpdateMember($list_id, $email, $parameters);
 
     if (isset($result->id)) {
       module_invoke_all('mailchimp_subscribe_user', $list_id, $email, $merge_vars);
@@ -1008,6 +1006,7 @@ function mailchimp_get_campaign_data($campaign_id, $reset = FALSE) {
     $response = $mc_campaigns->getCampaign($campaign_id);
 
     if (!empty($response->id)) {
+      $campaign_data = $response;
       cache_set('campaign_' . $campaign_id, $response, 'cache_mailchimp', CACHE_TEMPORARY);
     }
     else {
@@ -1257,7 +1256,7 @@ function mailchimp_webhook_url() {
  * @param array $list
  *   Fully loaded array with mailchimp list settings as returned by
  *   mailchimp_get_list()
- * @param array $default_values
+ * @param array $defaults
  *   Array of default values to use if no group subscription values already
  *   exist at MailChimp.
  * @param string $email
@@ -1267,7 +1266,7 @@ function mailchimp_webhook_url() {
  * @return array
  *   A collection of form elements, one per interest group.
  */
-function mailchimp_interest_groups_form_elements($list, $default_values = array(), $email = NULL) {
+function mailchimp_interest_groups_form_elements($list, $defaults = array(), $email = NULL) {
   $return = array();
   foreach ($list->intgroups as $group) {
     if ($group->type == 'hidden') {
@@ -1311,6 +1310,11 @@ function mailchimp_interest_groups_form_elements($list, $default_values = array(
 
       if (isset($memberinfo)) {
         if (isset($memberinfo->interests->{$interest->id}) && ($memberinfo->interests->{$interest->id} === TRUE)) {
+          $default_values[$group->id][] = $interest->id;
+        }
+      }
+      else if (!empty($defaults)) {
+        if (isset($defaults[$group->id][$interest->id]) && !empty($defaults[$group->id][$interest->id])) {
           $default_values[$group->id][] = $interest->id;
         }
       }
