@@ -164,39 +164,40 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
  * @return bool
  *   TRUE if campaign is sent successfully.
  */
-function mailchimp_campaign_send_campaign(MailChimpCampaign $campaign) {
-  $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
+function mailchimp_campaign_send_campaign(MailchimpCampaign $campaign) {
+  /* @var \Mailchimp\MailchimpCampaigns $mc_campaign */
+  $mc_campaign = mailchimp_get_api_object('MailchimpCampaigns');
 
+  // Send campaign.
   try {
-    $result = $mcapi->campaigns->send($campaign->getMcCampaignId());
+    if (!$mc_campaign) {
+      throw new Exception('Cannot send campaign without Mailchimp API. Check API key has been entered.');
+    }
+
+    $mc_campaign->send($campaign->mc_data->id);
+    $result = $mc_campaign->getCampaign($campaign->mc_data->id);
+
+    if ($result->status == MAILCHIMP_STATUS_SENT) {
+      // Log action, and notify the user.
+      \Drupal::logger('mailchimp_campaign')->error('MailChimp campaign {name} has been sent.', array(
+        'name' => $campaign->label()));
+
+      $controller = \Drupal::entityManager()->getStorage('mailchimp_campaign');
+      $controller->resetCache(array($campaign->getMcCampaignId()));
+
+      $cache = \Drupal::cache('mailchimp');
+      $cache->invalidate('campaigns');
+
+      return TRUE;
+    }
   }
-  catch (MailchimpAPIException $e) {
+  catch (Exception $e) {
     drupal_set_message($e->getMessage(), 'error');
-    \Drupal::logger('mailchimp_campaign')->error('An error occurred while sending to this campaign: {message}', array(
-      'message' => $e->getMessage()));
-
-    return FALSE;
+    \Drupal::logger('mailchimp_campaign')
+      ->error('An error occurred while sending to this campaign: {message}', array(
+        'message' => $e->getMessage()
+      ));
   }
-
-  if (isset($result['complete']) && ($result['complete'] === TRUE)) {
-    // Log action, and notify the user.
-    \Drupal::logger('mailchimp_campaign')->error('MailChimp campaign {name} has been sent.', array(
-      'name' => $campaign->label()));
-
-    $controller = \Drupal::entityManager()->getStorage('mailchimp_campaign');
-    $controller->resetCache(array($campaign->getMcCampaignId()));
-
-    $cache = \Drupal::cache('mailchimp');
-    $cache->invalidate('campaigns');
-
-    return TRUE;
-  }
-  elseif (isset($result['status']) && ($result['status'] == 'error')) {
-    // Display and log error, if any.
-    $message = 'MailChimp error. The campaign was not sent.';
-    _mailchimp_campaign_mcapi_error_message($result, $message);
-  }
-
   return FALSE;
 }
 
