@@ -86,8 +86,8 @@ class MailchimpCampaignForm extends ContentEntityForm {
     }
     elseif ($campaign && $campaign->list) {
       $list_id = $campaign->list->id;
-      if (isset($campaign->list->saved_segment->id)) {
-        $segment_id = $campaign->list->saved_segment->id;
+      if (isset($campaign->mc_data->recipients->segment_opts->saved_segment_id)) {
+        $segment_id = $campaign->mc_data->recipients->segment_opts->saved_segment_id;
       }
     }
 
