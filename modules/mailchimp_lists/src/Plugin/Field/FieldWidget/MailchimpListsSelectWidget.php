@@ -59,7 +59,7 @@ class MailchimpListsSelectWidget extends WidgetBase {
 
     $form_id = $form_state->getFormObject()->getFormId();
 
-    if ($this->fieldDefinition->getSetting('show_interest_groups') || ($form_id == 'field_ui_field_edit_form')) {
+    if ($this->fieldDefinition->getSetting('show_interest_groups') || ($form_id == 'field_config_edit_form')) {
       $mc_list = mailchimp_get_list($instance->getFieldDefinition()->getSetting('mc_list_id'));
 
       $element['interest_groups'] = array(
@@ -73,9 +73,9 @@ class MailchimpListsSelectWidget extends WidgetBase {
         ),
       );
 
-      if ($form_id == 'field_ui_field_edit_form') {
+      if ($form_id == 'field_config_edit_form') {
         $element['interest_groups']['#states']['invisible'] = array(
-          ':input[name="field[settings][show_interest_groups]"]' => array('checked' => FALSE),
+          ':input[name="settings[show_interest_groups]"]' => array('checked' => FALSE),
         );
       }
 
