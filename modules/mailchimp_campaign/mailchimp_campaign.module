@@ -4,7 +4,6 @@
  * Module file for mailchimp_campaign.
  */
 
-use \Mailchimp\MailchimpAPIException;
 use \Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
 use Drupal\Core\Cache\CacheBackendInterface;
 
@@ -392,7 +391,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
 
     try {
       if (!$mcapi) {
-        throw new MailchimpAPIException('Cannot get list without MailChimp API. Check API key has been entered.');
+        throw new Exception('Cannot get list without MailChimp API. Check API key has been entered.');
       }
 
       foreach ($to_refresh as $campaign_id) {
@@ -404,7 +403,7 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
       }
     }
 
-    catch (MailchimpAPIException $e) {
+    catch (Exception $e) {
       drupal_set_message($e->getMessage(), 'error');
       \Drupal::logger('mailchimp_campaign')->error('An error occurred while getting campaigns: {message}', array(
         'message' => $e->getMessage()));
@@ -436,7 +435,7 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
   try {
     $response = $mcapi->getSegments($list_id, $type);
   }
-  catch (MailchimpAPIException $e) {
+  catch (Exception $e) {
     drupal_set_message($e->getMessage(), 'error');
     \Drupal::logger('mailchimp_campaign')->error('An error occurred getting list segments for list ID {list_id}: {message} ', array(
       'list_id' => $list_id,
@@ -467,7 +466,7 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
   try {
     $result = $mc_lists->getSegmentMembers($list_id, $list_segment_id);
   }
-  catch (MailchimpAPIException $e) {
+  catch (Exception $e) {
     drupal_set_message($e->getMessage(), 'error');
     \Drupal::logger('mailchimp_campaign')->error('An error occurred testing a list segment: {message}', array(
       'message' => $e->getMessage()));
