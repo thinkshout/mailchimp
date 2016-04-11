@@ -1105,6 +1105,8 @@ function mailchimp_webhook_add($list_id, $url, $events = array(), $sources = arr
     );
 
     $result = $mc_lists->addWebhook($list_id, $url, $parameters);
+
+    return $result->id;
   }
   catch (Exception $e) {
     watchdog('mailchimp', t('An error occurred adding webhook for list @list. "%message"'), array(
@@ -1113,7 +1115,6 @@ function mailchimp_webhook_add($list_id, $url, $events = array(), $sources = arr
     ), WATCHDOG_ERROR);
     return FALSE;
   }
-  return $result['id'];
 }
 
 /**
@@ -1130,8 +1131,16 @@ function mailchimp_webhook_delete($list_id, $url) {
       throw new MailchimpException('Cannot delete webhook without MailChimp API. Check API key has been entered.');
     }
 
-    // TODO: Get webhook_id if needed. Documentation not available yet.
-    //$result = $mc_lists->deleteWebhook($list_id, $webhook_id);
+    $result = $mc_lists->getWebhooks($list_id);
+
+    if ($result->total_items > 0) {
+      foreach ($result->webhooks as $webhook) {
+        if ($webhook->url == $url) {
+          $mc_lists->deleteWebhook($list_id, $webhook->id);
+          return TRUE;
+        }
+      }
+    }
 
     return FALSE;
   }

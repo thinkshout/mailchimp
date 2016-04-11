@@ -151,7 +151,17 @@ function mailchimp_lists_webhook_form_submit($form, &$form_state) {
       $result = mailchimp_webhook_add(
         $list_id,
         mailchimp_webhook_url(),
-        array('unsubscribe', 'profile', 'cleaned', 'upemail')
+        array(
+          'unsubscribe' => TRUE,
+          'profile' => TRUE,
+          'cleaned' => TRUE,
+          'upemail' => TRUE,
+        ),
+        array(
+          'user' => TRUE,
+          'admin' => TRUE,
+          'api' => FALSE,
+        )
       );
       break;
 
