@@ -25,7 +25,7 @@ function mailchimp_lists_overview_page() {
     }
     if ($enabled) {
       // This is a webhook for this MailChimp Module.
-      $webhook_status = t('ENABLED') . '(' . l(t('disable'), 'admin/config/services/mailchimp/lists/' . $mc_list->id . '/webhook/disable') . ')';
+      $webhook_status = t('ENABLED') . ' (' . l(t('disable'), 'admin/config/services/mailchimp/lists/' . $mc_list->id . '/webhook/disable') . ')';
     }
     else {
       $webhook_status = t('disabled') . ' (' . l(t('enable'), 'admin/config/services/mailchimp/lists/' . $mc_list->id . '/webhook/enable') . ')';
