@@ -254,7 +254,7 @@ function _mailchimp_list_cmp($a, $b) {
 }
 
 /**
- * Wrapper around MailchimpLists->mergeVars.
+ * Wrapper around MailchimpLists->getMergeFields().
  * 
  * @param array $list_ids
  *   Array of MailChimp list IDs.
