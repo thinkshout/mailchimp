@@ -44,6 +44,11 @@ class MailChimpCampaign extends Entity {
       }
     }
 
+    $send_time = 'N/A';
+    if (isset($this->mc_data->send_time) && $this->mc_data->send_time) {
+      $send_time = format_date(strtotime($this->mc_data->send_time), 'custom', 'F j, Y - g:ia');
+    }
+
     $fields = array(
       'subject' => array(
         'label' => t('Subject'),
@@ -85,7 +90,7 @@ class MailChimpCampaign extends Entity {
       ),
       'send_time' => array(
         'label' => t('Send time'),
-        'value' => $this->mc_data->send_time,
+        'value' => $send_time,
       ),
       'content' => array(
         'label' => t('Rendered template HTML (!archive)',
