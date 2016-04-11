@@ -339,25 +339,6 @@ function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
 }
 
 /**
- * Set and log error messages after MailChimp API errors.
- */
-function _mailchimp_campaign_mcapi_error_message($result, $message, $variables = array()) {
-  $mcapi_error_message = 'MailChimp error code: %errorCode, MailChimp error message: %errorMessage.';
-
-  $mcapi_error_variables = array(
-    '%errorCode' => $result['code'],
-    '%errorMessage' => $result['message'],
-  );
-
-  $human = t($message, $variables) . ' ' . t($mcapi_error_message, $mcapi_error_variables);
-  drupal_set_message($human, 'error');
-
-  $log = $message . ' ' . $mcapi_error_message;
-  $variables = $variables + $mcapi_error_variables;
-  \Drupal::logger('mailchimp_campaign')->error($log, $variables);
-}
-
-/**
  * Convert an array of templates into rendered content.
  *
  * @param array $template
