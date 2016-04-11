@@ -248,7 +248,7 @@ function mailchimp_campaign_overview_page() {
           'attributes' => array('target' => '_blank'),
         )),
       ($campaign_template != NULL) ? $campaign_template->name : '',
-      $campaign->mc_data->create_time,
+      format_date(strtotime($campaign->mc_data->create_time), 'custom', 'F j, Y - g:ia'),
       implode(' | ', $actions),
     );
   }
