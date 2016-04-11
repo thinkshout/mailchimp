@@ -33,26 +33,53 @@ respective README's for more details.
   * You need to have a MailChimp API Key.
   * You need to have at least one list created in MailChimp to use the
     mailchimp_lists module.
-  * The MCAPI library must be downloaded into your libraries folder. 7.x-3.x
-    uses the 2.0.x version of the Mailchimp API, where 7.x-2.x used the 1.3
-    version. Make sure you have the new version. It's available at:
-    https://bitbucket.org/mailchimp/mailchimp-api-php/downloads ("Tags" tab)
-    or by using the included example drush make file.
-    Proper libraries structure:
 
-    - libraries/
-      - mailchimp/
-        - docs/
-        - src/
-          - Mailchimp.php
-          - Mailchimp/
-        - README.md
-        - composer.json
+  * The MailChimp PHP library must exist in your libraries directory.
 
-  * At the time of writing, version 2.0.6 of the Mailchimp API library was the
-    latest. If you are using a later version and have issues, consider switching
-    to version 2.0.6.
-    (https://bitbucket.org/mailchimp/mailchimp-api-php/get/2.0.6.zip)
+    For module version 7.x-3.7 and newer:
+
+      - Download Composer if you don't already have it installed:
+        https://getcomposer.org/download/
+
+      - Download version 1.0 of the v3 API library:
+        https://github.com/thinkshout/mailchimp-api-php/releases
+
+      - Extract the library archive to libraries/mailchimp
+
+      - Ensure the directory structure looks like this:
+
+        - libraries/
+          - mailchimp/
+            - src/
+              - Mailchimp.php
+              - MailchimpAPIException.php
+              - MailchimpCampaigns.php
+              - MailchimpLists.php
+              - MailchimpReports.php
+              - MailchimpTemplates.php
+            - composer.json
+            - README.md
+
+      - In the mailchimp library directory, run:
+        composer install
+
+    For module version 7.x-2.x:
+
+      - Download version 2.0.6 of the v2 API library:
+        https://bitbucket.org/mailchimp/mailchimp-api-php/downloads
+
+      - Extract the library archive to libraries/mailchimp
+
+      - Ensure the directory structure looks like this:
+
+        - libraries/
+          - mailchimp/
+            - docs/
+            - src/
+              - Mailchimp.php
+              - Mailchimp/
+            - README.md
+            - composer.json
 
 ## Configuration
   1. Direct your browser to admin/config/services/mailchimp to configure the
