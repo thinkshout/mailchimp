@@ -52,6 +52,12 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
 
     $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $entity->list->id, array('attributes' => array('target' => '_blank')));
     $archive_url = Url::fromUri($entity->mc_data->archive_url);
+    $send_time = 'N/A';
+
+    if (isset($entity->mc_data->send_time) && $entity->mc_data->send_time) {
+      $send_time = \Drupal::service('date.formatter')
+        ->format(strtotime($entity->mc_data->send_time), 'custom', 'F j, Y - g:ia');
+    }
 
     $fields = array(
       'title' => array(
@@ -97,7 +103,7 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
       ),
       'send_time' => array(
         'label' => t('Send time'),
-        'value' => $entity->mc_data->send_time,
+        'value' => $send_time,
       ),
       'content' => array(
         'label' => t('Rendered template HTML (!archive)',
