@@ -104,7 +104,7 @@ class MailchimpCampaignController extends ControllerBase {
         }
       }
       $content['campaigns_table'][$campaign_id]['created'] = array(
-        '#markup' => $campaign->mc_data->create_time,
+        '#markup' => \Drupal::service('date.formatter')->format(strtotime($campaign->mc_data->create_time) ,'custom','F j, Y - g:ia'),
       );
 
       $content['campaigns_table'][$campaign_id]['actions'] = array(
