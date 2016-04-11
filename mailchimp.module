@@ -179,7 +179,7 @@ function _mailchimp_list_cmp($a, $b) {
 }
 
 /**
- * Wrapper around MCAPI->Lists->mergeVars.
+ * Wrapper around MailchimpLists->getMergeFields().
  *
  * @param array $list_ids
  *   Array of MailChimp list IDs.
@@ -677,7 +677,7 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
 }
 
 /**
- * Wrapper around MCAPI->campaigns->getList to return data for a given campaign.
+ * Wrapper around MailchimpCampaigns->getCampaign() to return data for a given campaign.
  *
  * Data is stored in the MailChimp cache.
  *
