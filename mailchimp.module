@@ -779,7 +779,6 @@ function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FAL
  *   Success or failure.
  */
 function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $notify) {
-  $result = FALSE;
   try {
     /* @var \Mailchimp\MailchimpLists $mc_lists */
     $mc_lists = mailchimp_get_api_object('MailchimpLists');
@@ -787,13 +786,14 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
       throw new MailchimpException('Cannot unsubscribe from list without MailChimp API. Check API key has been entered.');
     }
 
-    $result = $mc_lists->removeMember($list_id, $email);
+    $mc_lists->removeMember($list_id, $email);
 
-    if ($result) {
-      module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
-    }
+    module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
+
     // Clear user cache:
     mailchimp_cache_clear_member($list_id, $email);
+
+    return TRUE;
   }
   catch (Exception $e) {
     watchdog('mailchimp', 'An error occurred unsubscribing @email from list @list. "%message"', array(
@@ -801,8 +801,9 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
       '@list' => $list_id,
       '%message' => $e->getMessage(),
     ), WATCHDOG_ERROR);
+
+    return FALSE;
   }
-  return $result;
 }
 
 /**
