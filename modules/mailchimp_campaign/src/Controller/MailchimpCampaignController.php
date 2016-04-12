@@ -7,6 +7,7 @@
 
 namespace Drupal\mailchimp_campaign\Controller;
 
+use Behat\Mink\Exception\Exception;
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
@@ -144,11 +145,16 @@ class MailchimpCampaignController extends ControllerBase {
   public function stats(MailchimpCampaign $mailchimp_campaign) {
     $content = array();
 
-    $mcapi = mailchimp_get_api_object();
+    /* @var \Mailchimp\MailchimpReports $mc_reports */
+    $mc_reports = mailchimp_get_api_object('MailchimpReports');
 
     try {
-      $response = $mcapi->reports->summary($mailchimp_campaign->getMcCampaignId());
-    } catch (Mailchimp_Error $e) {
+      if (!$mc_reports) {
+        throw new MailchimpAPIException('Cannot get campaign stats without MailChimp API. Check API key has been entered.');
+      }
+
+      $response = $mc_reports->getCampaignSummary($mailchimp_campaign->getMcCampaignId());
+    } catch (Exception $e) {
       drupal_set_message($e->getMessage(), 'error');
       \Drupal::logger('mailchimp_campaign')
         ->error('An error occurred getting report data from MailChimp: {message}', array(
@@ -166,12 +172,12 @@ class MailchimpCampaignController extends ControllerBase {
         'stats' => array(),
       );
 
-      foreach ($response['timeseries'] as $series) {
+      foreach ($response->timeseries as $series) {
         $content['#attached']['drupalSettings']['mailchimp_campaign']['stats'][] = array(
-          'timestamp' => $series['timestamp'],
-          'emails_sent' => isset($series['emails_sent']) ? $series['emails_sent'] : 0,
-          'unique_opens' => $series['unique_opens'],
-          'recipients_click' => $series['recipients_click'],
+          'timestamp' => $series->timestamp,
+          'emails_sent' => isset($series->emails_sent) ? $series->emails_sent : 0,
+          'unique_opens' => $series->unique_opens,
+          'recipients_click' => $series->recipients_click,
         );
       }
 
@@ -187,19 +193,37 @@ class MailchimpCampaignController extends ControllerBase {
         '#prefix' => '<h2>' . t('Other campaign metrics') . '</h2>',
       );
 
-      foreach ($response as $key => $value) {
-        if (is_array($value)) {
-          break;
-        }
+      $stat_groups = array(
+        'bounces',
+        'forwards',
+        'opens',
+        'clicks',
+        'facebook_likes',
+        'list_stats'
+      );
 
+      foreach ($stat_groups as $group) {
         $content['metrics_table'][] = array(
           'key' => array(
-            '#markup' => $key,
+            '#markup' => '<strong>' . ucfirst(str_replace('_', ' ', $group)) . '</strong>',
           ),
           'value' => array(
-            '#markup' => $value
+            '#markup' => ''
           ),
         );
+
+        foreach ($response->{$group} as $key => $value) {
+          $value = ($key == 'last_open' ? \Drupal::service('date.formatter')->format(strtotime($value) ,'custom','F j, Y - g:ia') : $value);
+
+          $content['metrics_table'][] = array(
+            'key' => array(
+              '#markup' => $key,
+            ),
+            'value' => array(
+              '#markup' => $value
+            ),
+          );
+        }
       }
     }
     else {

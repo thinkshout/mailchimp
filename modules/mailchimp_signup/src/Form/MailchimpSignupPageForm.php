@@ -170,7 +170,7 @@ class MailchimpSignupPageForm extends FormBase {
     $list_details = mailchimp_get_lists($this->signup->mc_lists);
 
     $subscribe_lists = array();
-    
+
     // Filter out blank fields so we don't erase values on the Mailchimp side.
     $mergevars = array_filter($form_state->getValue('mergevars'));
 
