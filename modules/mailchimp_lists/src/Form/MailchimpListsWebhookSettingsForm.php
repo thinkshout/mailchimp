@@ -45,7 +45,7 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
       '#type' => 'fieldset',
       '#title' => t('Enabled webhook actions for the @name list',
         array(
-          '@name' => $list['name'],
+          '@name' => $list->name,
         )),
       '#tree' => TRUE,
     );
@@ -72,6 +72,8 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
     $list = $form_state->get('list');
 
     $webhook_actions = $form_state->getValue('webhook_actions');
@@ -86,19 +88,19 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
     if (count($actions) > 0) {
       $webhook_url = mailchimp_webhook_url();
 
-      $webhooks = mailchimp_webhook_get($list['id']);
+      $webhooks = $mc_lists->getWebhooks($list->id);
       if (!empty($webhooks)) {
         foreach ($webhooks as $webhook) {
           if ($webhook['url'] == $webhook_url) {
             // Delete current webhook.
-            mailchimp_webhook_delete($list['id'], mailchimp_webhook_url());
+            $mc_lists->deleteWebhook($list->id, mailchimp_webhook_url());
           }
         }
       }
 
       // Add webhook with enabled actions.
-      $result = mailchimp_webhook_add(
-        $list['id'],
+      $result = $mc_lists->addWebhook(
+        $list->id,
         mailchimp_webhook_url(),
         $actions
       );
@@ -107,14 +109,14 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
     if ($result) {
       drupal_set_message(t('Webhooks for list "%name" have been updated.',
         array(
-          '%name' => $list['name'],
+          '%name' => $list->name,
         )
       ));
     }
     else {
       drupal_set_message(t('Unable to update webhooks for list "%name".',
         array(
-          '%name' => $list['name'],
+          '%name' => $list->name,
         )
       ), 'warning');
     }
