@@ -310,7 +310,7 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
         $mergevars[$list_id] = array_merge($mergevars[$list_id], $result->merge_fields);
       }
 
-      cache_set($list_id . '-mergevars', $result->merge_fields, 'cache_mailchimp', CACHE_TEMPORARY);
+      cache_set($list_id . '-mergevars', $mergevars[$list_id], 'cache_mailchimp', CACHE_TEMPORARY);
     }
   }
   catch (Exception $e) {
