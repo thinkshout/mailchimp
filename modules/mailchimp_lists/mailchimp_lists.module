@@ -255,9 +255,12 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
     else {
       $mergevars = _mailchimp_lists_mergevars_populate($instance['settings']['mergefields'], $entity, $instance['entity_type']);
     }
+
+    $interests = (isset($choices['interest_groups'])) ? $choices['interest_groups'] : array();
+
     switch ($function) {
       case 'add':
-        $ret = mailchimp_subscribe($list_id, $email, $mergevars, $choices['interest_groups'], $field['settings']['double_opt_in']);
+        $ret = mailchimp_subscribe($list_id, $email, $mergevars, $interests, $field['settings']['double_opt_in']);
         break;
 
       case 'unsubscribe':
@@ -270,7 +273,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
 
       case 'update':
         if (_mailchimp_lists_subscription_has_changed($instance, $field, $entity, $email, $choices)) {
-          $ret = mailchimp_update_member($list_id, $email, $mergevars, $choices['interest_groups']);
+          $ret = mailchimp_update_member($list_id, $email, $mergevars, $interests);
         }
         else {
           $ret = TRUE;
