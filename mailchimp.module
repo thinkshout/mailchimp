@@ -1097,8 +1097,8 @@ function mailchimp_webhook_get($list_id) {
 /**
  * Wrapper around MailchimpLists->addWebhook().
  *
- * @return bool
- *   TRUE if deletion was successful, otherwise FALSE.
+ * @return mixed
+ *   New webhook ID if added, FALSE otherwise.
  */
 function mailchimp_webhook_add($list_id, $url, $events = array(), $sources = array()) {
   try {
