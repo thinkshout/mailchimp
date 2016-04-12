@@ -882,8 +882,8 @@ function mailchimp_segment_create($list_id, $name, $type, $segment_options = NUL
       $parameters['options'] = $segment_options;
     }
     $result = $mc_lists->addSegment($list_id, $name, $parameters);
-    if (!empty($result->segment)) {
-      $segment_id = $result->segment->id;
+    if (!empty($result->id)) {
+      $segment_id = $result->id;
     }
     // Clear the segment cache:
     mailchimp_get_segments($list_id, TRUE);
