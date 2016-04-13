@@ -647,8 +647,6 @@ function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FAL
  * @see Mailchimp_Lists::unsubscribe()
  */
 function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $notify) {
-  $result = FALSE;
-
   try {
     /* @var \Mailchimp\MailchimpLists $mc_lists */
     $mc_lists = mailchimp_get_api_object('MailchimpLists');
@@ -656,13 +654,14 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
       throw new Exception('Cannot unsubscribe from list without MailChimp API. Check API key has been entered.');
     }
 
-    $result = $mc_lists->removeMember($list_id, $email);
+    $mc_lists->removeMember($list_id, $email);
 
-    if ($result) {
-      \Drupal::moduleHandler()->invokeAll('mailchimp_unsubscribe_success', array($list_id, $email));
-    }
+    \Drupal::moduleHandler()->invokeAll('mailchimp_unsubscribe_success', array($list_id, $email));
+
     // Clear user cache:
     mailchimp_cache_clear_member($list_id, $email);
+
+    return TRUE;
   }
   catch (Exception $e) {
     \Drupal::logger('mailchimp')->error('An error occurred unsubscribing {email} from list {list}. "{message}"', array(
@@ -672,7 +671,7 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
     ));
   }
 
-  return $result;
+  return FALSE;
 }
 
 /**
