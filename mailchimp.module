@@ -966,13 +966,25 @@ function mailchimp_segment_batch_add_subscribers($list_id, $segment_id, $batch) 
       throw new MailchimpException('Cannot batch add segment subscribers without MailChimp API. Check API key has been entered.');
     }
 
-    $parameters = array(
-      'static_segment' => $batch,
-    );
+    $segments_data = $mc_lists->getSegments($list_id);
+    $matched_segment = NULL;
 
-    $result = $mc_lists->updateSegment($list_id, $segment_id, $parameters);
+    foreach ($segments_data->segments as $segment) {
+      if ($segment->id == $segment_id) {
+        $matched_segment = $segment;
+        continue;
+      }
+    }
 
-    $count = isset($result->member_count) ? $result->member_count : 0;
+    if ($matched_segment != NULL) {
+      $parameters = array(
+        'static_segment' => $batch,
+      );
+
+      $result = $mc_lists->updateSegment($list_id, $segment_id, $matched_segment->name, $parameters);
+
+      $count = isset($result->member_count) ? $result->member_count : 0;
+    }
   }
   catch (Exception $e) {
     watchdog('mailchimp', 'An error occurred on batch segment add. List: @list_id Segment: @segment_id. "%message"', array(
