@@ -754,22 +754,23 @@ function mailchimp_get_lists_for_email($email) {
  *
  * @see Mailchimp_Lists::webhooks()
  */
-//function mailchimp_webhook_get($list_id) {
-//  try {
-//    $mcapi = mailchimp_get_api_object();
-//    $result = $mcapi->lists->webhooks($list_id);
-//  }
-//  catch (Exception $e) {
-//    \Drupal::logger('mailchimp')->error('An error occurred reading webhooks for list {list}. "{message}"', array(
-//      'list' => $list_id,
-//      'message' => $e->getMessage(),
-//    ));
-//
-//    return FALSE;
-//  }
-//
-//  return $result;
-//}
+function mailchimp_webhook_get($list_id) {
+  try {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
+    $result = $mc_lists->getWebhooks($list_id);
+
+    return ($result->total_items > 0) ? $result->webhooks : FALSE;
+  }
+  catch (Exception $e) {
+    \Drupal::logger('mailchimp')->error('An error occurred reading webhooks for list {list}. "{message}"', array(
+      'list' => $list_id,
+      'message' => $e->getMessage(),
+    ));
+
+    return FALSE;
+  }
+}
 
 /**
  * Adds a webhook to a MailChimp list.
@@ -830,19 +831,29 @@ function mailchimp_webhook_add($list_id, $url, $events = array(), $sources = arr
  */
 function mailchimp_webhook_delete($list_id, $url) {
   try {
-    $mcapi = mailchimp_get_api_object();
-    $result = $mcapi->lists->webhookDel($list_id, $url);
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
+
+    $result = $mc_lists->getWebhooks($list_id);
+
+    if ($result->total_items > 0) {
+      foreach ($result->webhooks as $webhook) {
+        if ($webhook->url == $url) {
+          $mc_lists->deleteWebhook($list_id, $webhook->id);
+          return TRUE;
+        }
+      }
+    }
+
+    return FALSE;
   }
   catch (Exception $e) {
     \Drupal::logger('mailchimp')->error('An error occurred deleting webhook for list {list}. "{message}"', array(
       'list' => $list_id,
       'message' => $e->getMessage(),
     ));
-
     return FALSE;
   }
-
-  return $result['complete'];
 }
 
 /**

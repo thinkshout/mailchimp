@@ -523,12 +523,12 @@ function mailchimp_lists_populate_member_batch_complete($success, $results, $ope
 }
 
 /**
- * Gets an array of default MailChimp webhook action names.
+ * Gets an array of default MailChimp webhook event names.
  *
  * @return array
- *   Default webhook aciton names, indexed by the IDs used by the MailChimp API.
+ *   Default webhook event names, indexed by the IDs used by the MailChimp API.
  */
-function mailchimp_lists_default_webhook_actions() {
+function mailchimp_lists_default_webhook_events() {
   return array(
     'subscribe' => 'Subscribes',
     'unsubscribe' => 'Unsubscribes',
@@ -540,32 +540,32 @@ function mailchimp_lists_default_webhook_actions() {
 }
 
 /**
- * Returns an array of enabled webhook actions.
+ * Returns an array of enabled webhook events.
  *
  * @param $list_id
  *   The MailChimp list ID to return webhook actions for.
  *
  * @return array
- *   An array of enabled webhook action names.
+ *   An array of enabled webhook event names.
  */
-function mailchimp_lists_enabled_webhook_actions($list_id) {
-  $enabled_actions = array();
+function mailchimp_lists_enabled_webhook_events($list_id) {
+  $enabled_events = array();
 
   $webhook_url = mailchimp_webhook_url();
 
-//  $webhooks = mailchimp_webhook_get($list_id);
+  $webhooks = mailchimp_webhook_get($list_id);
 
   if ($webhooks) {
     foreach ($webhooks as $webhook) {
-      if ($webhook_url == $webhook['url']) {
-        foreach ($webhook['actions'] as $action => $enabled) {
+      if ($webhook_url == $webhook->url) {
+        foreach ($webhook->events as $event => $enabled) {
           if ($enabled) {
-            $enabled_actions[] = $action;
+            $enabled_events[] = $event;
           }
         }
       }
     }
   }
 
-  return $enabled_actions;
+  return $enabled_events;
 }
