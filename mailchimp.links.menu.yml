@@ -1,4 +1,5 @@
 mailchimp.admin:
   route_name: mailchimp.admin
   title: 'Mailchimp'
+  description: 'Manage MailChimp Settings.'
   parent: system.admin_config_services
