@@ -320,15 +320,6 @@ function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
           \Drupal::cache()->set('template_' . $template_id, $template->info, CacheBackendInterface::CACHE_PERMANENT, $tags);
         }
       }
-//      if (!$reset && !empty($cached_template)) {
-//        $template['info'] = $cached_template->data;
-//      }
-//      else {
-//        if ($mcapi = mailchimp_get_api_object()) {
-//          $template['info'] = $mcapi->templates->info($template_id);
-//          $cache->set('template_' . $template_id, $template['info']);
-//        }
-//      }
 
       return $template;
     }
