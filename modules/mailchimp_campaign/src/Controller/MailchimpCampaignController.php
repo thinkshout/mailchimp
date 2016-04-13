@@ -47,6 +47,12 @@ class MailchimpCampaignController extends ControllerBase {
       if ($campaign->mc_data->status === "save") {
         $send_link = \Drupal::l(t("Send"), $send_url);
       }
+      // "Sent" campaigns were not being cached, so we needed to reload to get
+      // the latest status.
+      elseif ($campaign->mc_data->status === "sending") {
+        $campaigns = mailchimp_campaign_load_multiple(array($campaign_id), TRUE);
+        $campaign = $campaigns[0];
+      }
       else {
         $send_link = t("Sent");
       }
