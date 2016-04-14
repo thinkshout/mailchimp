@@ -33,10 +33,12 @@ respective README's for more details.
   * You need to have a MailChimp API Key.
   * You need to have at least one list created in MailChimp to use the
     mailchimp_lists module.
+  * If you use a drush make workflow, see the example drush makefile:
+    makechimp.make.example.
 
   * The MailChimp PHP library must exist in your libraries directory.
 
-    For module version 7.x-3.7 and newer:
+    For module version 7.x-4.x:
 
       - Download Composer if you don't already have it installed:
         https://getcomposer.org/download/
@@ -63,7 +65,7 @@ respective README's for more details.
       - In the mailchimp library directory, run:
         composer install
 
-    For module version 7.x-2.x:
+    For module version 7.x-2.x and 7.x-3.x:
 
       - Download version 2.0.6 of the v2 API library:
         https://bitbucket.org/mailchimp/mailchimp-api-php/downloads
