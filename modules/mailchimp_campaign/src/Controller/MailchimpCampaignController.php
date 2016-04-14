@@ -219,7 +219,9 @@ class MailchimpCampaignController extends ControllerBase {
         );
 
         foreach ($response->{$group} as $key => $value) {
-          $value = ($key == 'last_open' ? \Drupal::service('date.formatter')->format(strtotime($value) ,'custom','F j, Y - g:ia') : $value);
+          if ($key == "last_open" && !empty($value)) {
+            $value = \Drupal::service('date.formatter')->format(strtotime($value) ,'custom','F j, Y - g:ia') ;
+          }
 
           $content['metrics_table'][] = array(
             'key' => array(
