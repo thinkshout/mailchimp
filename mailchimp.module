@@ -70,7 +70,7 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
 
   $timeout = 60;
 
-  $mailchimp = new $classname($api_key, 'apikey', $timeout, FALSE);
+  $mailchimp = new $classname($api_key, 'apikey', $timeout);
 
   return $mailchimp;
 }
