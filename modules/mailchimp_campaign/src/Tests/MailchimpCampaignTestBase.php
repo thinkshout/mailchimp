@@ -7,8 +7,8 @@
 
 namespace Drupal\mailchimp_campaign\Tests;
 
-use Drupal\simpletest\WebTestBase;
 use Drupal\mailchimp_campaign_test\MailchimpCampaignConfigOverrider;
+use Drupal\simpletest\WebTestBase;
 
 /**
  * Sets up MailChimp Campaign module tests.

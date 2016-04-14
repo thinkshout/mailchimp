@@ -20,7 +20,7 @@ class MailchimpCampaignConfigOverrider extends MailchimpConfigOverrider {
   public function loadOverrides($names) {
     $overrides = parent::loadOverrides($names);
 
-    $overrides['mailchimp.settings']['api_classname'] = 'Drupal\mailchimp_campaign_test\DrupalMailchimp';
+    $overrides['mailchimp.settings']['test_mode'] = TRUE;
 
     return $overrides;
   }
