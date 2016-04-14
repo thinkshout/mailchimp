@@ -7,8 +7,6 @@
 
 namespace Drupal\mailchimp_campaign\Tests;
 
-use Drupal\mailchimp_campaign_test\DrupalMailchimpCampaigns;
-
 /**
  * Tests core campaign functionality.
  *

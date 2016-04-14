@@ -7,8 +7,6 @@
 
 namespace Drupal\mailchimp_lists\Tests;
 
-use Drupal\mailchimp_lists_test\DrupalMailchimpLists;
-
 /**
  * Tests core lists functionality.
  *
