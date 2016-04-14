@@ -29,7 +29,7 @@ function mailchimp_apikey_ready_access($permission) {
 /**
  * Instantiates a MailChimp library object.
  *
- * @return \Drupal\mailchimp\DrupalMailchimp
+ * @return \Mailchimp
  *   Drupal MailChimp library object.
  */
 function mailchimp_get_api_object($classname = 'Mailchimp') {
@@ -40,7 +40,11 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
 
   $config = \Drupal::config('mailchimp.settings');
 
-  $classname = '\Mailchimp\\' . $classname;
+  if ($config->get('test_mode')) {
+    $classname = '\Mailchimp\Tests\\' . $classname;
+  } else {
+    $classname = '\Mailchimp\\' . $classname;
+  }
 
   if (!class_exists($classname)) {
     $msg = t('Failed to load MailChimp PHP library. Please refer to the installation requirements.');
