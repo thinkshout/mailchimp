@@ -144,7 +144,7 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
     $classname = '\Mailchimp\\' . $classname;
   }
 
-  $mailchimp = new $classname($api_key, 'apikey', $timeout, FALSE);
+  $mailchimp = new $classname($api_key, 'apikey', $timeout);
 
   return $mailchimp;
 }
