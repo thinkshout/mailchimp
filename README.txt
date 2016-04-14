@@ -34,7 +34,7 @@ respective README's for more details.
   * You need to have at least one list created in MailChimp to use the
     mailchimp_lists module.
   * If you use a drush make workflow, see the example drush makefile:
-    makechimp.make.example.
+    mailchimp.make.example.
 
   * The MailChimp PHP library must exist in your libraries directory.
 
