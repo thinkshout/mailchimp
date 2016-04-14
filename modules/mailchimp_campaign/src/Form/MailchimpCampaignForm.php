@@ -194,13 +194,13 @@ class MailchimpCampaignForm extends ContentEntityForm {
         }
         $form['content'][$section . '_wrapper'] = array(
           '#type' => 'details',
-          '#title' => SafeMarkup::checkPlain(ucfirst($section)),
+          '#title' => Html::escape(ucfirst($section)),
           '#open' => FALSE,
         );
         $form['content'][$section . '_wrapper'][$section] = array(
           '#type' => 'text_format',
           '#format' => $format,
-          '#title' => SafeMarkup::checkPlain(ucfirst($section)),
+          '#title' => Html::escape(ucfirst($section)),
           '#default_value' => $default_value,
         );
 

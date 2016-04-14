@@ -6,7 +6,7 @@
 
 namespace Drupal\mailchimp_signup\Form;
 
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
@@ -189,7 +189,7 @@ class MailchimpSignupForm extends EntityForm {
       foreach ($mergevar_options as $mergevar) {
         $form['mc_lists_config']['mergefields'][$mergevar->tag] = array(
           '#type' => 'checkbox',
-          '#title' => SafeMarkup::checkPlain($mergevar->name),
+          '#title' => Html::escape($mergevar->name),
           '#default_value' => isset($signup->settings['mergefields'][$mergevar->tag]) ? !empty($signup->settings['mergefields'][$mergevar->tag]) : TRUE,
           '#required' => $mergevar->required,
           '#disabled' => $mergevar->required,

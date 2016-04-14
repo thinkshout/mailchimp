@@ -8,7 +8,7 @@
 namespace Drupal\mailchimp_campaign\Controller;
 
 use Behat\Mink\Exception\Exception;
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
 use \Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
@@ -273,7 +273,7 @@ class MailchimpCampaignController extends ControllerBase {
 
           $entities[] = array(
             'value' => $title . ' [' . $id . ']',
-            'label' => SafeMarkup::checkPlain($title),
+            'label' => Html::escape($title),
           );
         }
       }

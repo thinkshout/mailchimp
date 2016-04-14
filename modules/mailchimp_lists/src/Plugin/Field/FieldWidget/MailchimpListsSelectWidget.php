@@ -6,7 +6,7 @@
 
 namespace Drupal\mailchimp_lists\Plugin\Field\FieldWidget;
 
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -45,7 +45,7 @@ class MailchimpListsSelectWidget extends WidgetBase {
     }
 
     $element += array(
-      '#title' => SafeMarkup::checkPlain($element['#title']),
+      '#title' => Html::escape($element['#title']),
       '#type' => 'fieldset',
     );
 
@@ -64,7 +64,7 @@ class MailchimpListsSelectWidget extends WidgetBase {
 
       $element['interest_groups'] = array(
         '#type' => 'fieldset',
-        '#title' => SafeMarkup::checkPlain($instance->getFieldDefinition()->getSetting('interest_groups_title')),
+        '#title' => Html::escape($instance->getFieldDefinition()->getSetting('interest_groups_title')),
         '#weight' => 100,
         '#states' => array(
           'invisible' => array(
