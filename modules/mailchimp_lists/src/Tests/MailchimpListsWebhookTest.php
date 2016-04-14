@@ -7,8 +7,6 @@
 
 namespace Drupal\mailchimp_lists\Tests;
 
-use Drupal\mailchimp_lists_test\DrupalMailchimpLists;
-
 /**
  * Tests list webhook functionality.
  *
@@ -27,73 +25,49 @@ class MailchimpListsWebhookTest extends MailchimpListsTestBase {
    * Tests retrieval of webhooks for a list.
    */
   public function testGetWebhook() {
-    $list_id = DrupalMailchimpLists::TEST_LIST_A;
+    $list_id = '57afe96172';
 
     $webhooks = mailchimp_webhook_get($list_id);
 
-    $this->assertFalse(empty($webhooks), 'Tested webhook returned.');
-
-    if (is_array($webhooks)) {
-      foreach ($webhooks as $webhook) {
-        $this->assertTrue(isset($webhook['url']), 'Tested valid webhook.');
-      }
-    }
+    $this->assertEqual($webhooks[0]->list_id, $list_id);
+    $this->assertEqual($webhooks[0]->id, '37b9c73a88');
+    $this->assertEqual($webhooks[0]->url, 'http://example.org');
+    $this->assertEqual($webhooks[0]->events->subscribe, TRUE);
+    $this->assertEqual($webhooks[0]->events->unsubscribe, FALSE);
+    $this->assertEqual($webhooks[0]->sources->user, TRUE);
+    $this->assertEqual($webhooks[0]->sources->api, FALSE);
   }
 
   /**
    * Tests adding a webhook to a list.
    */
   public function testAddWebhook() {
-    $list_id = DrupalMailchimpLists::TEST_LIST_A;
+    $list_id = '57afe96172';
     $url = 'http://example.org/web-hook-new';
-    $actions = array(
+    $events = array(
       'subscribe' => TRUE,
     );
     $sources = array(
       'user' => TRUE,
       'admin' => TRUE,
-      'api' => TRUE,
+      'api' => FALSE,
     );
 
-    $webhook_added = mailchimp_webhook_add($list_id, $url, $actions, $sources);
+    $webhook_id = mailchimp_webhook_add($list_id, $url, $events, $sources);
 
-    $this->assertTrue($webhook_added, 'Tested webhook addition.');
-
-    $found_webhook = FALSE;
-    $webhooks = mailchimp_webhook_get($list_id);
-    foreach ($webhooks as $webhook) {
-      if ($webhook['url'] == $url) {
-        $found_webhook = TRUE;
-      }
-    }
-
-    $this->assertTrue($found_webhook, 'Tested retrieval of new webhook.');
+    $this->assertEqual($webhook_id, 'ab24521a00');
   }
 
   /**
    * Tests deletion of a webhook.
    */
   public function testDeleteWebhook() {
-    $list_id = DrupalMailchimpLists::TEST_LIST_A;
-    $url = 'http://example.org/web-hook-new';
-    $actions = array();
-    $sources = array();
-
-    mailchimp_webhook_add($list_id, $url, $actions, $sources);
+    $list_id = '57afe96172';
+    $url = 'http://example.org';
 
     $webhook_deleted = mailchimp_webhook_delete($list_id, $url);
 
     $this->assertTrue($webhook_deleted, 'Tested webhook deletion.');
-
-    $found_webhook = FALSE;
-    $webhooks = mailchimp_webhook_get($list_id);
-    foreach ($webhooks as $webhook) {
-      if ($webhook['url'] == $url) {
-        $found_webhook = TRUE;
-      }
-    }
-
-    $this->assertFalse($found_webhook, 'Tested removal of webhook.');
   }
 
 }
