@@ -615,7 +615,11 @@ function mailchimp_lists_field_get($entity, array $options, $name, $entity_type,
  * Implements hook_field_insert().
  */
 function mailchimp_lists_field_insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  _mailchimp_lists_field_postsave($entity_type, $entity, $field, $instance, $langcode, $items);
+  // This is a new entity, so only process subscription choice if it is an
+  // opt-in.
+  if (!empty($items[0]['subscribe'])) {
+    _mailchimp_lists_field_postsave($entity_type, $entity, $field, $instance, $langcode, $items);
+  }
 }
 
 /**
