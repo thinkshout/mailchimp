@@ -7,8 +7,6 @@
 
 namespace Drupal\mailchimp_lists\Tests;
 
-use Drupal\mailchimp_lists_test\DrupalMailchimpLists;
-
 /**
  * Tests core lists functionality.
  *
@@ -27,9 +25,12 @@ class MailchimpListsTest extends MailchimpListsTestBase {
    * Tests that a list can be loaded.
    */
   function testGetList() {
-    $list = mailchimp_get_list(DrupalMailchimpLists::TEST_LIST_A);
+    $list_id = '57afe96172';
 
-    $this->assertEqual($list['id'], DrupalMailchimpLists::TEST_LIST_A, 'List can be loaded.');
+    $list = mailchimp_get_list($list_id);
+
+    $this->assertEqual($list->id, $list_id);
+    $this->assertEqual($list->name, 'Test List One');
   }
 
   /**
@@ -37,20 +38,19 @@ class MailchimpListsTest extends MailchimpListsTestBase {
    */
   function testMultiListRetrieval() {
     $list_ids = array(
-      DrupalMailchimpLists::TEST_LIST_A,
-      DrupalMailchimpLists::TEST_LIST_B,
+      '57afe96172',
+      'f4b7b26b2e',
     );
 
     $lists = mailchimp_get_lists($list_ids);
 
     $this->assertEqual(count($lists), 2, 'Tested correct list count on retrieval.');
 
-    foreach ($list_ids as $list_id) {
-      $this->assertTrue((isset($lists[$list_id])), 'Tested valid list ID retrieved: ' . $list_id);
-      unset($lists[$list_id]);
-    }
+    $this->assertEqual($lists[$list_ids[0]]->id, $list_ids[0]);
+    $this->assertEqual($lists[$list_ids[0]]->name, 'Test List One');
 
-    $this->assertEqual(count($lists), 0, 'Tested all lists retrieved.');
+    $this->assertEqual($lists[$list_ids[1]]->id, $list_ids[1]);
+    $this->assertEqual($lists[$list_ids[1]]->name, 'Test List Two');
   }
 
   /**
@@ -58,23 +58,16 @@ class MailchimpListsTest extends MailchimpListsTestBase {
    */
   function testGetMergevars() {
     $list_ids = array(
-      DrupalMailchimpLists::TEST_LIST_A,
+      '57afe96172',
     );
 
-    $lists = mailchimp_get_mergevars($list_ids);
+    $mergevars = mailchimp_get_mergevars($list_ids);
 
-    $this->assertTrue(is_array($lists), 'Tested valid lists array returned.');
-    $this->assertTrue(!empty($lists), 'Tested valid lists returned.');
+    $this->assertEqual(count($mergevars[$list_ids[0]]), 3, 'Tested correct mergevar count on retrieval.');
 
-    foreach($lists as $list) {
-      $this->assertTrue(in_array($list['id'], $list_ids), 'Tested valid list ID retrieved: ' . $list['id']);
-
-      $this->assertTrue(is_array($list['merge_vars']), 'Tested list contains merge vars array.');
-
-      foreach ($list['merge_vars'] as $merge_var) {
-        $this->assertTrue(isset($merge_var['name']), 'Tested valid merge var.');
-      }
-    }
+    $this->assertEqual($mergevars[$list_ids[0]][0]->tag, 'EMAIL');
+    $this->assertEqual($mergevars[$list_ids[0]][1]->tag, 'FNAME');
+    $this->assertEqual($mergevars[$list_ids[0]][2]->tag, 'LNAME');
   }
 
 }

@@ -7,10 +7,11 @@
 
 namespace Drupal\mailchimp_campaign\Controller;
 
+use Behat\Mink\Exception\Exception;
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Url;
-use Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
+use \Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -38,13 +39,19 @@ class MailchimpCampaignController extends ControllerBase {
     foreach ($campaigns as $campaign) {
       $campaign_id = $campaign->getMcCampaignId();
 
-      $archive_url = Url::fromUri($campaign->mc_data['archive_url']);
+      $archive_url = Url::fromUri($campaign->mc_data->archive_url);
       $campaign_url = Url::fromRoute('entity.mailchimp_campaign.view', array('mailchimp_campaign' => $campaign_id));
-      $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list['web_id'], array('attributes' => array('target' => '_blank')));
+      $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $campaign->list->id, array('attributes' => array('target' => '_blank')));
       $send_url = Url::fromRoute('entity.mailchimp_campaign.send', array('mailchimp_campaign' => $campaign_id));
 
-      if ($campaign->mc_data['status'] === "save") {
+      if ($campaign->mc_data->status === "save") {
         $send_link = \Drupal::l(t("Send"), $send_url);
+      }
+      // "Sent" campaigns were not being cached, so we needed to reload to get
+      // the latest status.
+      elseif ($campaign->mc_data->status === "sending") {
+        $campaigns = mailchimp_campaign_load_multiple(array($campaign_id), TRUE);
+        $campaign = $campaigns[0];
       }
       else {
         $send_link = t("Sent");
@@ -58,53 +65,53 @@ class MailchimpCampaignController extends ControllerBase {
       );
 
       $content['campaigns_table'][$campaign_id]['title'] = array(
-        '#markup' => \Drupal::l($campaign->mc_data['title'], $campaign_url),
+        '#markup' => \Drupal::l($campaign->mc_data->settings->title, $campaign_url),
       );
 
       $content['campaigns_table'][$campaign_id]['subject'] = array(
-        '#markup' => $campaign->mc_data['subject'],
+        '#markup' => $campaign->mc_data->settings->subject_line,
       );
 
       $content['campaigns_table'][$campaign_id]['status'] = array(
-        '#markup' => $campaign->mc_data['status'],
+        '#markup' => $campaign->mc_data->status,
       );
 
       $content['campaigns_table'][$campaign_id]['list'] = array(
-        '#markup' => \Drupal::l($campaign->list['name'], $list_url),
+        '#markup' => \Drupal::l($campaign->list->name, $list_url),
       );
 
-      if (empty($campaign->mc_data['template_id'])) {
+      if (empty($campaign->mc_data->settings->template_id)) {
         $content['campaigns_table'][$campaign_id]['template'] = array(
           '#markup' => "-- none --",
         );
       }
       else {
-        $template_url = Url::fromUri('https://admin.mailchimp.com/templates/edit?id=' . $campaign->mc_data['template_id'], array('attributes' => array('target' => '_blank')));
+        $template_url = Url::fromUri('https://admin.mailchimp.com/templates/edit?id=' . $campaign->mc_data->settings->template_id, array('attributes' => array('target' => '_blank')));
         $category = FALSE;
         // Templates are grouped into categories, so we go hunting for our
         // template ID in each category.
         $template_category = array();
         foreach($templates as $category_name => $template_category) {
-          if (isset($template_category[$campaign->mc_data['template_id']])) {
+          if (isset($template_category[$campaign->mc_data->settings->template_id])) {
             $category = $category_name;
             break;
           }
         }
         if ($category) {
           $content['campaigns_table'][$campaign_id]['template'] = array(
-            '#markup' => \Drupal::l($template_category[$campaign->mc_data['template_id']]['name'], $template_url)
+            '#markup' => \Drupal::l($template_category[$campaign->mc_data->settings->template_id]->name, $template_url)
           );
         }
         else {
           $content['campaigns_table'][$campaign_id]['template'] = array(
             '#markup' => '-- template ' .
-                \Drupal::l($campaign->mc_data['template_id'], $template_url, array('attributes' => array('target' => '_blank')))
+                \Drupal::l($campaign->mc_data->settings->template_id, $template_url, array('attributes' => array('target' => '_blank')))
                 . ' not found --',
           );
         }
       }
       $content['campaigns_table'][$campaign_id]['created'] = array(
-        '#markup' => $campaign->mc_data['create_time'],
+        '#markup' => \Drupal::service('date.formatter')->format(strtotime($campaign->mc_data->create_time) ,'custom','F j, Y - g:ia'),
       );
 
       $content['campaigns_table'][$campaign_id]['actions'] = array(
@@ -144,11 +151,16 @@ class MailchimpCampaignController extends ControllerBase {
   public function stats(MailchimpCampaign $mailchimp_campaign) {
     $content = array();
 
-    $mcapi = mailchimp_get_api_object();
+    /* @var \Mailchimp\MailchimpReports $mc_reports */
+    $mc_reports = mailchimp_get_api_object('MailchimpReports');
 
     try {
-      $response = $mcapi->reports->summary($mailchimp_campaign->getMcCampaignId());
-    } catch (Mailchimp_Error $e) {
+      if (!$mc_reports) {
+        throw new MailchimpAPIException('Cannot get campaign stats without MailChimp API. Check API key has been entered.');
+      }
+
+      $response = $mc_reports->getCampaignSummary($mailchimp_campaign->getMcCampaignId());
+    } catch (Exception $e) {
       drupal_set_message($e->getMessage(), 'error');
       \Drupal::logger('mailchimp_campaign')
         ->error('An error occurred getting report data from MailChimp: {message}', array(
@@ -166,12 +178,12 @@ class MailchimpCampaignController extends ControllerBase {
         'stats' => array(),
       );
 
-      foreach ($response['timeseries'] as $series) {
+      foreach ($response->timeseries as $series) {
         $content['#attached']['drupalSettings']['mailchimp_campaign']['stats'][] = array(
-          'timestamp' => $series['timestamp'],
-          'emails_sent' => isset($series['emails_sent']) ? $series['emails_sent'] : 0,
-          'unique_opens' => $series['unique_opens'],
-          'recipients_click' => $series['recipients_click'],
+          'timestamp' => $series->timestamp,
+          'emails_sent' => isset($series->emails_sent) ? $series->emails_sent : 0,
+          'unique_opens' => $series->unique_opens,
+          'recipients_click' => $series->recipients_click,
         );
       }
 
@@ -187,19 +199,37 @@ class MailchimpCampaignController extends ControllerBase {
         '#prefix' => '<h2>' . t('Other campaign metrics') . '</h2>',
       );
 
-      foreach ($response as $key => $value) {
-        if (is_array($value)) {
-          break;
-        }
+      $stat_groups = array(
+        'bounces',
+        'forwards',
+        'opens',
+        'clicks',
+        'facebook_likes',
+        'list_stats'
+      );
 
+      foreach ($stat_groups as $group) {
         $content['metrics_table'][] = array(
           'key' => array(
-            '#markup' => $key,
+            '#markup' => '<strong>' . ucfirst(str_replace('_', ' ', $group)) . '</strong>',
           ),
           'value' => array(
-            '#markup' => $value
+            '#markup' => ''
           ),
         );
+
+        foreach ($response->{$group} as $key => $value) {
+          $value = ($key == 'last_open' ? \Drupal::service('date.formatter')->format(strtotime($value) ,'custom','F j, Y - g:ia') : $value);
+
+          $content['metrics_table'][] = array(
+            'key' => array(
+              '#markup' => $key,
+            ),
+            'value' => array(
+              '#markup' => $value
+            ),
+          );
+        }
       }
     }
     else {

@@ -29,7 +29,7 @@ class MailchimpAPITest extends MailchimpTestBase {
 
     $this->assertNotNull($mailchimp_api);
 
-    $this->assertEqual(get_class($mailchimp_api), 'Drupal\mailchimp_test\DrupalMailchimp');
+    $this->assertEqual(get_class($mailchimp_api), 'Mailchimp\Tests\Mailchimp');
   }
 
 }

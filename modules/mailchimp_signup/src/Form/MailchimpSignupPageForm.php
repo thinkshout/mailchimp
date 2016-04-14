@@ -79,24 +79,24 @@ class MailchimpSignupPageForm extends FormBase {
     if ($lists_count > 1) {
       foreach ($lists as $list) {
         // Wrap in a div:
-        $wrapper_key = 'mailchimp_' . $list['web_id'];
+        $wrapper_key = 'mailchimp_' . $list->id;
 
         $form['mailchimp_lists'][$wrapper_key] = array(
-          '#prefix' => '<div id="mailchimp-newsletter-' . $list['web_id'] . '" class="mailchimp-newsletter-wrapper">',
+          '#prefix' => '<div id="mailchimp-newsletter-' . $list->id . '" class="mailchimp-newsletter-wrapper">',
           '#suffix' => '</div>',
         );
 
         $form['mailchimp_lists'][$wrapper_key]['subscribe'] = array(
           '#type' => 'checkbox',
-          '#title' => $list['name'],
-          '#return_value' => $list['id'],
+          '#title' => $list->name,
+          '#return_value' => $list->id,
           '#default_value' => 0,
         );
 
-        if ($this->signup->settings['include_interest_groups'] && isset($list['intgroups'])) {
+        if ($this->signup->settings['include_interest_groups'] && isset($list->intgroups)) {
           $form['mailchimp_lists'][$wrapper_key]['interest_groups'] = array(
             '#type' => 'fieldset',
-            '#title' => t('Interest Groups for %label', array('%label' => $list['name'])),
+            '#title' => t('Interest Groups for %label', array('%label' => $list->name)),
             '#states' => array(
               'invisible' => array(
                 ':input[name="mailchimp_lists[' . $wrapper_key . '][subscribe]"]' => array('checked' => FALSE),
@@ -109,19 +109,20 @@ class MailchimpSignupPageForm extends FormBase {
     }
     else {
       $list = reset($lists);
-      if ($this->signup->settings['include_interest_groups'] && isset($list['intgroups'])) {
+      if ($this->signup->settings['include_interest_groups'] && isset($list->intgroups)) {
         $form['mailchimp_lists']['#weight'] = 9;
         $form['mailchimp_lists']['interest_groups'] = mailchimp_interest_groups_form_elements($list);
       }
     }
 
     $form['mergevars'] = array(
-      '#prefix' => '<div id="mailchimp-newsletter-' . $list['web_id'] . '-mergefields" class="mailchimp-newsletter-mergefields">',
+      '#prefix' => '<div id="mailchimp-newsletter-' . $list->id . '-mergefields" class="mailchimp-newsletter-mergefields">',
       '#suffix' => '</div>',
       '#tree' => TRUE,
     );
 
-    foreach ($this->signup->settings['mergefields'] as $tag => $mergevar) {
+    foreach ($this->signup->settings['mergefields'] as $tag => $mergevar_str) {
+      $mergevar = unserialize($mergevar_str);
       if (!empty($mergevar)) {
         $form['mergevars'][$tag] = mailchimp_insert_drupal_form_tag($mergevar);
         if (empty($lists)) {
@@ -171,9 +172,9 @@ class MailchimpSignupPageForm extends FormBase {
     $subscribe_lists = array();
 
     // Filter out blank fields so we don't erase values on the Mailchimp side.
-    $merge_values = array_filter($form_state->getValue('mergevars'));
+    $mergevars = array_filter($form_state->getValue('mergevars'));
 
-    $email = $merge_values['EMAIL'];
+    $email = $mergevars['EMAIL'];
 
     $mailchimp_lists = $form_state->getValue('mailchimp_lists');
 
@@ -198,21 +199,17 @@ class MailchimpSignupPageForm extends FormBase {
     // Loop through the selected lists and try to subscribe.
     foreach ($subscribe_lists as $list_choices) {
       $list_id = $list_choices['subscribe'];
-      $mergevars = $merge_values;
 
-      if (isset($list_choices['interest_groups'])) {
-        $mergevars['GROUPINGS'] = mailchimp_reformat_groupings($list_choices['interest_groups']);
-      }
-
-      $result = mailchimp_subscribe($list_id, $email, $mergevars, $this->signup->settings['doublein'], $this->signup->settings['send_welcome']);
+      $interests = isset($list_choices['interest_groups']) ? $list_choices['interest_groups'] : array();
+      $result = mailchimp_subscribe($list_id, $email, $mergevars, $interests, $this->signup->settings['doublein']);
 
       if (empty($result)) {
         drupal_set_message(t('There was a problem with your newsletter signup to %list.', array(
-          '%list' => $list_details[$list_id]['name'],
+          '%list' => $list_details[$list_id]->name,
         )), 'warning');
       }
       else {
-        $successes[] = $list_details[$list_id]['name'];
+        $successes[] = $list_details[$list_id]->name;
       }
     }
 

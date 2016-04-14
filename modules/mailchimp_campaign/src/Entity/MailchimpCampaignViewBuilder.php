@@ -36,31 +36,42 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
     }
 
     // Get the template name.
-    $mc_template = mailchimp_campaign_get_template($entity->mc_data['template_id']);
-    $mc_template_name = isset($mc_template) ? $mc_template['name'] : '';
+    $mc_template = mailchimp_campaign_get_template($entity->mc_data->settings->template_id);
+    $mc_template_name = isset($mc_template) ? $mc_template->name : '';
 
     $list_segment_name = 'N/A';
 
-    $list_segments = mailchimp_campaign_get_list_segments($entity->list['id'], 'saved');
-    if (isset($entity->mc_data['saved_segment']['id'])) {
+    $list_segments = mailchimp_campaign_get_list_segments($entity->list->id, 'saved');
+    if (isset($entity->mc_data->recipients->segment_opts->saved_segment_id)) {
       foreach ($list_segments as $list_segment) {
-        if ($list_segment['id'] == $entity->mc_data['saved_segment']['id']) {
-          $list_segment_name = $list_segment['name'];
+        if ($list_segment->id == $this->mc_data->recipients->segment_opts->saved_segment_id) {
+          $list_segment_name = $list_segment->name;
         }
       }
     }
 
-    $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $entity->list['web_id'], array('attributes' => array('target' => '_blank')));
-    $archive_url = Url::fromUri($entity->mc_data['archive_url']);
+    $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $entity->list->id, array('attributes' => array('target' => '_blank')));
+    $archive_url = Url::fromUri($entity->mc_data->archive_url);
+    $send_time = 'N/A';
+
+    if (isset($entity->mc_data->send_time) && $entity->mc_data->send_time) {
+      $send_time = \Drupal::service('date.formatter')
+        ->format(strtotime($entity->mc_data->send_time), 'custom', 'F j, Y - g:ia');
+    }
 
     $fields = array(
+      'title' => array(
+        'label' => t('Title'),
+        'value' => $entity->mc_data->settings->title,
+      ),
+
       'subject' => array(
         'label' => t('Subject'),
-        'value' => $entity->mc_data['subject'],
+        'value' => $entity->mc_data->settings->subject_line,
       ),
       'list' => array(
         'label' => t('MailChimp List'),
-        'value' => \Drupal::l($entity->list['name'], $list_url),
+        'value' => \Drupal::l($entity->list->name, $list_url),
       ),
       'list_segment' => array(
         'label' => t('List Segment'),
@@ -68,11 +79,11 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
       ),
       'from_email' => array(
         'label' => t('From Email'),
-        'value' => $entity->mc_data['from_email'],
+        'value' => $entity->mc_data->settings->reply_to,
       ),
       'from_name' => array(
         'label' => t('From Name'),
-        'value' => $entity->mc_data['from_name'],
+        'value' => $entity->mc_data->settings->from_name,
       ),
       'template' => array(
         'label' => t('Template'),
@@ -80,19 +91,19 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
       ),
       'type' => array(
         'label' => t('List type'),
-        'value' => $entity->mc_data['type'],
+        'value' => $entity->mc_data->type,
       ),
       'status' => array(
         'label' => t('Status'),
-        'value' => $entity->mc_data['status'],
+        'value' => $entity->mc_data->status,
       ),
       'emails_sent' => array(
         'label' => t('Emails sent'),
-        'value' => $entity->mc_data['emails_sent'],
+        'value' => $entity->mc_data->emails_sent,
       ),
       'send_time' => array(
         'label' => t('Send time'),
-        'value' => $entity->mc_data['send_time'],
+        'value' => $send_time,
       ),
       'content' => array(
         'label' => t('Rendered template HTML (!archive)',

@@ -38,23 +38,23 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
 
     $form_state->set('list', $list);
 
-    $default_webhook_actions = mailchimp_lists_default_webhook_actions();
-    $enabled_webhook_actions = mailchimp_lists_enabled_webhook_actions($list_id);
+    $default_webhook_events = mailchimp_lists_default_webhook_events();
+    $enabled_webhook_events = mailchimp_lists_enabled_webhook_events($list_id);
 
-    $form['webhook_actions'] = array(
+    $form['webhook_events'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Enabled webhook actions for the @name list',
+      '#title' => t('Enabled webhook events for the @name list',
         array(
-          '@name' => $list['name'],
+          '@name' => $list->name,
         )),
       '#tree' => TRUE,
     );
 
-    foreach ($default_webhook_actions as $action => $name) {
-      $form['webhook_actions'][$action] = array(
+    foreach ($default_webhook_events as $event => $name) {
+      $form['webhook_events'][$event] = array(
         '#type' => 'checkbox',
         '#title' => $name,
-        '#default_value' => in_array($action, $enabled_webhook_actions),
+        '#default_value' => in_array($event, $enabled_webhook_events),
       );
     }
 
@@ -72,49 +72,59 @@ class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
     $list = $form_state->get('list');
 
-    $webhook_actions = $form_state->getValue('webhook_actions');
+    $webhook_events = $form_state->getValue('webhook_events');
 
-    $actions = array();
-    foreach ($webhook_actions as $webhook_id => $enable) {
-      $actions[$webhook_id] = ($enable === 1);
+    $events = array();
+    foreach ($webhook_events as $webhook_id => $enable) {
+      $events[$webhook_id] = ($enable === 1);
     }
 
     $result = FALSE;
 
-    if (count($actions) > 0) {
+    if (count($events) > 0) {
       $webhook_url = mailchimp_webhook_url();
 
-      $webhooks = mailchimp_webhook_get($list['id']);
+      $webhooks = mailchimp_webhook_get($list->id);
+
       if (!empty($webhooks)) {
         foreach ($webhooks as $webhook) {
-          if ($webhook['url'] == $webhook_url) {
+          if ($webhook->url == $webhook_url) {
             // Delete current webhook.
-            mailchimp_webhook_delete($list['id'], mailchimp_webhook_url());
+            mailchimp_webhook_delete($list->id, mailchimp_webhook_url());
           }
         }
       }
 
-      // Add webhook with enabled actions.
+      $sources = array(
+        'user' => TRUE,
+        'admin' => TRUE,
+        'api' => FALSE,
+      );
+
+      // Add webhook with enabled events.
       $result = mailchimp_webhook_add(
-        $list['id'],
+        $list->id,
         mailchimp_webhook_url(),
-        $actions
+        $events,
+        $sources
       );
     }
 
     if ($result) {
       drupal_set_message(t('Webhooks for list "%name" have been updated.',
         array(
-          '%name' => $list['name'],
+          '%name' => $list->name,
         )
       ));
     }
     else {
       drupal_set_message(t('Unable to update webhooks for list "%name".',
         array(
-          '%name' => $list['name'],
+          '%name' => $list->name,
         )
       ), 'warning');
     }

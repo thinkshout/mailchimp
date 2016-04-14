@@ -39,23 +39,23 @@ class MailchimpListsController extends ControllerBase {
     );
 
     $mc_lists = mailchimp_get_lists();
-    $total_webhook_actions = count(mailchimp_lists_default_webhook_actions());
+    $total_webhook_events = count(mailchimp_lists_default_webhook_events());
 
     foreach ($mc_lists as $mc_list) {
-      $enabled_webhook_actions = count(mailchimp_lists_enabled_webhook_actions($mc_list['id']));
-      $webhook_url = Url::fromRoute('mailchimp_lists.webhook', array('list_id' => $mc_list['id']));
+      $enabled_webhook_events = count(mailchimp_lists_enabled_webhook_events($mc_list->id));
+      $webhook_url = Url::fromRoute('mailchimp_lists.webhook', array('list_id' => $mc_list->id));
 
-      $webhook_status = $enabled_webhook_actions . ' of ' . $total_webhook_actions . ' enabled (' . \Drupal::l(t('update'), $webhook_url) . ')';
+      $webhook_status = $enabled_webhook_events . ' of ' . $total_webhook_events . ' enabled (' . \Drupal::l(t('update'), $webhook_url) . ')';
 
-      $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id'], array('attributes' => array('target' => '_blank')));
+      $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list->web_id, array('attributes' => array('target' => '_blank')));
 
-      $content['lists_table'][$mc_list['id']]['name'] = array(
-        '#markup' => \Drupal::l($mc_list['name'], $list_url),
+      $content['lists_table'][$mc_list->id]['name'] = array(
+        '#markup' => \Drupal::l($mc_list->name, $list_url),
       );
-      $content['lists_table'][$mc_list['id']]['member_count'] = array(
-        '#markup' => $mc_list['stats']['member_count'],
+      $content['lists_table'][$mc_list->id]['member_count'] = array(
+        '#markup' => $mc_list->stats->member_count,
       );
-      $content['lists_table'][$mc_list['id']]['web_id'] = array(
+      $content['lists_table'][$mc_list->id]['web_id'] = array(
         '#markup' => $webhook_status,
       );
     }

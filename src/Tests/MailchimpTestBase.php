@@ -10,6 +10,12 @@ namespace Drupal\mailchimp\Tests;
 use Drupal\simpletest\WebTestBase;
 use Drupal\mailchimp_test\MailchimpConfigOverrider;
 
+$path = drupal_get_path('module', 'mailchimp');
+
+include_once $path . "/lib/mailchimp-api-php/tests/src/Client.php";
+include_once $path . "/lib/mailchimp-api-php/tests/src/Mailchimp.php";
+include_once $path . "/lib/mailchimp-api-php/tests/src/Response.php";
+
 /**
  * Sets up MailChimp module tests.
  */

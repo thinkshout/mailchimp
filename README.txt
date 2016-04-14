@@ -31,12 +31,6 @@ respective README's for more details.
   * You need to have a MailChimp API Key.
   * You need to have at least one list created in MailChimp to use the
     mailchimp_lists module.
-  * The MCAPI library must be installed using Composer Manager. Composer Manager
-    scans modules for composer.json files and installs any dependencies into
-    the Drupal core vendor directory. Learn more at
-    https://www.drupal.org/project/composer_manager.
-  * The composer.json file in the root of this module has details on the
-    proper version of the API to use.
 
 ## Configuration
   1. Direct your browser to admin/config/services/mailchimp to configure the

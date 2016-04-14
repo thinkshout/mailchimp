@@ -25,8 +25,6 @@ mailchimp_signup.mailchimp_signup.*:
     mergefields:
       type: sequence
       label: 'Mergefields'
-      sequence:
-        type: mailchimp_signup_mergefield.[%key]
     description:
       type: string
       label: 'Description'
@@ -58,41 +56,3 @@ mailchimp_signup.mailchimp_signup.*:
         destination:
           type: string
           label: 'Destination'
-
-mailchimp_signup_mergefield.*:
-  type: mapping
-  mapping:
-    name:
-      type: string
-      label: 'Name'
-    req:
-      type: boolean
-      label: 'Required'
-    field_type:
-      type: string
-      label: 'Type'
-    public:
-      type: boolean
-      label: 'Public'
-    show:
-      type: boolean
-      label: 'Show'
-    order:
-      type: integer
-      label: 'Order'
-    default:
-      type: string
-      label: 'Default'
-    helptext:
-      type: string
-      label: ''
-    size:
-      type: integer
-      label: 'Size'
-    tag:
-      type: string
-      label: 'Tag'
-    id:
-      type: integer
-      label: 'ID'
-

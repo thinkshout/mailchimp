@@ -28,7 +28,6 @@ class MailchimpConfigOverrider extends ConfigFactoryOverrideBase implements Conf
         'api_key' => 'MAILCHIMP_TEST_API_KEY',
         'cron' => FALSE,
         'batch_limit' => 100,
-        'api_classname' => 'Drupal\mailchimp_test\DrupalMailchimp',
         'test_mode' => TRUE,
       ),
     );

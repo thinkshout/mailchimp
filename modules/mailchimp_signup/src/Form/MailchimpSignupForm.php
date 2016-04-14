@@ -143,7 +143,7 @@ class MailchimpSignupForm extends EntityForm {
     $lists = mailchimp_get_lists();
     $options = array();
     foreach ($lists as $mc_list) {
-      $options[$mc_list['id']] = $mc_list['name'];
+      $options[$mc_list->id] = $mc_list->name;
     }
     $mc_admin_url = Url::fromUri('https://admin.mailchimp.com', array('attributes' => array('target' => '_blank')));
     $form['mc_lists_config']['mc_lists'] = array(
@@ -187,12 +187,12 @@ class MailchimpSignupForm extends EntityForm {
       $mergevar_options = $this->getMergevarOptions($mc_lists);
 
       foreach ($mergevar_options as $mergevar) {
-        $form['mc_lists_config']['mergefields'][$mergevar['tag']] = array(
+        $form['mc_lists_config']['mergefields'][$mergevar->tag] = array(
           '#type' => 'checkbox',
-          '#title' => SafeMarkup::checkPlain($mergevar['name']),
-          '#default_value' => isset($signup->settings['mergefields'][$mergevar['tag']]) ? !empty($signup->settings['mergefields'][$mergevar['tag']]) : TRUE,
-          '#required' => $mergevar['req'],
-          '#disabled' => $mergevar['req'],
+          '#title' => SafeMarkup::checkPlain($mergevar->name),
+          '#default_value' => isset($signup->settings['mergefields'][$mergevar->tag]) ? !empty($signup->settings['mergefields'][$mergevar->tag]) : TRUE,
+          '#required' => $mergevar->required,
+          '#disabled' => $mergevar->required,
         );
       }
     }
@@ -208,13 +208,6 @@ class MailchimpSignupForm extends EntityForm {
       '#title' => t('Require subscribers to Double Opt-in'),
       '#description' => t('New subscribers will be sent a link with an email they must follow to confirm their subscription.'),
       '#default_value' => isset($signup->settings['doublein']) ? $signup->settings['doublein'] : FALSE,
-    );
-
-    $form['subscription_settings']['send_welcome'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Send a welcome email to new subscribers'),
-      '#description' => t('New subscribers will be sent a welcome email once they are confirmed.'),
-      '#default_value' => isset($signup->settings['send_welcome']) ? $signup->settings['send_welcome'] : FALSE,
     );
 
     $form['subscription_settings']['include_interest_groups'] = array(
@@ -252,14 +245,14 @@ class MailchimpSignupForm extends EntityForm {
 
     foreach ($mergefields as $id => $val) {
       if ($val) {
-        $mergefields[$id] = $mergevar_options[$id];
+        // Can't store objects in configuration; serialize this.
+        $mergefields[$id] = serialize($mergevar_options[$id]);
       }
     }
 
     $signup->settings['mergefields'] = $mergefields;
     $signup->settings['description'] = $form_state->getValue('description');
     $signup->settings['doublein'] = $form_state->getValue('doublein');
-    $signup->settings['send_welcome'] = $form_state->getValue('send_welcome');
     $signup->settings['include_interest_groups'] = $form_state->getValue('include_interest_groups');
 
     // Clear path value if mode doesn't include signup page.
@@ -287,9 +280,9 @@ class MailchimpSignupForm extends EntityForm {
     $mergevar_settings = mailchimp_get_mergevars(array_filter($mc_lists));
     $mergevar_options = array();
     foreach ($mergevar_settings as $list_mergevars) {
-      foreach ($list_mergevars['merge_vars'] as $mergevar) {
-        if ($mergevar['public']) {
-          $mergevar_options[$mergevar['tag']] = $mergevar;
+      foreach ($list_mergevars as $mergevar) {
+        if ($mergevar->public) {
+          $mergevar_options[$mergevar->tag] = $mergevar;
         }
       }
     }
