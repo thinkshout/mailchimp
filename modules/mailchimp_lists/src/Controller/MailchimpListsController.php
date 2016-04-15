@@ -9,6 +9,7 @@ namespace Drupal\mailchimp_lists\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 use Drupal\Component\Utility\String;
@@ -44,13 +45,16 @@ class MailchimpListsController extends ControllerBase {
     foreach ($mc_lists as $mc_list) {
       $enabled_webhook_events = count(mailchimp_lists_enabled_webhook_events($mc_list->id));
       $webhook_url = Url::fromRoute('mailchimp_lists.webhook', array('list_id' => $mc_list->id));
+      $webhook_link = Link::fromTextAndUrl('update', $webhook_url);
 
-      $webhook_status = $enabled_webhook_events . ' of ' . $total_webhook_events . ' enabled (' . \Drupal::l(t('update'), $webhook_url) . ')';
+      $webhook_status = $enabled_webhook_events . ' of ' . $total_webhook_events . ' enabled (' .  $webhook_link->toString() . ')';
 
-      $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list->web_id, array('attributes' => array('target' => '_blank')));
+      $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list->id, array('attributes' => array('target' => '_blank')));
 
       $content['lists_table'][$mc_list->id]['name'] = array(
-        '#markup' => \Drupal::l($mc_list->name, $list_url),
+        '#title' => $this->t($mc_list->name),
+        '#type' => 'link',
+        '#url' => $list_url
       );
       $content['lists_table'][$mc_list->id]['member_count'] = array(
         '#markup' => $mc_list->stats->member_count,
@@ -63,7 +67,9 @@ class MailchimpListsController extends ControllerBase {
     $refresh_url = Url::fromRoute('mailchimp_lists.refresh', array('destination' => 'admin/config/services/mailchimp/lists'));
 
     $content['refresh_link'] = array(
-      '#markup' => \Drupal::l(t('Refresh lists from Mailchimp'), $refresh_url),
+      '#title' => 'Refresh lists from Mailchimp',
+      '#type' => 'link',
+      '#url' => $refresh_url
     );
 
     return $content;
