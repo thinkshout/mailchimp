@@ -588,7 +588,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
    *   Filtered entities from entity_get_info().
    */
   private function getEntitiesForContentImport() {
-    $entity_info = \Drupal::entityManager()->getDefinitions();
+    $entity_info = \Drupal::entityTypeManager()->getDefinitions();
 
     $filtered_entities = array();
 
