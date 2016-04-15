@@ -13,6 +13,7 @@ use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Render;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -343,11 +344,11 @@ class MailchimpCampaignForm extends ContentEntityForm {
   public static function listSegmentCallback(array $form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
 
-    $list_segment_html = drupal_render($form['list_segment_id']);
+    $list_segment_html = \Drupal::service('renderer')->render($form['list_segment_id']);
     $response->addCommand(new ReplaceCommand('#list-segments-wrapper', $list_segment_html));
 
     if (isset($form['content']['html_wrapper']['merge_vars'])) {
-      $merge_vars_html = drupal_render($form['content']['html_wrapper']['merge_vars']);
+      $merge_vars_html = \Drupal::service('renderer')->render($form['content']['html_wrapper']['merge_vars']);
       $response->addCommand(new ReplaceCommand('.merge-vars-wrapper', $merge_vars_html));
     }
 
@@ -393,8 +394,8 @@ class MailchimpCampaignForm extends ContentEntityForm {
     $entity_import_wrapper = $triggering_element['#ajax']['wrapper'];
 
     $html = '<div id="' . $entity_import_wrapper . '" class="content-entity-lookup-wrapper">';
-    $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_id']);
-    $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_view_mode']);
+    $html .= \Drupal::service('renderer')->render($form['content'][$content_wrapper]['entity_import']['entity_id']);
+    $html .= \Drupal::service('renderer')->render($form['content'][$content_wrapper]['entity_import']['entity_view_mode']);
     $html .= '</div>';
 
     $response->addCommand(new ReplaceCommand('#' . $entity_import_wrapper, $html));
