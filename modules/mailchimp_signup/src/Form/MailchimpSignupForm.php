@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Link;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -145,12 +146,12 @@ class MailchimpSignupForm extends EntityForm {
     foreach ($lists as $mc_list) {
       $options[$mc_list->id] = $mc_list->name;
     }
-    $mc_admin_url = Url::fromUri('https://admin.mailchimp.com', array('attributes' => array('target' => '_blank')));
+    $mc_admin_url = Link::fromTextAndUrl('MailChimp', Url::fromUri('https://admin.mailchimp.com', array('attributes' => array('target' => '_blank'))));
     $form['mc_lists_config']['mc_lists'] = array(
       '#type' => 'checkboxes',
       '#title' => t('MailChimp Lists'),
       '#description' => t('Select which lists to show on your signup form. You can create additional lists at @MailChimp.',
-        array('@MailChimp' => \Drupal::l(t('MailChimp'), $mc_admin_url))),
+        array('@MailChimp' => $mc_admin_url->toString())),
       '#options' => $options,
       '#default_value' => is_array($signup->mc_lists) ? $signup->mc_lists : array(),
       '#required' => TRUE,
