@@ -299,7 +299,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
 
     $template_content = $this->parseTemplateContent($form_state->getValue('content'));
 
-    $existing_campaign_id = (!empty($form_state->getValue('campaign'))) ? $form_state->getValue('campaign')->mc_campaign_id : NULL;
+    $existing_campaign_id = (!empty($form_state->get('campaign'))) ? $form_state->get('campaign')->id() : NULL;
     $campaign_id = mailchimp_campaign_save_campaign($template_content, $recipients, $settings, $values['template_id'], $existing_campaign_id);
 
     /* @var $campaign \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
