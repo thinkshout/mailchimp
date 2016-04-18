@@ -157,7 +157,7 @@ function mailchimp_signup_form($form, &$form_state, MailchimpSignup $signup) {
       foreach ($list_mergevars as $mergevar) {
         $form_state['mergevar_options'][$mergevar->tag] = $mergevar;
         if (!$mergevar->public) {
-          $form_state['mergevar_options'][$mergevar->tag]['name'] .= ' (private)';
+          $form_state['mergevar_options'][$mergevar->tag]->name .= ' (private)';
         };
       }
     }
