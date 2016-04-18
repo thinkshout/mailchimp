@@ -10,6 +10,7 @@ namespace Drupal\mailchimp_campaign\Controller;
 use Behat\Mink\Exception\Exception;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
 use \Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
 
@@ -45,7 +46,7 @@ class MailchimpCampaignController extends ControllerBase {
       $send_url = Url::fromRoute('entity.mailchimp_campaign.send', array('mailchimp_campaign' => $campaign_id));
 
       if ($campaign->mc_data->status === "save") {
-        $send_link = \Drupal::l(t("Send"), $send_url);
+        $send_link = Link::fromTextAndUrl(t("Send"), $send_url)->toString();
       }
       // "Sent" campaigns were not being cached, so we needed to reload to get
       // the latest status.
@@ -59,13 +60,13 @@ class MailchimpCampaignController extends ControllerBase {
 
 
       $actions = array(
-        \Drupal::l(t('View Archive'), $archive_url),
-        \Drupal::l(t('View'), $campaign_url),
+        Link::fromTextAndUrl(('View Archive'), $archive_url)->toString(),
+        Link::fromTextAndUrl(('View'), $campaign_url)->toString(),
         $send_link,
       );
 
       $content['campaigns_table'][$campaign_id]['title'] = array(
-        '#markup' => \Drupal::l($campaign->mc_data->settings->title, $campaign_url),
+        '#markup' => Link::fromTextAndUrl($campaign->mc_data->settings->title, $campaign_url)->toString(),
       );
 
       $content['campaigns_table'][$campaign_id]['subject'] = array(
@@ -77,7 +78,7 @@ class MailchimpCampaignController extends ControllerBase {
       );
 
       $content['campaigns_table'][$campaign_id]['list'] = array(
-        '#markup' => \Drupal::l($campaign->list->name, $list_url),
+        '#markup' => Link::fromTextAndUrl($campaign->list->name, $list_url)->toString(),
       );
 
       if (empty($campaign->mc_data->settings->template_id)) {
@@ -99,13 +100,13 @@ class MailchimpCampaignController extends ControllerBase {
         }
         if ($category) {
           $content['campaigns_table'][$campaign_id]['template'] = array(
-            '#markup' => \Drupal::l($template_category[$campaign->mc_data->settings->template_id]->name, $template_url)
+            '#markup' => Link::fromTextAndUrl($template_category[$campaign->mc_data->settings->template_id]->name, $template_url)->toString(),
           );
         }
         else {
           $content['campaigns_table'][$campaign_id]['template'] = array(
             '#markup' => '-- template ' .
-                \Drupal::l($campaign->mc_data->settings->template_id, $template_url, array('attributes' => array('target' => '_blank')))
+                Url::fromRoute($campaign->mc_data->settings->template_id, $template_url, array('attributes' => array('target' => '_blank')))->toString()
                 . ' not found --',
           );
         }
