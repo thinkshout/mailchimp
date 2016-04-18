@@ -927,7 +927,12 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
       throw new MailchimpException('Cannot get list segments without MailChimp API. Check API key has been entered.');
     }
 
-    $response = $mc_lists->getSegments($list_id, array('type' => $type));
+    $parameters = array(
+      'type' => $type,
+      'count' => 500,
+    );
+
+    $response = $mc_lists->getSegments($list_id, $parameters);
 
     return $response->segments;
   }
@@ -961,7 +966,7 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
       throw new MailchimpException('Cannot get campaign list segment without MailChimp API. Check API key has been entered.');
     }
 
-    $result = $mc_lists->getSegmentMembers($list_id, $list_segment_id);
+    $result = $mc_lists->getSegmentMembers($list_id, $list_segment_id, array('count' => 500));
 
     return $result->total_items;
   }
