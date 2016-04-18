@@ -12,6 +12,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Core\Render;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -640,7 +641,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
         'Insert merge variables from the %list_name list or one of the @standard_link.',
         array(
           '%list_name' => $list_name,
-          '@standard_link' => \Drupal::l(t('standard MailChimp merge variables'), $merge_vars_url),
+          '@standard_link' => Link::fromTextAndUrl(t('standard MailChimp merge variables'), $merge_vars_url)->toString(),
         )
       ),
     );

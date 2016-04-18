@@ -12,6 +12,7 @@ use Drupal\Core\Form\OptGroup;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 /**
@@ -133,8 +134,8 @@ class MailchimpListsSubscription extends FieldItemBase {
         attached to Mailchimp Subscription Fields. If there are no options,
         make sure you have created a list at @MailChimp first, then @cacheclear.',
         array(
-          '@MailChimp' => \Drupal::l('MailChimp', $mailchimp_url),
-          '@cacheclear' => \Drupal::l('clear your list cache', $refresh_lists_url),
+          '@MailChimp' => Link::fromTextAndUrl('MailChimp', $mailchimp_url)->toString(),
+          '@cacheclear' => Link::fromTextAndUrl('clear your list cache', $refresh_lists_url)->toString(),
         )),
       '#options' => $options,
       '#default_value' => $this->getSetting('mc_list_id'),

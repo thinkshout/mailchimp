@@ -31,7 +31,7 @@ class MailchimpListsController extends ControllerBase {
       MailChimp account, (or you haven\'t configured your API key correctly on
       the Global Settings tab). Head over to @link and create some lists, then
       come back here and click "Refresh lists from MailChimp"',
-      array('@link' => \Drupal::l(t('MailChimp'), $lists_admin_url)));
+      array('@link' => Link::fromTextAndUrl(t('MailChimp'), $lists_admin_url)->toString()));
 
     $content['lists_table'] = array(
       '#type' => 'table',
