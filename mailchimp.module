@@ -549,20 +549,20 @@ function mailchimp_update_local_cache($function, $args) {
   }
   // Handle unsubscribes.
   if ($function == 'mailchimp_unsubscribe_process') {
-    $cache['status'] = 'unsubscribed';
+    $cache->status = 'unsubscribed';
     // Reset interests.
     $cache->interests = new stdClass();
   }
   // Handle subscribes.
   if ($function == 'mailchimp_subscribe_process') {
-    $cache['status'] = 'subscribed';
+    $cache->status = 'subscribed';
   }
   // Handle member updates.
   if ($function == 'mailchimp_update_member_process' ||
       $function == 'mailchimp_subscribe_process') {
     // Update cached merge vars.
     foreach ($args['merge_vars'] as $key => $value) {
-      $cache['merges'][$key] = $value;
+      $cache->merge_fields[$key] = $value;
     }
   }
   // Store the data back in the local cache.
