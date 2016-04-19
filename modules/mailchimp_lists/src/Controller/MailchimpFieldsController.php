@@ -8,7 +8,7 @@
 namespace Drupal\mailchimp_lists\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 /**
@@ -68,7 +68,7 @@ class MailchimpFieldsController extends ControllerBase {
               '#markup' => $field_name,
             );
             $content['fields_table'][$row_id]['batch_update'] = array(
-              '#markup' => \Drupal::l(t('Update Mailchimp Mergevar Values'), $batch_update_url),
+              '#markup' => Link::fromTextAndUrl(t('Update Mailchimp Mergevar Values'), $batch_update_url)->toString(),
             );
 
             $row_id++;

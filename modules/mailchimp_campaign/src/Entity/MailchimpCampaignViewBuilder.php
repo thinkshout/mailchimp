@@ -9,6 +9,7 @@ namespace Drupal\mailchimp_campaign\Entity;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 /**
@@ -51,7 +52,8 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
     }
 
     $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $entity->list->id, array('attributes' => array('target' => '_blank')));
-    $archive_url = Url::fromUri($entity->mc_data->archive_url);
+    $archive_url = Url::fromUri($entity->mc_data->archive_url, array(
+      'attributes' => array('target' => '_blank')));
     $send_time = 'N/A';
 
     if (isset($entity->mc_data->send_time) && $entity->mc_data->send_time) {
@@ -71,7 +73,7 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
       ),
       'list' => array(
         'label' => t('MailChimp List'),
-        'value' => \Drupal::l($entity->list->name, $list_url),
+        'value' => Link::fromTextAndUrl($entity->list->name, $list_url)->toString(),
       ),
       'list_segment' => array(
         'label' => t('List Segment'),
@@ -108,10 +110,9 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
       'content' => array(
         'label' => t('Rendered template HTML (!archive)',
           array(
-            '!archive' => \Drupal::l('View MailChimp archive', $archive_url, array(
-              'attributes' => array('target' => '_blank'),
-            )),
-          )),
+            '!archive' => Link::fromTextAndUrl('View MailChimp archive', $archive_url)->toString(),
+            )
+          ),
         'value' => $rendered,
       ),
     );

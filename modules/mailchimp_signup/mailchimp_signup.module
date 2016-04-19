@@ -40,7 +40,7 @@ function mailchimp_signup_load_multiple($signup_ids = array(), $reset = FALSE) {
     $signup_ids = NULL;
   }
 
-  $controller = \Drupal::entityManager()->getStorage('mailchimp_signup');
+  $controller = \Drupal::entityTypeManager()->getStorage('mailchimp_signup');
 
   if ($reset) {
     $controller->resetCache($signup_ids);

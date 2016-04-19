@@ -156,7 +156,7 @@ function mailchimp_campaign_save_campaign($template, $recipients, $settings, $te
 
   if (!empty($result->id)) {
     drupal_set_message(t('Campaign %name (%cid) was successfully saved.',
-      array('%name' => $recipients->title, '%cid' => $campaign_id)));
+      array('%name' => $settings->title, '%cid' => $campaign_id)));
 
     // Clear cached data for this campaign.
     mailchimp_campaign_get_campaigns(array($campaign_id), TRUE);
@@ -192,7 +192,7 @@ function mailchimp_campaign_send_campaign(MailchimpCampaign $campaign) {
       \Drupal::logger('mailchimp_campaign')->error('MailChimp campaign {name} has been sent.', array(
         'name' => $campaign->label()));
 
-      $controller = \Drupal::entityManager()->getStorage('mailchimp_campaign');
+      $controller = \Drupal::entityTypeManager()->getStorage('mailchimp_campaign');
       $controller->resetCache(array($campaign->getMcCampaignId()));
 
       $cache = \Drupal::cache('mailchimp');
@@ -423,8 +423,13 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
   /* @var \Mailchimp\MailchimpLists $mcapi */
   $mcapi = mailchimp_get_api_object('MailchimpLists');
 
+  $parameters = array(
+    'type' => $type,
+    'count' => 500,
+  );
+
   try {
-    $response = $mcapi->getSegments($list_id, $type);
+    $response = $mcapi->getSegments($list_id, $parameters);
   }
   catch (Exception $e) {
     drupal_set_message($e->getMessage(), 'error');
@@ -455,7 +460,7 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
   $mc_lists = mailchimp_get_api_object('MailchimpLists');
 
   try {
-    $result = $mc_lists->getSegmentMembers($list_id, $list_segment_id);
+    $result = $mc_lists->getSegmentMembers($list_id, $list_segment_id, array('count' => 500));
   }
   catch (Exception $e) {
     drupal_set_message($e->getMessage(), 'error');
@@ -478,7 +483,7 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $reset = FALS
       ->execute();
   }
 
-  $controller = \Drupal::entityManager()->getStorage('mailchimp_campaign');
+  $controller = \Drupal::entityTypeManager()->getStorage('mailchimp_campaign');
 
   if ($reset) {
     $controller->resetCache($campaign_ids);

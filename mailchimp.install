@@ -41,3 +41,12 @@ function mailchimp_uninstall() {
   $queue = \Drupal::queue(MAILCHIMP_QUEUE_CRON);
   $queue->deleteQueue();
 }
+
+/**
+ * Update the class name in configuration.
+ */
+function mailchimp_update_8000(&$sandbox) {
+  $config = \Drupal::configFactory()->getEditable('mailchimp.settings');
+  $config->set('api_classname', 'Mailchimp\Mailchimp');
+  $config->save();
+}

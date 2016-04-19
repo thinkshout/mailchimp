@@ -7,13 +7,14 @@
 namespace Drupal\mailchimp_campaign\Form;
 
 use Drupal\Component\Utility\Html;
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
+use Drupal\Core\Render;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -194,13 +195,13 @@ class MailchimpCampaignForm extends ContentEntityForm {
         }
         $form['content'][$section . '_wrapper'] = array(
           '#type' => 'details',
-          '#title' => SafeMarkup::checkPlain(ucfirst($section)),
+          '#title' => Html::escape(ucfirst($section)),
           '#open' => FALSE,
         );
         $form['content'][$section . '_wrapper'][$section] = array(
           '#type' => 'text_format',
           '#format' => $format,
-          '#title' => SafeMarkup::checkPlain(ucfirst($section)),
+          '#title' => Html::escape(ucfirst($section)),
           '#default_value' => $default_value,
         );
 
@@ -344,11 +345,11 @@ class MailchimpCampaignForm extends ContentEntityForm {
   public static function listSegmentCallback(array $form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
 
-    $list_segment_html = drupal_render($form['list_segment_id']);
+    $list_segment_html = \Drupal::service('renderer')->render($form['list_segment_id']);
     $response->addCommand(new ReplaceCommand('#list-segments-wrapper', $list_segment_html));
 
     if (isset($form['content']['html_wrapper']['merge_vars'])) {
-      $merge_vars_html = drupal_render($form['content']['html_wrapper']['merge_vars']);
+      $merge_vars_html = \Drupal::service('renderer')->render($form['content']['html_wrapper']['merge_vars']);
       $response->addCommand(new ReplaceCommand('.merge-vars-wrapper', $merge_vars_html));
     }
 
@@ -394,8 +395,8 @@ class MailchimpCampaignForm extends ContentEntityForm {
     $entity_import_wrapper = $triggering_element['#ajax']['wrapper'];
 
     $html = '<div id="' . $entity_import_wrapper . '" class="content-entity-lookup-wrapper">';
-    $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_id']);
-    $html .= drupal_render($form['content'][$content_wrapper]['entity_import']['entity_view_mode']);
+    $html .= \Drupal::service('renderer')->render($form['content'][$content_wrapper]['entity_import']['entity_id']);
+    $html .= \Drupal::service('renderer')->render($form['content'][$content_wrapper]['entity_import']['entity_view_mode']);
     $html .= '</div>';
 
     $response->addCommand(new ReplaceCommand('#' . $entity_import_wrapper, $html));
@@ -475,7 +476,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
   private function buildEntityViewModeOptionList($entity_type) {
     $options = array();
 
-    $view_modes = \Drupal::entityManager()->getViewModes($entity_type);
+    $view_modes = \Drupal::entityTypeManager()->getViewModes($entity_type);
 
     foreach ($view_modes as $view_mode_id => $view_mode_data) {
       $options[$view_mode_id] = $view_mode_data['label'];
@@ -589,7 +590,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
    *   Filtered entities from entity_get_info().
    */
   private function getEntitiesForContentImport() {
-    $entity_info = \Drupal::entityManager()->getDefinitions();
+    $entity_info = \Drupal::entityTypeManager()->getDefinitions();
 
     $filtered_entities = array();
 
@@ -640,7 +641,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
         'Insert merge variables from the %list_name list or one of the @standard_link.',
         array(
           '%list_name' => $list_name,
-          '@standard_link' => \Drupal::l(t('standard MailChimp merge variables'), $merge_vars_url),
+          '@standard_link' => Link::fromTextAndUrl(t('standard MailChimp merge variables'), $merge_vars_url)->toString(),
         )
       ),
     );
@@ -671,9 +672,11 @@ class MailchimpCampaignForm extends ContentEntityForm {
           '#markup' => $var->name,
         );
 
-        $element['mergevars_table'][$var->link] = array(
-          '#markup' => '<a id="merge-var-' . $var->tag . '" class="add-merge-var" href="javascript:void(0);">*|' . $var->tag . '|*</a>',
-        );
+        if (isset($var->link) && !is_null($var->link)) {
+          $element['mergevars_table'][$var->link] = array(
+            '#markup' => '<a id="merge-var-' . $var->tag . '" class="add-merge-var" href="javascript:void(0);">*|' . $var->tag . '|*</a>',
+          );
+        }
       }
 
       return render($element);
