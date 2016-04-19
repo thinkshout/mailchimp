@@ -422,7 +422,7 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
   if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
     $batch_size = 50;
     $item_ids = array_slice($context['sandbox']['entity_ids'], $context['sandbox']['progress'], $batch_size);
-    $entities = \Drupal::entityManager()->getStorage($entity_type)->loadMultiple($item_ids);
+    $entities = \Drupal::entityTypeManager()->getStorage($entity_type)->loadMultiple($item_ids);
 
     foreach ($entities as $entity) {
       $merge_vars = _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type);

@@ -133,7 +133,7 @@ class MailchimpCampaignController extends ControllerBase {
    *   Renderable array of page content.
    */
   public function view(MailchimpCampaign $mailchimp_campaign) {
-    $view_builder = \Drupal::entityManager()->getViewBuilder('mailchimp_campaign');
+    $view_builder = \Drupal::entityTypeManager()->getViewBuilder('mailchimp_campaign');
 
     $content = $view_builder->view($mailchimp_campaign);
 

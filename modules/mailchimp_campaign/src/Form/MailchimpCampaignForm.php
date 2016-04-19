@@ -476,7 +476,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
   private function buildEntityViewModeOptionList($entity_type) {
     $options = array();
 
-    $view_modes = \Drupal::entityManager()->getViewModes($entity_type);
+    $view_modes = \Drupal::entityTypeManager()->getViewModes($entity_type);
 
     foreach ($view_modes as $view_mode_id => $view_mode_data) {
       $options[$view_mode_id] = $view_mode_data['label'];
