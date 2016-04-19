@@ -52,7 +52,8 @@ class MailchimpCampaignController extends ControllerBase {
       // the latest status.
       elseif ($campaign->mc_data->status === "sending") {
         $campaigns = mailchimp_campaign_load_multiple(array($campaign_id), TRUE);
-        $campaign = $campaigns[0];
+        $campaign = $campaigns[$campaign_id];
+        $send_link = t("Sent");
       }
       else {
         $send_link = t("Sent");
