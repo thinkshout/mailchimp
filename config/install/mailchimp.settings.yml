@@ -1,5 +1,5 @@
 api_key: ''
 cron: FALSE
 batch_limit: 100
-api_classname: 'Drupal\mailchimp\DrupalMailchimp'
+api_classname: 'Mailchimp\Mailchimp'
 test_mode: FALSE
