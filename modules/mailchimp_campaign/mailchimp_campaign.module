@@ -423,8 +423,13 @@ function mailchimp_campaign_get_list_segments($list_id, $type) {
   /* @var \Mailchimp\MailchimpLists $mcapi */
   $mcapi = mailchimp_get_api_object('MailchimpLists');
 
+  $parameters = array(
+    'type' => $type,
+    'count' => 500,
+  );
+
   try {
-    $response = $mcapi->getSegments($list_id, $type);
+    $response = $mcapi->getSegments($list_id, $parameters);
   }
   catch (Exception $e) {
     drupal_set_message($e->getMessage(), 'error');
@@ -455,7 +460,7 @@ function mailchimp_test_list_segment($list_id, $list_segment_id) {
   $mc_lists = mailchimp_get_api_object('MailchimpLists');
 
   try {
-    $result = $mc_lists->getSegmentMembers($list_id, $list_segment_id);
+    $result = $mc_lists->getSegmentMembers($list_id, $list_segment_id, array('count' => 500));
   }
   catch (Exception $e) {
     drupal_set_message($e->getMessage(), 'error');

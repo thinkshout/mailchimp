@@ -114,16 +114,16 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
       /* @var \Mailchimp\MailchimpLists $mcapi */
       $mcapi = mailchimp_get_api_object('MailchimpLists');
       if ($mcapi != null) {
-        $result = $mcapi->getLists();
+        $result = $mcapi->getLists(array('count' => 500));
 
         if ($result->total_items > 0) {
           foreach ($result->lists as $list) {
-            $int_category_data = $mcapi->getInterestCategories($list->id);
+            $int_category_data = $mcapi->getInterestCategories($list->id, array('count' => 500));
             if ($int_category_data->total_items > 0) {
 
               $list->intgroups = array();
               foreach ($int_category_data->categories as $interest_category) {
-                $interest_data = $mcapi->getInterests($list->id, $interest_category->id);
+                $interest_data = $mcapi->getInterests($list->id, $interest_category->id, array('count' => 500));
 
                 if ($interest_data->total_items > 0) {
                   $interest_category->interests = $interest_data->interests;
@@ -136,7 +136,7 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
             $lists[$list->id] = $list;
 
             // Append mergefields:
-            $mergefields = $mcapi->getMergeFields($list->id);
+            $mergefields = $mcapi->getMergeFields($list->id, array('count' => 500));
             if ($mergefields->total_items > 0) {
               $lists[$list->id]->mergevars = $mergefields->merge_fields;
             }
@@ -244,7 +244,7 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
           ),
         );
 
-        $result = $mc_lists->getMergeFields($list_id);
+        $result = $mc_lists->getMergeFields($list_id, array('count' => 500));
 
         if ($result->total_items > 0) {
           $mergevars[$list_id] = array_merge($mergevars[$list_id], $result->merge_fields);
@@ -569,6 +569,8 @@ function mailchimp_get_members($list_id, $status = 'subscribed', $options = arra
       $mcapi = mailchimp_get_api_object('MailchimpLists');
 
       $options['status'] = $status;
+      $options['count'] = 500;
+
       $results = $mcapi->getMembers($list_id, $options);
     }
     catch (Exception $e) {
@@ -1001,7 +1003,7 @@ function mailchimp_interest_groups_form_elements($list, $defaults = array(), $em
     /* @var \Mailchimp\MailchimpLists $mc_lists */
     $mc_lists = mailchimp_get_api_object('MailchimpLists');
 
-    $interest_data = $mc_lists->getInterests($list->id, $group->id);
+    $interest_data = $mc_lists->getInterests($list->id, $group->id, array('count' => 500));
 
     if (!empty($email)) {
       $memberinfo = mailchimp_get_memberinfo($list->id, $email);
