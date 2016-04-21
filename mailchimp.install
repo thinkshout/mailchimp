@@ -45,7 +45,7 @@ function mailchimp_uninstall() {
 /**
  * Update the class name in configuration.
  */
-function mailchimp_update_8000(&$sandbox) {
+function mailchimp_update_8001(&$sandbox) {
   $config = \Drupal::configFactory()->getEditable('mailchimp.settings');
   $config->set('api_classname', 'Mailchimp\Mailchimp');
   $config->save();
