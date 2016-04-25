@@ -223,7 +223,7 @@ function _mailchimp_lists_field_instance_settings_form_process($form, &$form_sta
   if ($use_advanced_mode && module_exists('token')) {
     // Add element validator for each text field. This allows the token module
     // to provide feedback on token syntax.
-    foreach ($mergevars[$mc_list_id]['merge_vars'] as $mergevar) {
+    foreach ($mergevars[$mc_list_id] as $mergevar) {
       $form[$mergevar->tag] += array(
         '#element_validate' => array('token_element_validate'),
         '#token_types' => array($instance['entity_type']),
