@@ -569,7 +569,16 @@ function mailchimp_update_local_cache($function, $args) {
       $function == 'mailchimp_subscribe_process') {
     // Update cached merge vars.
     foreach ($args['merge_vars'] as $key => $value) {
-      $cache->merge_fields[$key] = $value;
+      $cache->merge_fields->$key = $value;
+    }
+    // Update cached interests.
+    $cache->interests = new stdClass();
+    foreach ($args['interests'] as $interest_group => $interests) {
+      foreach ($interests as $interest_id => $value) {
+        if ($value !== 0) {
+          $cache->interests->$interest_id = TRUE;
+        }
+      }
     }
   }
   // Store the data back in the local cache.
