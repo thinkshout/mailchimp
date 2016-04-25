@@ -550,7 +550,10 @@ function mailchimp_update_local_cache($function, $args) {
   $cache = mailchimp_get_memberinfo($list_id, $email);
   if (empty($cache)) {
     // Create a new entry.
-    cache_set($list_id . '-' . $email, array('merges' => array()), 'cache_mailchimp', CACHE_TEMPORARY);
+    cache_set($list_id . '-' . $email,
+      (object) array('merge_fields' => new stdClass()),
+      'cache_mailchimp',
+      CACHE_TEMPORARY);
     $cache = cache_get($list_id . '-' . $email, 'cache_mailchimp');
     $cache = $cache->data;
   }
