@@ -1459,7 +1459,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
       // Creates options, we must delete array keys to have relevant information
       // on MailChimp.
       $choices = array();
-      foreach ($mergevar['choices'] as $choice) {
+      foreach ($mergevar->options->choices as $choice) {
         $choices[$choice] = $choice;
       }
 
