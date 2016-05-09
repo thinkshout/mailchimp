@@ -12,8 +12,6 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 
-use Drupal\Component\Utility\String;
-
 /**
  * MailChimp Lists controller.
  */
