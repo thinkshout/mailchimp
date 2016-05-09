@@ -52,13 +52,6 @@ class Mailchimp {
   private $api_user;
 
   /**
-   * @var bool $include_links
-   *   TRUE if the "_links" field should be included in API responses.
-   *   The "_links" field contains endpoints for related API functions.
-   */
-  private $include_links;
-
-  /**
    * @var string $debug_error_code
    *   A MailChimp API error code to return with every API response.
    *   Used for testing / debugging error handling.
@@ -78,17 +71,16 @@ class Mailchimp {
    *
    * @param string $api_key
    *   The MailChimp API key.
+   *
    * @param string $api_user
    *   The MailChimp API username.
+   *
    * @param int $timeout
    *   Maximum request time in seconds.
-   * @param bool $include_links
-   *   TRUE to include the "_links" field in API responses.
    */
-  public function __construct($api_key, $api_user = 'apikey', $timeout, $include_links = TRUE) {
+  public function __construct($api_key, $api_user = 'apikey', $timeout = 10) {
     $this->api_key = $api_key;
     $this->api_user = $api_user;
-    $this->include_links = $include_links;
 
     $dc = $this->getDataCenter($this->api_key);
 
@@ -249,16 +241,6 @@ class Mailchimp {
       $options['headers']['X-Trigger-Error'] = $this->debug_error_code;
     }
 
-    // Optionally exclude the "_links" field from the API response.
-    if (!$this->include_links) {
-      if (!isset($parameters['exclude_fields'])) {
-        $parameters['exclude_fields'] = '';
-      }
-
-      // Append to the CSV list of fields to exclude from the response.
-      $parameters['exclude_fields'] .= ',_links';
-    }
-
     if (!empty($parameters)) {
       if ($method == 'GET') {
         // Send parameters as query string parameters.
@@ -277,7 +259,15 @@ class Mailchimp {
       return $data;
 
     } catch (RequestException $e) {
-      throw new MailchimpAPIException($e->getResponse()->getBody(), $e->getCode(), $e);
+      $response = $e->getResponse();
+      if (!empty($response)) {
+        $message = $e->getResponse()->getBody();
+      }
+      else {
+        $message = $e->getMessage();
+      }
+
+      throw new MailchimpAPIException($message, $e->getCode(), $e);
     }
   }
 
