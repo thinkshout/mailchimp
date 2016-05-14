@@ -24,8 +24,8 @@ function mailchimp_libraries_info() {
     'download url' => 'https://github.com/thinkshout/mailchimp-api-php/archive/1.0.zip',
     'version arguments' => array(
       'file' => 'composer.json',
-      // Version 1.0.x
-      'pattern' => '/\"version": \"([\d\.]*)\",/',
+      // Version 1.0
+      'pattern' => '/\"version": \"((\d+)\.(\d+))\",/',
     ),
     'files' => array(
       'php' => array(
