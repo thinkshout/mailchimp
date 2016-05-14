@@ -21,11 +21,10 @@ function mailchimp_libraries_info() {
   $libraries['mailchimp'] = array(
     'name' => 'MailChimp API',
     'vendor url' => 'https://github.com/thinkshout/mailchimp-api-php',
-    'download url' => 'https://github.com/thinkshout/mailchimp-api-php/archive/1.0.zip',
+    'download url' => 'https://github.com/thinkshout/mailchimp-api-php/archive/1.0.1.zip',
     'version arguments' => array(
       'file' => 'composer.json',
-      // Version 1.0
-      'pattern' => '/\"version": \"((\d+)\.(\d+))\",/',
+      'pattern' => '/"version": "([0-9a-zA-Z.-]+)"/',
     ),
     'files' => array(
       'php' => array(
