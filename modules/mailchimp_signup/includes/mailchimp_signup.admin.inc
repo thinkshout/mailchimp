@@ -266,7 +266,9 @@ function mailchimp_signup_form_submit($form, &$form_state) {
       mailchimp_signup_tt("field:mailchimp_signup:form:$signup->mcs_id:$key", $form_state['values'][$key], $language, TRUE);
     }
     foreach ($mergefields as $id => $val) {
-      mailchimp_signup_tt("field:mailchimp_signup:form:$signup->mcs_id:mergefield:$id", $val->name, $language, TRUE);
+      if ($val) {
+        mailchimp_signup_tt("field:mailchimp_signup:form:$signup->mcs_id:mergefield:$id", $val->name, $language, TRUE);
+      }
     }
     mailchimp_signup_tt("field:mailchimp_signup:form:$signup->mcs_id:confirmation_message", $form_state['values']['settings']['confirmation_message'], $language, TRUE);
     mailchimp_signup_tt("field:mailchimp_signup:form:$signup->mcs_id:submit_button", $form_state['values']['settings']['submit_button'], $language, TRUE);
