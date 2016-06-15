@@ -1,0 +1,15 @@
+diff --git a/modules/mailchimp_signup/src/Form/MailchimpSignupPageForm.php b/modules/mailchimp_signup/src/Form/MailchimpSignupPageForm.php
+index 10f2178..c08cf7e 100644
+--- a/modules/mailchimp_signup/src/Form/MailchimpSignupPageForm.php
++++ b/modules/mailchimp_signup/src/Form/MailchimpSignupPageForm.php
+@@ -122,8 +122,8 @@ class MailchimpSignupPageForm extends FormBase {
+     );
+ 
+     foreach ($this->signup->settings['mergefields'] as $tag => $mergevar_str) {
+-      $mergevar = unserialize($mergevar_str);
+-      if (!empty($mergevar)) {
++      if (!empty($mergevar_str)) {
++        $mergevar = unserialize($mergevar_str);
+         $form['mergevars'][$tag] = mailchimp_insert_drupal_form_tag($mergevar);
+         if (empty($lists)) {
+           $form['mergevars'][$tag]['#disabled'] = TRUE;
