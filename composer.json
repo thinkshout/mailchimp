@@ -3,7 +3,7 @@
   "description": "Mailchimp integration for Drupal.",
   "version": "7.x-4.4",
   "homepage": "https://www.drupal.org/project/mailchimp",
-  "license": "GNU",
+  "license": "GNU-2.0+",
   "keywords": [
     "Mailchimp",
     "mailchimp",
