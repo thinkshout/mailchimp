@@ -119,9 +119,13 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
   if (isset($mailchimp) && $mailchimp instanceof $classname) {
     return $mailchimp;
   }
-
-  $library = libraries_load('mailchimp');
-  if (!$library['installed']) {
+  if (module_exists('libraries')) {
+    $library = libraries_load('mailchimp');
+  }
+  else {
+    $library = FALSE;
+  }
+  if (!$library['installed'] && !class_exists('Mailchimp\Mailchimp')) {
     $msg = t('Failed to load MailChimp PHP library. Please refer to the installation requirements.');
     watchdog('mailchimp', $msg, array(), WATCHDOG_ERROR);
     drupal_set_message($msg, 'error', FALSE);
@@ -268,12 +272,12 @@ function _mailchimp_list_cmp($a, $b) {
 
 /**
  * Wrapper around MailchimpLists->getMergeFields().
- * 
+ *
  * @param array $list_ids
  *   Array of MailChimp list IDs.
  * @param bool $reset
  *   Set to TRUE if mergevars should not be loaded from cache.
- * 
+ *
  * @return array
  *   Struct describing mergevars for the specified lists.
  */
@@ -840,7 +844,7 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
  *   A MailChimp list id.
  * @param bool $reset
  *   Set to TRUE if list segments should not be loaded from cache.
- * 
+ *
  * @return array
  *   Array of segments details.
  */
@@ -883,7 +887,7 @@ function mailchimp_get_segments($list_id, $reset = NULL) {
  *   'static' or 'saved'
  * @param array $segment_options
  *   Array of options for 'saved' segments. See MailChimp API docs.
- * 
+ *
  * @return int
  *   ID of the new segment.
  */
@@ -921,7 +925,7 @@ function mailchimp_segment_create($list_id, $name, $type, $segment_options = NUL
 
 /**
  * Add a specific subscriber to a static segment of a list.
- * 
+ *
  * @param string $list_id
  *   ID of a MailChimp list
  * @param string $segment_id
@@ -932,7 +936,7 @@ function mailchimp_segment_create($list_id, $name, $type, $segment_options = NUL
  *   Whether to queue this for the batch processor. Defaults to TRUE.
  * @param string $queue_id
  *   The ID of the queue to use in batch processing.
- * 
+ *
  * @return bool
  *   Success boolean
  */
@@ -1495,7 +1499,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
 
 /**
  * Implements hook_cron().
- * 
+ *
  * We don't use batch API calls currently as it would require sorting through
  * a lot of options here. Instead, we will provide VBO functions to perform
  * large unsubscribes and subscribes and specifically call the batch functions.
