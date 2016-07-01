@@ -365,7 +365,7 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
   }
 
   // Query lists from the MCAPI and store in cache:
-  $memberinfo = array();
+  $memberinfo = new stdClass();
 
   /* @var \Mailchimp\MailchimpLists $mc_lists */
   $mc_lists = mailchimp_get_api_object('MailchimpLists');
@@ -373,10 +373,16 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
     if (!$mc_lists) {
       throw new MailchimpException('Cannot get member info without MailChimp API. Check API key has been entered.');
     }
-    $result = $mc_lists->getMemberInfo($list_id, $email);
-    if (!empty($result->id)) {
-      $memberinfo = $result;
+
+    try {
+      $memberinfo = $mc_lists->getMemberInfo($list_id, $email);
       cache_set($list_id . '-' . $email, $memberinfo, 'cache_mailchimp', CACHE_TEMPORARY);
+    }
+    catch (Exception $e) {
+      // Throw exception only for errors other than member not found.
+      if ($e->getCode() != 404) {
+        throw new Exception($e->getMessage(), $e->getCode(), $e);
+      }
     }
   }
   catch (Exception $e) {
