@@ -495,7 +495,7 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $inte
       // Clear user cache, just in case there's some cruft leftover:
       mailchimp_cache_clear_member($list_id, $email);
       watchdog('mailchimp', '@email was subscribed to list @list.',
-        array('@email' => $merge_vars['EMAIL'], '@list' => $list_id), WATCHDOG_NOTICE
+        array('@email' => $email, '@list' => $list_id), WATCHDOG_NOTICE
       );
     }
     else {
