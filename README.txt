@@ -44,7 +44,7 @@ respective README's for more details.
       - Download Composer if you don't already have it installed:
         https://getcomposer.org/download/
 
-      - Download version 1.0 of the v3 API library:
+      - Download version 1.0.3 of the v3 API library:
         https://github.com/thinkshout/mailchimp-api-php/releases
 
       - Extract the library archive to libraries/mailchimp
