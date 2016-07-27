@@ -4,12 +4,12 @@
  */
 
 (function ($) {
-  "use strict";
+  'use strict';
 
   Drupal.behaviors.mailchimp_campaign = {
     attach: function (context, settings) {
       var google;
-      google.load("visualization", "1", {packages: ["corechart"], "callback": drawCharts});
+      google.load('visualization', '1', {packages: ['corechart'], callback: drawCharts});
 
       function drawCharts() {
         var dataTable = new google.visualization.DataTable();
