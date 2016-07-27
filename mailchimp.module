@@ -353,8 +353,8 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
  * @param bool $reset
  *   Set to TRUE if member info should not be loaded from cache.
  *
- * @return array
- *   Member info array, empty if there is no valid info.
+ * @return object
+ *   Member info object, empty if there is no valid info.
  */
 function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get($list_id . '-' . $email, 'cache_mailchimp');
