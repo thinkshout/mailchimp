@@ -4,7 +4,7 @@ mailchimp_campaign.overview:
     _controller: '\Drupal\mailchimp_campaign\Controller\MailchimpCampaignController::overview'
     _title: 'MailChimp Campaigns'
   requirements:
-    _permission: 'administer mailchimp'
+    _permission: 'administer mailchimp campaigns'
     _mailchimp_configuration_access_check: 'TRUE'
 
 entity.mailchimp_campaign.view:
@@ -13,7 +13,7 @@ entity.mailchimp_campaign.view:
     _controller: '\Drupal\mailchimp_campaign\Controller\MailchimpCampaignController::view'
     _title: 'MailChimp Campaign'
   requirements:
-    _permission: 'administer mailchimp'
+    _permission: 'administer mailchimp campaigns'
 
 entity.mailchimp_campaign.send:
   path: 'admin/config/services/mailchimp/campaigns/{mailchimp_campaign}/send'
@@ -21,7 +21,7 @@ entity.mailchimp_campaign.send:
     _entity_form: 'mailchimp_campaign.send'
     _title: 'Send MailChimp Campaign'
   requirements:
-    _permission: 'administer mailchimp'
+    _permission: 'administer mailchimp campaigns'
     _entity_access: 'mailchimp_campaign.send'
 
 entity.mailchimp_campaign.stats:
@@ -30,7 +30,7 @@ entity.mailchimp_campaign.stats:
     _controller: '\Drupal\mailchimp_campaign\Controller\MailchimpCampaignController::stats'
     _title: 'MailChimp Campaign Stats'
   requirements:
-    _permission: 'administer mailchimp'
+    _permission: 'administer mailchimp campaigns'
     _entity_access: 'mailchimp_campaign.stats'
 
 mailchimp_campaign.add:
@@ -39,7 +39,7 @@ mailchimp_campaign.add:
     _entity_form: 'mailchimp_campaign.add'
     _title: 'Add MailChimp Campaign'
   requirements:
-    _permission: 'administer mailchimp'
+    _permission: 'administer mailchimp campaigns'
 
 entity.mailchimp_campaign.edit_form:
   path: '/admin/config/services/mailchimp/campaigns/{mailchimp_campaign}/edit'
@@ -47,7 +47,7 @@ entity.mailchimp_campaign.edit_form:
     _entity_form: 'mailchimp_campaign.edit'
     _title: 'Edit MailChimp Campaign'
   requirements:
-    _permission: 'administer mailchimp'
+    _permission: 'administer mailchimp campaigns'
     _entity_access: 'mailchimp_campaign.edit'
 
 entity.mailchimp_campaign.delete_form:
@@ -56,7 +56,7 @@ entity.mailchimp_campaign.delete_form:
     _entity_form: 'mailchimp_campaign.delete'
     _title: 'Delete MailChimp Campaign'
   requirements:
-    _permission: 'administer mailchimp'
+    _permission: 'administer mailchimp campaigns'
     _entity_access: 'mailchimp_campaign.delete'
 
 mailchimp_campaign.entity_autocomplete:
@@ -65,4 +65,4 @@ mailchimp_campaign.entity_autocomplete:
     _controller: '\Drupal\mailchimp_campaign\Controller\MailchimpCampaignController::entityAutocomplete'
     _title: 'MailChimp Campaign Entity Autocomplete'
   requirements:
-    _permission: 'administer mailchimp'
+    _permission: 'administer mailchimp campaigns'
