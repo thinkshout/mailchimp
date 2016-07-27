@@ -21,7 +21,8 @@
       /**
        * Add entity token click handler.
        */
-      $('.add-entity-token-link', context).unbind('click').bind('click', function() {
+      $('.add-entity-token-link', context).unbind('click').bind('click', function(e) {
+        e.preventDefault();
         var element_id = $(this).attr('id');
         var section = element_id.replace('-add-entity-token-link', '');
 
@@ -76,7 +77,8 @@
       /**
        * Add merge var click handler.
        */
-      $('.add-merge-var', context).unbind('click').bind('click', function() {
+      $('.add-merge-var', context).unbind('click').bind('click', function(e) {
+        e.preventDefault();
         // Get the last selected text field.
         var target_element = drupalSettings.mailchimpCampaignFocusedField;
 
