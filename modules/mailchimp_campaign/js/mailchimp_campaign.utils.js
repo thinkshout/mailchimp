@@ -4,7 +4,7 @@
  */
 
 (function ($) {
-  "use strict";
+  'use strict';
 
   /**
    * Utility methods for MailChimp campaign management.
