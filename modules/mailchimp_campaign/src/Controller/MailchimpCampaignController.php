@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\mailchimp_campaign\Controller\MailchimpCampaignController.
- */
-
 namespace Drupal\mailchimp_campaign\Controller;
 
 use Behat\Mink\Exception\Exception;

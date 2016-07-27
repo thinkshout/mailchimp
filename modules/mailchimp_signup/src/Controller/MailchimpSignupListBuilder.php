@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\mailchimp_signup\Controller\MailchimpSignupListBuilder.
- */
 
 namespace Drupal\mailchimp_signup\Controller;
 

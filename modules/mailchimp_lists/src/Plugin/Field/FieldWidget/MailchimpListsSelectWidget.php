@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\mailchimp_lists\Plugin\Field\FieldWidget\MailchimpListsSelectWidget.
- */
 
 namespace Drupal\mailchimp_lists\Plugin\Field\FieldWidget;
 

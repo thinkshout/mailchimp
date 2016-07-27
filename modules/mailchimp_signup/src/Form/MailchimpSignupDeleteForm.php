@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\mailchimp_signup\Form\MailchimpSignupDeleteForm.
- */
 
 namespace Drupal\mailchimp_signup\Form;
 

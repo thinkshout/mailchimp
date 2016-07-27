@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\mailchimp_signup\Plugin\Derivative\MailchimpSignupSubscribeBlock.
- */
-
 namespace Drupal\mailchimp_signup\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\mailchimp_lists\Controller\MailchimpFieldsController.
- */
-
 namespace Drupal\mailchimp_lists\Controller;
 
 use Drupal\Core\Controller\ControllerBase;

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\mailchimp_campaign\Plugin\Filter\FilterMailchimpCampaign.
- */
-
 namespace Drupal\mailchimp_campaign\Plugin\Filter;
 
 use Drupal\filter\FilterProcessResult;

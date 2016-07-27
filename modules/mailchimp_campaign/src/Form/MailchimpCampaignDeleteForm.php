@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\mailchimp_campaign\Form\MailchimpCampaignDeleteForm.
- */
 
 namespace Drupal\mailchimp_campaign\Form;
 

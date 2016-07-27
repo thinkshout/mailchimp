@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\mailchimp_campaign\MailchimpCampaignUninstallValidator.
- */
-
 namespace Drupal\mailchimp_campaign;
 
 use Drupal\filter\FilterUninstallValidator;

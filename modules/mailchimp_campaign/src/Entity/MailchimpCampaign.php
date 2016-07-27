@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\mailchimp_campaign\Entity\MailchimpCampaign.
- */
-
 namespace Drupal\mailchimp_campaign\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;

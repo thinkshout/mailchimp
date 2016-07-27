@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\mailchimp_lists\Form\MailchimpListsWebhookSettingsForm.
- */
 
 namespace Drupal\mailchimp_lists\Form;
 

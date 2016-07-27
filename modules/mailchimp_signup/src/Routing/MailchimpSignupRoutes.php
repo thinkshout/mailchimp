@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\mailchimp_signup\Routing\MailchimpSignupRoutes.
- */
 
 namespace Drupal\mailchimp_signup\Routing;
 

@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\mailchimp_lists\Plugin\Field\FieldFormatter\MailchimpListsFieldSubscribeFormatter.
- */
 
 namespace Drupal\mailchimp_lists\Plugin\Field\FieldFormatter;
 

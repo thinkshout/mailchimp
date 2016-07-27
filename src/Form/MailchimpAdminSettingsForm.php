@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\mailchimp\Form\MailchimpAdminSettingsForm.
- */
 
 namespace Drupal\mailchimp\Form;
 
