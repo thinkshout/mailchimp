@@ -111,10 +111,17 @@ function mailchimp_apikey_ready_access($permission) {
  *   The MailChimp library class to instantiate.
  *
  * @return Mailchimp
- *   The default return value is an instance of Mailchimp, although that
- *   can be overridden.
+ *   Instance of the MailChimp library class. Can be overridden by $classname.
  */
 function mailchimp_get_api_object($classname = 'Mailchimp') {
+  // Set correct library class namespace depending on test mode.
+  if (variable_get('mailchimp_test_mode', FALSE)) {
+    $classname = '\Mailchimp\Tests\\' . $classname;
+  }
+  else {
+    $classname = '\Mailchimp\\' . $classname;
+  }
+
   $mailchimp = &drupal_static(__FUNCTION__);
   if (isset($mailchimp) && $mailchimp instanceof $classname) {
     return $mailchimp;
@@ -146,13 +153,6 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
   }
   // Set the timeout to something that won't take down the Drupal site:
   $timeout = 60;
-
-  if (variable_get('mailchimp_test_mode', FALSE)) {
-    $classname = '\Mailchimp\Tests\\' . $classname;
-  }
-  else {
-    $classname = '\Mailchimp\\' . $classname;
-  }
 
   $mailchimp = new $classname($api_key, 'apikey', $timeout);
 
