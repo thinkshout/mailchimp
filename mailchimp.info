@@ -2,6 +2,7 @@ name = MailChimp
 description = MailChimp email service integration.
 package = MailChimp
 core = 7.x
+php = 5.5
 
 files[] = includes/mailchimp_exception.inc
 
