@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\mailchimp_campaign\MailchimpCampaignAccessControlHandler.
- */
-
 namespace Drupal\mailchimp_campaign;
 
 use Drupal\Core\Access\AccessResult;

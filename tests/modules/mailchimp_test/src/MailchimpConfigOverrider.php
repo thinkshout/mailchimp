@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\mailchimp_test\MailchimpConfigOverrider.
- */
-
 namespace Drupal\mailchimp_test;
 
 use Drupal\Core\Config\ConfigCollectionInfo;

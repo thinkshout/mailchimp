@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\mailchimp_campaign\Tests\MailchimpCampaignTestBase.
- */
-
 namespace Drupal\mailchimp_campaign\Tests;
 
 use Drupal\mailchimp_campaign_test\MailchimpCampaignConfigOverrider;

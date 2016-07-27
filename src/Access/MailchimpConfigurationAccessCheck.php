@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\mailchimp\Access\MailchimpConfigurationAccessCheck.
- */
 
 namespace Drupal\mailchimp\Access;
 

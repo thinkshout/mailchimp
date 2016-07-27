@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription.
- */
 
 namespace Drupal\mailchimp_lists\Plugin\Field\FieldType;
 

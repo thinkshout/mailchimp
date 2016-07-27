@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\mailchimp\Tests\MailchimpAPITest.
- */
-
 namespace Drupal\mailchimp\Tests;
 
 /**

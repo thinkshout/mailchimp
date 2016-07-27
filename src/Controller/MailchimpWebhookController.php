@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\mailchimp\Controller\MailchimpWebhookController.
- */
-
 namespace Drupal\mailchimp\Controller;
 
 use Drupal\Core\Controller\ControllerBase;

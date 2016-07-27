@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\mailchimp_signup\Controller\MailchimpSignupController.
- */
-
 namespace Drupal\mailchimp_signup\Controller;
 
 use Drupal\Core\Controller\ControllerBase;

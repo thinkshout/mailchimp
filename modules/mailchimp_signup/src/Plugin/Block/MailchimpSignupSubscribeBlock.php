@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\mailchimp_signup\Plugin\Block\MailchimpSignupSubscribeBlock.
- */
 
 namespace Drupal\mailchimp_signup\Plugin\Block;
 

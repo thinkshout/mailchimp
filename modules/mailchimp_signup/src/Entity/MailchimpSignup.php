@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\mailchimp_signup\Entity\MailchimpSignup.
- */
-
 namespace Drupal\mailchimp_signup\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;

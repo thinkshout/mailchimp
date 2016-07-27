@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\mailchimp\Tests\MailchimpTestBase.
- */
-
 namespace Drupal\mailchimp\Tests;
 
 use Drupal\simpletest\WebTestBase;
