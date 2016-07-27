@@ -16,7 +16,6 @@
       // Keep track of which textfield was last selected/focused.
       $('textarea', context).focus(function () {
         drupalSettings.mailchimpCampaignFocusedField = this;
-        console.log('Got text field focus: ' + $(this).attr('id'));
       });
 
       /**
@@ -60,8 +59,6 @@
 
         // Insert token into last selected text field.
         if (target_element) {
-          console.log('Inserting token: ' + token);
-
           Drupal.behaviors.mailchimp_campaign_utils.addTokenToElement(target_element, token);
         }
         else {
@@ -90,8 +87,6 @@
 
         // Insert token into last selected text field.
         if (target_element) {
-          console.log('Inserting token: ' + token);
-
           Drupal.behaviors.mailchimp_campaign_utils.addTokenToElement(target_element, token);
         }
 
