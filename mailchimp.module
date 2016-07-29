@@ -278,8 +278,8 @@ function mailchimp_get_mergevars($list_ids, $reset = FALSE) {
  * @param bool $reset
  *   Set to TRUE if member info should not be loaded from cache.
  *
- * @return array
- *   Member info array, empty if there is no valid info.
+ * @return object
+ *   Member info object, empty if there is no valid info.
  */
 function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
   $cache = \Drupal::cache('mailchimp');
@@ -293,7 +293,7 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
   }
 
   // Query lists from the MCAPI and store in cache:
-  $memberinfo = array();
+  $memberinfo = new stdClass();
 
   /* @var \Mailchimp\MailchimpLists $mc_lists */
   $mc_lists = mailchimp_get_api_object('MailchimpLists');
