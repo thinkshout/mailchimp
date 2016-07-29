@@ -238,7 +238,11 @@ class MailchimpListsSubscription extends FieldItemBase {
     parent::preSave();
 
     $choices = $this->value;
-    mailchimp_lists_process_subscribe_form_choices($choices, $this, $this->getEntity());
+
+    // Only act if the field has a value to prevent unintentional unsubscription.
+    if (!empty($choices)) {
+      mailchimp_lists_process_subscribe_form_choices($choices, $this, $this->getEntity());
+    }
   }
 
   /**
