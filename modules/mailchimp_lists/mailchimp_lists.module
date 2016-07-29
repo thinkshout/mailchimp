@@ -118,7 +118,7 @@ function mailchimp_lists_load_email(MailchimpListsSubscription $instance, Entity
  * Processor for various list form submissions.
  *
  * Subscription blocks, user settings, and new user creation.
- * 
+ *
  * @param array $choices
  *   An array representing the form values selected.
  * @param \Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription $instance
@@ -193,7 +193,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, MailchimpLists
  * This is necessary due to the nature of the field implementation of
  * subscriptions. If we don't do this, we send an update to mailchimp every time
  * an entity is updated.
- * 
+ *
  * returns bool
  */
 function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $instance, EntityInterface $entity, $email, $choices) {
@@ -266,20 +266,22 @@ function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $i
   else {
     $member_info = mailchimp_get_memberinfo($settings['mc_list_id'], $email);
 
-    foreach ($member_info['merges']['GROUPINGS'] as $grouping) {
-      if (!isset($choices['interest_groups'][$grouping['id']])) {
-        return TRUE;
-      }
-      else {
-        if (!is_array($choices['interest_groups'][$grouping['id']])) {
-          // Standardize formatting of choices:
-          $choices['interest_groups'][$grouping['id']] = array($choices['interest_groups'][$grouping['id']] => $choices['interest_groups'][$grouping['id']]);
+    if (isset($member_info->merge_fields->GROUPINGS)) {
+      foreach ($member_info->merge_fields->GROUPINGS as $grouping) {
+        if (!isset($choices['interest_groups'][$grouping['id']])) {
+          return TRUE;
         }
+        else {
+          if (!is_array($choices['interest_groups'][$grouping['id']])) {
+            // Standardize formatting of choices:
+            $choices['interest_groups'][$grouping['id']] = array($choices['interest_groups'][$grouping['id']] => $choices['interest_groups'][$grouping['id']]);
+          }
 
-        foreach ($grouping['groups'] as $group) {
-          $selected = isset($choices['interest_groups'][$grouping['id']][$group['name']]) && $choices['interest_groups'][$grouping['id']][$group['name']];
-          if (($group['interested'] && !$selected) || (!$group['interested'] && $selected)) {
-            return TRUE;
+          foreach ($grouping['groups'] as $group) {
+            $selected = isset($choices['interest_groups'][$grouping['id']][$group['name']]) && $choices['interest_groups'][$grouping['id']][$group['name']];
+            if (($group['interested'] && !$selected) || (!$group['interested'] && $selected)) {
+              return TRUE;
+            }
           }
         }
       }
