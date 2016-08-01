@@ -25,7 +25,7 @@ class FilterMailchimpCampaign extends FilterBase {
 
     // Replace node macros with entity content.
     $pattern = '/\[mailchimp_campaign\|entity_type=(\w+)\|entity_id=(\d+)\|view_mode=(\w+)\]/s';
-    $text = preg_replace_callback($pattern, array($this, 'mailchimp_campaign_process_callback'), $text);
+    $text = preg_replace_callback($pattern, array($this, 'processCallback'), $text);
 
     // Convert URL to absolute.
     $text = $this->convertUrl($text);
@@ -55,9 +55,11 @@ class FilterMailchimpCampaign extends FilterBase {
       }
     }
 
-    $entities = entity_load($entity_type, array($entity_id));
-    if (!empty($entities)) {
-      $render_array = entity_view($entity_type, $entities, $view_mode, NULL, TRUE);
+    $entity_manager = \Drupal::entityManager();
+    $entity = $entity_manager->getStorage($entity_type)->load($entity_id);
+    if (!empty($entity)) {
+      $render_controller = \Drupal::entityManager()->getViewBuilder($entity->getEntityTypeId());
+      $render_array = $render_controller->view($entity, $view_mode);
       // Remove contextual links.
       if (isset($render_array[$entity_type][$entity_id]['#contextual_links'])) {
         unset($render_array[$entity_type][$entity_id]['#contextual_links']);
