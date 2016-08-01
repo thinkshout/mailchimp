@@ -7,6 +7,14 @@ mailchimp_campaign.overview:
     _permission: 'administer mailchimp campaigns'
     _mailchimp_configuration_access_check: 'TRUE'
 
+entity.mailchimp_campaign.canonical:
+  path: 'admin/config/services/mailchimp/campaigns/{mailchimp_campaign}'
+  defaults:
+    _controller: '\Drupal\mailchimp_campaign\Controller\MailchimpCampaignController::view'
+    _title: 'MailChimp Campaign'
+  requirements:
+    _permission: 'administer mailchimp campaigns'
+
 entity.mailchimp_campaign.view:
   path: 'admin/config/services/mailchimp/campaigns/{mailchimp_campaign}'
   defaults:
