@@ -78,6 +78,14 @@ function mailchimp_menu() {
     'access arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/config/services/mailchimp/account-info'] = array(
+    'title' => 'MailChimp account info',
+    'page callback' => 'mailchimp_account_overview_page',
+    'access callback' => 'mailchimp_apikey_ready_access',
+    'access arguments' => array('administer mailchimp'),
+    'file' => 'includes/mailchimp.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
 }
@@ -110,10 +118,13 @@ function mailchimp_apikey_ready_access($permission) {
  * @param string $classname
  *   The MailChimp library class to instantiate.
  *
+ * @param string $api_key
+ *   The MailChimp api key to use if not the default
+ *
  * @return Mailchimp
  *   Instance of the MailChimp library class. Can be overridden by $classname.
  */
-function mailchimp_get_api_object($classname = 'Mailchimp') {
+function mailchimp_get_api_object($classname = 'Mailchimp', $api_key = NULL) {
   // Set correct library class namespace depending on test mode.
   if (variable_get('mailchimp_test_mode', FALSE)) {
     $classname = '\Mailchimp\Tests\\' . $classname;
@@ -123,7 +134,7 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
   }
 
   $mailchimp = &drupal_static(__FUNCTION__);
-  if (isset($mailchimp) && $mailchimp instanceof $classname) {
+  if (!$api_key && isset($mailchimp) && $mailchimp instanceof $classname) {
     return $mailchimp;
   }
   if (module_exists('libraries')) {
@@ -146,7 +157,16 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
     return NULL;
   }
 
-  $api_key = variable_get('mailchimp_api_key', '');
+  if (!$api_key) {
+    $api_key = (isset($_REQUEST['mc_aid']))
+      ? mailchimp_get_api_key_for_account($_REQUEST['mc_aid'])
+      : variable_get('mailchimp_api_key', '');
+  }
+  $context = array(
+    'api_class' => $classname,
+  );
+  drupal_alter('mailchimp_api_key', $api_key, $context);
+
   if (!strlen($api_key)) {
     watchdog('mailchimp', t('MailChimp Error: API Key cannot be blank.'), array(), WATCHDOG_ERROR);
     return NULL;
@@ -155,8 +175,128 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
   $timeout = 60;
 
   $mailchimp = new $classname($api_key, 'apikey', $timeout);
-
+  $account = mailchimp_api_account($mailchimp);
+  module_invoke_all('mailchimp_api_accessed', $account, $context);
   return $mailchimp;
+}
+
+/**
+ * Implements hook_mailchimp_api_key().
+ *
+ * @return array
+ *   Since we don't know the default account_id, we use 'default'
+ */
+function mailchimp_mailchimp_api_key() {
+  return array('default' => variable_get('mailchimp_api_key', ''));
+}
+
+/**
+ * Invokes hook_mailchimp_api_key so modules can declare keys
+ *
+ * @return array
+ *   The array_keys are the account id and the array_values are the api keys
+ *   @see hook_mailchimp_api_key();
+ */
+function mailchimp_api_keys() {
+  $api_keys = module_invoke_all('mailchimp_api_key');
+  return $api_keys;
+}
+
+/**
+ * Creates an array of working api accounts in the system
+ *
+ * @return array
+ *   The array_key is the account_id, the array_value is the account object.
+ */
+function mailchimp_api_accounts() {
+  $api_accounts = array();
+  $api_keys = mailchimp_api_keys();
+  foreach ($api_keys as $account_id => $api_key) {
+    $account = mailchimp_api_account(NULL, $api_key);
+    $api_accounts[$account_id] = $account;
+  }
+  return $api_accounts;
+}
+
+/**
+ * Wrapper around Mailchimp->getAccount().
+ *
+ * @param  object $api
+ *   The api object to use, if already instantiated
+ *
+ * @param  string $api_key
+ *   The api key to use to instantiate the MailChimp API object
+ *
+ * @return Object
+ *   The MailChimp account object.
+ */
+function mailchimp_api_account($api = NULL, $api_key = NULL) {
+  if (!$api) {
+    $api = mailchimp_get_api_object('Mailchimp', $api_key);
+  }
+  return $api->getAccount();
+}
+
+/**
+ * Returns the api key based on a given account id.
+ *
+ * @param  string $account_id
+ *   The MailChimp account_id
+ *   @see mailchimp_account_overview_page().
+ *
+ * @return string
+ *   The api key registered via hook_mailchimp_api_key().
+ *   @see hook_mailchimp_api_key().
+ */
+function mailchimp_get_api_key_for_account($account_id) {
+  $api_keys = mailchimp_api_keys();
+  if (isset($api_keys[$account_id])) {
+    return $api_keys[$account_id];
+  }
+  watchdog('mailchimp', t('MailChimp Error: API Key not set for account @account_id.'), array('@account_id' => $account_id), WATCHDOG_ERROR);
+  return NULL;
+}
+
+/**
+ * MailChimp account select form.
+ * Enables switching between multiple keys.
+ * @see hook_mailchimp_api_key().
+ */
+function mailchimp_account_select_form($form, &$form_state) {
+  $form = array();
+  $account = mailchimp_api_account();
+  $form['heading'] = array(
+    '#markup' => '<h2>' . $account->account_name . '</h2>',
+  );
+  $accounts = mailchimp_api_accounts();
+  if (count($accounts) > 1) {
+    $options = array();
+    foreach ($accounts as $account_id => $account) {
+      $options[$account_id] = $account->account_name;
+    }
+    $form['mc_aid'] = array(
+       '#type' => 'select',
+       '#options' => $options,
+    );
+    $form['#action'] = $_SERVER['REQUEST_URI'];
+    $form['#method'] = 'get';
+    $form['#pre_render'][] = 'mailchimp_account_select_form_modify';
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Select'),
+    );
+  }
+  return $form;
+}
+
+/**
+ * Removes unnecessary url variables
+ */
+function mailchimp_account_select_form_modify($form){
+  unset($form['form_token']);
+  unset($form['form_build_id']);
+  unset($form['form_id']);
+  return $form;
 }
 
 /**
@@ -185,7 +325,10 @@ function mailchimp_get_list($list_id) {
  *   An array of list arrays.
  */
 function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
-  $cache = $reset ? NULL : cache_get('lists', 'cache_mailchimp');
+  if ($account = mailchimp_api_account()) {
+    $account_id = $account->account_id;
+    $cache = $reset ? NULL : cache_get('lists-' . $account_id, 'cache_mailchimp');
+  }
   $lists = array();
   // Return cached lists:
   if ($cache) {
@@ -229,7 +372,8 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
         }
       }
       uasort($lists, '_mailchimp_list_cmp');
-      cache_set('lists', $lists, 'cache_mailchimp', CACHE_TEMPORARY);
+      $account = mailchimp_api_account($mc_lists);
+      cache_set('lists-' . $account->account_id , $lists, 'cache_mailchimp', CACHE_TEMPORARY);
     }
     catch (Exception $e) {
       watchdog('mailchimp', 'An error occurred requesting list information from MailChimp. "%message"', array(
@@ -1230,6 +1374,13 @@ function mailchimp_cache_clear_list_activity($list_id) {
  */
 function mailchimp_cache_clear_campaign($campaign_id) {
   cache_clear_all('mailchimp_campaign_' . $campaign_id, 'cache_mailchimp');
+}
+
+/**
+ * Clear all mailchimp caches.
+ */
+function mailchimp_cache_clear_all() {
+  cache_clear_all('*', 'cache_mailchimp', TRUE);
 }
 
 /**

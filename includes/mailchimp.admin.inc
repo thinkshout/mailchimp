@@ -68,3 +68,57 @@ function mailchimp_clear_list_cache_form_submit($form, &$form_state) {
   mailchimp_get_lists(array(), TRUE);
   drupal_set_message(t('MailChimp List cache cleared.'));
 }
+
+/**
+ * Menu callback to access mailchimp account info
+ * This allows developers to easily figure out
+ * the account_id associated with a given key,
+ * enabling support for multiple api keys.
+ * @see hook_mailchimp_api_key().
+ */
+function mailchimp_account_overview_page() {
+  $accounts = array();
+  $output = '<h2>Mailchimp API Account Info</h2>';
+  $api_key_form = drupal_get_form('mailchimp_account_retrieval_form');
+  $output .= drupal_render($api_key_form);
+  if (isset($_REQUEST['mailchimp_api_key'])) {
+    $account = mailchimp_api_account(NULL, $_REQUEST['mailchimp_api_key']);
+  }
+  else {
+    $output .= '<h3>Default account</h3>';
+    $account = mailchimp_api_account();
+  }
+  unset($account->_links);
+  $output .= '<pre>'.json_encode($account, JSON_PRETTY_PRINT).'</pre>';
+  return $output;
+}
+
+/**
+ * MailChimp account retrieval form.
+ * Outputs a textfield for an api_key
+ * to retrieve information about a MailChimp account.
+ */
+function mailchimp_account_retrieval_form($form, &$form_state) {
+  $form = array();
+  $api_key = (isset($_REQUEST['mailchimp_api_key']))
+    ? $_REQUEST['mailchimp_api_key']
+    : variable_get('mailchimp_api_key', '');
+  $form['mailchimp_api_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('MailChimp API Key'),
+    '#required' => TRUE,
+    '#default_value' => $api_key,
+    '#description' => t('The API key for your MailChimp account. Get or generate a valid API key at your !apilink.', array('!apilink' => l(t('MailChimp API Dashboard'), 'http://admin.mailchimp.com/account/api'))),
+  );
+  $form['#action'] = $_SERVER['REQUEST_URI'];
+  $form['#method'] = 'post';
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Get account info'),
+  );
+  return $form;
+}
+
+function mailchimp_account_retrieval_form_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
+}
