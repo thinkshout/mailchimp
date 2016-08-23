@@ -159,7 +159,7 @@ function mailchimp_get_api_object($classname = 'Mailchimp', $api_key = NULL) {
 
   if (!$api_key) {
     $api_key = (isset($_REQUEST['mc_aid']))
-      ? mailchimp_get_api_key_for_account($_REQUEST['mc_aid'])
+      ? mailchimp_get_api_key_for_account(check_plain($_REQUEST['mc_aid']))
       : variable_get('mailchimp_api_key', '');
   }
   $context = array(
@@ -277,6 +277,7 @@ function mailchimp_account_select_form($form, &$form_state) {
     $form['mc_aid'] = array(
        '#type' => 'select',
        '#options' => $options,
+       '#default_value' => 'default',
     );
     $form['#action'] = $_SERVER['REQUEST_URI'];
     $form['#method'] = 'get';

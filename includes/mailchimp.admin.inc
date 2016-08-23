@@ -82,7 +82,7 @@ function mailchimp_account_overview_page() {
   $api_key_form = drupal_get_form('mailchimp_account_retrieval_form');
   $output .= drupal_render($api_key_form);
   if (isset($_REQUEST['mailchimp_api_key'])) {
-    $account = mailchimp_api_account(NULL, $_REQUEST['mailchimp_api_key']);
+    $account = mailchimp_api_account(NULL, check_plain($_REQUEST['mailchimp_api_key']));
   }
   else {
     $output .= '<h3>Default account</h3>';
@@ -101,16 +101,15 @@ function mailchimp_account_overview_page() {
 function mailchimp_account_retrieval_form($form, &$form_state) {
   $form = array();
   $api_key = (isset($_REQUEST['mailchimp_api_key']))
-    ? $_REQUEST['mailchimp_api_key']
+    ? check_plain($_REQUEST['mailchimp_api_key'])
     : variable_get('mailchimp_api_key', '');
   $form['mailchimp_api_key'] = array(
     '#type' => 'textfield',
-    '#title' => t('MailChimp API Key'),
-    '#required' => TRUE,
+    '#title' => t('MailChimp API Key to check'),
     '#default_value' => $api_key,
-    '#description' => t('The API key for your MailChimp account. Get or generate a valid API key at your !apilink.', array('!apilink' => l(t('MailChimp API Dashboard'), 'http://admin.mailchimp.com/account/api'))),
+    '#description' => t('The API key for which you want to retrieve account info from the MailChimp API. Get or generate a valid API key at your !apilink.', array('!apilink' => l(t('MailChimp API Dashboard'), 'http://admin.mailchimp.com/account/api'))),
   );
-  $form['#action'] = $_SERVER['REQUEST_URI'];
+  $form['#action'] = check_plain($_SERVER['REQUEST_URI']);
   $form['#method'] = 'post';
   $form['submit'] = array(
     '#type' => 'submit',
