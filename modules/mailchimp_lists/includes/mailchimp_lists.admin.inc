@@ -10,6 +10,10 @@
  */
 function mailchimp_lists_overview_page() {
   $mc_lists = mailchimp_get_lists();
+  $account = mailchimp_api_account();
+  $output = '<h2>' . $account->account_name . '</h2>';
+  $account_select_form = drupal_get_form('mailchimp_account_select_form');
+  $output .= drupal_render($account_select_form);
   $rows = array();
   $webhook_url = mailchimp_webhook_url();
   foreach ($mc_lists as $mc_list) {
@@ -63,7 +67,8 @@ function mailchimp_lists_overview_page() {
     $table['caption'] = $options;
   }
 
-  return theme('table', $table);
+  $output .= theme('table', $table);
+  return $output;
 }
 
 /**
