@@ -70,11 +70,13 @@ function mailchimp_clear_list_cache_form_submit($form, &$form_state) {
 }
 
 /**
- * Menu callback to access mailchimp account info
+ * Menu callback to access mailchimp account info.
+ *
  * This allows developers to easily figure out
  * the account_id associated with a given key,
  * enabling support for multiple api keys.
- * @see hook_mailchimp_api_key().
+ *
+ * @see hook_mailchimp_api_key()
  */
 function mailchimp_account_overview_page() {
   $accounts = array();
@@ -89,12 +91,13 @@ function mailchimp_account_overview_page() {
     $account = mailchimp_api_account();
   }
   unset($account->_links);
-  $output .= '<pre>'.json_encode($account, JSON_PRETTY_PRINT).'</pre>';
+  $output .= '<pre>' . json_encode($account, JSON_PRETTY_PRINT) . '</pre>';
   return $output;
 }
 
 /**
  * MailChimp account retrieval form.
+ *
  * Outputs a textfield for an api_key
  * to retrieve information about a MailChimp account.
  */
@@ -107,7 +110,7 @@ function mailchimp_account_retrieval_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('MailChimp API Key to check'),
     '#default_value' => $api_key,
-    '#description' => t('The API key for which you want to retrieve account info from the MailChimp API. Get or generate a valid API key at your !apilink.', array('!apilink' => l(t('MailChimp API Dashboard'), 'http://admin.mailchimp.com/account/api'))),
+    '#description' => t('The default API key for your MailChimp account. Get or generate a valid API key at your !apilink.', array('!apilink' => l(t('MailChimp API Dashboard'), 'http://admin.mailchimp.com/account/api'))),
   );
   $form['#action'] = check_plain($_SERVER['REQUEST_URI']);
   $form['#method'] = 'post';
@@ -118,6 +121,9 @@ function mailchimp_account_retrieval_form($form, &$form_state) {
   return $form;
 }
 
+/**
+ * Form submit handler to enable the POST request processing.
+ */
 function mailchimp_account_retrieval_form_submit($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
 }

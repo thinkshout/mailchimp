@@ -50,7 +50,7 @@ function mailchimp_menu() {
 
   $items['admin/config/services/mailchimp'] = array(
     'title' => 'MailChimp',
-    'description' => t('Manage MailChimp Settings.'),
+    'description' => 'Manage MailChimp Settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_admin_settings'),
     'access arguments' => array('administer mailchimp'),
@@ -58,7 +58,7 @@ function mailchimp_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/config/services/mailchimp/global'] = array(
-    'title' => t('Global Settings'),
+    'title' => 'Global Settings',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
@@ -117,9 +117,8 @@ function mailchimp_apikey_ready_access($permission) {
  *
  * @param string $classname
  *   The MailChimp library class to instantiate.
- *
  * @param string $api_key
- *   The MailChimp api key to use if not the default
+ *   The MailChimp api key to use if not the default.
  *
  * @return Mailchimp
  *   Instance of the MailChimp library class. Can be overridden by $classname.
@@ -168,7 +167,7 @@ function mailchimp_get_api_object($classname = 'Mailchimp', $api_key = NULL) {
   drupal_alter('mailchimp_api_key', $api_key, $context);
 
   if (!strlen($api_key)) {
-    watchdog('mailchimp', t('MailChimp Error: API Key cannot be blank.'), array(), WATCHDOG_ERROR);
+    watchdog('mailchimp', 'MailChimp Error: API Key cannot be blank.', array(), WATCHDOG_ERROR);
     return NULL;
   }
   // Set the timeout to something that won't take down the Drupal site:
@@ -182,20 +181,19 @@ function mailchimp_get_api_object($classname = 'Mailchimp', $api_key = NULL) {
 
 /**
  * Implements hook_mailchimp_api_key().
- *
- * @return array
- *   Since we don't know the default account_id, we use 'default'
  */
 function mailchimp_mailchimp_api_key() {
+  // We use 'default' since we don't know the default account id.
   return array('default' => variable_get('mailchimp_api_key', ''));
 }
 
 /**
- * Invokes hook_mailchimp_api_key so modules can declare keys
+ * Invokes hook_mailchimp_api_key so modules can declare keys.
  *
  * @return array
- *   The array_keys are the account id and the array_values are the api keys
- *   @see hook_mailchimp_api_key();
+ *   The array_keys are the account id and the array_values are the api keys.
+ *
+ * @see hook_mailchimp_api_key()
  */
 function mailchimp_api_keys() {
   $api_keys = module_invoke_all('mailchimp_api_key');
@@ -203,7 +201,7 @@ function mailchimp_api_keys() {
 }
 
 /**
- * Creates an array of working api accounts in the system
+ * Creates an array of working api accounts in the system.
  *
  * @return array
  *   The array_key is the account_id, the array_value is the account object.
@@ -221,11 +219,10 @@ function mailchimp_api_accounts() {
 /**
  * Wrapper around Mailchimp->getAccount().
  *
- * @param  object $api
- *   The api object to use, if already instantiated
- *
- * @param  string $api_key
- *   The api key to use to instantiate the MailChimp API object
+ * @param object $api
+ *   The api object to use, if already instantiated.
+ * @param string $api_key
+ *   The api key to use to instantiate the MailChimp API object.
  *
  * @return Object
  *   The MailChimp account object.
@@ -240,27 +237,30 @@ function mailchimp_api_account($api = NULL, $api_key = NULL) {
 /**
  * Returns the api key based on a given account id.
  *
- * @param  string $account_id
- *   The MailChimp account_id
- *   @see mailchimp_account_overview_page().
+ * @param string $account_id
+ *   The MailChimp account_id.
  *
  * @return string
  *   The api key registered via hook_mailchimp_api_key().
- *   @see hook_mailchimp_api_key().
+ *
+ * @see hook_mailchimp_api_key()
+ * @see mailchimp_account_overview_page()
  */
 function mailchimp_get_api_key_for_account($account_id) {
   $api_keys = mailchimp_api_keys();
   if (isset($api_keys[$account_id])) {
     return $api_keys[$account_id];
   }
-  watchdog('mailchimp', t('MailChimp Error: API Key not set for account @account_id.'), array('@account_id' => $account_id), WATCHDOG_ERROR);
+  watchdog('mailchimp', 'MailChimp Error: API Key not set for account @account_id.', array('@account_id' => $account_id), WATCHDOG_ERROR);
   return NULL;
 }
 
 /**
  * MailChimp account select form.
+ *
  * Enables switching between multiple keys.
- * @see hook_mailchimp_api_key().
+ *
+ * @see hook_mailchimp_api_key()
  */
 function mailchimp_account_select_form($form, &$form_state) {
   $form = array();
@@ -275,9 +275,9 @@ function mailchimp_account_select_form($form, &$form_state) {
       $options[$account_id] = $account->account_name;
     }
     $form['mc_aid'] = array(
-       '#type' => 'select',
-       '#options' => $options,
-       '#default_value' => 'default',
+      '#type' => 'select',
+      '#options' => $options,
+      '#default_value' => 'default',
     );
     $form['#action'] = $_SERVER['REQUEST_URI'];
     $form['#method'] = 'get';
@@ -291,9 +291,9 @@ function mailchimp_account_select_form($form, &$form_state) {
 }
 
 /**
- * Removes unnecessary url variables
+ * Removes unnecessary url variables.
  */
-function mailchimp_account_select_form_modify($form){
+function mailchimp_account_select_form_modify($form) {
   unset($form['form_token']);
   unset($form['form_build_id']);
   unset($form['form_id']);
@@ -374,7 +374,7 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
       }
       uasort($lists, '_mailchimp_list_cmp');
       $account = mailchimp_api_account($mc_lists);
-      cache_set('lists-' . $account->account_id , $lists, 'cache_mailchimp', CACHE_TEMPORARY);
+      cache_set('lists-' . $account->account_id, $lists, 'cache_mailchimp', CACHE_TEMPORARY);
     }
     catch (Exception $e) {
       watchdog('mailchimp', 'An error occurred requesting list information from MailChimp. "%message"', array(
@@ -549,7 +549,7 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
  * @param string $list_id
  *   Unique string identifier for the list on your MailChimp account.
  * @param string $email
- *   Email address to check for on the identified MailChimp List
+ *   Email address to check for on the identified MailChimp List.
  * @param bool $reset
  *   Set to TRUE to ignore the cache. (Used heavily in testing functions.)
  *
@@ -608,7 +608,7 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $inte
     }
 
     $parameters = array(
-      // If double opt-in is required, set member status to 'pending'
+      // If double opt-in is required, set member status to 'pending'.
       'status' => ($double_optin) ? \Mailchimp\MailchimpLists::MEMBER_STATUS_PENDING : \Mailchimp\MailchimpLists::MEMBER_STATUS_SUBSCRIBED,
       'email_type' => $format,
     );
@@ -920,10 +920,6 @@ function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE) {
  * @param bool $notify
  *   Indicates whether to send the unsubscribe notification email to the address
  *   defined in the list email notification settings.
- * @param object $mcapi
- *   MailChimp API object if one is already loaded.
- * @param bool $allow_async
- *   Set to TRUE to allow asynchronous processing using DrupalQueue.
  *
  * @return bool
  *   Indicates whether unsubscribe was successful.
@@ -1035,7 +1031,7 @@ function mailchimp_get_segments($list_id, $reset = NULL) {
  * @param string $name
  *   A label for the segment.
  * @param string $type
- *   'static' or 'saved'
+ *   'static' or 'saved'.
  * @param array $segment_options
  *   Array of options for 'saved' segments. See MailChimp API docs.
  *
@@ -1078,11 +1074,11 @@ function mailchimp_segment_create($list_id, $name, $type, $segment_options = NUL
  * Add a specific subscriber to a static segment of a list.
  *
  * @param string $list_id
- *   ID of a MailChimp list
+ *   ID of a MailChimp list.
  * @param string $segment_id
- *   ID of a segment of the MailChimp list
+ *   ID of a segment of the MailChimp list.
  * @param string $email
- *   Email address to add to the segment (does NOT subscribe to the list)
+ *   Email address to add to the segment (does NOT subscribe to the list).
  * @param bool $batch
  *   Whether to queue this for the batch processor. Defaults to TRUE.
  * @param string $queue_id
@@ -1123,11 +1119,11 @@ function mailchimp_segment_add_subscriber($list_id, $segment_id, $email, $batch 
  * Add a batch of email addresses to a static segment of a list.
  *
  * @param string $list_id
- *   ID of a MailChimp list
+ *   ID of a MailChimp list.
  * @param string $segment_id
- *   ID of a segment of the MailChimp list
+ *   ID of a segment of the MailChimp list.
  * @param array $batch
- *   Batch of email addresses to add to the segment (does NOT subscribe new)
+ *   Batch of email addresses to add to the segment (does NOT subscribe new).
  *
  * @return int
  *   Successful subscribe count
@@ -1305,7 +1301,7 @@ function mailchimp_webhook_add($list_id, $url, $events = array(), $sources = arr
     return $result->id;
   }
   catch (Exception $e) {
-    watchdog('mailchimp', t('An error occurred adding webhook for list @list. "%message"'), array(
+    watchdog('mailchimp', 'An error occurred adding webhook for list @list. "%message"', array(
       '@list' => $list_id,
       '%message' => $e->getMessage(),
     ), WATCHDOG_ERROR);
@@ -1461,7 +1457,6 @@ function mailchimp_webhook_url() {
   return $GLOBALS['base_url'] . '/mailchimp/webhook/' . mailchimp_webhook_key();
 }
 
-
 /**
  * Helper function to generate form elements for a list's interest groups.
  *
@@ -1525,7 +1520,7 @@ function mailchimp_interest_groups_form_elements($list, $defaults = array(), $em
           $default_values[$group->id][] = $interest->id;
         }
       }
-      else if (!empty($defaults)) {
+      elseif (!empty($defaults)) {
         if (isset($defaults[$group->id][$interest->id]) && !empty($defaults[$group->id][$interest->id])) {
           $default_values[$group->id][] = $interest->id;
         }
@@ -1598,6 +1593,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
         '#maxlength' => 2,
       );
       break;
+
     case 'dropdown':
       // Dropdown is mapped to <select> element in Drupal Form API.
       $input['#type'] = 'select';

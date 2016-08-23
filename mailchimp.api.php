@@ -58,32 +58,35 @@ function hook_mailchimp_unsubscribe_user($list_id, $email) {
 }
 
 /**
- * Register additional api keys to enable multiple accounts
+ * Register additional api keys to enable multiple accounts.
+ *
  * @return array
- *   array_key is the mailchimp account_id
- *   array_value is the api key
+ *   array_key is the mailchimp account_id.
+ *   array_value is the api key.
  */
 function hook_mailchimp_api_key() {
   return array('xxxxxxxxxxx' => 'api_key_here')
 }
 
 /**
- * Alter the key for a given api request
- * @param  string &$api_key
- *   The MailChimp API key
- * @param  array  $context
- *   The MailChimp API classname of the API object
+ * Alter the key for a given api request.
+ *
+ * @param string &$api_key
+ *   The MailChimp API key.
+ * @param array $context
+ *   The MailChimp API classname of the API object.
  */
 function hook_mailchimp_api_key_alter(&$api_key, $context) {
 
 }
 
 /**
- * Perform an action after an api object has been created
- * @param  object $account
- *   The MailChimp API account object
- * @param  [type] $context
- *   The MailChimp API classname of the API object
+ * Perform an action after an api object has been created.
+ *
+ * @param object $account
+ *   The MailChimp API account object.
+ * @param array $context
+ *   The MailChimp API classname of the API object.
  */
 function hook_mailchimp_api_accessed($account, $context) {
 
