@@ -10,14 +10,18 @@
  */
 function mailchimp_lists_overview_page() {
   $mc_lists = mailchimp_get_lists();
+  $account = mailchimp_api_account();
+  $output = '<h2>' . $account->account_name . '</h2>';
+  $account_select_form = drupal_get_form('mailchimp_account_select_form');
+  $output .= drupal_render($account_select_form);
   $rows = array();
   $webhook_url = mailchimp_webhook_url();
   foreach ($mc_lists as $mc_list) {
-    $webhooks = mailchimp_webhook_get($mc_list['id']);
+    $webhooks = mailchimp_webhook_get($mc_list->id);
     $enabled = FALSE;
     if ($webhooks) {
       foreach ($webhooks as $webhook) {
-        if ($webhook_url == $webhook['url']) {
+        if ($webhook_url == $webhook->url) {
           $enabled = TRUE;
           continue;
         }
@@ -25,14 +29,14 @@ function mailchimp_lists_overview_page() {
     }
     if ($enabled) {
       // This is a webhook for this MailChimp Module.
-      $webhook_status = t('ENABLED') . '(' . l(t('disable'), 'admin/config/services/mailchimp/lists/' . $mc_list['id'] . '/webhook/disable') . ')';
+      $webhook_status = t('ENABLED') . ' (' . l(t('disable'), 'admin/config/services/mailchimp/lists/' . $mc_list->id . '/webhook/disable') . ')';
     }
     else {
-      $webhook_status = t('disabled') . ' (' . l(t('enable'), 'admin/config/services/mailchimp/lists/' . $mc_list['id'] . '/webhook/enable') . ')';
+      $webhook_status = t('disabled') . ' (' . l(t('enable'), 'admin/config/services/mailchimp/lists/' . $mc_list->id . '/webhook/enable') . ')';
     }
     $rows[] = array(
-      l($mc_list['name'], 'https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_list['web_id']),
-      $mc_list['stats']['member_count'],
+      l($mc_list->name, 'https://admin.mailchimp.com/lists'),
+      $mc_list->stats->member_count,
       $webhook_status,
     );
 
@@ -56,14 +60,15 @@ function mailchimp_lists_overview_page() {
   else {
     $options = t('Currently Available MailChimp lists').':<i>';
     foreach ($mc_lists as $mc_list) {
-      $options .= ' ' . $mc_list['name'] . ',';
+      $options .= ' ' . $mc_list->name . ',';
     }
     $options = rtrim($options, ',');
     $options .= ".</i><br />" . $refresh_link;
     $table['caption'] = $options;
   }
 
-  return theme('table', $table);
+  $output .= theme('table', $table);
+  return $output;
 }
 
 /**
@@ -131,7 +136,7 @@ function mailchimp_lists_webhook_form($form, &$form_state, $list_id, $action) {
       t('Are you sure you want to &action webhooks for %name?',
         array(
           '&action' => t($action),
-          '%name' => $list['name'],
+          '%name' => $list->name,
         )),
       'admin/config/services/mailchimp/lists',
       t('You can change this setting back from the mailchimp administrative UI.'),
@@ -145,13 +150,23 @@ function mailchimp_lists_webhook_form($form, &$form_state, $list_id, $action) {
  * Submit handler for mailchimp_lists_webhook_form().
  */
 function mailchimp_lists_webhook_form_submit($form, &$form_state) {
-  $list_id = $form_state['list']['id'];
+  $list_id = $form_state['list']->id;
   switch ($form_state['action']) {
     case 'enable':
       $result = mailchimp_webhook_add(
         $list_id,
         mailchimp_webhook_url(),
-        array('unsubscribe', 'profile', 'cleaned', 'upemail')
+        array(
+          'unsubscribe' => TRUE,
+          'profile' => TRUE,
+          'cleaned' => TRUE,
+          'upemail' => TRUE,
+        ),
+        array(
+          'user' => TRUE,
+          'admin' => TRUE,
+          'api' => FALSE,
+        )
       );
       break;
 
@@ -170,7 +185,7 @@ function mailchimp_lists_webhook_form_submit($form, &$form_state) {
   if ($result) {
     drupal_set_message(t('Webhooks for list "%name" have been %action.',
       array(
-        '%name' => $form_state['list']['name'],
+        '%name' => $form_state['list']->name,
         '%action' => $form_state['action'] . 'd',
       )
     ));
@@ -178,7 +193,7 @@ function mailchimp_lists_webhook_form_submit($form, &$form_state) {
   else {
     drupal_set_message(t('Unable to perform webhook action "%action" for list "%name".',
       array(
-        '%name' => $form_state['list']['name'],
+        '%name' => $form_state['list']->name,
         '%action' => $form_state['action'],
       )
     ), 'warning');
@@ -204,7 +219,7 @@ function mailchimp_lists_update_mergevars_form($form, &$form_state, $entity_type
     return confirm_form($form,
       t('Update Merge Fields on %list for all @entity_type -- @bundle entities?',
         array(
-          '%list' => $list['name'],
+          '%list' => $list->name,
           '@entity_type' => $entity_type,
           '@bundle' => $bundle_name,
         )),

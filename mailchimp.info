@@ -2,11 +2,8 @@ name = MailChimp
 description = MailChimp email service integration.
 package = MailChimp
 core = 7.x
+php = 5.5
 
-files[] = includes/mailchimp.inc
 files[] = includes/mailchimp_exception.inc
-files[] = tests/mailchimp_test.inc
-
-dependencies[] = libraries (>=2.0)
 
 configure = admin/config/services/mailchimp
