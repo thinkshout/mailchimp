@@ -29,6 +29,23 @@ respective README's for more details.
   * Display a history of Mailchimp email and subscription activity on a tab for
     any Entity with an email address.
 
+## Upgrade Notes
+The 7.x-2.x and 7.x-3.x branches will become unsupported as MailChimp phases out
+their API version 2.0 by the end of 2016. We recommend upgrading to 7.x-4.x, the
+branch that is using MailChimp’s latest API version 3.0. The upgrade path is
+manual at this point, requiring disabling & uninstalling the older branch, then
+installing 7.x-4.x.
+
+Worry not! Your lists, subscribers, and campaign data will remain safe and sound
+on your MailChimp account (http://mailchimp.com/).
+
+Please note: The major structural change between 7.x-2.x and 7.x-4.x is the
+“Lists and Users” tab has been separated into three tabs “Fields”, “Lists” and
+“SignUp Forms”. You will find most of the user related configuration by creating
+a MailChimp field on the user account, here: admin/config/people/accounts/fields
+
+For more information, please visit the FAQ (https://www.drupal.org/node/2793241)
+
 ## Installation Notes
   * You need to have a MailChimp API Key.
   * You need to have at least one list created in MailChimp to use the
