@@ -79,7 +79,7 @@ function mailchimp_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/config/services/mailchimp/account-info'] = array(
-    'title' => 'MailChimp account info',
+    'title' => 'MailChimp API Account Info',
     'page callback' => 'mailchimp_account_overview_page',
     'access callback' => 'mailchimp_apikey_ready_access',
     'access arguments' => array('administer mailchimp'),
@@ -277,7 +277,7 @@ function mailchimp_account_select_form($form, &$form_state) {
     $form['mc_aid'] = array(
       '#type' => 'select',
       '#options' => $options,
-      '#default_value' => 'default',
+      '#default_value' => (isset($_REQUEST['mc_aid'])) ? $_REQUEST['mc_aid'] : 'default',
     );
     $form['#action'] = $_SERVER['REQUEST_URI'];
     $form['#method'] = 'get';

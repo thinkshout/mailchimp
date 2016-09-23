@@ -79,8 +79,6 @@ function mailchimp_clear_list_cache_form_submit($form, &$form_state) {
  * @see hook_mailchimp_api_key()
  */
 function mailchimp_account_overview_page() {
-  $accounts = array();
-  $output = '<h2>Mailchimp API Account Info</h2>';
   $api_key_form = drupal_get_form('mailchimp_account_retrieval_form');
   $output .= drupal_render($api_key_form);
   if (isset($_REQUEST['mailchimp_api_key'])) {
