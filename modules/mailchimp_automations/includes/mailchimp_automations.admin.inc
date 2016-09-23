@@ -167,7 +167,7 @@ function mailchimp_automations_entity_form($form, &$form_state, MailchimpAutomat
               '#options' => $automation_options,
               '#default_value' => $entitynotnull ? $mailchimp_automations_entity->workflow_id : 0,
               '#maxlength' => 127,
-              '#weight' => -5,
+              '#weight' => -4,
               '#ajax' => array(
                 'callback' => 'mailchimp_automations_mapping_form_callback',
                 'wrapper' => 'mailchimp-automation-drupal-entity',
@@ -196,7 +196,7 @@ function mailchimp_automations_entity_form($form, &$form_state, MailchimpAutomat
                 '#options' => $emails,
                 '#default_value' => $entitynotnull ? $mailchimp_automations_entity->workflow_email_id : 0,
                 '#maxlength' => 127,
-                '#weight' => -4,
+                '#weight' => -3,
               );
             }
             else {
