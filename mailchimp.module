@@ -187,6 +187,17 @@ function mailchimp_mailchimp_api_key() {
 }
 
 /**
+ * Implements hook_mailchimp_api_key_alter().
+ *
+ * @see mailchimp_account_select_form().
+ */
+function mailchimp_mailchimp_api_key_alter(&$api_key, $context) {
+  if (isset($_POST['mc_aid'])) {
+    $api_key = mailchimp_get_api_key_for_account($_POST['mc_aid']);
+  }
+}
+
+/**
  * Invokes hook_mailchimp_api_key so modules can declare keys.
  *
  * @return array
@@ -279,8 +290,7 @@ function mailchimp_account_select_form($form, &$form_state) {
       '#default_value' => (isset($_REQUEST['mc_aid'])) ? $_REQUEST['mc_aid'] : 'default',
     );
     $form['#action'] = $_SERVER['REQUEST_URI'];
-    $form['#method'] = 'get';
-    $form['#pre_render'][] = 'mailchimp_account_select_form_modify';
+    $form['#method'] = 'post';
     $form['submit'] = array(
       '#type' => 'submit',
       '#value' => t('Select'),
@@ -289,14 +299,8 @@ function mailchimp_account_select_form($form, &$form_state) {
   return $form;
 }
 
-/**
- * Removes unnecessary url variables.
- */
-function mailchimp_account_select_form_modify($form) {
-  unset($form['form_token']);
-  unset($form['form_build_id']);
-  unset($form['form_id']);
-  return $form;
+function mailchimp_account_select_form_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
 }
 
 /**

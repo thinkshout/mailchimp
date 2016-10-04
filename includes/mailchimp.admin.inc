@@ -108,7 +108,7 @@ function mailchimp_account_retrieval_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('MailChimp API Key to check'),
     '#default_value' => $api_key,
-    '#description' => t('The default API key for your MailChimp account. Get or generate a valid API key at your !apilink.', array('!apilink' => l(t('MailChimp API Dashboard'), 'http://admin.mailchimp.com/account/api'))),
+    '#description' => t('The API key to check. Get or generate a valid API key at your !apilink.', array('!apilink' => l(t('MailChimp API Dashboard'), 'http://admin.mailchimp.com/account/api'))),
   );
   $form['#action'] = check_plain($_SERVER['REQUEST_URI']);
   $form['#method'] = 'post';
