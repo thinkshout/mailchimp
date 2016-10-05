@@ -109,11 +109,13 @@ function mailchimp_apikey_ready_access($permission) {
  *
  * @param string $classname
  *   The MailChimp library class to instantiate.
+ * @param string $api_key
+ *   The MailChimp api key to use if not the default.
  *
  * @return Mailchimp
  *   Instance of the MailChimp library class. Can be overridden by $classname.
  */
-function mailchimp_get_api_object($classname = 'Mailchimp') {
+function mailchimp_get_api_object($classname = 'Mailchimp', $api_key = NULL) {
   // Set correct library class namespace depending on test mode.
   if (variable_get('mailchimp_test_mode', FALSE)) {
     $classname = '\Mailchimp\Tests\\' . $classname;
@@ -123,7 +125,7 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
   }
 
   $mailchimp = &drupal_static(__FUNCTION__);
-  if (isset($mailchimp) && $mailchimp instanceof $classname) {
+  if (!$api_key && isset($mailchimp) && $mailchimp instanceof $classname) {
     return $mailchimp;
   }
   if (module_exists('libraries')) {
@@ -146,7 +148,20 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
     return NULL;
   }
 
-  $api_key = variable_get('mailchimp_api_key', '');
+  $context = array(
+    'api_class' => $classname,
+  );
+  if (!$api_key) {
+    $api_key = $default_api_key = variable_get('mailchimp_api_key', '');
+    // Allow modules to alter the default.
+    drupal_alter('mailchimp_api_key', $api_key, $context);
+    // Check to see if the key was altered.
+    if ($api_key !== $default_api_key) {
+      // Invalidate all caches because the key was altered.
+      mailchimp_cache_clear_all();
+    }
+  }
+
   if (!strlen($api_key)) {
     watchdog('mailchimp', t('MailChimp Error: API Key cannot be blank.'), array(), WATCHDOG_ERROR);
     return NULL;
@@ -1230,6 +1245,13 @@ function mailchimp_cache_clear_list_activity($list_id) {
  */
 function mailchimp_cache_clear_campaign($campaign_id) {
   cache_clear_all('mailchimp_campaign_' . $campaign_id, 'cache_mailchimp');
+}
+
+/**
+ * Clear all mailchimp caches.
+ */
+function mailchimp_cache_clear_all() {
+  cache_clear_all('*', 'cache_mailchimp', TRUE);
 }
 
 /**
