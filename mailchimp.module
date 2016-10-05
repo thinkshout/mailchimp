@@ -274,12 +274,11 @@ function mailchimp_get_api_key_for_account($account_id) {
  */
 function mailchimp_account_select_form($form, &$form_state) {
   $form = array();
-  $account = mailchimp_api_account();
-  $form['heading'] = array(
-    '#markup' => '<h2>' . $account->account_name . '</h2>',
-  );
   $accounts = mailchimp_api_accounts();
   if (count($accounts) > 1) {
+    $form['heading'] = array(
+      '#markup' => '<h3>'. t('MailChimp Account') . '</h3>',
+    );
     $options = array();
     foreach ($accounts as $account_id => $account) {
       $options[$account_id] = $account->account_name;
