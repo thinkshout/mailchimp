@@ -580,6 +580,9 @@ function mailchimp_update_local_cache($function, $args) {
   if ($function == 'mailchimp_update_member_process' ||
       $function == 'mailchimp_subscribe_process') {
     // Update cached merge vars.
+    if (!isset($cache->merge_fields)) {
+      $cache->merge_fields = new stdClass();
+    }
     foreach ($args['merge_vars'] as $key => $value) {
       $cache->merge_fields->$key = $value;
     }
