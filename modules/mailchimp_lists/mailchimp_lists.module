@@ -406,7 +406,7 @@ function mailchimp_lists_get_subscribers($field, &$context) {
     'count' => $batch_size,
   );
   $matches = mailchimp_get_members($field['settings']['mc_list_id'], 'subscribed', $options);
-  if ($matches) {
+  if (!empty($matches) && ($matches->total_items > 0)) {
     if (!isset($context['sandbox']['max'])) {
       $context['sandbox']['max'] = $matches->total_items;
     }
