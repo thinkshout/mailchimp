@@ -52,16 +52,20 @@ For more information, please visit the FAQ (https://www.drupal.org/node/2793241)
     mailchimp_lists module.
   * If you use a drush make workflow, see the example drush makefile:
     mailchimp.make.example.
-
-  * The MailChimp PHP library exist in your Drupal installation either via
-    Libraries module or via Composer
+  * The MailChimp PHP library must exist in your Drupal installation.
 
     If you are using Libraries module for version 7.x-4.x:
+
+    The library has dependencies managed by Composer. If you would prefer
+    not to use Composer, you can download the pre-built library package:
+    https://github.com/thinkshout/mailchimp-api-php/releases/download/v1.0.4/v1.0.4-package.zip
+
+    To use Composer:
 
       - Download Composer if you don't already have it installed:
         https://getcomposer.org/download/
 
-      - Download version 1.0.3 of the v3 API library:
+      - Download the most recent release of the v3 API library:
         https://github.com/thinkshout/mailchimp-api-php/releases
 
       - Extract the library archive to libraries/mailchimp
