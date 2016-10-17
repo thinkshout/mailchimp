@@ -53,7 +53,7 @@ For more information, please visit the FAQ (https://www.drupal.org/node/2793241)
   * If you use a drush make workflow, see the example drush makefile:
     mailchimp.make.example.
 
-  * The MailChimp PHP library exist in your Druapl installation either via
+  * The MailChimp PHP library exist in your Drupal installation either via
     Libraries module or via Composer
 
     If you are using Libraries module for version 7.x-4.x:
