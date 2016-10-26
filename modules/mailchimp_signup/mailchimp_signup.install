@@ -133,17 +133,22 @@ function mailchimp_signup_update_7002(&$sandbox) {
         'public' => $field_data['public'],
         // 'order' is now 'display_order'.
         'display_order' => $field_data['order'],
-        // 'options' is new; can't migrate. Just contains size of field, etc.
+        // 'options' is new; populated per field type below.
         'options' => new stdClass(),
       ];
 
-      // TODO: Set 'options' for each possible mergefield type.
-      // Type: dropdown
-      // - choices
-      // Type: radio
-      // - choices
-      // Type: email / other
-      // - size (default to 25 if not available)
+      switch ($field_data['field_type']) {
+        case 'dropdown':
+        case 'radio':
+          // Set choices.
+          $mergefield['options']->choices = (isset($field_data['choices'])) ? $field_data['choices'] : [];
+          break;
+
+        default:
+          // Set size of field. Use default if not available.
+          $mergefield['options']->size = (isset($field_data['size'])) ? $field_data['size'] : 25;
+          break;
+      }
 
       $mergefields[$field_tag] = $mergefield;
     }
