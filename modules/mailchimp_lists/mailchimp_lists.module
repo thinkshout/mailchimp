@@ -256,7 +256,15 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
       $mergevars = _mailchimp_lists_mergevars_populate($instance['settings']['mergefields'], $entity, $instance['entity_type']);
     }
 
-    $interests = (isset($choices['interest_groups'])) ? $choices['interest_groups'] : array();
+    $interest_groups = (isset($choices['interest_groups'])) ? $choices['interest_groups'] : array();
+
+    // Parse interests from interest groups.
+    $interests = array();
+    foreach ($interest_groups as $interest_group) {
+      foreach ($interest_group as $interest_id => $interest_status) {
+        $interests[$interest_id] = ($interest_status !== 0);
+      }
+    }
 
     switch ($function) {
       case 'add':

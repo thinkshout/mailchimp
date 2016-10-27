@@ -461,9 +461,9 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $interests = 
 }
 
 /**
- * Wrapper around Mailchimp_Lists::subscribe().
+ * Wrapper around MailchimpLists::addOrUpdateMember().
  *
- * @see Mailchimp_Lists::subscribe()
+ * @see MailchimpLists::addOrUpdateMember()
  *
  * @return bool
  *   True on success.
@@ -485,16 +485,7 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $inte
 
     // Set interests.
     if (!empty($interests)) {
-      $selected_interests = array();
-      foreach ($interests as $interest_group) {
-        foreach ($interest_group as $interest_id => $interest_status) {
-          $selected_interests[$interest_id] = ($interest_status !== 0);
-        }
-      }
-
-      if (!empty($selected_interests)) {
-        $parameters['interests'] = (object) $selected_interests;
-      }
+      $parameters['interests'] = (object) $interests;
     }
 
     // Set merge fields.
@@ -639,9 +630,9 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $interests, $for
 }
 
 /**
- * Wrapper around Mailchimp_Lists::updateMember().
+ * Wrapper around MailchimpLists::updateMember().
  *
- * @see Mailchimp_Lists::updateMember()
+ * @see MailchimpLists::updateMember()
  *
  * @return bool
  *   Success or failure.
@@ -662,16 +653,7 @@ function mailchimp_update_member_process($list_id, $email, $merge_vars, $interes
 
     // Set interests.
     if (!empty($interests)) {
-      $selected_interests = array();
-      foreach ($interests as $interest_group) {
-        foreach ($interest_group as $interest_id => $interest_status) {
-          $selected_interests[$interest_id] = ($interest_status !== 0);
-        }
-      }
-
-      if (!empty($selected_interests)) {
-        $parameters['interests'] = (object) $selected_interests;
-      }
+      $parameters['interests'] = (object) $interests;
     }
 
     // Set merge fields.
