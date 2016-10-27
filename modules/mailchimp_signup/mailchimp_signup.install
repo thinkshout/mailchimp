@@ -90,7 +90,7 @@ function mailchimp_signup_update_7000(&$sandbox) {
  */
 function mailchimp_signup_update_7002(&$sandbox) {
   // Replaces 7001 update, which inadvertently removed mergefield data.
-  if (!isset($sandbox['progress'])) {
+  if (!isset($sandbox['processed'])) {
     $record_count = db_select('mailchimp_signup')
       ->countQuery()
       ->execute()
