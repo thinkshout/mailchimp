@@ -486,10 +486,8 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $inte
     // Set interests.
     if (!empty($interests)) {
       $selected_interests = array();
-      foreach ($interests as $interest_group) {
-        foreach ($interest_group as $interest_id => $interest_status) {
-          $selected_interests[$interest_id] = ($interest_status !== 0);
-        }
+      foreach ($interests as $interest_id => $interest_status) {
+        $selected_interests[$interest_id] = $interest_status;
       }
 
       if (!empty($selected_interests)) {
