@@ -86,7 +86,6 @@ function mailchimp_signup_update_7000(&$sandbox) {
 
 /**
  * Migrate 7.x-3.x signup form data to 7.x-4.x format.
- *
  */
 function mailchimp_signup_update_7002(&$sandbox) {
   // Replaces 7001 update, which inadvertently removed mergefield data.
