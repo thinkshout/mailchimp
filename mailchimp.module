@@ -467,9 +467,9 @@ function mailchimp_subscribe($list_id, $email, $merge_vars = NULL, $interests = 
  *
  * @return object
  *   On success a result object will be returned from Mailchimp. On failure an
- *   object will be returned with the property succcess set to FALSE, the 
- *   response code as a property, and the message as a property. To check for 
- *   a failure, look for the property 'success' of the object returned to 
+ *   object will be returned with the property success set to FALSE, the
+ *   response code as a property, and the message as a property. To check for
+ *   a failure, look for the property 'success' of the object returned to
  *   be set to FALSE.
  */
 function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $interests = array(), $double_optin = FALSE, $format = 'html') {
