@@ -97,6 +97,12 @@ function mailchimp_signup_update_7002(&$sandbox) {
 
     $sandbox['total'] = $record_count;
     $sandbox['processed'] = 0;
+
+    if ($sandbox['total'] == 0) {
+      // No signup forms found; update not required.
+      $sandbox['#finished'] = 1;
+      return;
+    }
   }
 
   $limit = 10;
