@@ -1,0 +1,7 @@
+name = Mailchimp translation
+description = Allows translating Mailchimp forms.
+dependencies[] = i18n_string
+package = Multilingual - Internationalization
+core = 7.x
+
+files[] = mailchimp_i18n.i18n.inc
