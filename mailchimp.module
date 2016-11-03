@@ -529,9 +529,8 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $inte
     $result->status = $e->getCode();
     $result->message = $e->getMessage();
   }
-  finally {
-    return $result;
-  }
+
+  return $result;
 }
 
 /**
