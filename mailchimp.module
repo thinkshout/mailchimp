@@ -806,7 +806,7 @@ function mailchimp_batch_update_members($list_id, $batch, $double_in = FALSE) {
  * @return bool
  *   Indicates whether unsubscribe was successful.
  */
-function mailchimp_unsubscribe($list_id, $email, $delete = FALSE, $goodbye = FALSE, $notify = FALSE) {
+function mailchimp_unsubscribe_member($list_id, $email, $delete = FALSE, $goodbye = FALSE, $notify = FALSE) {
   $result = FALSE;
 
   if (mailchimp_is_subscribed($list_id, $email)) {
