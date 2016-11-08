@@ -1,5 +1,5 @@
 {
-  "name": "drupal/contrib/mailchimp",
+  "name": "drupal/mailchimp",
   "description": "Mailchimp integration for Drupal.",
   "version": "7.x-4.7",
   "homepage": "https://www.drupal.org/project/mailchimp",
