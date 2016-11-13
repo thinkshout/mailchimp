@@ -213,7 +213,7 @@ function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $i
       /* @var $new_field_settings \Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription */
       $new_field_settings = $entity->{$field_name}->get(0);
 
-      $old_interest_groups = $old_field_settings->getValue('interest_groups');
+      $old_interest_groups = is_null($old_field_settings) ? [] : $old_field_settings->getValue('interest_groups');
       $new_interest_groups = $new_field_settings->getValue('interest_groups');
 
       foreach ($new_interest_groups as $id => $new_interests) {
