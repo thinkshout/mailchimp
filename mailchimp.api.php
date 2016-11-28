@@ -82,6 +82,34 @@ function hook_mailchimp_automations_entity_options(&$entity_type_options, $autom
 }
 
 /**
+ * Perform an action when a related automation entity is created or updated.
+ *
+ * @param object $automation_entity
+ *   The MailchimpAutomationEntity object.
+ * @param string $action
+ *   'create' or 'update'.
+ * @param object $wrapped_entity
+ *   The EntityMetadataWrapper for the triggering entity.
+ */
+function hook_mailchimp_automations_entity_triggered($automation_entity, $action, $wrapper) {
+
+}
+
+/**
+ * Alter the email address before a workflow automation is triggered.
+ *
+ * @param string $email
+ *   The email address to which the automation will be sent.
+ * @param object $automation_entity
+ *   The MailchimpAutomationEntity object.
+ * @param object $wrapped_entity
+ *   The EntityMetadataWrapper for the triggering entity.
+ */
+function hook_mailchimp_automations_email_alter(&$email, $automation_entity, $wrapped_entity) {
+
+}
+
+/**
  * Alter mergevars before a workflow automation is triggered.
  *
  * @param array $merge_vars

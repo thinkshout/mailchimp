@@ -54,18 +54,31 @@ function mailchimp_automations_entity_access() {
 }
 
 /**
- * Implements hook_entity_insert().
+ * Implements hook_entity_presave().
  */
-function mailchimp_automations_entity_insert($entity, $type) {
+function mailchimp_automations_entity_presave($entity, $type) {
   $wrapper = entity_metadata_wrapper($type, $entity);
   $bundle = $wrapper->getBundle();
   if ($automation_entity = mailchimp_automations_entity_automation($type, $bundle)) {
+    $action = ($entity->is_new) ? 'create' : 'update';
+    module_invoke_all('mailchimp_automations_entity_triggered', $automation_entity, $action, $wrapper);
+  }
+}
+
+/**
+ * Implements hook_mailchimp_automations_entity_triggered().
+ */
+function mailchimp_automations_mailchimp_automations_entity_triggered($automation_entity, $action, $wrapper) {
+  if ($action == 'create') {
     $email_property_field = $automation_entity->email_property;
     $email = $wrapper->$email_property_field->value();
-    $merge_vars = NULL;
-    drupal_alter('mailchimp_automations_mergevars', $merge_vars, $automation_entity, $wrapper);
-    if ($result = mailchimp_automations_trigger_workflow($automation_entity->list_id, $automation_entity->workflow_id, $automation_entity->workflow_email_id, $email, $merge_vars)) {
-      module_invoke_all('mailchimp_automations_workflow_email_triggered', $automation_entity, $email, $wrapper);
+    drupal_alter('mailchimp_automations_email', $email, $automation_entity, $wrapper);
+    if (!empty($email)) {
+      $merge_vars = NULL;
+      drupal_alter('mailchimp_automations_mergevars', $merge_vars, $automation_entity, $wrapper);
+      if ($result = mailchimp_automations_trigger_workflow($automation_entity->list_id, $automation_entity->workflow_id, $automation_entity->workflow_email_id, $email, $merge_vars)) {
+        module_invoke_all('mailchimp_automations_workflow_email_triggered', $automation_entity, $email, $wrapper);
+      }
     }
   }
 }
