@@ -69,12 +69,12 @@ class MailchimpSignupListBuilder extends ConfigEntityListBuilder {
 
     $list_labels = array();
     foreach ($entity->mc_lists as $list_id) {
-      if (!empty($list_id)) {
+      if (!empty($list_id) && isset($mc_lists[$list_id])) {
         $list_url = Url::fromUri('https://admin.mailchimp.com/lists/dashboard/overview?id=' . $mc_lists[$list_id]->id, array('attributes' => array('target' => '_blank')));
         $list_link = [
           '#title' => $this->t($mc_lists[$list_id]->name),
           '#type' => 'link',
-          '#url' => $list_url
+          '#url' => $list_url,
         ];
         $list_labels[] = $list_link;
         $list_labels[] = array('#markup' => ', ');
