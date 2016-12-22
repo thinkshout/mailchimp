@@ -208,6 +208,18 @@ class MailchimpSignupPageForm extends FormBase {
       $list_id = $list_choices['subscribe'];
 
       $interests = isset($list_choices['interest_groups']) ? $list_choices['interest_groups'] : array();
+      if (isset($this->signup->settings['safe_interest_groups']) && $this->signup->settings['safe_interest_groups']) {
+        $current_status = mailchimp_get_memberinfo($list_id, $email);
+        if ($current_status) {
+          $current_interests = array();
+          foreach ($current_status->interests as $id => $selected) {
+            if ($selected) {
+              $current_interests[$id] = $id;
+            }
+          }
+          $interests[] = $current_interests;
+        }
+      }
       $result = mailchimp_subscribe($list_id, $email, $mergevars, $interests, $this->signup->settings['doublein']);
 
       if (empty($result)) {

@@ -214,6 +214,19 @@ class MailchimpSignupForm extends EntityForm {
       '#description' => t('If set, subscribers will be able to select applicable interest groups on the signup form.'),
     );
 
+    $form['subscription_settings']['safe_interest_groups'] = array(
+      '#type' => 'checkbox',
+      '#title' => t("Don't opt-out of interest groups: only opt-in."),
+      '#default_value' => isset($signup->settings['safe_interest_groups']) ? $signup->settings['safe_interest_groups'] : FALSE,
+      '#description' => t('This is useful for "additive" form behavior, so a user adding a new interest will not have other interests removed from their Mailchimp subscription just because they failed to check the box again.'),
+      '#states' => array(
+        // Hide unless needed.
+        'visible' => array(
+          ':input[name="include_interest_groups"]' => array('checked' => TRUE),
+        ),
+      ),
+    );
+
     return $form;
   }
 
@@ -251,6 +264,7 @@ class MailchimpSignupForm extends EntityForm {
     $signup->settings['description'] = $form_state->getValue('description');
     $signup->settings['doublein'] = $form_state->getValue('doublein');
     $signup->settings['include_interest_groups'] = $form_state->getValue('include_interest_groups');
+    $signup->settings['safe_interest_groups'] = $form_state->getValue('safe_interest_groups');
 
     // Clear path value if mode doesn't include signup page.
     if (!isset($mode[MAILCHIMP_SIGNUP_PAGE])) {
