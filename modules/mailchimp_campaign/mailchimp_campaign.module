@@ -517,12 +517,21 @@ function mailchimp_campaign_delete_campaign($cid) {
  *
  * @param bool $reset
  *   True if templates should not be loaded from cache.
+ * @param int $offset
+ *   The number of templates to skip.
+ * @param int $count
+ *   The number of templates to return.
+ * @param string $type
+ *   The template type to limit results to.
+ * @param int $folder_id
+ *   The template folder ID to limit results to.
  *
  * @return mixed
  *   Array listing existing Mailchimp templates by type.
  */
-function mailchimp_campaign_list_templates($reset = FALSE) {
-  $cache = $reset ? NULL : cache_get('templates', 'cache_mailchimp');
+function mailchimp_campaign_list_templates($reset = FALSE, $offset = 0, $count = 10, $type = NULL, $folder_id = NULL) {
+  $cache_key = 'templates-' . $offset . '-' . $count . '-' . $type . '-' . $folder_id;
+  $cache = ($reset) ? NULL : cache_get($cache_key, 'cache_mailchimp');
   $all_templates = array();
   // Return cached templates:
   if ($cache) {
@@ -532,26 +541,29 @@ function mailchimp_campaign_list_templates($reset = FALSE) {
   else {
     /* @var \Mailchimp\MailchimpTemplates $mc_templates */
     if ($mc_templates = mailchimp_get_api_object('MailchimpTemplates')) {
-      $template_types = array(
-        'user',
-        'base',
-        'gallery',
+      $template_params = array(
+        'offset' => $offset,
+        'count' => $count,
       );
 
-      foreach ($template_types as $type) {
-        $all_templates[$type] = array();
+      if ($type != NULL) {
+        $template_params['type'] = $type;
+      }
 
-        $response = $mc_templates->getTemplates(array('type' => $type));
+      if ($folder_id != NULL) {
+        $template_params['folder_id'] = $folder_id;
+      }
 
-        if ($response->total_items > 0) {
-          foreach ($response->templates as $template) {
-            $all_templates[$type][$template->id] = $template;
-          }
+      $response = $mc_templates->getTemplates($template_params);
+
+      if ($response->total_items > 0) {
+        foreach ($response->templates as $template) {
+          $all_templates[$template->type][$template->id] = $template;
         }
       }
     }
 
-    cache_set('templates', $all_templates, 'cache_mailchimp', CACHE_TEMPORARY);
+    cache_set($cache_key, $all_templates, 'cache_mailchimp', CACHE_TEMPORARY);
   }
   return $all_templates;
 }
