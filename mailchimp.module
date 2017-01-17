@@ -1521,7 +1521,9 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
       // This is a standard input[type=text] or something we can't handle with
       // Drupal FormAPI.
       $input['#type'] = 'textfield';
-      $input['#size'] = $mergevar->options->size;
+      if (isset($mergevar->options->size)) {
+        $input['#size'] = $mergevar->options->size;
+      }
       break;
   }
 
