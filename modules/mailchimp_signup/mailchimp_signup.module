@@ -359,6 +359,13 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
   $subscribe_lists = array();
   // Filter out blank fields so we don't erase values on the Mailchimp side.
   $mergevars = array_filter($form_state['values']['mergevars']);
+  // Format mergevar values.
+  foreach ($mergevars as $mergevar_key => $mergevar_value) {
+    if (isset($form['mergevars'][$mergevar_key]['#attributes']['type']) && ($form['mergevars'][$mergevar_key]['#attributes']['type'] == 'tel')) {
+      $mergevars[$mergevar_key] = mailchimp_format_phone_number($mergevar_value);
+    }
+  }
+
   $email = $mergevars['EMAIL'];
   // If we only have one list we won't have checkbox values to investigate:
   if (count($signup->mc_lists) == 1) {
