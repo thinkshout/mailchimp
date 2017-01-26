@@ -1514,16 +1514,20 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
         // Set to standard text type if 'emailfield' isn't defined:
         $input['#type'] = 'textfield';
       };
-      $input['#size'] = $mergevar->options->size;
+      $input['#size'] = isset($mergevar->options->size) ? $mergevar->options->size : 25;
+      break;
+
+    case 'phone':
+      $input['#type'] = 'textfield';
+      $input['#size'] = isset($mergevar->options->size) ? $mergevar->options->size : 25;
+      $input['#attributes'] = array('type' => 'tel');
       break;
 
     default:
       // This is a standard input[type=text] or something we can't handle with
       // Drupal FormAPI.
       $input['#type'] = 'textfield';
-      if (isset($mergevar->options->size)) {
-        $input['#size'] = $mergevar->options->size;
-      }
+      $input['#size'] = isset($mergevar->options->size) ? $mergevar->options->size : 25;
       break;
   }
 
@@ -1624,4 +1628,31 @@ function mailchimp_mergevars_populate($mergefields, $entity, $entity_type) {
   }
 
   return $mergevars[$bundle . ':' . $id];
+}
+
+/**
+ * Formats a phone number string before sending to MailChimp's API.
+ *
+ * Currently works only for USA and Canada phone numbers.
+ *
+ * @param string $input
+ *   The input phone number.
+ *
+ * @return string
+ *   The formatted phone number.
+ *
+ * @see http://kb.mailchimp.com/lists/growth/format-guidelines-for-your-import-file#phone
+ */
+function mailchimp_format_phone_number($input) {
+  $base_phone_number = preg_replace('/[^0-9]/s', '', $input);
+
+  // Only attempt to format ten-digit USA and Canada phone numbers.
+  if (strlen($base_phone_number) != 10) {
+    return $input;
+  }
+
+  // Convert phone number to format: "555-123-4567".
+  $formatted_number = substr($base_phone_number, 0, 3) . '-' . substr($base_phone_number, 3, 3) . '-' . substr($base_phone_number, 6);
+
+  return $formatted_number;
 }
