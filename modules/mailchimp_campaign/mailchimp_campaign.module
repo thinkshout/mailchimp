@@ -572,7 +572,7 @@ function mailchimp_campaign_list_templates($reset = FALSE, $offset = 0, $count =
  * Return full details for a Mailchimp Template.
  *
  * @param string $template_id
- *   Optional template ID. Set to return a single MailChimp template.
+ *   The ID of the template.
  * @param bool $reset
  *   True if templates should not be loaded from cache.
  *
@@ -581,16 +581,18 @@ function mailchimp_campaign_list_templates($reset = FALSE, $offset = 0, $count =
  */
 function mailchimp_campaign_get_template($template_id, $reset = FALSE) {
   $template = NULL;
-  $cache = $reset ? NULL : cache_get('mc_template_' . $template_id, 'cache_mailchimp');
-  if ($cache) {
-    $template = $cache->data;
-  }
-  else {
-    if ($mc_templates = mailchimp_get_api_object('MailchimpTemplates')) {
-      $template = $mc_templates->getTemplate($template_id);
-      if (!empty($template)) {
-        $template->info = $mc_templates->getTemplateContent($template_id);
-        cache_set('mc_template_' . $template_id, $template, 'cache_mailchimp', CACHE_TEMPORARY);
+  if (!empty($template_id)) {
+    $cache = $reset ? NULL : cache_get('mc_template_' . $template_id, 'cache_mailchimp');
+    if ($cache) {
+      $template = $cache->data;
+    }
+    else {
+      if ($mc_templates = mailchimp_get_api_object('MailchimpTemplates')) {
+        $template = $mc_templates->getTemplate($template_id);
+        if (!empty($template)) {
+          $template->info = $mc_templates->getTemplateContent($template_id);
+          cache_set('mc_template_' . $template_id, $template, 'cache_mailchimp', CACHE_TEMPORARY);
+        }
       }
     }
   }
