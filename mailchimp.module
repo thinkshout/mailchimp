@@ -135,7 +135,7 @@ function mailchimp_get_api_object($classname = 'Mailchimp', $api_key = NULL) {
     $library = FALSE;
   }
   if (!$library['installed'] && !class_exists('Mailchimp\Mailchimp')) {
-    $msg = t('Failed to load MailChimp PHP library. Please refer to the installation requirements.');
+    $msg = t('Failed to load the MailChimp PHP library. Please refer to the installation requirements.');
     watchdog('mailchimp', $msg, array(), WATCHDOG_ERROR);
     drupal_set_message($msg, 'error', FALSE);
     return NULL;
