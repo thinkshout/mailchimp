@@ -342,7 +342,9 @@ function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $
   else {
     $member_info = mailchimp_get_memberinfo($field['settings']['mc_list_id'], $email);
 
-    foreach ($choices['interest_groups'] as $interest_group) {
+    $interest_groups = (isset($choices['interest_groups'])) ? $choices['interest_groups'] : array();
+
+    foreach ($interest_groups as $interest_group) {
       foreach ($interest_group as $interest_id => $interest_status) {
         // Check for new interest selected.
         if (($interest_status !== 0) && empty($member_info->interests->{$interest_id})) {
