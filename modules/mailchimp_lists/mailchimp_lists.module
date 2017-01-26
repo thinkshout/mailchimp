@@ -289,7 +289,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
         break;
 
     }
-    if (empty($ret)) {
+    if (empty($ret) || (isset($ret->success) && ($ret->success === FALSE))) {
       drupal_set_message(t('There was a problem with your newsletter signup.'), 'warning');
     }
   }
