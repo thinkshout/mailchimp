@@ -175,39 +175,94 @@ function mailchimp_get_api_object($classname = 'Mailchimp', $api_key = NULL) {
 }
 
 /**
- * Wrapper around mailchimp_get_lists() to return a single list.
+ * Gets a single MailChimp list by ID.
  *
  * @param string $list_id
  *   The unique ID of the list provided by MailChimp.
+ * @param bool $use_interest_groups
+ *   TRUE to load interest groups for the list.
+ * @param bool $reset
+ *   TRUE to reset list cache and load from MailChimp.
  *
- * @return array
- *   A list array formatted as indicated in the MailChimp API documentation.
+ * @return object
+ *   A MailChimp list object.
  */
-function mailchimp_get_list($list_id) {
-  $lists = mailchimp_get_lists(array($list_id));
-  return reset($lists);
+function mailchimp_get_list($list_id, $use_interest_groups = TRUE, $reset = FALSE) {
+  $cache = $reset ? NULL : cache_get('list-' . $list_id, 'cache_mailchimp');
+  if (!empty($cache)) {
+    return $cache->data;
+  }
+
+  $list = NULL;
+
+  try {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
+    if (!$mc_lists) {
+      throw new MailchimpException('Cannot get list without MailChimp API. Check API key has been entered.');
+    }
+
+    $list = $mc_lists->getList($list_id);
+
+    if (!empty($list)) {
+      if ($use_interest_groups) {
+        // Add interest categories to the list.
+        $int_category_data = $mc_lists->getInterestCategories($list->id, array('count' => 500));
+        if ($int_category_data->total_items > 0) {
+          $list->intgroups = array();
+          foreach ($int_category_data->categories as $interest_category) {
+            $interest_data = $mc_lists->getInterests($list->id, $interest_category->id, array('count' => 500));
+
+            if ($interest_data->total_items > 0) {
+              $interest_category->interests = $interest_data->interests;
+            }
+
+            $list->intgroups[] = $interest_category;
+          }
+        }
+      }
+
+      // Add mergefields to the list.
+      $mergefields = $mc_lists->getMergeFields($list->id, array('count' => 500));
+      if ($mergefields->total_items > 0) {
+        $list->mergevars = $mergefields->merge_fields;
+      }
+    }
+
+    cache_set('list-' . $list_id, $list, 'cache_mailchimp', CACHE_TEMPORARY);
+  }
+  catch (Exception $e) {
+    watchdog('mailchimp', 'An error occurred requesting list information from MailChimp. "%message"', array(
+      '%message' => $e->getMessage(),
+    ), WATCHDOG_ERROR);
+  }
+
+  return $list;
 }
 
 /**
- * Return all MailChimp lists for a given key. Lists are stored in the cache.
+ * Gets MailChimp lists. Can be filtered by an array of list IDs.
  *
  * @param array $list_ids
  *   An array of list IDs to filter the results by.
+ * @param bool $use_interest_groups
+ *   TRUE to load interest groups for the list.
  * @param bool $reset
- *   Force a cache reset.
+ *   TRUE to reset list cache and load from MailChimp.
  *
  * @return array
- *   An array of list arrays.
+ *   An array of MailChimp list objects.
  */
-function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
+function mailchimp_get_lists($list_ids = array(), $use_interest_groups = TRUE, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get('lists', 'cache_mailchimp');
-  $lists = array();
   // Return cached lists:
   if ($cache) {
     $lists = $cache->data;
   }
   // Query lists from the MailChimp API and store in cache:
   else {
+    $lists = array();
+
     try {
       /* @var \Mailchimp\MailchimpLists $mc_lists */
       $mc_lists = mailchimp_get_api_object('MailchimpLists');
@@ -219,24 +274,27 @@ function mailchimp_get_lists($list_ids = array(), $reset = FALSE) {
 
       if ($result->total_items > 0) {
         foreach ($result->lists as $list) {
-          $int_category_data = $mc_lists->getInterestCategories($list->id, array('count' => 500));
-          if ($int_category_data->total_items > 0) {
+          if ($use_interest_groups) {
+            // Add interest categories to the list.
+            $int_category_data = $mc_lists->getInterestCategories($list->id, array('count' => 500));
+            if ($int_category_data->total_items > 0) {
 
-            $list->intgroups = array();
-            foreach ($int_category_data->categories as $interest_category) {
-              $interest_data = $mc_lists->getInterests($list->id, $interest_category->id, array('count' => 500));
+              $list->intgroups = array();
+              foreach ($int_category_data->categories as $interest_category) {
+                $interest_data = $mc_lists->getInterests($list->id, $interest_category->id, array('count' => 500));
 
-              if ($interest_data->total_items > 0) {
-                $interest_category->interests = $interest_data->interests;
+                if ($interest_data->total_items > 0) {
+                  $interest_category->interests = $interest_data->interests;
+                }
+
+                $list->intgroups[] = $interest_category;
               }
-
-              $list->intgroups[] = $interest_category;
             }
           }
 
           $lists[$list->id] = $list;
 
-          // Append mergefields:
+          // Add mergefields to the list.
           $mergefields = $mc_lists->getMergeFields($list->id, array('count' => 500));
           if ($mergefields->total_items > 0) {
             $lists[$list->id]->mergevars = $mergefields->merge_fields;
