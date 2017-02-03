@@ -896,7 +896,20 @@ function mailchimp_campaign_get_campaigns($campaign_ids, $reset = FALSE) {
       }
 
       foreach ($to_refresh as $campaign_id) {
-        $response = $mc_campaigns->getCampaign($campaign_id);
+        try {
+          $response = $mc_campaigns->getCampaign($campaign_id);
+        }
+        catch (Exception $e) {
+          $message = t('An error occurred while getting campaign %campaign_id. Would you like to <a href="@administer-page">delete it</a>?', array(
+            '%campaign_id' => $campaign_id,
+            '@administer-page' => url('admin/config/services/mailchimp/campaigns/' . $campaign_id . '/delete'),
+          ));
+          drupal_set_message($message, 'error');
+          watchdog('mailchimp_campaign', 'An error occurred while getting campaign %campaign_id:  %message', array(
+            '%campaign_id' => $campaign_id,
+            '%message' => $e->getMessage(),
+          ), WATCHDOG_ERROR);
+        }
 
         if (!empty($response->id)) {
           $campaigns[$response->id] = $response;
