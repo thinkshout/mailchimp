@@ -142,7 +142,8 @@ function mailchimp_lists_forms($form_id, $args) {
  * Return a form element for a single newsletter.
  */
 function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $settings, $entity, $field) {
-  $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
+  $use_interest_groups = ($instance['settings']['show_interest_groups'] && $settings['show_interest_groups']);
+  $mc_list = mailchimp_get_list($field['settings']['mc_list_id'], $use_interest_groups);
   $email = mailchimp_lists_load_email($instance, $entity);
   if (!$email) {
     return array();
@@ -176,7 +177,7 @@ function mailchimp_lists_subscribe_form($form, &$form_state, $instance, $setting
     '#default_value' => $instance['required'] || $is_subscribed,
   );
   // Present interest groups:
-  if ($instance['settings']['show_interest_groups'] && $settings['show_interest_groups']) {
+  if ($use_interest_groups) {
     // Perform test in case error comes back from MCAPI when getting groups:
     if (is_array($mc_list->intgroups)) {
       $form[$wrapper_key]['interest_groups'] = array(

@@ -266,7 +266,8 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
     '#suffix' => '</div>',
   );
   $form['mailchimp_lists'] = array('#tree' => TRUE);
-  $lists = mailchimp_get_lists($signup->mc_lists);
+  $use_interest_groups = $signup->settings['include_interest_groups'];
+  $lists = mailchimp_get_lists($signup->mc_lists, $use_interest_groups);
   $lists_count = (!empty($lists)) ? count($lists) : 0;
 
   if (empty($lists)) {
@@ -304,7 +305,7 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
   }
   else {
     $list = reset($lists);
-    if ($signup->settings['include_interest_groups'] && isset($list->intgroups)) {
+    if ($use_interest_groups && isset($list->intgroups)) {
       $form['mailchimp_lists']['#weight'] = 9;
       $form['mailchimp_lists']['interest_groups'] = mailchimp_interest_groups_form_elements($list);
     }
