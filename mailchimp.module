@@ -1577,6 +1577,9 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
       else {
         // Set to standard text type if 'emailfield' isn't defined:
         $input['#type'] = 'textfield';
+        // Add validation - not necessary for emailfield type input because
+        // the "elements" module provides it for elements of type emailfield.
+        $input['#element_validate'] = array('mailchimp_validate_email');
       };
       $input['#size'] = isset($mergevar->options->size) ? $mergevar->options->size : 25;
       break;
@@ -1601,6 +1604,17 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
   }
 
   return $input;
+}
+
+/**
+ * Form element validation for email input of #type 'textfield'.
+ *
+ * Note: #maxlength and #required are validated by _form_validate() already.
+ */
+function mailchimp_validate_email(&$element, &$form_state) {
+  if ($element['#value'] && !valid_email_address($element['#value'])) {
+    form_error($element, t('"%mail" is not a valid email address.', array('%mail' => $element['#value'])));
+  }
 }
 
 /**
