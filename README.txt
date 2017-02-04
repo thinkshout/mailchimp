@@ -92,7 +92,7 @@ MailChimp Library Installation
 
     The library has dependencies managed by Composer. If you would prefer
     not to use Composer, you can download the pre-built library package:
-    https://github.com/thinkshout/mailchimp-api-php/releases/download/v1.0.5/v1.0.5-package.zip
+    https://github.com/thinkshout/mailchimp-api-php/files/710410/v1.0.6-package.zip
     For further steps, see below.
 
     To use Composer:
@@ -139,7 +139,7 @@ MailChimp Library Installation
     Without Composer:
 
       - Download the pre-built library package:
-        https://github.com/thinkshout/mailchimp-api-php/releases/download/v1.0.5/v1.0.5-package.zip
+        https://github.com/thinkshout/mailchimp-api-php/files/710410/v1.0.6-package.zip
 
       - Extract the library archive to libraries/mailchimp
 
