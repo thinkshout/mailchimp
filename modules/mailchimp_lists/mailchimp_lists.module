@@ -254,7 +254,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
       $mergevars = array();
     }
     else {
-      $mergevars = _mailchimp_lists_mergevars_populate($instance['settings']['mergefields'], $entity, $instance['entity_type']);
+      $mergevars = _mailchimp_lists_mergevars_populate($instance['settings']['mergefields'], $entity, $instance['entity_type'], $list_id);
     }
 
     $interest_groups = (isset($choices['interest_groups'])) ? $choices['interest_groups'] : array();
@@ -365,9 +365,9 @@ function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $
 /**
  * Helper function to complete a MailChimp-API-ready mergevars array.
  */
-function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type) {
-  $mergevars = mailchimp_mergevars_populate($mergefields, $entity, $entity_type);
-  drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
+function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type, $list_id) {
+  $mergevars = mailchimp_mergevars_populate($mergefields, $entity, $entity_type, $list_id);
+  drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type, $list_id);
   return $mergevars;
 }
 
