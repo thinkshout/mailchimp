@@ -1690,18 +1690,37 @@ function mailchimp_variable_info($options) {
  *   The entity that contains the values to use for token replacement.
  * @param string $entity_type
  *   The entity type of the entity being used.
+ * @param string $list_id
  *
  * @return mixed
  *   Associative array of MailChimp fields with values taken from the provided
  *   entity.
  */
-function mailchimp_mergevars_populate($mergefields, $entity, $entity_type) {
+function mailchimp_mergevars_populate($mergefields, $entity, $entity_type, $list_id) {
+  // Get mergevar settings from the list.
+  $list = mailchimp_get_list($list_id, FALSE);
+  $list_mergevars = array();
+  if (!empty($list) && isset($list->mergevars)) {
+    // Create array of mergevars indexed by tag. Used to map to mergefields.
+    foreach ($list->mergevars as $list_mergevar) {
+      $list_mergevars[$list_mergevar->tag] = $list_mergevar;
+    }
+  }
+
   $mergevars = drupal_static(__FUNCTION__, array());
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
 
   if (!isset($mergevars[$bundle . ':' . $id])) {
     foreach ($mergefields as $key => $token) {
-      $mergevars[$bundle . ':' . $id][$key] = token_replace($token, array($entity_type => $entity), array('clear' => TRUE));
+      $mergevar_value = token_replace($token, array($entity_type => $entity), array('clear' => TRUE));
+
+      if (isset($list_mergevars[$key])) {
+        if ($list_mergevars[$key]->type == 'date') {
+          $mergevar_value = mailchimp_format_date($mergevar_value);
+        }
+      }
+
+      $mergevars[$bundle . ':' . $id][$key] = $mergevar_value;
     }
   }
 
@@ -1733,4 +1752,32 @@ function mailchimp_format_phone_number($input) {
   $formatted_number = substr($base_phone_number, 0, 3) . '-' . substr($base_phone_number, 3, 3) . '-' . substr($base_phone_number, 6);
 
   return $formatted_number;
+}
+
+/**
+ * Formats a date string before sending to MailChimp's API.
+ *
+ * @param string $input
+ *   The input date.
+ *
+ * @return string
+ *   The formatted date.
+ *
+ * @see http://kb.mailchimp.com/lists/growth/format-guidelines-for-your-import-file#date
+ */
+function mailchimp_format_date($input) {
+  // Attempt to convert date string to a timestamp.
+  // Remove time in standard Drupal date formats. It confuses strtotime().
+  $date = trim(preg_replace('/(- )?[0-9]+:[0-9]+/', '', $input));
+
+  $timestamp = strtotime($date);
+
+  if ($timestamp !== FALSE) {
+    // Return formatted date.
+    return date('Y-m-d', $timestamp);
+  }
+  else {
+    // Unable to parse the date string.
+    return NULL;
+  }
 }
