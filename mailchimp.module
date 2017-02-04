@@ -1721,6 +1721,9 @@ function mailchimp_mergevars_populate($mergefields, $entity, $entity_type, $list
         if ($list_mergevars[$key]->type == 'date') {
           $mergevar_value = mailchimp_format_date($mergevar_value);
         }
+        else if ($list_mergevars[$key]->type == 'phone') {
+          $mergevar_value = mailchimp_format_phone_number($mergevar_value);
+        }
       }
 
       $mergevars[$bundle . ':' . $id][$key] = $mergevar_value;
