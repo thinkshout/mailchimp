@@ -1726,7 +1726,9 @@ function mailchimp_mergevars_populate($mergefields, $entity, $entity_type, $list
         }
       }
 
-      $mergevars[$bundle . ':' . $id][$key] = $mergevar_value;
+      if (!empty($mergevar_value)) {
+        $mergevars[$bundle . ':' . $id][$key] = $mergevar_value;
+      }
     }
   }
 
