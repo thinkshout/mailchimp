@@ -1696,14 +1696,17 @@ function mailchimp_variable_info($options) {
  *   Associative array of MailChimp fields with values taken from the provided
  *   entity.
  */
-function mailchimp_mergevars_populate($mergefields, $entity, $entity_type, $list_id) {
+function mailchimp_mergevars_populate($mergefields, $entity, $entity_type, $list_id = NULL) {
   // Get mergevar settings from the list.
-  $list = mailchimp_get_list($list_id, FALSE);
   $list_mergevars = array();
-  if (!empty($list) && isset($list->mergevars)) {
-    // Create array of mergevars indexed by tag. Used to map to mergefields.
-    foreach ($list->mergevars as $list_mergevar) {
-      $list_mergevars[$list_mergevar->tag] = $list_mergevar;
+  if (!empty($list_id)) {
+    $list = mailchimp_get_list($list_id, FALSE);
+
+    if (!empty($list) && isset($list->mergevars)) {
+      // Create array of mergevars indexed by tag. Used to map to mergefields.
+      foreach ($list->mergevars as $list_mergevar) {
+        $list_mergevars[$list_mergevar->tag] = $list_mergevar;
+      }
     }
   }
 
