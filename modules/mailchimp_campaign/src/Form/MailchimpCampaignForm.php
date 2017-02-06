@@ -57,13 +57,13 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#title' => t('Title'),
       '#description' => t('An internal name to use for this campaign. By default, the campaign subject will be used.'),
       '#required' => FALSE,
-      '#default_value' => ($campaign) ? $campaign->mc_data->settings->title : '',
+      '#default_value' => (!empty($campaign->mc_data)) ? $campaign->mc_data->settings->title : '',
     );
     $form['subject'] = array(
       '#type' => 'textfield',
       '#title' => t('Subject'),
       '#required' => TRUE,
-      '#default_value' => ($campaign) ? $campaign->mc_data->settings->subject_line : '',
+      '#default_value' => (!empty($campaign->mc_data)) ? $campaign->mc_data->settings->subject_line : '',
     );
     $mailchimp_lists = mailchimp_get_lists();
     $form['list_id'] = array(
@@ -71,7 +71,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#title' => t('List'),
       '#description' => t('Select the list this campaign should be sent to.'),
       '#options' => $this->buildOptionList($mailchimp_lists),
-      '#default_value' => ($campaign) ? $campaign->mc_data->recipients->list_id : -1,
+      '#default_value' => (!empty($campaign->mc_data)) ? $campaign->mc_data->recipients->list_id : -1,
       '#required' => TRUE,
       '#ajax' => array(
         'callback' => 'Drupal\mailchimp_campaign\Form\MailchimpCampaignForm::listSegmentCallback',
@@ -135,7 +135,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#title' => t('Template'),
       '#description' => t('Select a MailChimp user template to use. Due to a limitation in the API, only templates that do not contain repeating sections are available. If empty, the default template will be applied.'),
       '#options' => $this->buildOptionList(mailchimp_campaign_list_templates(), '-- Select --', $template_type_labels),
-      '#default_value' => ($campaign) ? $campaign->mc_data->settings->template_id : -1,
+      '#default_value' => (!empty($campaign->mc_data)) ? $campaign->mc_data->settings->template_id : -1,
       '#ajax' => array(
         'callback' => 'Drupal\mailchimp_campaign\Form\MailchimpCampaignForm::templateCallback',
       ),
