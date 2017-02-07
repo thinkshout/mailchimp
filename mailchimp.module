@@ -7,6 +7,7 @@
 
 use Drupal\Core\Site\Settings;
 use Drupal\Component\Utility\Crypt;
+use Drupal\Core\Cache\CacheBackendInterface;
 
 define('MAILCHIMP_QUEUE_CRON', 'mailchimp');
 
@@ -75,19 +76,93 @@ function mailchimp_get_api_object($classname = 'Mailchimp') {
   return $mailchimp;
 }
 
+///**
+// * Returns a single list.
+// *
+// * @param string $list_id
+// *   The unique ID of the list provided by MailChimp.
+// *
+// * @return array
+// *   Array of list data.
+// */
+//function mailchimp_get_list($list_id) {
+//  $lists = mailchimp_get_lists(array($list_id));
+//  return reset($lists);
+//}
+
 /**
- * Returns a single list.
+ * Returns a single MailChimp list by ID.
  *
  * @param string $list_id
  *   The unique ID of the list provided by MailChimp.
+ * @param bool $use_interest_groups
+ *   TRUE to load interest groups for the list.
+ * @param bool $reset
+ *   TRUE to reset list cache and load from MailChimp.
  *
- * @return array
- *   Array of list data.
+ * @return array Array of list data.
+ * Array of list data.
+ *
+ * @throws \Exception
  */
-function mailchimp_get_list($list_id) {
-  $lists = mailchimp_get_lists(array($list_id));
-  return reset($lists);
+function mailchimp_get_list($list_id, $use_interest_groups = TRUE, $reset = FALSE) {
+  $cache = $reset ? NULL : \Drupal::cache()->get('list-' . $list_id, 'cache_mailchimp');
+  if (!empty($cache)) {
+    // Use cached list only if interest group requirement is met.
+    if (!$use_interest_groups || ($use_interest_groups && isset($cache->data->intgroups))) {
+      return $cache->data;
+    }
+  }
+
+  $list = NULL;
+
+  try {
+    /* @var \Mailchimp\MailchimpLists $mc_lists */
+    $mc_lists = mailchimp_get_api_object('MailchimpLists');
+    if (!$mc_lists) {
+      throw new Exception('Cannot get list without MailChimp API. Check API key has been entered.');
+    }
+
+    $list = $mc_lists->getList($list_id);
+
+    if (!empty($list)) {
+      if ($use_interest_groups) {
+        // Add interest categories to the list.
+        $int_category_data = $mc_lists->getInterestCategories($list->id, array('count' => 500));
+        if ($int_category_data->total_items > 0) {
+          $list->intgroups = array();
+          foreach ($int_category_data->categories as $interest_category) {
+            if ($interest_category->type == 'hidden') {
+              continue;
+            }
+            $interest_data = $mc_lists->getInterests($list->id, $interest_category->id, array('count' => 500));
+
+            if ($interest_data->total_items > 0) {
+              $interest_category->interests = $interest_data->interests;
+            }
+
+            $list->intgroups[] = $interest_category;
+          }
+        }
+      }
+
+      // Add mergefields to the list.
+      $mergefields = $mc_lists->getMergeFields($list->id, array('count' => 500));
+      if ($mergefields->total_items > 0) {
+        $list->mergevars = $mergefields->merge_fields;
+      }
+    }
+
+    \Drupal::cache()->set('list-' . $list_id, $list, 'cache_mailchimp', CacheBackendInterface::CACHE_PERMANENT);
+  }
+  catch (Exception $e) {
+    \Drupal::logger('mailchimp')->error('An error occurred requesting list information from Mailchimp. "{message}"', array(
+        'message' => $e->getMessage()));
+  }
+
+  return $list;
 }
+
 
 /**
  * Returns all MailChimp lists for a given key. Lists are stored in the cache.
