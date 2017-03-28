@@ -31,7 +31,7 @@ function mailchimp_libraries_info() {
     'files' => array(
       'php' => array(
         'src/Mailchimp.php',
-        'src/MailchimpAPIException',
+        'src/MailchimpAPIException.php',
         'src/MailchimpCampaigns.php',
         'src/MailchimpLists.php',
         'src/MailchimpReports.php',
