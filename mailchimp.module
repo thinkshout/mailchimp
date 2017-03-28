@@ -5,6 +5,8 @@
  * Mailchimp module.
  */
 
+use Mailchimp\MailchimpLists;
+
 define('MAILCHIMP_QUEUE_CRON', 'mailchimp');
 define('MAILCHIMP_BATCH_QUEUE_CRON', 'mailchimp_batch');
 
@@ -898,9 +900,7 @@ function mailchimp_unsubscribe_member($list_id, $email, $delete = FALSE, $goodby
 }
 
 /**
- * Wrapper around Mailchimp_Lists::unsubscribe().
- *
- * @see Mailchimp_Lists::unsubscribe()
+ * Unsubscribe a member from a list.
  *
  * @return bool
  *   Success or failure.
@@ -913,7 +913,25 @@ function mailchimp_unsubscribe_process($list_id, $email, $delete, $goodbye, $not
       throw new MailchimpException('Cannot unsubscribe from list without MailChimp API. Check API key has been entered.');
     }
 
-    $mc_lists->removeMember($list_id, $email);
+    if ($delete) {
+      // Remove member from list.
+      $mc_lists->removeMember($list_id, $email);
+      watchdog('mailchimp', '@email was removed from list @list_id.', array(
+        '@email' => $email,
+        '@list' => $list_id,
+      ), WATCHDOG_INFO);
+    }
+    else {
+      // Unsubscribe member.
+      $parameters = array(
+        'status' => MailchimpLists::MEMBER_STATUS_UNSUBSCRIBED,
+      );
+      $mc_lists->updateMember($list_id, $email, $parameters);
+      watchdog('mailchimp', '@email was unsubscribed from list @list_id.', array(
+        '@email' => $email,
+        '@list' => $list_id,
+      ), WATCHDOG_INFO);
+    }
 
     module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
 
