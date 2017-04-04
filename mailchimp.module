@@ -309,9 +309,9 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
   }
   catch (Exception $e) {
     \Drupal::logger('mailchimp')->error('An error occurred requesting memberinfo for {email} in list {list}. "{message}"', array(
-      '@email' => $email,
-      '@list' => $list_id,
-      '%message' => $e->getMessage(),
+      'email' => $email,
+      'list' => $list_id,
+      'message' => $e->getMessage(),
     ));
   }
 
