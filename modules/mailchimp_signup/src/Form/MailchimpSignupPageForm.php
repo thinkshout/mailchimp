@@ -58,7 +58,7 @@ class MailchimpSignupPageForm extends FormBase {
     $form['#attributes'] = array('class' => array('mailchimp-signup-subscribe-form'));
 
     $form['description'] = array(
-      '#markup' => $this->signup->description,
+      '#markup' => $this->signup->settings['description'],
     );
 
     $form['mailchimp_lists'] = array('#tree' => TRUE);
