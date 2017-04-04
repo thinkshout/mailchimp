@@ -154,7 +154,7 @@ class MailchimpSignupPageForm extends FormBase {
 
       // Filter the selected lists out of the form values.
       $selected_lists = array_filter($form_state->getValue('mailchimp_lists'),
-        function($list){
+        function($list) {
           return $list['subscribe'];
         }
       );
@@ -236,7 +236,13 @@ class MailchimpSignupPageForm extends FormBase {
       drupal_set_message($this->signup->settings['confirmation_message'], 'status');
     }
 
-    $destination_url = Url::fromUri($base_url . '/' . $this->signup->settings['destination']);
+    $destination = $this->signup->settings['destination'];
+    if (empty($destination)) {
+      $destination_url = Url::fromRoute('<current>');
+    }
+    else {
+      $destination_url = Url::fromUri($base_url . '/' . $this->signup->settings['destination']);
+    }
 
     $form_state->setRedirectUrl($destination_url);
   }
