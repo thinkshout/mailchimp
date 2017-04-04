@@ -113,7 +113,7 @@ class MailchimpSignupPageForm extends FormBase {
 
     $mergevars_wrapper_id = isset($list->id) ? $list->id : '';
     $form['mergevars'] = array(
-      '#prefix' => '<div id="mailchimp-newsletter-' . $list->id . '-mergefields" class="mailchimp-newsletter-mergefields">',
+      '#prefix' => '<div id="mailchimp-newsletter-' . $mergevars_wrapper_id . '-mergefields" class="mailchimp-newsletter-mergefields">',
       '#suffix' => '</div>',
       '#tree' => TRUE,
     );
