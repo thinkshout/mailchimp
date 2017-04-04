@@ -1070,11 +1070,17 @@ function mailchimp_interest_groups_form_elements($list, $defaults = array(), $em
 function mailchimp_insert_drupal_form_tag($mergevar) {
   // Insert common FormAPI properties:
   $input = array(
-    '#title' => t('@mergevar', array('@mergevar' => $mergevar->name)),
     '#weight' => $mergevar->display_order,
     '#required' => $mergevar->required,
     '#default_value' => $mergevar->default_value,
   );
+
+  if (is_string($mergevar->name)) {
+    $input['#title'] = t('@mergevar', array('@mergevar' => $mergevar->name));
+  }
+  else {
+    $input['#title'] = $mergevar->name;
+  }
 
   switch ($mergevar->type) {
     case 'address':
