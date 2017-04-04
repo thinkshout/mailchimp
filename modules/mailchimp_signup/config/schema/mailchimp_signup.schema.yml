@@ -8,7 +8,7 @@ mailchimp_signup.mailchimp_signup.*:
       type: string
       label: 'Machine Name'
     title:
-      type: string
+      type: text
       label: 'Title'
     uuid:
       type: string
@@ -19,14 +19,11 @@ mailchimp_signup.mailchimp_signup.*:
     mode:
       type: int
       label: 'Mode'
-    title:
-      type: string
-      label: 'Title'
     mergefields:
       type: sequence
       label: 'Mergefields'
     description:
-      type: string
+      type: text
       label: 'Description'
     doublein:
       type: boolean
@@ -48,10 +45,10 @@ mailchimp_signup.mailchimp_signup.*:
           type: string
           label: 'Path'
         submit_button:
-          type: string
+          type: text
           label: 'Submit Button'
         confirmation_message:
-          type: string
+          type: text
           label: 'Confirmation Message'
         destination:
           type: string
