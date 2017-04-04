@@ -189,7 +189,7 @@ function mailchimp_campaign_send_campaign(MailchimpCampaign $campaign) {
 
     if (($result->status == MAILCHIMP_STATUS_SENDING) || ($result->status == MAILCHIMP_STATUS_SENT)) {
       // Log action, and notify the user.
-      \Drupal::logger('mailchimp_campaign')->error('MailChimp campaign {name} has been sent.', array(
+      \Drupal::logger('mailchimp_campaign')->notice('MailChimp campaign {name} has been sent.', array(
         'name' => $campaign->label()));
 
       $controller = \Drupal::entityTypeManager()->getStorage('mailchimp_campaign');
