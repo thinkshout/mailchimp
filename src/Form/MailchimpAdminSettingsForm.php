@@ -5,6 +5,7 @@ namespace Drupal\mailchimp\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Link;
 
 /**
  * Configure Mailchimp settings for this site.
@@ -35,7 +36,7 @@ class MailchimpAdminSettingsForm extends ConfigFormBase {
       '#required' => TRUE,
       '#default_value' => $config->get('api_key'),
       '#description' => t('The API key for your MailChimp account. Get or generate a valid API key at your @apilink.',
-        array('@apilink' => \Drupal::l(t('MailChimp API Dashboard'), $mc_api_url))),
+        array('@apilink' => Link::fromTextAndUrl(t('MailChimp API Dashboard'), $mc_api_url)))->toString(),
     );
     $form['cron'] = array(
       '#type' => 'checkbox',
