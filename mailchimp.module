@@ -21,6 +21,7 @@ $path = drupal_get_path('module', 'mailchimp');
 include $path . '/lib/mailchimp-api-php/src/Mailchimp.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpAPIException.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpCampaigns.php';
+include $path . '/lib/mailchimp-api-php/src/MailchimpCampaigns.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpLists.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpReports.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpTemplates.php';

@@ -2,12 +2,17 @@
 
 namespace Mailchimp\Tests;
 
+/**
+ * MailChimp Templates library test cases.
+ *
+ * @package Mailchimp\Tests
+ */
 class MailchimpTemplates extends \Mailchimp\MailchimpTemplates {
 
   /**
    * @inheritdoc
    */
-  public function __construct($api_key = 'apikey', $api_user = 'apikey', $timeout = 60) {
+  public function __construct($api_key = 'apikey', $api_user = 'apikey', $http_options = []) {
     $this->client = new Client();
   }
 

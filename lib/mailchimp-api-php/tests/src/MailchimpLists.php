@@ -2,12 +2,17 @@
 
 namespace Mailchimp\Tests;
 
+/**
+ * Mailchimp Lists library test cases.
+ *
+ * @package Mailchimp\Tests
+ */
 class MailchimpLists extends \Mailchimp\MailchimpLists {
 
   /**
    * @inheritdoc
    */
-  public function __construct($api_key = 'apikey', $api_user = 'apikey', $timeout = 60) {
+  public function __construct($api_key = 'apikey', $api_user = 'apikey', $http_options = []) {
     $this->client = new Client();
   }
 
@@ -225,6 +230,22 @@ class MailchimpLists extends \Mailchimp\MailchimpLists {
         ],
       ],
       'total_items' => 2,
+    ];
+
+    return $response;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function getSegment($list_id, $segment_id, $parameters = []) {
+    parent::getSegment($list_id, $segment_id, $parameters);
+
+    $response = (object) [
+      'id' => 49377,
+      'name' => 'Test Segment One',
+      'type' => 'static',
+      'list_id' => $list_id,
     ];
 
     return $response;

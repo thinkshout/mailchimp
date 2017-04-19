@@ -2,6 +2,11 @@
 
 namespace Mailchimp;
 
+/**
+ * Mailchimp Lists library.
+ *
+ * @package Mailchimp
+ */
 class MailchimpLists extends Mailchimp {
 
   const MEMBER_STATUS_SUBSCRIBED = 'subscribed';
@@ -104,6 +109,35 @@ class MailchimpLists extends Mailchimp {
     ];
 
     return $this->request('GET', '/lists/{list_id}/merge-fields', $tokens, $parameters);
+  }
+
+  /**
+   * Add merge field associated with a MailChimp list.
+   *
+   * @param string $list_id
+   *   The ID of the list.
+   * @param string $name
+   *   The name of the merge field.
+   * @param string $type
+   *   The type for the merge field.
+   * @param array $parameters
+   *   Associative array of optional request parameters.
+   *
+   * @return object
+   *
+   * @see http://developer.mailchimp.com/documentation/mailchimp/reference/lists/merge-fields/#create-post_lists_list_id_merge_fields
+   */
+  public function addMergeField($list_id, $name, $type, $parameters = []) {
+    $tokens = [
+      'list_id' => $list_id,
+    ];
+
+    $parameters += [
+      'name' => $name,
+      'type' => $type,
+    ];
+
+    return $this->request('POST', '/lists/{list_id}/merge-fields', $tokens, $parameters);
   }
 
   /**
@@ -296,6 +330,29 @@ class MailchimpLists extends Mailchimp {
   }
 
   /**
+   * Gets a MailChimp list segment.
+   *
+   * @param string $list_id
+   *   The ID of the list.
+   * @param string $segment_id
+   *   The ID of the list segment.
+   * @param array $parameters
+   *   Associative array of optional request parameters.
+   *
+   * @return object
+   *
+   * @see http://developer.mailchimp.com/documentation/mailchimp/reference/lists/segments/#read-get_lists_list_id_segments_segment_id
+   */
+  public function getSegment($list_id, $segment_id, $parameters = []) {
+    $tokens = [
+      'list_id' => $list_id,
+      'segment_id' => $segment_id,
+    ];
+
+    return $this->request('GET', '/lists/{list_id}/segments/{segment_id}', $tokens, $parameters);
+  }
+
+  /**
    * Adds a new segment to a MailChimp list.
    *
    * @param string $list_id
@@ -375,6 +432,35 @@ class MailchimpLists extends Mailchimp {
     ];
 
     return $this->request('GET', '/lists/{list_id}/segments/{segment_id}/members', $tokens, $parameters);
+  }
+
+  /**
+   * Adds a member to a list segment.
+   *
+   * @param string $list_id
+   *   The ID of the list.
+   * @param string $segment_id
+   *   The ID of the segment.
+   * @param array $email
+   *   The email address to add to the segment.
+   * @param array $parameters
+   *   Associative array of optional request parameters.
+   *
+   * @return object
+   *
+   * @see http://developer.mailchimp.com/documentation/mailchimp/reference/lists/segments/members/
+   */
+  public function addSegmentMember($list_id, $segment_id, $email, $parameters = []) {
+    $tokens = [
+      'list_id' => $list_id,
+      'segment_id' => $segment_id,
+    ];
+
+    $parameters += [
+      'email_address' => $email,
+    ];
+
+    return $this->request('POST', '/lists/{list_id}/segments/{segment_id}/members', $tokens, $parameters);
   }
 
   /**
@@ -497,7 +583,7 @@ class MailchimpLists extends Mailchimp {
           if ($e->getCode() !== 404) {
             // 404 indicates the email address is not subscribed to this list
             // and can be safely ignored. Surface all other exceptions.
-            throw new MailchimpAPIException($e->getResponse()->getBody(), $e->getCode(), $e);
+            throw new MailchimpAPIException($e->getMessage(), $e->getCode(), $e);
           }
         }
       }

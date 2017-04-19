@@ -2,6 +2,11 @@
 
 namespace Mailchimp\Tests;
 
+/**
+ * MailChimp Reports test library.
+ *
+ * @package Mailchimp\Tests
+ */
 class MailchimpReportsTest extends \PHPUnit_Framework_TestCase {
 
   /**
@@ -26,6 +31,20 @@ class MailchimpReportsTest extends \PHPUnit_Framework_TestCase {
 
     $this->assertEquals('GET', $mc->getClient()->method);
     $this->assertEquals($mc->getEndpoint() . '/reports/' . $campaign_id, $mc->getClient()->uri);
+  }
+
+  /**
+   * Tests library functionality for campaign report information.
+   */
+  public function testCampaignReport() {
+    $campaign_id = '42694e9e57';
+    $type = 'email-activity';
+
+    $mc = new MailchimpReports();
+    $mc->getCampaignReport($campaign_id, $type);
+
+    $this->assertEquals('GET', $mc->getClient()->method);
+    $this->assertEquals($mc->getEndpoint() . '/reports/' . $campaign_id . '/' . $type, $mc->getClient()->uri);
   }
 
 }

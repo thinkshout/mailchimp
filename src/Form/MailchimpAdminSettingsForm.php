@@ -35,8 +35,8 @@ class MailchimpAdminSettingsForm extends ConfigFormBase {
       '#title' => t('Mailchimp API Key'),
       '#required' => TRUE,
       '#default_value' => $config->get('api_key'),
-      '#description' => t('The API key for your MailChimp account. Get or generate a valid API key at your @apilink.',
-        array('@apilink' => Link::fromTextAndUrl(t('MailChimp API Dashboard'), $mc_api_url)))->toString(),
+      //'#description' => t('The API key for your MailChimp account. Get or generate a valid API key at your @apilink.',
+      //  array('@apilink' => Link::fromTextAndUrl(t('MailChimp API Dashboard'), $mc_api_url)))->toString(),
     );
     $form['cron'] = array(
       '#type' => 'checkbox',

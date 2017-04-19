@@ -2,6 +2,11 @@
 
 namespace Mailchimp\Tests;
 
+/**
+ * MailChimp Lists test library.
+ *
+ * @package Mailchimp\Tests
+ */
 class MailchimpListsTest extends \PHPUnit_Framework_TestCase {
 
   /**
@@ -66,6 +71,26 @@ class MailchimpListsTest extends \PHPUnit_Framework_TestCase {
 
     $this->assertEquals('GET', $mc->getClient()->method);
     $this->assertEquals($mc->getEndpoint() . '/lists/' . $list_id . '/merge-fields', $mc->getClient()->uri);
+  }
+
+  /**
+   * Tests library functionality for adding a merge field.
+   */
+  public function testAddMergeField() {
+    $list_id = '57afe96172';
+    $name = 'Phone number';
+    $type = 'phone';
+
+    $mc = new MailchimpLists();
+    $mc->addMergeField($list_id, $name, $type);
+
+    $this->assertEquals('POST', $mc->getClient()->method);
+    $this->assertEquals($mc->getEndpoint() . '/lists/' . $list_id . '/merge-fields', $mc->getClient()->uri);
+
+    $request_body = $mc->getClient()->options['json'];
+
+    $this->assertEquals($name, $request_body->name);
+    $this->assertEquals($type, $request_body->type);
   }
 
   /**
@@ -185,6 +210,20 @@ class MailchimpListsTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
+   * Tests library functionality for list segment information.
+   */
+  public function testGetSegment() {
+    $list_id = '57afe96172';
+    $segment_id = '49377';
+
+    $mc = new MailchimpLists();
+    $mc->getSegment($list_id, $segment_id);
+
+    $this->assertEquals('GET', $mc->getClient()->method);
+    $this->assertEquals($mc->getEndpoint() . '/lists/' . $list_id . '/segments/' . $segment_id, $mc->getClient()->uri);
+  }
+
+  /**
    * Tests library functionality for adding a list segment.
    */
   public function testAddSegment() {
@@ -237,6 +276,27 @@ class MailchimpListsTest extends \PHPUnit_Framework_TestCase {
 
     $this->assertEquals('GET', $mc->getClient()->method);
     $this->assertEquals($mc->getEndpoint() . '/lists/' . $list_id . '/segments/' . $segment_id . '/members', $mc->getClient()->uri);
+  }
+
+  /**
+   * Tests library functionality for adding a segment member.
+   */
+  public function testAddSegmentMember() {
+    $list_id = '205d96e6b4';
+    $segment_id = '457';
+    $email = 'test@example.com';
+
+    $mc = new MailchimpLists();
+    $mc->addSegmentMember($list_id, $segment_id, $email);
+
+    $this->assertEquals('POST', $mc->getClient()->method);
+    $this->assertEquals($mc->getEndpoint() . '/lists/' . $list_id . '/segments/' . $segment_id . '/members', $mc->getClient()->uri);
+
+    $this->assertNotEmpty($mc->getClient()->options['json']);
+
+    $request_body = $mc->getClient()->options['json'];
+
+    $this->assertEquals($email, $request_body->email_address);
   }
 
 }
