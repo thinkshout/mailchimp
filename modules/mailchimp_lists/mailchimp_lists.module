@@ -413,7 +413,7 @@ function mailchimp_lists_get_subscribers($field, &$context) {
   }
   $batch_size = variable_get('mailchimp_batch_limit', 100);
   $options = array(
-    'offset' => $context['sandbox']['progress'] / $batch_size,
+    'offset' => $context['sandbox']['progress'],
     'count' => $batch_size,
   );
   $matches = mailchimp_get_members($field['settings']['mc_list_id'], 'subscribed', $options);
