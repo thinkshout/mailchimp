@@ -365,7 +365,7 @@ function _mailchimp_lists_subscription_has_changed($instance, $field, $entity, $
 /**
  * Helper function to complete a MailChimp-API-ready mergevars array.
  */
-function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type, $list_id) {
+function _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type, $list_id = NULL) {
   $mergevars = mailchimp_mergevars_populate($mergefields, $entity, $entity_type, $list_id);
   drupal_alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type, $list_id);
   return $mergevars;
