@@ -802,7 +802,10 @@ function mailchimp_get_members($list_id, $status = 'subscribed', $options = arra
       }
 
       $options['status'] = $status;
-      $options['count'] = 500;
+
+      if (!isset($options['count']) || empty($options['count'])) {
+        $options['count'] = 500;
+      }
 
       $results = $mc_lists->getMembers($list_id, $options);
     }
