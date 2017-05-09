@@ -382,7 +382,7 @@ function mailchimp_lists_update_member_merge_values($entity_type, $bundle_name, 
   // cache would kill the point of doing this as a batch API operation.
   $batch = array(
     'operations' => array(
-      array('mailchimp_lists_get_subscribers', array($field)),
+      //array('mailchimp_lists_get_subscribers', array($field)),
       array(
         'mailchimp_lists_populate_member_batch',
         array(
@@ -448,8 +448,9 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
 //    $query_results = $query->execute();
 
     $context['sandbox']['entity_info'] = entity_get_info($entity_type);
-
+    $context['results']['subscribers'] = array();
     $context['sandbox']['progress'] = 0;
+    $context['results']['updates'] = 0;
 
     //$context['sandbox']['max'] = isset($query_results[$entity_type]) ? count($query_results[$entity_type]) : 0;
 
@@ -460,6 +461,9 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
       $context['results']['update_queue'] = array();
     }
   }
+
+  $batch_size = variable_get('mailchimp_batch_limit', 100);
+
 //  if ($context['sandbox']['progress'] < $context['sandbox']['max']) {
 //    $batch_size = variable_get('mailchimp_batch_limit', 100);
 //    $item_ids = array_slice($context['sandbox']['entity_ids'], $context['sandbox']['progress'], $batch_size);
@@ -549,6 +553,8 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
   //$context['sandbox']['progress'] += count($item_ids);
 
   $context['sandbox']['progress'] += count($process_subscriber_emails); // count($item_ids);
+
+  $context['results']['updates'] += count($process_subscriber_emails);
 
   $context['message'] = t('Checking for changes on items %count - %next.',
     array(
