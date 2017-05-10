@@ -438,13 +438,12 @@ function mailchimp_lists_update_member_batch($entity_type, $bundle_name, $field,
   if (!isset($context['sandbox']['progress'])) {
     $context['sandbox']['entity_info'] = entity_get_info($entity_type);
     $context['sandbox']['progress'] = 0;
-    $context['results']['subscribers'] = array();
+    $context['results']['errors'] = 0;
     $context['results']['updates'] = 0;
+    $context['results']['no_entity'] = 0;
   }
 
   $batch_size = variable_get('mailchimp_batch_limit', 100);
-  // TODO: Remove this.
-  //$batch_size = 10;
 
   // Query MailChimp for list subscribers in batches to limit resource usage.
   $options = array(
@@ -454,15 +453,16 @@ function mailchimp_lists_update_member_batch($entity_type, $bundle_name, $field,
 
   // Get the email addresses of all subscribers of the MailChimp list.
   $subscriber_emails = array();
+  $subscribers = array();
+  $update_queue = array();
 
   $matches = mailchimp_get_members($field['settings']['mc_list_id'], 'subscribed', $options);
   if (!empty($matches) && ($matches->total_items > 0)) {
     if (!isset($context['sandbox']['max'])) {
-      // TODO: Remove this.
-      //$context['sandbox']['max'] = 50;
       $context['sandbox']['max'] = $matches->total_items;
     }
     foreach ($matches->members as $result) {
+      $subscribers[strtolower($result->email_address)] = $result;
       $subscriber_emails[] = strtolower($result->email_address);
     }
   }
@@ -493,7 +493,6 @@ function mailchimp_lists_update_member_batch($entity_type, $bundle_name, $field,
 
     $query_results = $query->execute();
 
-    // TODO: Log message if no entity found (may be subscriber not in Drupal).
     if (isset($query_results[$entity_type])) {
       $entity_id = array_keys($query_results[$entity_type])[0];
       $entity = entity_load_single($entity_type, $entity_id);
@@ -502,20 +501,26 @@ function mailchimp_lists_update_member_batch($entity_type, $bundle_name, $field,
     // If an entity exists, populate the mergevars for MailChimp.
     if (!empty($entity)) {
       $merge_vars = _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type);
-      if ($merge_vars['EMAIL'] && isset($context['results']['subscribers'][strtolower($merge_vars['EMAIL'])])) {
-        $context['results']['update_queue'][] = array(
+      if ($merge_vars['EMAIL'] && isset($subscribers[strtolower($merge_vars['EMAIL'])])) {
+        $update_queue[] = array(
           'email' => $merge_vars['EMAIL'],
-          // Preserve subscribers's email type selection:
-          'email_type' => $context['results']['subscribers'][strtolower($merge_vars['EMAIL'])]->email_type,
+          // Preserve subscriber's email type selection.
+          'email_type' => $subscribers[strtolower($merge_vars['EMAIL'])]->email_type,
           'merge_vars' => $merge_vars,
         );
       }
+    }
+    else {
+      $context['results']['no_entity']++;
     }
 
   }
 
   // Send updated mergevars to MailChimp.
-  mailchimp_lists_execute_mergevar_batch_update($list_id, $context['results']['update_queue']);
+  $batch_result = mailchimp_lists_execute_mergevar_batch_update($list_id, $update_queue);
+
+  // Log any errors returned by MailChimp.
+  $context['results']['errors'] += $batch_result->errored_operations;
 
   // Update batch operation progress.
   $context['sandbox']['progress'] += count($subscriber_emails);
@@ -532,6 +537,9 @@ function mailchimp_lists_update_member_batch($entity_type, $bundle_name, $field,
   $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
 }
 
+/**
+ * Sends batch mergevar data to MailChimp.
+ */
 function mailchimp_lists_execute_mergevar_batch_update($list_id, $batch) {
   $result = mailchimp_batch_update_members($list_id, $batch, FALSE, TRUE, FALSE);
   if ($result) {
@@ -556,9 +564,10 @@ function mailchimp_lists_populate_member_batch_complete($success, $results, $ope
       ), 'warning');
     }
     else {
-      drupal_set_message(t('Merge variables updated on %count records.',
+      drupal_set_message(t('Merge variables updated on %count records. %no_entity subscribers had no matching entity in Drupal.',
         array(
           '%count' => $results['updates'],
+          '%no_entity' => $results['no_entity'],
         )
       ), 'status');
     }
