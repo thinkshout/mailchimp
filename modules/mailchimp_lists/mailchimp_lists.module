@@ -382,9 +382,8 @@ function mailchimp_lists_update_member_merge_values($entity_type, $bundle_name, 
   // cache would kill the point of doing this as a batch API operation.
   $batch = array(
     'operations' => array(
-      //array('mailchimp_lists_get_subscribers', array($field)),
       array(
-        'mailchimp_lists_populate_member_batch',
+        'mailchimp_lists_update_member_batch',
         array(
           $entity_type,
           $bundle_name,
@@ -393,8 +392,6 @@ function mailchimp_lists_update_member_merge_values($entity_type, $bundle_name, 
           $field['settings']['mc_list_id'],
         ),
       ),
-      // TODO: Uncomment.
-      //array('mailchimp_lists_execute_mergevar_batch_update', array($field['settings']['mc_list_id'])),
     ),
     'finished' => 'mailchimp_lists_populate_member_batch_complete',
     'title' => t('Processing Merge Variable Updates'),
@@ -435,9 +432,9 @@ function mailchimp_lists_get_subscribers($field, &$context) {
 }
 
 /**
- * Batch processor for member mergevar updates to built the mergevar arrays.
+ * Batch processor for member mergevar updates.
  */
-function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $field, $mergefields, $list_id, &$context) {
+function mailchimp_lists_update_member_batch($entity_type, $bundle_name, $field, $mergefields, $list_id, &$context) {
   if (!isset($context['sandbox']['progress'])) {
     $context['sandbox']['entity_info'] = entity_get_info($entity_type);
     $context['sandbox']['progress'] = 0;
@@ -445,17 +442,18 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
     $context['results']['updates'] = 0;
   }
 
-  // Always reset subscribers to free memory.
-  $context['results']['subscribers'] = array();
-
   $batch_size = variable_get('mailchimp_batch_limit', 100);
   // TODO: Remove this.
   //$batch_size = 10;
 
+  // Query MailChimp for list subscribers in batches to limit resource usage.
   $options = array(
     'offset' => $context['sandbox']['progress'],
     'count' => $batch_size,
   );
+
+  // Get the email addresses of all subscribers of the MailChimp list.
+  $subscriber_emails = array();
 
   $matches = mailchimp_get_members($field['settings']['mc_list_id'], 'subscribed', $options);
   if (!empty($matches) && ($matches->total_items > 0)) {
@@ -465,23 +463,24 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
       $context['sandbox']['max'] = $matches->total_items;
     }
     foreach ($matches->members as $result) {
-      $context['results']['subscribers'][strtolower($result->email_address)] = $result;
+      $subscriber_emails[] = strtolower($result->email_address);
     }
   }
 
+  // Determine the Drupal field name from the mergefield token.
   // CAUTION: This may not work for all variations of field names.
   $entity_email_field_name = str_replace(array(']', '['), '', $mergefields['EMAIL']);
   $entity_email_field_name = str_replace(':', '_', $entity_email_field_name);
 
   $entity_email_field_info = field_info_field($entity_email_field_name);
 
+  // Determine the field value column in the field database table.
   // This relies on the field's database table having a primary index on
   // the field's value column. Should work, but check here if things are not
   // working as expected.
   $entity_email_field_column = current($entity_email_field_info['indexes'])[0];
 
-  $subscriber_emails = array_keys($context['results']['subscribers']);
-
+  // For each list subscriber email, load the associated entity.
   foreach ($subscriber_emails as $subscriber_email) {
 
     $query = new EntityFieldQuery();
@@ -500,6 +499,7 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
       $entity = entity_load_single($entity_type, $entity_id);
     }
 
+    // If an entity exists, populate the mergevars for MailChimp.
     if (!empty($entity)) {
       $merge_vars = _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type);
       if ($merge_vars['EMAIL'] && isset($context['results']['subscribers'][strtolower($merge_vars['EMAIL'])])) {
@@ -514,11 +514,11 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
 
   }
 
-  // Sync changes with MailChimp.
+  // Send updated mergevars to MailChimp.
   mailchimp_lists_execute_mergevar_batch_update($list_id, $context['results']['update_queue']);
 
+  // Update batch operation progress.
   $context['sandbox']['progress'] += count($subscriber_emails);
-
   $context['results']['updates'] += count($subscriber_emails);
 
   $context['message'] = t('Updating items %count - %next of %total.',
@@ -538,8 +538,7 @@ function mailchimp_lists_execute_mergevar_batch_update($list_id, $batch) {
     /* @var \Mailchimp\Mailchimp $mc */
     $mc = mailchimp_get_api_object();
 
-    // TODO: Return result data.
-    $batch_result = $mc->getBatchOperation($result->id);
+    return $mc->getBatchOperation($result->id);
   }
 }
 
