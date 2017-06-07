@@ -3,9 +3,9 @@ mailchimp_campaign.overview:
   route_name: mailchimp_campaign.overview
   base_route: mailchimp.admin
 
-entity.mailchimp_campaign.view:
+entity.mailchimp_campaign.canonical:
   title: 'View'
-  route_name: entity.mailchimp_campaign.view
+  route_name: entity.mailchimp_campaign.canonical
   base_route: entity.mailchimp_campaign.view
   weight: 0
 
