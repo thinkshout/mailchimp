@@ -55,21 +55,29 @@ class MailchimpListsSelectWidget extends WidgetBase {
 
     $form_id = $form_state->getFormObject()->getFormId();
 
-    if ($this->fieldDefinition->getSetting('show_interest_groups') || ($form_id == 'field_config_edit_form')) {
+    $show_interest_groups = $this->fieldDefinition->getSetting('show_interest_groups');
+    $interest_groups_hidden = $this->fieldDefinition->getSetting('interest_groups_hidden');
+    $is_default_value_widget = $this->isDefaultValueWidget($form_state);
+    if ($show_interest_groups || $is_default_value_widget) {
       $mc_list = mailchimp_get_list($instance->getFieldDefinition()->getSetting('mc_list_id'));
 
-      $element['interest_groups'] = array(
-        '#type' => 'fieldset',
-        '#title' => Html::escape($instance->getFieldDefinition()->getSetting('interest_groups_title')),
-        '#weight' => 100,
-        '#states' => array(
-          'invisible' => array(
-            ':input[name="' . $instance->getFieldDefinition()->getName() . '[0][value][subscribe]"]' => array('checked' => FALSE),
+      if ($interest_groups_hidden && !$is_default_value_widget) {
+        $element['interest_groups'] = array();
+      }
+      else {
+        $element['interest_groups'] = array(
+          '#type' => 'fieldset',
+          '#title' => Html::escape($instance->getFieldDefinition()->getSetting('interest_groups_label')),
+          '#weight' => 100,
+          '#states' => array(
+            'invisible' => array(
+              ':input[name="' . $instance->getFieldDefinition()->getName() . '[0][value][subscribe]"]' => array('checked' => FALSE),
+            ),
           ),
-        ),
-      );
+        );
+      }
 
-      if ($form_id == 'field_config_edit_form') {
+      if ($is_default_value_widget) {
         $element['interest_groups']['#states']['invisible'] = array(
           ':input[name="settings[show_interest_groups]"]' => array('checked' => FALSE),
         );
@@ -82,7 +90,8 @@ class MailchimpListsSelectWidget extends WidgetBase {
       }
 
       if (!empty($mc_list->intgroups)) {
-        $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email);
+        $mode = $is_default_value_widget ? 'admin' : ($interest_groups_hidden ? 'hidden' : 'default');
+        $element['interest_groups'] += mailchimp_interest_groups_form_elements($mc_list, $groups_default, $email, $mode);
       }
     }
 

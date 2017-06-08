@@ -992,17 +992,29 @@ function mailchimp_webhook_url() {
  * @param string $email
  *   Optional email address to pass to the MCAPI and retrieve existing values
  *   for use as defaults.
+ * @param string $mode
+ *   Elements display mode:
+ *     - "default" shows all groups except the hidden ones,
+ *     - "admin" shows all groups including hidden ones,
+ *     - "hidden" generates '#type' => 'value' elements using default values.
  *
  * @return array
  *   A collection of form elements, one per interest group.
  */
-function mailchimp_interest_groups_form_elements($list, $defaults = array(), $email = NULL) {
+function mailchimp_interest_groups_form_elements($list, $defaults = array(), $email = NULL, $mode = 'default') {
   $return = array();
-  foreach ($list->intgroups as $group) {
-    if ($group->type == 'hidden') {
-      continue;
-    }
 
+  if ($mode == 'hidden') {
+    foreach ($list->intgroups as $group) {
+      $return[$group->id] = array(
+        '#type' => 'value',
+        '#value' => isset($defaults[$group->id]) ? $defaults[$group->id] : array(),
+      );
+    }
+    return $return;
+  }
+
+  foreach ($list->intgroups as $group) {
     /* @var \Mailchimp\MailchimpLists $mc_lists */
     $mc_lists = mailchimp_get_api_object('MailchimpLists');
 
@@ -1012,8 +1024,24 @@ function mailchimp_interest_groups_form_elements($list, $defaults = array(), $em
       $memberinfo = mailchimp_get_memberinfo($list->id, $email);
     }
 
+    $field_title = $group->title;
+    $field_description = NULL;
+    $value = NULL;
+
     // Set the form field type:
     switch ($group->type) {
+      case 'hidden':
+        $field_title .= ' (' . t('hidden') . ')';
+        $field_description = t('This group will not be visible to the end user. However you can set the default value and it will be actually used.');
+        if ($mode == 'admin') {
+          $field_type = 'checkboxes';
+        }
+        else {
+          $field_type = 'value';
+          $value = isset($defaults[$group->id]) ? $defaults[$group->id] : array();
+        }
+        break;
+
       case 'radio':
         $field_type = 'radios';
         break;
@@ -1052,11 +1080,15 @@ function mailchimp_interest_groups_form_elements($list, $defaults = array(), $em
 
     $return[$group->id] = array(
       '#type' => $field_type,
-      '#title' => $group->title,
+      '#title' => $field_title,
+      '#description' => $field_description,
       '#options' => $options,
       '#default_value' => isset($default_values[$group->id]) ? $default_values[$group->id] : array(),
       '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $list->id)),
     );
+    if ($value !== NULL) {
+      $return[$group->id]['#value'] = $value;
+    }
   }
   return $return;
 }

@@ -41,6 +41,7 @@ class MailchimpListsSubscription extends FieldItemBase {
   public static function defaultFieldSettings() {
     return array(
       'show_interest_groups' => 0,
+      'interest_groups_hidden' => 0,
       'interest_groups_label' => '',
       'merge_fields' => array(),
       'unsubscribe_on_delete' => 0,
@@ -167,6 +168,17 @@ class MailchimpListsSubscription extends FieldItemBase {
       '#title' => "Enable Interest Groups",
       '#type' => "checkbox",
       '#default_value' => $instance_settings['show_interest_groups'],
+    );
+    $element['interest_groups_hidden'] = array(
+      '#type' => 'checkbox',
+      '#title' => $this->t('Hide Interest Groups.'),
+      '#description' => $this->t('If checked, the Interest Groups will not be displayed, but the default values will be used.'),
+      '#default_value' => $instance_settings['interest_groups_hidden'],
+      '#states' => array(
+        'visible' => array(
+          'input[name="settings[show_interest_groups]"]' => array('checked' => TRUE),
+        ),
+      ),
     );
     $element['interest_groups_label'] = array(
       '#title' => "Interest Groups Label",
