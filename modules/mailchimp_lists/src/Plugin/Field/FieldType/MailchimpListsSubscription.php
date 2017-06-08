@@ -40,6 +40,7 @@ class MailchimpListsSubscription extends FieldItemBase {
    */
   public static function defaultFieldSettings() {
     return array(
+      'subscribe_checkbox_label' => 'Subscribe',
       'show_interest_groups' => 0,
       'interest_groups_hidden' => 0,
       'interest_groups_label' => '',
@@ -163,6 +164,12 @@ class MailchimpListsSubscription extends FieldItemBase {
     }
     $this->definition;
     $instance_settings = $this->definition->getSettings();
+
+    $element['subscribe_checkbox_label'] = array(
+      '#title' => 'Subscribe Checkbox Label',
+      '#type' => 'textfield',
+      '#default_value' => isset($instance_settings['subscribe_checkbox_label']) ? $instance_settings['subscribe_checkbox_label'] : 'Subscribe',
+    );
 
     $element['show_interest_groups'] = array(
       '#title' => "Enable Interest Groups",

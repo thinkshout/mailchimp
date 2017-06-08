@@ -46,7 +46,7 @@ class MailchimpListsSelectWidget extends WidgetBase {
     );
 
     $element['subscribe'] = array(
-      '#title' => t('Subscribe'),
+      '#title' => $this->fieldDefinition->getSetting('subscribe_checkbox_label') ?: $this->t('Subscribe'),
       '#type' => 'checkbox',
       '#default_value' => ($subscribe_default)? TRUE : $this->fieldDefinition->isRequired(),
       '#required' => $this->fieldDefinition->isRequired(),
