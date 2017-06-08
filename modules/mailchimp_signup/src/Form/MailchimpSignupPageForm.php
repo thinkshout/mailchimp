@@ -128,12 +128,12 @@ class MailchimpSignupPageForm extends FormBase {
       }
     }
 
-    $form['submit'] = array(
+    $form['actions'] = ['#type' => 'actions'];
+    $form['actions']['submit'] = [
       '#type' => 'submit',
-      '#weight' => 10,
       '#value' => $this->signup->settings['submit_button'],
       '#disabled' => (empty($lists)),
-    );
+    ];
 
     return $form;
   }
