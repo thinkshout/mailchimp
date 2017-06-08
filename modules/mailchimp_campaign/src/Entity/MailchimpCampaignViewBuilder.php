@@ -103,9 +103,9 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
         'value' => $send_time,
       ),
       'content' => array(
-        'label' => t('Rendered template HTML (!archive)',
+        'label' => t('Rendered template HTML (@archive)',
           array(
-            '!archive' => Link::fromTextAndUrl('View MailChimp archive', $archive_url)->toString(),
+            '@archive' => Link::fromTextAndUrl('View MailChimp archive', $archive_url)->toString(),
             )
           ),
         'value' => $rendered,
