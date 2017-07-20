@@ -587,6 +587,14 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $inte
     }
   }
   catch (Exception $e) {
+    if ($e->getCode() == '400' && strpos($e->getMessage(), 'Member In Compliance State') !== false && !$double_optin) {
+      watchdog('mailchimp', 'Detected "Member In Compliance State" subscribing @email to list @list.  Trying again using double-opt in.', array(
+        '@email' => $email,
+        '@list' => $list_id,
+      ), WATCHDOG_INFO);
+      return mailchimp_subscribe_process($list_id, $email, $merge_vars, $interests, TRUE, $format);
+    }
+
     watchdog('mailchimp', 'An error occurred subscribing @email to list @list. Status code @code. "%message"', array(
       '@email' => $email,
       '@list' => $list_id,
@@ -599,6 +607,9 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $inte
     $result->message = $e->getMessage();
   }
 
+  if ($double_optin) {
+      drupal_set_message(t('Please check your email to confirm your subscription'), 'status', FALSE);
+  }
   return $result;
 }
 
@@ -692,7 +703,7 @@ function mailchimp_update_local_cache($function, $args) {
  * @return bool
  *   Success or failure.
  */
-function mailchimp_update_member($list_id, $email, $merge_vars, $interests, $format = 'html') {
+function mailchimp_update_member($list_id, $email, $merge_vars, $interests, $format = 'html', $double_optin = FALSE) {
   if (variable_get('mailchimp_cron', FALSE)) {
     $args = array(
       'list_id' => $list_id,
@@ -700,11 +711,12 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $interests, $for
       'merge_vars' => $merge_vars,
       'interests' => $interests,
       'format' => $format,
+      'double_optin' => $double_optin,
     );
     return mailchimp_addto_queue('mailchimp_update_member_process', $args);
   }
 
-  return mailchimp_update_member_process($list_id, $email, $merge_vars, $interests, $format);
+  return mailchimp_update_member_process($list_id, $email, $merge_vars, $interests, $format, $double_optin);
 }
 
 /**
@@ -715,7 +727,7 @@ function mailchimp_update_member($list_id, $email, $merge_vars, $interests, $for
  * @return bool
  *   Success or failure.
  */
-function mailchimp_update_member_process($list_id, $email, $merge_vars, $interests, $format) {
+function mailchimp_update_member_process($list_id, $email, $merge_vars, $interests, $format, $double_optin = FALSE) {
   $result = FALSE;
   try {
     /* @var \Mailchimp\MailchimpLists $mc_lists */
@@ -725,7 +737,7 @@ function mailchimp_update_member_process($list_id, $email, $merge_vars, $interes
     }
 
     $parameters = array(
-      'status' => 'subscribed',
+      'status' => ($double_optin) ? \Mailchimp\MailchimpLists::MEMBER_STATUS_PENDING : \Mailchimp\MailchimpLists::MEMBER_STATUS_SUBSCRIBED,
       'email_type' => $format,
     );
 
@@ -776,11 +788,22 @@ function mailchimp_update_member_process($list_id, $email, $merge_vars, $interes
     }
   }
   catch (Exception $e) {
+    if ($e->getCode() == '400' && strpos($e->getMessage(), 'Member In Compliance State') !== false && !$double_optin) {
+      watchdog('mailchimp', 'Detected "Member In Compliance State" updating @email to list @list.  Trying again using double-opt in.', array(
+        '@email' => $email,
+        '@list' => $list_id,
+      ), WATCHDOG_INFO);
+      return mailchimp_update_member_process($list_id, $email, $merge_vars, $interests, $format, TRUE);
+    }
+
     watchdog('mailchimp', 'An error occurred updating @email on list @list. "%message"', array(
       '@email' => $email,
       '@list' => $list_id,
       '%message' => $e->getMessage(),
     ), WATCHDOG_ERROR);
+  }
+  if ($double_optin) {
+      drupal_set_message(t('Please check your email to confirm your subscription'), 'status', FALSE);
   }
   return $result;
 }
