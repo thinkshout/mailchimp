@@ -68,7 +68,7 @@ class MailchimpSignupPageForm extends FormBase {
     $lists_count = (!empty($lists)) ? count($lists) : 0;
 
     if (empty($lists)) {
-      drupal_set_message('The subscription service is currently unavailable. Please try again later.', 'warning');
+      drupal_set_message($this->t('The subscription service is currently unavailable. Please try again later.'), 'warning');
     }
 
     $list = array();
