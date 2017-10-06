@@ -318,7 +318,7 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
   foreach ($signup->settings['mergefields'] as $tag => $mergevar) {
     if (!empty($mergevar)) {
       $mergevar->name = mailchimp_signup_tt("mailchimp_signup:mailchimp_signup:$signup->name:mergefield:$tag", $mergevar->name);
-      $form['mergevars'][$tag] = mailchimp_insert_drupal_form_tag($mergevar);
+      $form['mergevars'][$tag] = mailchimp_insert_drupal_form_tag($mergevar, $signup->settings['placeholder']);
       if (empty($lists)) {
         $form['mergevars'][$tag]['#disabled'] = TRUE;
       }

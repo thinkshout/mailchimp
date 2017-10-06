@@ -635,19 +635,24 @@ function mailchimp_addto_queue($function, $args) {
 }
 
 /**
- * Updates the local cache for a user as though a queued request had been processed.
+ * Updates the local cache for a user as though a queued request had been
+ * processed.
  *
- * If we don't do this, then users can make changes, but not have them shown on the site until
- * cron runs, which is intensely confusing. See https://www.drupal.org/node/2503597
+ * If we don't do this, then users can make changes, but not have them shown on
+ * the site until cron runs, which is intensely confusing. See
+ * https://www.drupal.org/node/2503597
  *
- * @string $function
- *   The name of the function that the queue runner will call when the update is processed.
- * @array $args
+ * @param string $function
+ *   The name of the function that the queue runner will call when the update
+ *   is processed.
+ * @param array $args
  *   The list of args that will be passed to the queue runner.
+ *
+ * @return bool
  */
 function mailchimp_update_local_cache($function, $args) {
   $list_id = isset($args['list_id']) ? $args['list_id'] : NULL;
-  $email   = isset($args['email']) ? $args['email'] : NULL;
+  $email = isset($args['email']) ? $args['email'] : NULL;
   if (empty($list_id) || empty($email)) {
     return FALSE;
   }
@@ -672,8 +677,7 @@ function mailchimp_update_local_cache($function, $args) {
     $cache->status = 'subscribed';
   }
   // Handle member updates.
-  if ($function == 'mailchimp_update_member_process' ||
-      $function == 'mailchimp_subscribe_process') {
+  if ($function == 'mailchimp_update_member_process' || $function == 'mailchimp_subscribe_process') {
     // Update cached merge vars.
     if (!isset($cache->merge_fields)) {
       $cache->merge_fields = new stdClass();
@@ -1161,7 +1165,8 @@ function mailchimp_segment_batch_add_subscribers($list_id, $segment_id, $batch) 
 }
 
 /**
- * Wrapper around MailchimpCampaigns->getCampaign() to return data for a given campaign.
+ * Wrapper around MailchimpCampaigns->getCampaign() to return data for a given
+ * campaign.
  *
  * Data is stored in the MailChimp cache.
  *
@@ -1540,15 +1545,23 @@ function mailchimp_interest_groups_form_elements($list, $defaults = array(), $em
  * @return array
  *   A properly formatted drupal form element.
  */
-function mailchimp_insert_drupal_form_tag($mergevar) {
+function mailchimp_insert_drupal_form_tag($mergevar, $placeholder) {
   // Insert common FormAPI properties:
   $input = array(
-    '#title' => t('@mergevar', array('@mergevar' => $mergevar->name)),
     '#weight' => $mergevar->display_order,
     '#required' => $mergevar->required,
     '#default_value' => $mergevar->default_value,
-  );
 
+  );
+  $placeholder_req = $mergevar->required ? ' *' : '';
+  $title = t('@mergevar', array('@mergevar' => $mergevar->name));
+  // Check to see if we should set placeholder or #title attribute
+  if ($placeholder) {
+    $input['#attributes']['placeholder'] = $title . $placeholder_req;
+  }
+  else {
+    $input['#title'] = $title;
+  }
   switch ($mergevar->type) {
     case 'address':
       // Sub-array of address elements according to MailChimp specs.
@@ -1556,35 +1569,45 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
       $input['#type'] = 'container';
       $input['#tree'] = TRUE;
       $input['addr1'] = array(
-        '#title' => t('Address 1'),
         '#type' => 'textfield',
       );
       $input['addr2'] = array(
-        '#title' => t('Address 2'),
         '#type' => 'textfield',
       );
       $input['city'] = array(
-        '#title' => t('City'),
         '#type' => 'textfield',
       );
       $input['state'] = array(
-        '#title' => t('State'),
         '#type' => 'textfield',
         '#size' => 2,
         '#maxlength' => 2,
       );
       $input['zip'] = array(
-        '#title' => t('Zip'),
         '#type' => 'textfield',
         '#size' => 6,
         '#maxlength' => 6,
       );
       $input['country'] = array(
-        '#title' => t('Country'),
         '#type' => 'textfield',
         '#size' => 2,
         '#maxlength' => 2,
       );
+      if (!$placeholder) {
+        $input['addr1']['#title'] = t('Address 1');
+        $input['addr2']['#title'] = t('Address 2');
+        $input['city']['#title'] = t('City');
+        $input['state']['#title'] = t('State');
+        $input['zip']['#title'] = t('Zip');
+        $input['country']['#title'] = t('Country');
+      }
+      else {
+        $input['addr1']['#attributes']['placeholder'] = t('Address 1') . $placeholder_req;
+        $input['addr2']['#attributes']['placeholder'] = t('Address 2') . $placeholder_req;
+        $input['city']['#attributes']['placeholder'] = t('City') . $placeholder_req;
+        $input['state']['#attributes']['placeholder'] = t('State') . $placeholder_req;
+        $input['zip']['#attributes']['placeholder'] = t('Zip') . $placeholder_req;
+        $input['country']['#attributes']['placeholder'] = t('Country') . $placeholder_req;
+      }
       break;
 
     case 'dropdown':
