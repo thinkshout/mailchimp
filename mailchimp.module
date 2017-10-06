@@ -169,9 +169,32 @@ function mailchimp_get_api_object($classname = 'Mailchimp', $api_key = NULL) {
     return NULL;
   }
   // Set the timeout to something that won't take down the Drupal site:
-  $timeout = 60;
+  $http_options = [
+    'timeout' => 60,
+  ];
 
-  $mailchimp = new $classname($api_key, 'apikey', $timeout);
+  $proxy_server = variable_get('proxy_server', '');
+  if ($proxy_server) {
+    $proxy_url = sprintf(
+      'tcp://%s:%d',
+      $proxy_server,
+      variable_get('proxy_port', 8080)
+    );
+
+    $http_options['proxy'] = [
+      'http' => $proxy_url,
+      'https' => $proxy_url,
+    ];
+
+    if ($proxy_username = variable_get('proxy_username', '')) {
+      $proxy_password = variable_get('proxy_password', '');
+      $http_options['headers']['Proxy-Authorization'] = 'Basic ' . base64_encode(
+        $proxy_username . (!empty($proxy_password) ? ":" . $proxy_password : '')
+      );
+    }
+  }
+
+  $mailchimp = new $classname($api_key, 'apikey', $http_options);
 
   return $mailchimp;
 }
