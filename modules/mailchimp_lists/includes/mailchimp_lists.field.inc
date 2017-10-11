@@ -325,7 +325,7 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
   if (isset($element['#entity'])) {
     $email = mailchimp_lists_load_email($instance, $element['#entity'], FALSE);
     if ($email) {
-      $default = mailchimp_is_subscribed($field['settings']['mc_list_id'], $email);
+      $default = mailchimp_is_subscribed($field['settings']['mc_list_id'], $email, $field['settings']['double_opt_in']);
     }
   }
   $element += array(
