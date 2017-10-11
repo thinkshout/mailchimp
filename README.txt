@@ -96,7 +96,8 @@ MailChimp Library Installation
         https://www.drupal.org/project/libraries
 
       - Download the current release of the MailChimp library:
-        https://github.com/thinkshout/mailchimp-api-php/files/710410/v1.0.6-package.zip
+        https://github.com/thinkshout/mailchimp-api-php/releases/download/v1.0.7/v1.0.7-package.zip ( php7+ )
+        https://github.com/thinkshout/mailchimp-api-php/releases/download/v1.0.7/v1.0.7-package-no-dev.zip ( php5.6+ )
 
       - Locate your libraries directory. Usually:
         /sites/all/libraries/
