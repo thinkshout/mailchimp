@@ -574,8 +574,9 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $inte
     }
 
     $parameters = array(
-      // If double opt-in is required, set member status to 'pending'.
-      'status' => ($double_optin) ? \Mailchimp\MailchimpLists::MEMBER_STATUS_PENDING : \Mailchimp\MailchimpLists::MEMBER_STATUS_SUBSCRIBED,
+      // If double opt-in is required, set member status to 'pending', but only
+      // if the user isn't already subscribed.
+      'status' => ($double_optin && !mailchimp_is_subscribed($list_id, $email)) ? \Mailchimp\MailchimpLists::MEMBER_STATUS_PENDING : \Mailchimp\MailchimpLists::MEMBER_STATUS_SUBSCRIBED,
       'email_type' => $format,
     );
 
