@@ -779,26 +779,8 @@ function mailchimp_update_member_process($list_id, $email, $merge_vars, $interes
       $parameters['merge_fields'] = (object) $merge_vars;
     }
 
-    // If email address has changed, unsubscribe and create new subscription.
-    // @see http://stackoverflow.com/questions/32224697/mailchimp-api-v3-0-change-subscriber-email
-    if (isset($parameters['merge_fields']->EMAIL) && ($email != $parameters['merge_fields']->EMAIL)) {
-      $result = $mc_lists->removeMember($list_id, $email);
-
-      watchdog('mailchimp', '@email was removed from list @list_id.', array(
-        '@email' => $email,
-        '@list' => $list_id,
-      ), WATCHDOG_NOTICE);
-
-      module_invoke_all('mailchimp_unsubscribe_user', $list_id, $email);
-
-      $email = $parameters['merge_fields']->EMAIL;
-
-      $result = $mc_lists->addOrUpdateMember($list_id, $email, $parameters);
-    }
-    else {
-      // Update member.
-      $result = $mc_lists->updateMember($list_id, $email, $parameters);
-    }
+    // Update member.
+    $result = $mc_lists->updateMember($list_id, $email, $parameters);
 
     if (!empty($result) && isset($result->id)) {
       watchdog('mailchimp', '@email was updated in list @list_id.', array(
