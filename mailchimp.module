@@ -1509,10 +1509,6 @@ function mailchimp_interest_groups_form_elements($list, $defaults = array(), $em
 
     // Extract the field options:
     $options = array();
-    if ($field_type == 'select') {
-      $options[''] = '-- select --';
-    }
-
     $default_values = array();
 
     // Set interest options and default values.
@@ -1535,6 +1531,7 @@ function mailchimp_interest_groups_form_elements($list, $defaults = array(), $em
       '#type' => $field_type,
       '#title' => $group->title,
       '#options' => $options,
+      '#empty_option' => t('-- select --'),
       '#default_value' => isset($default_values[$group->id]) ? $default_values[$group->id] : array(),
       '#attributes' => array('class' => array('mailchimp-newsletter-interests-' . $list->id)),
     );

@@ -300,6 +300,12 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
           ),
         );
         $form['mailchimp_lists'][$wrapper_key]['interest_groups'] += mailchimp_interest_groups_form_elements($list);
+        foreach ($form['mailchimp_lists'][$wrapper_key]['interest_groups'] as $group_id => $group) {
+          $form['mailchimp_lists'][$wrapper_key]['interest_groups'][$group_id]['#title'] = mailchimp_signup_tt("mailchimp_signup:mailchimp_signup:$signup->name:intgroup_$group_id", $group['#title']);
+          foreach ($group['#options'] as $interest_id => $interest_name) {
+            $form['mailchimp_lists'][$wrapper_key]['interest_groups'][$group_id]['#options'][$interest_id] = mailchimp_signup_tt('mailchimp_signup:mailchimp_signup:' . $signup->name . ':intgroup_' . $group_id . '_interest_' . $interest_id, $interest_name);
+          }
+        }
       }
     }
   }
@@ -308,6 +314,12 @@ function mailchimp_signup_subscribe_form($form, &$form_state, $signup, $type) {
     if ($use_interest_groups && isset($list->intgroups)) {
       $form['mailchimp_lists']['#weight'] = 9;
       $form['mailchimp_lists']['interest_groups'] = mailchimp_interest_groups_form_elements($list);
+      foreach ($form['mailchimp_lists']['interest_groups'] as $group_id => $group) {
+        $form['mailchimp_lists']['interest_groups'][$group_id]['#title'] = mailchimp_signup_tt("mailchimp_signup:mailchimp_signup:$signup->name:intgroup_$group_id", $group['#title']);
+        foreach ($group['#options'] as $interest_id => $interest_name) {
+          $form['mailchimp_lists']['interest_groups'][$group_id]['#options'][$interest_id] = mailchimp_signup_tt('mailchimp_signup:mailchimp_signup:' . $signup->name . ':intgroup_' . $group_id . '_interest_' . $interest_id, $interest_name);
+        }
+      }
     }
   }
   $form['mergevars'] = array(
