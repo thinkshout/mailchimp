@@ -62,6 +62,10 @@ class MailchimpI18nStringObjectWrapper extends i18n_string_object_wrapper {
       }
     }
 
+    if (!isset($strings[$this->get_textgroup()]['mailchimp_signup'][$this->object->name])) {
+      $strings[$this->get_textgroup()]['mailchimp_signup'][$this->object->name] = array();
+    }
+
     $strings[$this->get_textgroup()]['mailchimp_signup'][$this->object->name] += $properties;
     return $strings;
   }
