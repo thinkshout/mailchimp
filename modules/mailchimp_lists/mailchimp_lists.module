@@ -498,7 +498,7 @@ function mailchimp_lists_update_member_batch($entity_type, $bundle_name, $field,
 
     // If an entity exists, populate the mergevars for MailChimp.
     if (!empty($entity)) {
-      $merge_vars = _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type);
+      $merge_vars = _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type, $field['settings']['mc_list_id']);
       if ($merge_vars['EMAIL'] && isset($subscribers[strtolower($merge_vars['EMAIL'])])) {
         $update_queue[] = array(
           'email' => $merge_vars['EMAIL'],
