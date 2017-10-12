@@ -86,7 +86,7 @@ function mailchimp_signup_block_info() {
     if (intval($signup->mode) == MAILCHIMP_SIGNUP_BLOCK || intval($signup->mode) == MAILCHIMP_SIGNUP_BOTH) {
       $blocks[$signup->identifier()] = array(
         'info' => t('Mailchimp Subscription Form: @name', array('@name' => $signup->label())),
-        'cache' => DRUPAL_CACHE_PER_USER,
+        'cache' => DRUPAL_CACHE_PER_PAGE | DRUPAL_CACHE_PER_ROLE,
       );
     }
   }
