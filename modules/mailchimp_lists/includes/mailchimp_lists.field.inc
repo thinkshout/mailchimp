@@ -642,7 +642,11 @@ function _mailchimp_lists_field_postsave($entity_type, $entity, $field, $instanc
     }
 
     // Check if the field is empty or is set by the system via field_get_default_value().
-    if (empty($items[0]) || !empty($item[0]['is_default'])) {
+    if (empty($items[0])) {
+      // user_save() was called without our field in its $edit
+      return;
+    }
+    else if (!empty($items[0]['is_default'])) {
       // Check if this email is already subscribed.
       $email = mailchimp_lists_load_email($instance, $entity);
       $list_id = $field['settings']['mc_list_id'];
