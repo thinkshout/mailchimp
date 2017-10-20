@@ -465,29 +465,50 @@ function mailchimp_lists_update_member_batch($entity_type, $bundle_name, $field,
     }
   }
 
-  // Determine the Drupal field name from the mergefield token.
-  // CAUTION: This may not work for all variations of field names.
-  $entity_email_field_name = str_replace(array(']', '['), '', $mergefields['EMAIL']);
-  $entity_email_field_name = str_replace(':', '_', $entity_email_field_name);
+  // Split up mergefield token to determine referenced entity field or property.
+  $entity_email_field_parts = explode(':', str_replace(array(']', '['), '', $mergefields['EMAIL']));
 
+  // Determine the Drupal field name from the mergefield token.
+  $entity_email_field_name = str_replace('-', '_', $entity_email_field_parts[1]);
   $entity_email_field_info = field_info_field($entity_email_field_name);
 
-  // Determine the field value column in the field database table.
-  // This relies on the field's database table having a primary index on
-  // the field's value column. Should work, but check here if things are not
-  // working as expected.
-  $entity_email_field_column = current($entity_email_field_info['indexes'])[0];
+  if (!empty($entity_email_field_info)) {
+    // Set the default field value column in the field database table.
+    $entity_email_field_column = 'value';
+  }
+  else {
+    // If not a field, then the mergefield token refers to a property.
+    $entity_email_property_column = $entity_email_field_parts[1];
+  }
+
+  // Unable to match email mergefield token with a field/property of the entity.
+  if (empty($entity_email_field_column) && empty($entity_email_property_column)) {
+    watchdog('mailchimp_lists', 'Could not update merge variables. Unable to match token @email with a field or property of the @entity entity.', array(
+      '@email' => $mergefields['EMAIL'],
+      '@entity' => $entity_type,
+    ), WATCHDOG_ERROR);
+
+    drupal_set_message(t('Unable to update merge variables. Please see your error log for details.'), 'error');
+
+    // Not possible to send merge variables. End batch process.
+    $context['finished'] = 1;
+    return;
+  }
 
   // For each list subscriber email, load the associated entity.
   foreach ($subscriber_emails as $subscriber_email) {
-
     $query = new EntityFieldQuery();
     $query->entityCondition('entity_type', $entity_type);
     if ($entity_type !== 'user') {
       $query->entityCondition('bundle', $bundle_name);
     }
 
-    $query->fieldCondition($entity_email_field_name, $entity_email_field_column, $subscriber_email, '=');
+    if (!empty($entity_email_field_column)) {
+      $query->fieldCondition($entity_email_field_name, $entity_email_field_column, $subscriber_email, '=');
+    }
+    elseif (!empty($entity_email_property_column)) {
+      $query->propertyCondition($entity_email_property_column, $subscriber_email, '=');
+    }
 
     $query_results = $query->execute();
 
@@ -511,7 +532,6 @@ function mailchimp_lists_update_member_batch($entity_type, $bundle_name, $field,
     else {
       $context['results']['no_entity']++;
     }
-
   }
 
   // Send updated mergevars to MailChimp.
