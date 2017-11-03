@@ -404,8 +404,16 @@ function mailchimp_signup_subscribe_form_submit($form, &$form_state) {
     // Parse interests from interest groups.
     $interests = array();
     foreach ($interest_groups as $interest_group) {
-      foreach ($interest_group as $interest_id => $interest_status) {
-        $interests[$interest_id] = ($interest_status !== 0);
+      // Check if interest group is an array. Checkbox options will appear in an
+      // array, and unset options will be an empty array.
+      if (is_array($interest_group)) {
+        foreach ($interest_group as $interest_id => $interest_status) {
+          $interests[$interest_id] = ($interest_status !== 0);
+        }
+      }
+      // If it's not an array, the single option will be the interest ID.
+      else if ($interest_group != 0) {
+        $interests[$interest_group] = TRUE;
       }
     }
     $result = mailchimp_subscribe($list_id, $email, $mergevars, $interests, $signup->settings['doublein']);
