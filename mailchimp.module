@@ -33,6 +33,7 @@ function mailchimp_libraries_info() {
         'src/Mailchimp.php',
         'src/MailchimpAPIException.php',
         'src/MailchimpCampaigns.php',
+        'src/MailchimpConnectedSites.php',
         'src/MailchimpLists.php',
         'src/MailchimpReports.php',
         'src/MailchimpTemplates.php',
