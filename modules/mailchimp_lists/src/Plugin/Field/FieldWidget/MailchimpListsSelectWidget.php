@@ -53,11 +53,13 @@ class MailchimpListsSelectWidget extends WidgetBase {
       '#disabled' => $this->fieldDefinition->isRequired(),
     );
 
-    $form_id = $form_state->getFormObject()->getFormId();
-
+    // TRUE if interest groups are enabled for this list.
     $show_interest_groups = $this->fieldDefinition->getSetting('show_interest_groups');
+    // TRUE if interest groups are enabled but hidden from the user.
     $interest_groups_hidden = $this->fieldDefinition->getSetting('interest_groups_hidden');
+    // TRUE if widget is being used to set default values via admin form.
     $is_default_value_widget = $this->isDefaultValueWidget($form_state);
+
     if ($show_interest_groups || $is_default_value_widget) {
       $mc_list = mailchimp_get_list($instance->getFieldDefinition()->getSetting('mc_list_id'));
 
