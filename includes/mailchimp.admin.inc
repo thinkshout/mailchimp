@@ -42,7 +42,7 @@ function mailchimp_admin_settings() {
     }
   }
 
-  $form['connected_sites']['sites'] = array(
+  $form['connected_sites']['config'] = array(
     '#type' => 'container',
     '#states' => array(
       'invisible' => array(
@@ -54,11 +54,19 @@ function mailchimp_admin_settings() {
   if (!empty($connected_sites_options)) {
     // If the MailChimp account contains connected sites, allow the user to
     // choose one here.
-    $form['connected_sites']['sites']['mailchimp_connected_id'] = array(
+    $form['connected_sites']['config']['mailchimp_connected_id'] = array(
       '#type' => 'radios',
       '#options' => $connected_sites_options,
       '#default_value' => variable_get('mailchimp_connected_id', FALSE),
       '#prefix' => t('<p><b>Choose a connected site from your MailChimp account.</b></p>'),
+    );
+
+    // Allow the user to configure which paths to embed JavaScript on.
+    $form['connected_sites']['config']['mailchimp_connected_paths'] = array(
+      '#type' => 'textarea',
+      '#default_value' => variable_get('mailchimp_connected_paths', FALSE),
+      '#prefix' => t("<p><b>Configure paths to embed MailChimp's JavaScript code on.</b></p>"),
+      '#description' => t('Specify pages using their paths. Enter one path per line. <front> is the front page. If you have created a pop-up subscription form in MailChimp, it will appear on paths defined here.'),
     );
   }
   else {

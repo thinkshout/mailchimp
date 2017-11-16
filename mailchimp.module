@@ -1863,3 +1863,38 @@ function mailchimp_format_date($input) {
     return NULL;
   }
 }
+
+/**
+ * Implements hook_page_build().
+ */
+function mailchimp_page_build(&$page) {
+  // Insert JavaScript for MailChimp Connected Sites, if enabled.
+  if (variable_get('mailchimp_enable_connected', FALSE)) {
+    // Limit JavaScript embed to pre-configured paths.
+    $connected_site_paths = variable_get('mailchimp_connected_paths', FALSE);
+    $valid_paths = explode("\r\n", $connected_site_paths);
+
+    $path = current_path();
+
+    if ((drupal_is_front_page() && in_array('<front>', $valid_paths)) || in_array($path, $valid_paths)) {
+      $connected_site_id = variable_get('mailchimp_connected_id', FALSE);
+
+      if (!empty($connected_site_id)) {
+        /* @var \Mailchimp\MailchimpConnectedSites $mc_connected */
+        $mc_connected = mailchimp_get_api_object('MailchimpConnectedSites');
+
+        // Verify Connected Site exists on the MailChimp side and insert JS.
+        $connected_site = $mc_connected->getConnectedSite($connected_site_id);
+        if (!empty($connected_site)) {
+
+          $mcjs = array(
+            '#type' => 'markup',
+            '#markup' => $connected_site->site_script->fragment,
+          );
+
+          drupal_add_html_head($mcjs, 'mcjs');
+        }
+      }
+    }
+  }
+}
