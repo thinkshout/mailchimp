@@ -102,13 +102,18 @@ class MailchimpAdminSettingsForm extends ConfigFormBase {
       );
     }
 
-    $form['cron'] = array(
+    $form['batch'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Batch processing'),
+    );
+
+    $form['batch']['cron'] = array(
       '#type' => 'checkbox',
       '#title' => t('Use batch processing.'),
       '#description' => t('Puts all Mailchimp subscription operations into the cron queue. (Includes subscribe, update, and unsubscribe operations.) <i>Note: May cause confusion if caches are cleared, as requested changes will appear to have failed until cron is run.</i>'),
       '#default_value' => $config->get('cron'),
     );
-    $form['batch_limit'] = array(
+    $form['batch']['batch_limit'] = array(
       '#type' => 'select',
       '#options' => array(
         '1' => '1',
