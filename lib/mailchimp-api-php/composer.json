@@ -1,6 +1,6 @@
 {
   "name": "thinkshout/mailchimp-api-php",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "type": "library",
   "description": "PHP library for v3 of the MailChimp API",
   "keywords": ["mailchimp", "mail"],
@@ -10,11 +10,12 @@
     "guzzlehttp/guzzle": "^6.2.1"
   },
   "require-dev": {
-    "phpunit/phpunit": "^4.8.21"
+    "phpunit/phpunit": "^6.2.2"
   },
   "autoload": {
     "psr-4": {
-      "Mailchimp\\": "src/"
+      "Mailchimp\\": "src/",
+      "Mailchimp\\http\\": "src/http/"
     }
   },
   "autoload-dev": {
