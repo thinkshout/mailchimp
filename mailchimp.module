@@ -23,11 +23,14 @@ include $path . '/lib/mailchimp-api-php/src/Mailchimp.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpAPIException.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpAutomations.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpCampaigns.php';
-include $path . '/lib/mailchimp-api-php/src/MailchimpCURLClient.php';
+include $path . '/lib/mailchimp-api-php/src/MailchimpConnectedSites.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpEcommerce.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpLists.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpReports.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpTemplates.php';
+include $path . '/lib/mailchimp-api-php/src/http/MailchimpHttpClientInterface.php';
+include $path . '/lib/mailchimp-api-php/src/http/MailchimpCurlHttpClient.php';
+include $path . '/lib/mailchimp-api-php/src/http/MailchimpGuzzleHttpClient.php';
 
 /**
  * Access callback for mailchimp submodule menu items.
