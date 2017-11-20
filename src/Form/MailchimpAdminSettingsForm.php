@@ -86,7 +86,7 @@ class MailchimpAdminSettingsForm extends ConfigFormBase {
       // Allow the user to configure which paths to embed JavaScript on.
       $form['connected_sites']['config']['connected_paths'] = array(
         '#type' => 'textarea',
-        '#default_value' => $config->get('connected_paths', FALSE),
+        '#default_value' => $config->get('connected_paths'),
         '#prefix' => t("<p><b>Configure paths to embed MailChimp's JavaScript code on.</b></p>"),
         '#description' => t('Specify pages using their paths. Enter one path per line. <front> is the front page. If you have created a pop-up subscription form in MailChimp, it will appear on paths defined here.'),
       );
