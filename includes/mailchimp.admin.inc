@@ -31,15 +31,31 @@ function mailchimp_admin_settings() {
     '#default_value' => variable_get('mailchimp_enable_connected', FALSE),
   );
 
-  /* @var \Mailchimp\MailchimpConnectedSites $mc_connected */
-  $mc_connected = mailchimp_get_api_object('MailchimpConnectedSites');
-
-  $connected_sites = $mc_connected->getConnectedSites();
   $connected_sites_options = array();
-  if (!empty($connected_sites) && !empty($connected_sites->sites)) {
-    foreach ($connected_sites->sites as $site) {
-      $connected_sites_options[$site->foreign_id] = $site->domain;
+  try {
+    /* @var \Mailchimp\MailchimpConnectedSites $mc_connected */
+    $mc_connected = mailchimp_get_api_object('MailchimpConnectedSites');
+    if ($mc_connected) {
+      $connected_sites = $mc_connected->getConnectedSites();
+      if (!empty($connected_sites) && !empty($connected_sites->sites)) {
+        foreach ($connected_sites->sites as $site) {
+          $connected_sites_options[$site->foreign_id] = $site->domain;
+        }
+      }
     }
+  }
+  catch (\Mailchimp\MailchimpAPIException $e) {
+    watchdog(
+      'mailchimp',
+      'An error occurred while connecting to api. "%message"',
+      array('%message' => $e->getMessage()),
+      WATCHDOG_ERROR
+    );
+
+    drupal_set_message(
+      t('Failed connecting to the MailChimp backend with the provided API key.'),
+      'error'
+    );
   }
 
   $form['connected_sites']['config'] = array(
