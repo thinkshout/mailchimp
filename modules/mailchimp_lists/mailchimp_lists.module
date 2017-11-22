@@ -407,7 +407,7 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
     $query = \Drupal::entityQuery($entity_type);
 
     if ($entity_type !== 'user') {
-      $query->entityCondition('bundle', $bundle_name);
+      $query->condition('bundle', $bundle_name);
     }
 
     $query_results = $query->execute();
