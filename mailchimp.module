@@ -449,10 +449,10 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $inte
   }
   catch (Exception $e) {
     if ($e->getCode() == '400' && strpos($e->getMessage(), 'Member In Compliance State') !== FALSE && !$double_optin) {
-      watchdog('mailchimp', 'Detected "Member In Compliance State" subscribing @email to list @list.  Trying again using double-opt in.', array(
-        '@email' => $email,
-        '@list' => $list_id,
-      ), WATCHDOG_INFO);
+      \Drupal::logger('mailchimp')->error('Detected "Member In Compliance State" subscribing {email} to list {list}. Trying again using double-opt in.', array(
+        'email' => $email,
+        'list' => $list_id,
+      ));
       return mailchimp_subscribe_process($list_id, $email, $merge_vars, $interests, TRUE, $format);
     }
 
@@ -571,10 +571,10 @@ function mailchimp_update_member_process($list_id, $email, $merge_vars, $interes
   }
   catch (Exception $e) {
     if ($e->getCode() == '400' && strpos($e->getMessage(), 'Member In Compliance State') !== FALSE && !$double_optin) {
-      watchdog('mailchimp', 'Detected "Member In Compliance State" updating @email to list @list.  Trying again using double-opt in.', array(
-        '@email' => $email,
-        '@list' => $list_id,
-      ), WATCHDOG_INFO);
+      \Drupal::logger('mailchimp')->error('Detected "Member In Compliance State" subscribing {email} to list {list}.  Trying again using double-opt in.', array(
+        'email' => $email,
+        'list' => $list_id,
+      ));
 
       return mailchimp_update_member_process($list_id, $email, $merge_vars, $interests, $format, TRUE);
     }
