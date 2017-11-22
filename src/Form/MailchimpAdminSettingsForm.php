@@ -6,6 +6,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
+use Mailchimp\MailchimpAPIException;
 
 /**
  * Configure Mailchimp settings for this site.
@@ -43,20 +44,27 @@ class MailchimpAdminSettingsForm extends ConfigFormBase {
       '#title' => t('Connected sites'),
     );
 
-    $mc_connected_sites_url = Url::fromUri('https://kb.mailchimp.com/integrations/connected-sites/about-connected-sites', array('attributes' => array('target' => '_blank')));
+    $mc_connected_sites_url = Url::fromUri('https://kb.mailchimp.com/integrations/connected-sites/about-connected-sites')->toString();
     $form['connected_sites']['enable_connected'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Enable connected site'),
-      '#description' => t("Connects this website to MailChimp by automatically embedding MailChimp's @link JavaScript code.", array(
-        '@link' => Link::fromTextAndUrl(t('Connected Sites'), $mc_connected_sites_url),
+      '#title' => $this->t('Enable connected site'),
+      '#description' => $this->t('Connects this website to MailChimp by automatically embedding MailChimp\'s <a href=":link" target="_blank">Connected Sites</a> JavaScript code.', array(
+        ':link' => $mc_connected_sites_url,
       )),
       '#default_value' => $config->get('enable_connected'),
     );
 
     /* @var \Mailchimp\MailchimpConnectedSites $mc_connected */
-    $mc_connected = mailchimp_get_api_object('MailchimpConnectedSites');
+    try {
+      $mc_connected = mailchimp_get_api_object('MailchimpConnectedSites');
+      if ($mc_connected) {
+        $connected_sites = $mc_connected->getConnectedSites();
+      }
+    }
+    catch (MailchimpAPIException $e) {
+      // Ignore errors due to invalid keys.
+    }
 
-    $connected_sites = $mc_connected->getConnectedSites();
     $connected_sites_options = array();
     if (!empty($connected_sites) && !empty($connected_sites->sites)) {
       foreach ($connected_sites->sites as $site) {
@@ -96,8 +104,8 @@ class MailchimpAdminSettingsForm extends ConfigFormBase {
       // encourage the user to create one.
       $form['connected_sites']['sites']['info'] = array(
         '#type' => 'markup',
-        '#markup' => t("You'll need to connect this site to MailChimp first! !link.", array(
-          '!link' => l(t('Check out the documentation here'), 'https://kb.mailchimp.com/integrations/connected-sites/about-connected-sites'),
+        '#markup' => $this->t('You will need to connect this site to MailChimp first! <a href=":link" target="_blank">Check out the documentation here</a>.', array(
+          ':link' => $mc_connected_sites_url,
         )),
       );
     }
