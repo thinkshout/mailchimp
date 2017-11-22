@@ -3,12 +3,15 @@
 namespace Drupal\mailchimp_lists\Plugin\Field\FieldType;
 
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\OptGroup;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
+use Drupal\Core\TypedData\DataDefinitionInterface;
 use Drupal\Core\Url;
 
 /**
@@ -283,7 +286,7 @@ class MailchimpListsSubscription extends FieldItemBase {
    * @return array
    */
   public function getInterestGroups() {
-    if (isset($this->values['value'])) {
+    if (isset($this->values['value']['interest_groups'])) {
       return $this->values['value']['interest_groups'];
     }
 
@@ -313,43 +316,53 @@ class MailchimpListsSubscription extends FieldItemBase {
       $options[''] = t('-- Select --');
     }
 
-    $properties = \Drupal::entityManager()->getFieldDefinitions($entity_type, $entity_bundle);
+    /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $field_definitions */
+    $field_definitions = \Drupal::service('entity_field.manager')->getFieldDefinitions($entity_type, $entity_bundle);
 
-    /*
-      if (isset($entity_bundle)) {
-        $info = entity_get_property_info($entity_type);
-        $properties = $info['properties'];
-        if (isset($info['bundles'][$entity_bundle])) {
-          $properties += $info['bundles'][$entity_bundle]['properties'];
-        }
-      }
-    */
+    foreach ($field_definitions as $field_name => $field_definition) {
+      $keypath = $prefix ? $prefix . ':' . $field_name : $field_name;
 
-    foreach ($properties as $key => $property) {
-      $keypath = $prefix ? $prefix . ':' . $key : $key;
-      $type = isset($property->type) ? entity_property_extract_innermost_type($property->type) : 'text';
-      $is_entity = ($type == 'entity');// || (bool) entity_get_info($type);
+      $label = $field_definition->getLabel();
 
-      $label = $property->getLabel();
-      $bundle = $property->getTargetBundle();
-
-      if ($is_entity) {
-        // We offer fields on related entities (useful for field collections).
+      if ($field_definition->getSetting('target_type')) {
+        $target_type = $field_definition->getSetting('target_type');
+        $target_definition = \Drupal::entityTypeManager()->getDefinition($target_type);
+        // We offer fields on related fieldable entities (useful for field
+        // collections).
         // But we only offer 1 level of depth to avoid loops.
-        if (!$prefix) {
-          $options[$label] = $this->getFieldmapOptions($type, $bundle, $required, $keypath, $label);
+        if ($target_definition->entityClassImplements(FieldableEntityInterface::class) && !$prefix) {
+          $handler_settings = $field_definition->getSetting('handler_settings');
+          $bundle = NULL;
+          if ($target_definition->hasKey('bundle')) {
+            // @todo Support multiple target bundles?
+            if (!empty($handler_settings['target_bundles']) && count($handler_settings['target_bundles']) == 1) {
+              $bundle = reset($handler_settings['target_bundles']);
+            }
+          }
+          else {
+            $bundle = $target_type;
+          }
+          if ($bundle) {
+            $options[(string) $label] = $this->getFieldmapOptions($field_definition->getSetting('target_type'), $bundle, $required, $keypath . ':entity', $label);
+          }
         }
       }
-      elseif (!$required || $property->isRequired() || $property->isComputed()) {
-        //if (isset($property['field']) && $property['field'] && !empty($property['property info'])) {
-        //  foreach ($property['property info'] as $sub_key => $sub_prop) {
-        //    $label = isset($tree) ? $tree . ' - ' . $property['label'] : $property['label'];
-        //    $options[$label][$keypath . ':' . $sub_key] = $sub_prop['label'];
-        //  }
-        //}
-        //else {
-        $options[$keypath] = $label;
-        //}
+      elseif (!$required || $field_definition->isRequired() || $field_definition->isComputed()) {
+
+        // Get a list of non-computed property definitions.
+        $property_definitions = $field_definition->getFieldStorageDefinition()->getPropertyDefinitions();
+        $property_definitions = array_filter($property_definitions, function (DataDefinitionInterface $property_definition) {
+          return !$property_definition->isComputed();
+        });
+
+        if (count($property_definitions) > 1) {
+          foreach ($property_definitions as $property => $property_definition) {
+            $options[(string) $label][$keypath . ':' . $property] = $property_definition->getLabel();
+          }
+        }
+        else {
+          $options[$keypath] = $label;
+        }
       }
     }
     return $options;
