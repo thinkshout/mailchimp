@@ -90,7 +90,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
 
     $list_segments = array();
     if (isset($list_id)) {
-      $list_segments = mailchimp_campaign_get_list_segments($list_id, 'saved');
+      $list_segments = mailchimp_campaign_get_list_segments($list_id, NULL);
     }
 
     $form['list_segment_id'] = array(
