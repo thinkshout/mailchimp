@@ -5,7 +5,7 @@ mailchimp_signup.admin:
     _entity_list: 'mailchimp_signup'
     _title: 'Signup Forms'
   requirements:
-    _permission: 'administer mailchimp_signup'
+    _permission: 'administer mailchimp signup entities'
     _mailchimp_configuration_access_check: 'TRUE'
 
 mailchimp_signup.add:
@@ -14,7 +14,7 @@ mailchimp_signup.add:
     _entity_form: 'mailchimp_signup.add'
     _title: 'Add Signup Form'
   requirements:
-    _permission: 'administer mailchimp_signup'
+    _permission: 'administer mailchimp signup entities'
 
 entity.mailchimp_signup.edit_form:
   path: '/admin/config/services/mailchimp/signup/{mailchimp_signup}'
@@ -22,7 +22,7 @@ entity.mailchimp_signup.edit_form:
     _entity_form: 'mailchimp_signup.edit'
     _title: 'Edit Signup Form'
   requirements:
-    _permission: 'administer mailchimp_signup'
+    _permission: 'administer mailchimp signup entities'
 
 entity.mailchimp_signup.delete_form:
   path: '/admin/config/services/mailchimp/signup/{mailchimp_signup}/delete'
@@ -30,7 +30,7 @@ entity.mailchimp_signup.delete_form:
     _entity_form: 'mailchimp_signup.delete'
     _title: 'Delete Signup Form'
   requirements:
-    _permission: 'administer mailchimp_signup'
+    _permission: 'administer mailchimp signup entities'
 
 route_callbacks:
   - '\Drupal\mailchimp_signup\Routing\MailchimpSignupRoutes::routes'
