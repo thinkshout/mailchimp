@@ -105,7 +105,7 @@ class MailchimpCampaignController extends ControllerBase {
         else {
           $content['campaigns_table'][$campaign_id]['template'] = array(
             '#markup' => '-- template ' .
-                Url::fromRoute($campaign->mc_data->settings->template_id, $template_url, array('attributes' => array('target' => '_blank')))->toString()
+              Link::fromTextAndUrl($campaign->mc_data->settings->template_id, $template_url, array('attributes' => array('target' => '_blank')))->toString()
                 . ' not found --',
           );
         }
