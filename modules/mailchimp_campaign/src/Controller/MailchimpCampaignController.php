@@ -104,14 +104,15 @@ class MailchimpCampaignController extends ControllerBase {
         }
         else {
           $content['campaigns_table'][$campaign_id]['template'] = array(
-            '#markup' => '-- template ' .
-              Link::fromTextAndUrl($campaign->mc_data->settings->template_id, $template_url, array('attributes' => array('target' => '_blank')))->toString()
-                . ' not found --',
+            '#markup' => $this->t('-- template %template_url not found --',
+            array(
+              '%template_url' => Link::fromTextAndUrl($campaign->mc_data->settings->template_id, $template_url)->toString(),
+            )),
           );
         }
       }
       $content['campaigns_table'][$campaign_id]['created'] = array(
-        '#markup' => \Drupal::service('date.formatter')->format(strtotime($campaign->mc_data->create_time) ,'custom','F j, Y - g:ia'),
+        '#markup' => \Drupal::service('date.formatter')->format(strtotime($campaign->mc_data->create_time), 'custom', 'F j, Y - g:ia'),
       );
 
       $content['campaigns_table'][$campaign_id]['actions'] = array(
