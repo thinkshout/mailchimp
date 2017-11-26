@@ -12,4 +12,4 @@ mailchimp.webhook_endpoint:
     _controller: '\Drupal\mailchimp\Controller\MailchimpWebhookController::endpoint'
     _title: 'Mailchimp Webhook Endpoint'
   requirements:
-   _permission: 'access content'
+   _access: 'TRUE'
