@@ -144,4 +144,7 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
     return $this->mc_data->settings->title;
   }
 
+  public function isInitialized() {
+    return isset($this->mc_data);
+  }
 }

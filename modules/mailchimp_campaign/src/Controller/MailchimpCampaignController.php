@@ -33,6 +33,9 @@ class MailchimpCampaignController extends ControllerBase {
 
     /* @var $campaign \Drupal\mailchimp_campaign\Entity\MailchimpCampaign */
     foreach ($campaigns as $campaign) {
+      if (!$campaign->isInitialized()) {
+        continue;
+      }
       $campaign_id = $campaign->getMcCampaignId();
 
       $archive_url = Url::fromUri($campaign->mc_data->archive_url);
