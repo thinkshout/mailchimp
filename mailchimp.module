@@ -1148,12 +1148,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
     '#default_value' => $mergevar->default_value,
   );
 
-  if (is_string($mergevar->name)) {
-    $input['#title'] = t('@mergevar', array('@mergevar' => $mergevar->name));
-  }
-  else {
-    $input['#title'] = $mergevar->name;
-  }
+  $input['#title'] = t($mergevar->name);
 
   switch ($mergevar->type) {
     case 'address':
