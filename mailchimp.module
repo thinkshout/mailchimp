@@ -1880,19 +1880,34 @@ function mailchimp_page_build(&$page) {
       $connected_site_id = variable_get('mailchimp_connected_id', FALSE);
 
       if (!empty($connected_site_id)) {
-        /* @var \Mailchimp\MailchimpConnectedSites $mc_connected */
-        $mc_connected = mailchimp_get_api_object('MailchimpConnectedSites');
+        try {
+          /* @var \Mailchimp\MailchimpConnectedSites $mc_connected */
+          $mc_connected = mailchimp_get_api_object('MailchimpConnectedSites');
 
-        // Verify Connected Site exists on the MailChimp side and insert JS.
-        $connected_site = $mc_connected->getConnectedSite($connected_site_id);
-        if (!empty($connected_site)) {
+          // Verify Connected Site exists on the MailChimp side and insert JS.
+          try {
+            $connected_site = $mc_connected->getConnectedSite($connected_site_id);
+            if (!empty($connected_site)) {
 
-          $mcjs = array(
-            '#type' => 'markup',
-            '#markup' => $connected_site->site_script->fragment,
-          );
+              $mcjs = array(
+                '#type' => 'markup',
+                '#markup' => $connected_site->site_script->fragment,
+              );
 
-          drupal_add_html_head($mcjs, 'mcjs');
+              drupal_add_html_head($mcjs, 'mcjs');
+            }
+          }
+          catch (Exception $e) {
+            // Throw exception only for errors other than member not found.
+            if ($e->getCode() != 404) {
+              throw new Exception($e->getMessage(), $e->getCode(), $e);
+            }
+          }
+        }
+        catch (Exception $e) {
+          watchdog('mailchimp', 'An error occurred requesting connected site information. "%message"', array(
+            '%message' => $e->getMessage(),
+          ), WATCHDOG_ERROR);
         }
       }
     }
