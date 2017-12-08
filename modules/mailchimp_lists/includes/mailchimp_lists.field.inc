@@ -18,6 +18,7 @@ function mailchimp_lists_field_info() {
       'send_welcome' => TRUE,
       'instance_settings' => array(
         'show_interest_groups' => FALSE,
+        'hide_subscribe_checkbox' => FALSE,
         'interest_groups_title' => NULL,
         'mergefields' => array(),
         'unsubscribe_on_delete' => TRUE,
@@ -127,6 +128,17 @@ function mailchimp_lists_field_instance_settings_form($field, $instance) {
     '#title' => t('Enable Interest Groups'),
     '#type' => 'checkbox',
     '#default_value' => $instance['settings']['show_interest_groups'],
+  );
+  $form['hide_subscribe_checkbox'] = array(
+    '#title' => t('Hide Subscribe Checkbox'),
+    '#type' => 'checkbox',
+    '#default_value' => $instance['settings']['hide_subscribe_checkbox'],
+    '#description' => t('When Interest Groups are enabled, the "subscribe" checkbox is hidden and selecting any interest group will subscribe a user to the list.'),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="instance[settings][show_interest_groups]"]' => array('checked' => FALSE),
+      ),
+    ),
   );
   $form['interest_groups_title'] = array(
     '#title' => t('Interest Groups Label'),
@@ -332,6 +344,10 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
     '#title' => check_plain($element['#title']),
     '#type' => 'fieldset',
   );
+
+  // Load the MailChimp list from the field's list ID.
+  $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
+
   $element['subscribe'] = array(
     '#title' => t('Subscribe'),
     '#type' => 'checkbox',
@@ -339,10 +355,24 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
     '#required' => $instance['required'],
     '#disabled' => $instance['required'],
   );
+
+  // Hide the Subscribe checkbox if:
+  // - The field is configured to show interest groups.
+  // - The field is configured to hide the Subscribe checkbox.
+  // - The list has at least one interest group.
+  // This allows users to skip the redundant step of checking the Subscribe
+  // checkbox when also checking interest group checkboxes.
+  if ($instance['settings']['show_interest_groups'] && $instance['settings']['hide_subscribe_checkbox'] && !empty($mc_list->intgroups)) {
+    $element['subscribe']['#access'] = FALSE;
+    $interest_group_element_type = 'container';
+  }
+  else {
+    $interest_group_element_type = 'fieldset';
+  }
+
   if ($instance['settings']['show_interest_groups'] || $form_state['build_info']['form_id'] == 'field_ui_field_edit_form') {
-    $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
     $element['interest_groups'] = array(
-      '#type' => 'fieldset',
+      '#type' => $interest_group_element_type,
       '#title' => check_plain($instance['settings']['interest_groups_title']),
       '#weight' => 100,
       '#states' => array(
@@ -657,6 +687,24 @@ function _mailchimp_lists_field_postsave($entity_type, $entity, $field, $instanc
       }
 
       $choices = $instance['default_value'][0];
+    }
+
+    // Automatically subscribe if the field is configured to hide the Subscribe
+    // checkbox and at least one interest group checkbox has been checked.
+    if ($instance['settings']['show_interest_groups'] && $instance['settings']['hide_subscribe_checkbox']) {
+      if (!empty($choices['interest_groups'])) {
+        $subscribe_from_interest_groups = FALSE;
+        foreach ($choices['interest_groups'] as $group_id => $interests) {
+          foreach ($interests as $interest_id => $value) {
+            if (!empty($value)) {
+              $subscribe_from_interest_groups = TRUE;
+              continue;
+            }
+          }
+        }
+
+        $choices['subscribe'] = $subscribe_from_interest_groups;
+      }
     }
 
     mailchimp_lists_process_subscribe_form_choices($choices, $instance, $field, $entity);
