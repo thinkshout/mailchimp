@@ -31,6 +31,11 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
       $rendered .= "<h3>$key</h3>" . $section;
     }
 
+    if (!$entity->isInitialized()) {
+      drupal_set_message('The campaign could not be found.', 'error');
+      return $build;
+    }
+
     // Get the template name.
     $mc_template = mailchimp_campaign_get_template($entity->mc_data->settings->template_id);
     $mc_template_name = isset($mc_template) ? $mc_template->name : '';

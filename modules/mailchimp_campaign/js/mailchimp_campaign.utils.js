@@ -39,7 +39,7 @@
           var entity_parts = entity_value.split(' ');
           var entity_id_string = entity_parts[entity_parts.length - 1];
 
-          entity_id = entity_id_string.replace('[', '').replace(']', '');
+          entity_id = entity_id_string.replace('[', '').replace(']', '').replace('"', '');
         }
 
         if (entity_id.length === 0) {

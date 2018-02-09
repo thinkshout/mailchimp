@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Site\Settings;
+use Drupal\Core\Render\Markup;
 use Drupal\Component\Utility\Crypt;
 use Mailchimp\MailchimpLists;
 
@@ -23,11 +24,14 @@ include $path . '/lib/mailchimp-api-php/src/Mailchimp.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpAPIException.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpAutomations.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpCampaigns.php';
-include $path . '/lib/mailchimp-api-php/src/MailchimpCURLClient.php';
+include $path . '/lib/mailchimp-api-php/src/MailchimpConnectedSites.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpEcommerce.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpLists.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpReports.php';
 include $path . '/lib/mailchimp-api-php/src/MailchimpTemplates.php';
+include $path . '/lib/mailchimp-api-php/src/http/MailchimpHttpClientInterface.php';
+include $path . '/lib/mailchimp-api-php/src/http/MailchimpCurlHttpClient.php';
+include $path . '/lib/mailchimp-api-php/src/http/MailchimpGuzzleHttpClient.php';
 
 /**
  * Access callback for mailchimp submodule menu items.
@@ -312,11 +316,19 @@ function mailchimp_get_memberinfo($list_id, $email, $reset = FALSE) {
     }
   }
   catch (Exception $e) {
-    \Drupal::logger('mailchimp')->error('An error occurred requesting memberinfo for {email} in list {list}. "{message}"', array(
-      'email' => $email,
-      'list' => $list_id,
-      'message' => $e->getMessage(),
-    ));
+    // A 404 exception code means mailchimp does not have subscription
+    // information for given email address. This is not an error and we can
+    // cache this information.
+    if ($e->getCode() == 404) {
+      $cache->set($list_id . '-' . $email, $memberinfo);
+    }
+    else {
+      \Drupal::logger('mailchimp')->error('An error occurred requesting memberinfo for {email} in list {list}. "{message}"', array(
+        'email' => $email,
+        'list' => $list_id,
+        'message' => $e->getMessage(),
+      ));
+    }
   }
 
   return $memberinfo;
@@ -437,10 +449,10 @@ function mailchimp_subscribe_process($list_id, $email, $merge_vars = NULL, $inte
   }
   catch (Exception $e) {
     if ($e->getCode() == '400' && strpos($e->getMessage(), 'Member In Compliance State') !== FALSE && !$double_optin) {
-      watchdog('mailchimp', 'Detected "Member In Compliance State" subscribing @email to list @list.  Trying again using double-opt in.', array(
-        '@email' => $email,
-        '@list' => $list_id,
-      ), WATCHDOG_INFO);
+      \Drupal::logger('mailchimp')->error('Detected "Member In Compliance State" subscribing {email} to list {list}. Trying again using double-opt in.', array(
+        'email' => $email,
+        'list' => $list_id,
+      ));
       return mailchimp_subscribe_process($list_id, $email, $merge_vars, $interests, TRUE, $format);
     }
 
@@ -559,10 +571,10 @@ function mailchimp_update_member_process($list_id, $email, $merge_vars, $interes
   }
   catch (Exception $e) {
     if ($e->getCode() == '400' && strpos($e->getMessage(), 'Member In Compliance State') !== FALSE && !$double_optin) {
-      watchdog('mailchimp', 'Detected "Member In Compliance State" updating @email to list @list.  Trying again using double-opt in.', array(
-        '@email' => $email,
-        '@list' => $list_id,
-      ), WATCHDOG_INFO);
+      \Drupal::logger('mailchimp')->error('Detected "Member In Compliance State" subscribing {email} to list {list}.  Trying again using double-opt in.', array(
+        'email' => $email,
+        'list' => $list_id,
+      ));
 
       return mailchimp_update_member_process($list_id, $email, $merge_vars, $interests, $format, TRUE);
     }
@@ -1136,12 +1148,7 @@ function mailchimp_insert_drupal_form_tag($mergevar) {
     '#default_value' => $mergevar->default_value,
   );
 
-  if (is_string($mergevar->name)) {
-    $input['#title'] = t('@mergevar', array('@mergevar' => $mergevar->name));
-  }
-  else {
-    $input['#title'] = $mergevar->name;
-  }
+  $input['#title'] = t($mergevar->name);
 
   switch ($mergevar->type) {
     case 'address':
@@ -1277,4 +1284,42 @@ function mailchimp_cron() {
  */
 function mailchimp_validate_email($mail) {
   return \Drupal::service('email.validator')->isValid($mail['#value']);
+}
+
+/**
+ * Implements hook_page_bottom().
+ */
+function mailchimp_page_bottom(array &$page_bottom) {
+  $config = \Drupal::config('mailchimp.settings');
+
+  // Insert JavaScript for MailChimp Connected Sites, if enabled.
+  if (!empty($config->get('enable_connected'))) {
+    // Limit JavaScript embed to pre-configured paths.
+    $connected_site_paths = $config->get('connected_paths');
+    $valid_paths = explode("\r\n", $connected_site_paths);
+
+    $path = \Drupal::service('path.current')->getPath();
+    $path = str_replace('/', '', $path);
+
+    if ((\Drupal::service('path.matcher')->isFrontPage() && in_array('<front>', $valid_paths)) || in_array($path, $valid_paths)) {
+      $connected_site_id = $config->get('connected_id');
+
+      if (!empty($connected_site_id)) {
+        /* @var \Mailchimp\MailchimpConnectedSites $mc_connected */
+        $mc_connected = mailchimp_get_api_object('MailchimpConnectedSites');
+
+        // Verify Connected Site exists on the MailChimp side and insert JS.
+        $connected_site = $mc_connected->getConnectedSite($connected_site_id);
+        if (!empty($connected_site)) {
+
+          $mcjs = array(
+            '#type' => 'markup',
+            '#markup' => Markup::create($connected_site->site_script->fragment),
+          );
+
+          $page_bottom['mailchimp_connected'] = $mcjs;
+        }
+      }
+    }
+  }
 }

@@ -384,22 +384,28 @@ function mailchimp_campaign_get_campaigns($mc_campaign_ids, $reset = FALSE) {
       if (!$mcapi) {
         throw new Exception('Cannot get list without MailChimp API. Check API key has been entered.');
       }
-
-      foreach ($to_refresh as $campaign_id) {
-        $response = $mcapi->getCampaign($campaign_id);
-
-        if (!empty($response->id)) {
-          $campaigns[$response->id] = $response;
-        }
-      }
     }
-
     catch (Exception $e) {
       drupal_set_message($e->getMessage(), 'error');
       \Drupal::logger('mailchimp_campaign')->error('An error occurred while getting campaigns: {message}', array(
         'message' => $e->getMessage()));
 
       return NULL;
+    }
+
+    foreach ($to_refresh as $campaign_id) {
+      try {
+        $response = $mcapi->getCampaign($campaign_id);
+
+        if (!empty($response->id)) {
+          $campaigns[$response->id] = $response;
+        }
+      }
+      catch(Exception $e) {
+        drupal_set_message($e->getMessage() . ' (Campaign ' . $campaign_id . ' removed from MailChimp?)', 'error');
+        \Drupal::logger('mailchimp_campaign')->error('An error occurred while getting campaigns: {message}', array(
+          'message' => $e->getMessage()));
+      }
     }
 
     $cache->set('campaigns', $campaigns);

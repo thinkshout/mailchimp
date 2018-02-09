@@ -23,7 +23,7 @@ use Drupal\mailchimp_signup\MailchimpSignupInterface;
  *     }
  *   },
  *   config_prefix = "mailchimp_signup",
- *   admin_permission = "administer mailchimp_signup",
+ *   admin_permission = "administer mailchimp signup entities",
  *   entity_keys = {
  *     "id" = "id",
  *     "uuid" = "uuid",

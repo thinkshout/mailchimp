@@ -5,10 +5,14 @@
  * Mailchimp lists module.
  */
 
+use Drupal\Core\Field\FieldItemInterface;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\TypedData\DataReferenceInterface;
+use Drupal\Core\TypedData\ListInterface;
+use Drupal\Core\TypedData\TypedDataInterface;
 use Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\field\Entity\FieldConfig;
@@ -158,7 +162,7 @@ function mailchimp_lists_process_subscribe_form_choices($choices, MailchimpLists
       $mergevars = array();
     }
     else {
-      $mergevars = _mailchimp_lists_mergevars_populate($settings['merge_fields'], $entity, $entity->getEntityType());
+      $mergevars = _mailchimp_lists_mergevars_populate($settings['merge_fields'], $entity);
     }
 
     $interests = isset($choices['interest_groups']) ? $choices['interest_groups'] : array();
@@ -234,31 +238,10 @@ function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $i
     }
 
     // Compare merge field settings.
+    $mergevars = _mailchimp_lists_mergevars_populate($settings['merge_fields'], $entity);
+    $original_mergevars = _mailchimp_lists_mergevars_populate($settings['merge_fields'], $original);
 
-    foreach ($settings['merge_fields'] as $property) {
-      $elements = explode(':', $property);
-
-      $new_object = $entity;
-      $old_object = $original;
-
-      foreach ($elements as $element) {
-        if (!isset($new_object->{$element})) {
-          $new_object = NULL;
-          break;
-        }
-
-        /* @var $new_object \Drupal\Core\Field\FieldItemList */
-        $new_object = $new_object->{$element};
-        /* @var $old_object \Drupal\Core\Field\FieldItemList */
-        $old_object = $old_object->{$element};
-
-        if (isset($new_object)) {
-          if ($new_object->getString() !== $old_object->getString()) {
-            return TRUE;
-          }
-        }
-      }
-    }
+    return $mergevars != $original_mergevars;
   }
   // We don't have an old entity to compare values so we have to retrieve our
   // old settings from Mailchimp. This means the only possible change is in our
@@ -294,37 +277,70 @@ function _mailchimp_lists_subscription_has_changed(MailchimpListsSubscription $i
 
 /**
  * Helper function to complete a mailchimp-api-ready mergevars array.
+ *
+ * @see \Drupal\ctools\TypedDataResolver::getContextFromProperty()
  */
-function _mailchimp_lists_mergevars_populate($merge_fields, EntityInterface $entity, $entity_type) {
+function _mailchimp_lists_mergevars_populate($merge_fields, EntityInterface $entity) {
   $mergevars = array();
 
-  foreach ($merge_fields as $label => $property) {
-    if (!empty($property) && strlen($property)) {
-      $elements = explode(':', $property);
-      $object = $entity;
 
-      foreach ($elements as $element) {
-        if ($object instanceof FieldItemList) {
-          $object = $object->get(0);
+  foreach (array_filter($merge_fields) as $label => $property_path) {
+
+    $data = $entity->getTypedData();
+    $value = null;
+    foreach (explode(':', $property_path) as $name) {
+
+      if ($data instanceof ListInterface) {
+        if (!is_numeric($name)) {
+          // Implicitly default to delta 0 for lists when not specified.
+          $data = $data->first();
         }
-
-        /* @var $property \Drupal\Core\Field\FieldItemInterface */
-        $property = $object->get($element);
-
-        if ($property == NULL) {
-          $object = NULL;
-          break;
+        else {
+          // If we have a delta, fetch it and continue with the next part.
+          $data = $data->get($name);
+          continue;
         }
-
-        $object = $property;
       }
 
-      $mergevars[$label] = isset($object) ? $property->getString() : NULL;
+      // Forward to the target value if this is a data reference.
+      if ($data instanceof DataReferenceInterface) {
+        $data = $data->getTarget();
+      }
+
+      // If there no data then the field is empty, ignore this.
+      if (!$data) {
+        break;
+      }
+
+      if (!$data->getDataDefinition()->getPropertyDefinition($name)) {
+        // @todo What should we do here, ignore silently?
+        throw new \Exception("Unknown property $name in property path $property_path");
+      }
+      $data = $data->get($name);
     }
+
+    // It would be easier if the structure would always include the property
+    // as well. For backwards compatibility, that is not done, in that case
+    // default to the main property.
+    if ($data instanceof FieldItemListInterface || $data instanceof FieldItemInterface) {
+      $main_property = $data->getFieldDefinition()->getFieldStorageDefinition()->getMainPropertyName();
+      $value = $data->$main_property;
+    }
+    elseif ($data instanceof TypedDataInterface) {
+      $value = $data->getValue();
+    }
+
+    // Cast to string to avoid problems with NULL values that the API does not
+    // accept.
+    // @todo: Check if this causes problems with integers or other non-string
+    //  merge fields, assuming the exist.
+    $mergevars[$label] = (string) $value;
   }
 
   // Allow other modules to alter the merge vars.
-  \Drupal::moduleHandler()->alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type);
+  // @todo: Remove entity type argument.
+  $entity_type_id = $entity->getEntityTypeId();
+  \Drupal::moduleHandler()->alter('mailchimp_lists_mergevars', $mergevars, $entity, $entity_type_id);
   return $mergevars;
 }
 
@@ -406,8 +422,9 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
     // Load up all our eligible entities.
     $query = \Drupal::entityQuery($entity_type);
 
-    if ($entity_type !== 'user') {
-      $query->entityCondition('bundle', $bundle_name);
+    $definition = \Drupal::entityTypeManager()->getDefinition($entity_type);
+    if ($definition->hasKey('bundle')) {
+      $query->condition($definition->getKey('bundle'), $bundle_name);
     }
 
     $query_results = $query->execute();
@@ -427,7 +444,7 @@ function mailchimp_lists_populate_member_batch($entity_type, $bundle_name, $fiel
     $entities = \Drupal::entityTypeManager()->getStorage($entity_type)->loadMultiple($item_ids);
 
     foreach ($entities as $entity) {
-      $merge_vars = _mailchimp_lists_mergevars_populate($mergefields, $entity, $entity_type);
+      $merge_vars = _mailchimp_lists_mergevars_populate($mergefields, $entity);
 
       if ($merge_vars['EMAIL'] && isset($context['results']['subscribers'][strtolower($merge_vars['EMAIL'])])) {
         $context['results']['update_queue'][] = array(
