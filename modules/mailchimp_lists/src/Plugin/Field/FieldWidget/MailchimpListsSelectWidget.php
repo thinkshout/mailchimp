@@ -40,6 +40,9 @@ class MailchimpListsSelectWidget extends WidgetBase {
       }
     }
 
+    // Load the MailChimp list from the field's list ID.
+    $mc_list = mailchimp_get_list($this->fieldDefinition->getSetting('mc_list_id'));
+
     $element += array(
       '#title' => Html::escape($element['#title']),
       '#type' => 'fieldset',
@@ -48,7 +51,7 @@ class MailchimpListsSelectWidget extends WidgetBase {
     $element['subscribe'] = array(
       '#title' => $this->fieldDefinition->getSetting('subscribe_checkbox_label') ?: $this->t('Subscribe'),
       '#type' => 'checkbox',
-      '#default_value' => ($subscribe_default)? TRUE : $this->fieldDefinition->isRequired(),
+      '#default_value' => ($subscribe_default) ? TRUE : $this->fieldDefinition->isRequired(),
       '#required' => $this->fieldDefinition->isRequired(),
       '#disabled' => $this->fieldDefinition->isRequired(),
     );
@@ -60,6 +63,21 @@ class MailchimpListsSelectWidget extends WidgetBase {
     // TRUE if widget is being used to set default values via admin form.
     $is_default_value_widget = $this->isDefaultValueWidget($form_state);
 
+    // Hide the Subscribe checkbox if:
+    // - The form is not being used to configure default values.
+    // - The field is configured to show interest groups.
+    // - The field is configured to hide the Subscribe checkbox.
+    // - The list has at least one interest group.
+    // This allows users to skip the redundant step of checking the Subscribe
+    // checkbox when also checking interest group checkboxes.
+    if (!$is_default_value_widget && $show_interest_groups && $this->fieldDefinition->getSetting('hide_subscribe_checkbox') && !empty($mc_list->intgroups)) {
+      $element['subscribe']['#access'] = FALSE;
+      $interest_group_element_type = 'container';
+    }
+    else {
+      $interest_group_element_type = 'fieldset';
+    }
+
     if ($show_interest_groups || $is_default_value_widget) {
       $mc_list = mailchimp_get_list($instance->getFieldDefinition()->getSetting('mc_list_id'));
 
@@ -68,7 +86,7 @@ class MailchimpListsSelectWidget extends WidgetBase {
       }
       else {
         $element['interest_groups'] = array(
-          '#type' => 'fieldset',
+          '#type' => $interest_group_element_type,
           '#title' => Html::escape($instance->getFieldDefinition()->getSetting('interest_groups_label')),
           '#weight' => 100,
           '#states' => array(
