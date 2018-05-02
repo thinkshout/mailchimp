@@ -66,13 +66,6 @@ function mailchimp_lists_form_field_storage_config_edit_form_alter(&$form, FormS
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
- */
-function mailchimp_lists_form_field_config_edit_form_alter(&$form, FormStateInterface &$form_state, $form_id) {
-  $form['default_value']['#weight'] = 99;
-}
-
-/**
  * Validation handler for mailchimp_lists_form_field_ui_field_edit_form.
  *
  * Ensure cardinality is set to 1 on mailchimp_lists_subscription fields.
