@@ -16,12 +16,18 @@ mailchimp_signup.mailchimp_signup.*:
     mc_lists:
       type: sequence
       label: 'Mailchimp List(s)'
+      sequence:
+        type: string
+        label: 'Mailchimp List'
     mode:
-      type: int
+      type: integer
       label: 'Mode'
     mergefields:
       type: sequence
       label: 'Mergefields'
+      sequence:
+        type: boolean
+        label: 'Merge field'
     description:
       type: text
       label: 'Description'
@@ -50,6 +56,24 @@ mailchimp_signup.mailchimp_signup.*:
         confirmation_message:
           type: text
           label: 'Confirmation Message'
+        description:
+          type: text
+          label: 'Description'
         destination:
           type: string
           label: 'Destination'
+        mergefields:
+          type: sequence
+          label: 'Mergefields'
+          sequence:
+            type: string
+            label: 'Merge field'
+        doublein:
+          type: boolean
+          label: 'Double-Opt-In'
+        include_interest_groups:
+          type: boolean
+          label: 'Include Interest Groups'
+        safe_interest_groups:
+          type: boolean
+          label: 'Safe Interest Groups'
