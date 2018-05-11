@@ -110,6 +110,7 @@ class MailchimpCampaign extends ContentEntityBase implements MailchimpCampaignIn
       ->setDisplayOptions('view', array(
         'label' => 'above',
         'type' => 'string_long',
+        'weight' => 0,
       ));
 
     $fields['created'] = BaseFieldDefinition::create('created')
