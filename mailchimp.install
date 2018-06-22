@@ -60,6 +60,18 @@ function mailchimp_requirements($phase) {
         'severity' => REQUIREMENT_ERROR,
       );
     }
+
+    // Notify user to update MailChimp library if using version 1.0.6 or lower.
+    if (empty($library['error'])) {
+      $version_int = (int) str_replace('.', '', $library['version']);
+
+      if ($version_int <= 106) {
+        $requirements['mailchimp']['value'] = $library['version'];
+        $requirements['mailchimp']['description'] = $t('Please update the <a href="https://github.com/thinkshout/mailchimp-api-php/releases">MailChimp library</a> to at least version 1.0.7 to ensure continued stability.');
+        $requirements['mailchimp']['severity'] = REQUIREMENT_WARNING;
+      }
+    }
+
   }
 
   return $requirements;
