@@ -1488,7 +1488,16 @@ function mailchimp_interest_groups_form_elements($list, $defaults = array(), $em
     /* @var \Mailchimp\MailchimpLists $mc_lists */
     $mc_lists = mailchimp_get_api_object('MailchimpLists');
 
-    $interest_data = $mc_lists->getInterests($list->id, $group->id, array('count' => 500));
+    try {
+      $interest_data = $mc_lists->getInterests($list->id, $group->id, array('count' => 500));
+    } catch (\Exception $e) {
+      watchdog('mailchimp', 'An error occurred requesting interest groups for list @list. "%message"', array(
+        '@list' => $list->id,
+        '%message' => $e->getMessage(),
+      ), WATCHDOG_ERROR);
+
+      return array();
+    }
 
     if (!empty($email)) {
       $memberinfo = mailchimp_get_memberinfo($list->id, $email);
