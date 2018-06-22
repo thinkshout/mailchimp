@@ -266,6 +266,9 @@ function mailchimp_lists_process_subscribe_form_choices($choices, $instance, $fi
         $interests[$interest_id] = ($interest_status !== 0);
       }
     }
+    if (count($interests) > 0 && $function == $field['settings']['unsubscribe_action']) {
+      $function = 'update';
+    }
 
     switch ($function) {
       case 'add':
