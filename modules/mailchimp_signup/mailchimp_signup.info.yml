@@ -1,7 +1,7 @@
-name: MailChimp Signup
+name: Mailchimp Signup
 type: module
-description: MailChimp signup blocks and pages
-package: MailChimp
+description: Mailchimp signup blocks and pages
+package: Mailchimp
 core: 8.x
 configure: mailchimp.admin.signup
 

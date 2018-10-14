@@ -375,7 +375,7 @@ function mailchimp_lists_update_member_merge_values($entity_type, $bundle_name, 
     'title' => t('Processing Merge Variable Updates'),
     'init_message' => t('Starting Mailchimp Merge Variable Update.'),
     'progress_message' => t('Processed @current out of @total.'),
-    'error_message' => t('MailChimp Merge Variable Update Failed.'),
+    'error_message' => t('Mailchimp Merge Variable Update Failed.'),
   );
 
   batch_set($batch);
@@ -542,10 +542,10 @@ function mailchimp_lists_populate_member_batch_complete($success, $results, $ope
 }
 
 /**
- * Gets an array of default MailChimp webhook event names.
+ * Gets an array of default Mailchimp webhook event names.
  *
  * @return array
- *   Default webhook event names, indexed by the IDs used by the MailChimp API.
+ *   Default webhook event names, indexed by the IDs used by the Mailchimp API.
  */
 function mailchimp_lists_default_webhook_events() {
   return array(
@@ -562,7 +562,7 @@ function mailchimp_lists_default_webhook_events() {
  * Returns an array of enabled webhook events.
  *
  * @param $list_id
- *   The MailChimp list ID to return webhook actions for.
+ *   The Mailchimp list ID to return webhook actions for.
  *
  * @return array
  *   An array of enabled webhook event names.

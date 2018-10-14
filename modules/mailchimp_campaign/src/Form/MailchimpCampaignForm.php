@@ -133,7 +133,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
     $form['template_id'] = array(
       '#type' => 'select',
       '#title' => t('Template'),
-      '#description' => t('Select a MailChimp user template to use. Due to a limitation in the API, only templates that do not contain repeating sections are available. If empty, the default template will be applied.'),
+      '#description' => t('Select a Mailchimp user template to use. Due to a limitation in the API, only templates that do not contain repeating sections are available. If empty, the default template will be applied.'),
       '#options' => $this->buildOptionList(mailchimp_campaign_list_templates(), '-- Select --', $template_type_labels),
       '#default_value' => (!empty($campaign->mc_data)) ? $campaign->mc_data->settings->template_id : -1,
       '#ajax' => array(
@@ -181,7 +181,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       }
       foreach ($mc_template->info->sections as $section => $content) {
         // Set the default value and text format to either saved campaign values
-        // or defaults coming from the MailChimp template.
+        // or defaults coming from the Mailchimp template.
         $default_value = $content;
         $format = 'mailchimp_campaign';
 
@@ -451,7 +451,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
     );
 
     foreach ($entity_info as $entity_id => $entity_data) {
-      // Exclude MailChimp entities.
+      // Exclude Mailchimp entities.
       if (strpos($entity_id, 'mailchimp') === FALSE) {
         $options[$entity_id] = $entity_data->getLabel();
       }
@@ -503,7 +503,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
       '#id' => 'entity-import',
       '#type' => 'details',
       '#title' => t('Insert site content'),
-      '#description' => t('<b>For use only with text filters that use the MailChimp Campaign filter</b><br />You can insert an entity of a given type and pick the view mode that will be rendered within this campaign section.'),
+      '#description' => t('<b>For use only with text filters that use the Mailchimp Campaign filter</b><br />You can insert an entity of a given type and pick the view mode that will be rendered within this campaign section.'),
       '#open' => FALSE,
     );
 
@@ -608,7 +608,7 @@ class MailchimpCampaignForm extends ContentEntityForm {
    * Gets form elements used in the merge vars feature.
    *
    * @param array $merge_vars
-   *   Array of MailChimp merge vars for the current list.
+   *   Array of Mailchimp merge vars for the current list.
    * @see mailchimp_get_mergevars
    * @param string $list_name
    *   The name of the current list.
@@ -632,13 +632,13 @@ class MailchimpCampaignForm extends ContentEntityForm {
 
     $form['merge_vars']['content'] = array(
       '#type' => 'item',
-      '#title' => 'MailChimp merge variables',
+      '#title' => 'Mailchimp merge variables',
       '#markup' => $this->buildMergeVarsHtml($merge_vars),
       '#description' => t(
         'Insert merge variables from the %list_name list or one of the @standard_link.',
         array(
           '%list_name' => $list_name,
-          '@standard_link' => Link::fromTextAndUrl(t('standard MailChimp merge variables'), $merge_vars_url)->toString(),
+          '@standard_link' => Link::fromTextAndUrl(t('standard Mailchimp merge variables'), $merge_vars_url)->toString(),
         )
       ),
     );

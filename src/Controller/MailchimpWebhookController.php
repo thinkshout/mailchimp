@@ -7,7 +7,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 
 /**
- * MailChimp Webhook controller.
+ * Mailchimp Webhook controller.
  */
 class MailchimpWebhookController extends ControllerBase {
 

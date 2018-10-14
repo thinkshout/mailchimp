@@ -1,6 +1,6 @@
-name: 'MailChimp Campaign Test'
+name: 'Mailchimp Campaign Test'
 type: module
-description: 'MailChimp Campaign Test Module.'
+description: 'Mailchimp Campaign Test Module.'
 package: Testing
 version: VERSION
 core: 8.x

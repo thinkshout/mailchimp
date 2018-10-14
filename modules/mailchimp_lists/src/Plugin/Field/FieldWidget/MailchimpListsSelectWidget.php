@@ -17,7 +17,7 @@ use Drupal\Core\Form\FormStateInterface;
  *     "mailchimp_lists_subscription"
  *   },
  *   settings = {
- *     "placeholder" = "Select a MailChimp List."
+ *     "placeholder" = "Select a Mailchimp List."
  *   }
  * )
  */
@@ -40,7 +40,7 @@ class MailchimpListsSelectWidget extends WidgetBase {
       }
     }
 
-    // Load the MailChimp list from the field's list ID.
+    // Load the Mailchimp list from the field's list ID.
     $mc_list = mailchimp_get_list($this->fieldDefinition->getSetting('mc_list_id'));
 
     $element += array(

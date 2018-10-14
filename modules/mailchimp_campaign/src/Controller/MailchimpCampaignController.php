@@ -12,7 +12,7 @@ use \Drupal\mailchimp_campaign\Entity\MailchimpCampaign;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
- * MailChimp Campaign controller.
+ * Mailchimp Campaign controller.
  */
 class MailchimpCampaignController extends ControllerBase {
 
@@ -24,7 +24,7 @@ class MailchimpCampaignController extends ControllerBase {
 
     $content['campaigns_table'] = array(
       '#type' => 'table',
-      '#header' => array(t('Title'), t('Subject'), t('Status'), t('MailChimp List'), t('MailChimp Template'), t('Created'), t('Actions')),
+      '#header' => array(t('Title'), t('Subject'), t('Status'), t('Mailchimp List'), t('Mailchimp Template'), t('Created'), t('Actions')),
       '#empty' => '',
     );
 
@@ -124,10 +124,10 @@ class MailchimpCampaignController extends ControllerBase {
   }
 
   /**
-   * View a MailChimp campaign
+   * View a Mailchimp campaign
    *
    * @param MailchimpCampaign $mailchimp_campaign
-   *   The MailChimp campaign to view.
+   *   The Mailchimp campaign to view.
    *
    * @return array
    *   Renderable array of page content.
@@ -141,10 +141,10 @@ class MailchimpCampaignController extends ControllerBase {
   }
 
   /**
-   * View a MailChimp campaign stats.
+   * View a Mailchimp campaign stats.
    *
    * @param MailchimpCampaign $mailchimp_campaign
-   *   The MailChimp campaign to view stats for.
+   *   The Mailchimp campaign to view stats for.
    *
    * @return array
    *   Renderable array of page content.
@@ -157,14 +157,14 @@ class MailchimpCampaignController extends ControllerBase {
 
     try {
       if (!$mc_reports) {
-        throw new MailchimpAPIException('Cannot get campaign stats without MailChimp API. Check API key has been entered.');
+        throw new MailchimpAPIException('Cannot get campaign stats without Mailchimp API. Check API key has been entered.');
       }
 
       $response = $mc_reports->getCampaignSummary($mailchimp_campaign->getMcCampaignId());
     } catch (Exception $e) {
       drupal_set_message($e->getMessage(), 'error');
       \Drupal::logger('mailchimp_campaign')
-        ->error('An error occurred getting report data from MailChimp: {message}', array(
+        ->error('An error occurred getting report data from Mailchimp: {message}', array(
         'message' => $e->getMessage()
       ));
     }

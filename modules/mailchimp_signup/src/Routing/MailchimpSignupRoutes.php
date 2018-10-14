@@ -5,7 +5,7 @@ namespace Drupal\mailchimp_signup\Routing;
 use Symfony\Component\Routing\Route;
 
 /**
- * Defines dynamic routes for MailChimp signup forms rendered as pages.
+ * Defines dynamic routes for Mailchimp signup forms rendered as pages.
  */
 class MailchimpSignupRoutes {
 

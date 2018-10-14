@@ -12,9 +12,9 @@ use Drupal\Core\Routing\Access\AccessInterface;
 class MailchimpConfigurationAccessCheck implements AccessInterface {
 
   /**
-   * Access check for MailChimp module configuration.
+   * Access check for Mailchimp module configuration.
    *
-   * Ensures a MailChimp API key has been provided.
+   * Ensures a Mailchimp API key has been provided.
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Run access checks for this account.

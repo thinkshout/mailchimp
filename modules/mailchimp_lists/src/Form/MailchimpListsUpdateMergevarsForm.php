@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
 /**
- * Batch update MailChimp lists mergevars.
+ * Batch update Mailchimp lists mergevars.
  */
 class MailchimpListsUpdateMergevarsForm extends ConfirmFormBase {
 

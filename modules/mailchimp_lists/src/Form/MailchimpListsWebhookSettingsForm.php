@@ -7,7 +7,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
 /**
- * Configure settings for a MailChimp list webhook.
+ * Configure settings for a Mailchimp list webhook.
  */
 class MailchimpListsWebhookSettingsForm extends ConfigFormBase {
 

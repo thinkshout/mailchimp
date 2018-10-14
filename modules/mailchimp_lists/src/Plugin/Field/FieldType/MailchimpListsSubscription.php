@@ -109,7 +109,7 @@ class MailchimpListsSubscription extends FieldItemBase {
       $field_definitions[$entity_type] = \Drupal::entityManager()->getFieldStorageDefinitions($entity_type);
     }
 
-    // Prevent MailChimp lists that have already been assigned to a field
+    // Prevent Mailchimp lists that have already been assigned to a field
     // appearing as field options.
     foreach ($field_map as $entity_type => $fields) {
       foreach ($fields as $field_name => $field_properties) {
@@ -130,13 +130,13 @@ class MailchimpListsSubscription extends FieldItemBase {
 
     $element['mc_list_id'] = array(
       '#type' => 'select',
-      '#title' => t('MailChimp List'),
+      '#title' => t('Mailchimp List'),
       '#multiple' => FALSE,
-      '#description' => t('Available MailChimp lists which are not already
+      '#description' => t('Available Mailchimp lists which are not already
         attached to Mailchimp Subscription Fields. If there are no options,
-        make sure you have created a list at @MailChimp first, then @cacheclear.',
+        make sure you have created a list at @Mailchimp first, then @cacheclear.',
         array(
-          '@MailChimp' => Link::fromTextAndUrl('MailChimp', $mailchimp_url)->toString(),
+          '@Mailchimp' => Link::fromTextAndUrl('Mailchimp', $mailchimp_url)->toString(),
           '@cacheclear' => Link::fromTextAndUrl('clear your list cache', $refresh_lists_url)->toString(),
         )),
       '#options' => $options,

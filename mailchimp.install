@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Install, update and uninstall functions for the MailChimp Module.
+ * Install, update and uninstall functions for the Mailchimp Module.
  */
 
 use Doctrine\Common\ClassLoader;
@@ -13,20 +13,20 @@ use Doctrine\Common\ClassLoader;
 function mailchimp_requirements($phase) {
   $requirements = array(
     'mailchimp' => array(
-      'title' => t('MailChimp'),
+      'title' => t('Mailchimp'),
     ),
   );
 
   if ($phase == 'runtime') {
     $config = \Drupal::config('mailchimp.settings');
 
-    // Check for MailChimp library.
+    // Check for Mailchimp library.
     if (ClassLoader::classExists($config->get('api_classname'))) {
-      $requirements['mailchimp']['description'] = t('The MailChimp MCAPI wrapper library is installed correctly.');
+      $requirements['mailchimp']['description'] = t('The Mailchimp MCAPI wrapper library is installed correctly.');
       $requirements['mailchimp']['severity'] = REQUIREMENT_OK;
     }
     else {
-      $requirements['mailchimp']['description'] = t('The MailChimp MCAPI wrapper library has not been installed correctly.');
+      $requirements['mailchimp']['description'] = t('The Mailchimp MCAPI wrapper library has not been installed correctly.');
       $requirements['mailchimp']['severity'] = REQUIREMENT_ERROR;
     }
   }

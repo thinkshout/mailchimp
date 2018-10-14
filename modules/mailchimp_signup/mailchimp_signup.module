@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Creates signup forms integrated with MailChimp.
+ * Creates signup forms integrated with Mailchimp.
  */
 
 use \Drupal\mailchimp_signup\Entity\MailchimpSignup;

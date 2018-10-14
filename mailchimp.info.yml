@@ -1,7 +1,7 @@
-name: MailChimp
+name: Mailchimp
 type: module
-description: MailChimp email service integration.
-package: MailChimp
+description: Mailchimp email service integration.
+package: Mailchimp
 core: 8.x
 configure: mailchimp.admin
 

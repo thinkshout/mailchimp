@@ -5,7 +5,7 @@ namespace Drupal\mailchimp_campaign;
 use Drupal\filter\FilterUninstallValidator;
 
 /**
- * Remove filter preventing MailChimp Campaign uninstall.
+ * Remove filter preventing Mailchimp Campaign uninstall.
  */
 class MailChimpCampaignUninstallValidator extends FilterUninstallValidator {
 

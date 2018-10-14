@@ -72,7 +72,7 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
         'value' => $entity->mc_data->settings->subject_line,
       ),
       'list' => array(
-        'label' => t('MailChimp List'),
+        'label' => t('Mailchimp List'),
         'value' => Link::fromTextAndUrl($entity->list->name, $list_url)->toString(),
       ),
       'list_segment' => array(
@@ -110,7 +110,7 @@ class MailchimpCampaignViewBuilder extends EntityViewBuilder {
       'content' => array(
         'label' => t('Rendered template HTML (@archive)',
           array(
-            '@archive' => Link::fromTextAndUrl('View MailChimp archive', $archive_url)->toString(),
+            '@archive' => Link::fromTextAndUrl('View Mailchimp archive', $archive_url)->toString(),
             )
           ),
         'value' => $rendered,

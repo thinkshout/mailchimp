@@ -1,6 +1,6 @@
-name: 'MailChimp Lists Test'
+name: 'Mailchimp Lists Test'
 type: module
-description: 'MailChimp Lists Test Module.'
+description: 'Mailchimp Lists Test Module.'
 package: Testing
 version: VERSION
 core: 8.x

@@ -25,7 +25,7 @@ class MailchimpCampaignDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getDescription() {
-    return $this->t('This action will delete both the MailChimp campaign and Drupal entity and cannot be undone.');
+    return $this->t('This action will delete both the Mailchimp campaign and Drupal entity and cannot be undone.');
   }
 
   /**
@@ -47,7 +47,7 @@ class MailchimpCampaignDeleteForm extends EntityConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     if (mailchimp_campaign_delete_campaign($this->entity)) {
-      drupal_set_message($this->t('MailChimp Campaign %label has been deleted.', array('%label' => $this->entity->label())));
+      drupal_set_message($this->t('Mailchimp Campaign %label has been deleted.', array('%label' => $this->entity->label())));
     }
 
     $form_state->setRedirectUrl($this->getCancelUrl());

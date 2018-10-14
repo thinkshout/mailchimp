@@ -5,7 +5,7 @@ namespace Drupal\mailchimp_signup\Plugin\Derivative;
 use Drupal\Component\Plugin\Derivative\DeriverBase;
 
 /**
- * Provides block plugin definitions for MailChimp Signup blocks.
+ * Provides block plugin definitions for Mailchimp Signup blocks.
  *
  * @see \Drupal\mailchimp_signup\Plugin\Block\MailchimpSignupSubscribeBlock
  */

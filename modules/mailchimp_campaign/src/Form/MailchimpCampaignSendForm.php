@@ -25,7 +25,7 @@ class MailchimpCampaignSendForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getDescription() {
-    return $this->t('This action will send the campaign through MailChimp and cannot be undone.');
+    return $this->t('This action will send the campaign through Mailchimp and cannot be undone.');
   }
 
   /**
@@ -47,7 +47,7 @@ class MailchimpCampaignSendForm extends EntityConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     if (mailchimp_campaign_send_campaign($this->entity)) {
-      drupal_set_message($this->t('MailChimp Campaign %name has been sent.',
+      drupal_set_message($this->t('Mailchimp Campaign %name has been sent.',
         array('%name' => $this->entity->label())));
     }
 

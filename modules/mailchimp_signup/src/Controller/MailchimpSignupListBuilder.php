@@ -20,7 +20,7 @@ class MailchimpSignupListBuilder extends ConfigEntityListBuilder {
   public function buildHeader() {
     $header['label'] = $this->t('Label');
     $header['display_modes'] = $this->t('Display Modes');
-    $header['lists'] = $this->t('MailChimp Lists');
+    $header['lists'] = $this->t('Mailchimp Lists');
 
     return $header + parent::buildHeader();
   }

@@ -13,7 +13,7 @@ include_once $path . "/lib/mailchimp-api-php/tests/src/Response.php";
 include $path . "/lib/mailchimp-api-php/tests/src/MailchimpLists.php";
 
 /**
- * Sets up MailChimp Lists module tests.
+ * Sets up Mailchimp Lists module tests.
  */
 abstract class MailchimpListsTestBase extends WebTestBase {
 

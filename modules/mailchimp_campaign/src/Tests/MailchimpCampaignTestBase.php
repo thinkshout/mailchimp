@@ -14,7 +14,7 @@ include $path . "/lib/mailchimp-api-php/tests/src/MailchimpCampaigns.php";
 
 
 /**
- * Sets up MailChimp Campaign module tests.
+ * Sets up Mailchimp Campaign module tests.
  */
 abstract class MailchimpCampaignTestBase extends WebTestBase {
 

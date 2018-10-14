@@ -2,7 +2,7 @@
 
 /**
  * @file
- * MailChimp module hook definitions.
+ * Mailchimp module hook definitions.
  */
 
 use Drupal\Core\Entity\EntityInterface;
@@ -16,7 +16,7 @@ use Drupal\Core\Entity\EntityInterface;
  * Perform an action when an email address is successfully subscribed to a list.
  *
  * @param string $list_id
- *   The MailChimp list ID.
+ *   The Mailchimp list ID.
  * @param string $email
  *   The email address subscribed.
  * @param string $merge_vars
@@ -30,7 +30,7 @@ function hook_mailchimp_subscribe_success($list_id, $email, $merge_vars) {}
  * Perform an action when an email is successfully unsubscribed from a list.
  *
  * @param string $list_id
- *   The MailChimp list ID.
+ *   The Mailchimp list ID.
  * @param string $email
  *   The email address unsubscribed.
  *
@@ -39,7 +39,7 @@ function hook_mailchimp_subscribe_success($list_id, $email, $merge_vars) {}
 function hook_mailchimp_unsubscribe_success($list_id, $email) {}
 
 /**
- * Perform an action during the firing of a MailChimp webhook.
+ * Perform an action during the firing of a Mailchimp webhook.
  *
  * Refer to http://apidocs.mailchimp.com/webhooks for more details.
  *
@@ -53,7 +53,7 @@ function hook_mailchimp_unsubscribe_success($list_id, $email) {}
 function hook_mailchimp_process_webhook($type, $data) {}
 
 /**
- * Alter mergevars before they are sent to MailChimp.
+ * Alter mergevars before they are sent to Mailchimp.
  *
  * @param array $mergevars
  *   The current mergevars.

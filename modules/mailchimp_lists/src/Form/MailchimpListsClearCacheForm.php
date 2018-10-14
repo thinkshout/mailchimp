@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
 /**
- * Clear MailChimp lists cache.
+ * Clear Mailchimp lists cache.
  */
 class MailchimpListsClearCacheForm extends ConfirmFormBase {
 
@@ -56,7 +56,7 @@ class MailchimpListsClearCacheForm extends ConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     mailchimp_get_lists(array(), TRUE);
-    drupal_set_message(t('MailChimp lists cache cleared.'));
+    drupal_set_message(t('Mailchimp lists cache cleared.'));
   }
 
 }

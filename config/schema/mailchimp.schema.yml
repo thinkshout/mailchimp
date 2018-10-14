@@ -22,10 +22,10 @@ mailchimp.settings:
     # Connected Sites configuration.
     enable_connected:
       type: boolean
-      label: 'Whether this site is connected to MailChimp via Connected Sites.'
+      label: 'Whether this site is connected to Mailchimp via Connected Sites.'
     connected_id:
       type: string
-      label: 'The ID of the MailChimp connected site linked to this site.'
+      label: 'The ID of the Mailchimp connected site linked to this site.'
     connected_paths:
       type: string
-      label: 'The ID of the MailChimp connected site linked to this site.'
+      label: 'The ID of the Mailchimp connected site linked to this site.'

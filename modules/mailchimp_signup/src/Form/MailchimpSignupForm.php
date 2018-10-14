@@ -134,7 +134,7 @@ class MailchimpSignupForm extends EntityForm {
 
     $form['mc_lists_config'] = array(
       '#type' => 'details',
-      '#title' => t('MailChimp List Selection & Configuration'),
+      '#title' => t('Mailchimp List Selection & Configuration'),
       '#open' => TRUE,
     );
     $lists = mailchimp_get_lists();
@@ -142,12 +142,12 @@ class MailchimpSignupForm extends EntityForm {
     foreach ($lists as $mc_list) {
       $options[$mc_list->id] = $mc_list->name;
     }
-    $mc_admin_url = Link::fromTextAndUrl('MailChimp', Url::fromUri('https://admin.mailchimp.com', array('attributes' => array('target' => '_blank'))));
+    $mc_admin_url = Link::fromTextAndUrl('Mailchimp', Url::fromUri('https://admin.mailchimp.com', array('attributes' => array('target' => '_blank'))));
     $form['mc_lists_config']['mc_lists'] = array(
       '#type' => 'checkboxes',
-      '#title' => t('MailChimp Lists'),
-      '#description' => t('Select which lists to show on your signup form. You can create additional lists at @MailChimp.',
-        array('@MailChimp' => $mc_admin_url->toString())),
+      '#title' => t('Mailchimp Lists'),
+      '#description' => t('Select which lists to show on your signup form. You can create additional lists at @Mailchimp.',
+        array('@Mailchimp' => $mc_admin_url->toString())),
       '#options' => $options,
       '#default_value' => is_array($signup->mc_lists) ? $signup->mc_lists : array(),
       '#required' => TRUE,

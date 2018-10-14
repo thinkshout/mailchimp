@@ -6,11 +6,11 @@ use Drupal\filter\FilterProcessResult;
 use Drupal\filter\Plugin\FilterBase;
 
 /**
- * Provides a filter to add content to and convert URLs for MailChimp campaigns.
+ * Provides a filter to add content to and convert URLs for Mailchimp campaigns.
  *
  * @Filter(
  *   id = "filter_mailchimp_campaign",
- *   title = @Translation("MailChimp Campaign filter"),
+ *   title = @Translation("Mailchimp Campaign filter"),
  *   type = Drupal\filter\Plugin\FilterInterface::TYPE_MARKUP_LANGUAGE,
  *   settings = {}
  * )

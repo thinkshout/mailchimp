@@ -8,7 +8,7 @@ use Drupal\mailchimp_lists\Plugin\Field\FieldFormatter\MailchimpListsFieldSubscr
 use Drupal\mailchimp_lists\Plugin\Field\FieldType\MailchimpListsSubscription;
 
 /**
- * Subscribe to a MailChimp list.
+ * Subscribe to a Mailchimp list.
  */
 class MailchimpListsSubscribeForm extends FormBase {
 

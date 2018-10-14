@@ -6,12 +6,12 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\mailchimp_signup\Entity\MailchimpSignup;
 
 /**
- * MailChimp Signup controller.
+ * Mailchimp Signup controller.
  */
 class MailchimpSignupController extends ControllerBase {
 
   /**
-   * View a MailChimp signup form as a page.
+   * View a Mailchimp signup form as a page.
    *
    * @param string $signup_id
    *   The ID of the MailchimpSignup entity to view.

@@ -7,7 +7,7 @@
   'use strict';
 
   /**
-   * Utility methods for MailChimp campaign management.
+   * Utility methods for Mailchimp campaign management.
    * Some text field manipulation code is adapted from
    * the Tokens module.
    */

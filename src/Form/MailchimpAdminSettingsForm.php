@@ -36,7 +36,7 @@ class MailchimpAdminSettingsForm extends ConfigFormBase {
       '#title' => t('Mailchimp API Key'),
       '#required' => TRUE,
       '#default_value' => $config->get('api_key'),
-      '#description' => t('The API key for your MailChimp account. Get or generate a valid API key at your @apilink.', array('@apilink' => Link::fromTextAndUrl(t('MailChimp API Dashboard'), $mc_api_url)->toString())),
+      '#description' => t('The API key for your Mailchimp account. Get or generate a valid API key at your @apilink.', array('@apilink' => Link::fromTextAndUrl(t('Mailchimp API Dashboard'), $mc_api_url)->toString())),
     );
 
     $form['connected_sites'] = array(
@@ -48,7 +48,7 @@ class MailchimpAdminSettingsForm extends ConfigFormBase {
     $form['connected_sites']['enable_connected'] = array(
       '#type' => 'checkbox',
       '#title' => $this->t('Enable connected site'),
-      '#description' => $this->t('Connects this website to MailChimp by automatically embedding MailChimp\'s <a href=":link" target="_blank">Connected Sites</a> JavaScript code.', array(
+      '#description' => $this->t('Connects this website to Mailchimp by automatically embedding Mailchimp\'s <a href=":link" target="_blank">Connected Sites</a> JavaScript code.', array(
         ':link' => $mc_connected_sites_url,
       )),
       '#default_value' => $config->get('enable_connected'),
@@ -82,29 +82,29 @@ class MailchimpAdminSettingsForm extends ConfigFormBase {
     );
 
     if (!empty($connected_sites_options)) {
-      // If the MailChimp account contains connected sites, allow the user to
+      // If the Mailchimp account contains connected sites, allow the user to
       // choose one here.
       $form['connected_sites']['config']['connected_id'] = array(
         '#type' => 'radios',
         '#options' => $connected_sites_options,
         '#default_value' => $config->get('connected_id'),
-        '#prefix' => t('<p><b>Choose a connected site from your MailChimp account.</b></p>'),
+        '#prefix' => t('<p><b>Choose a connected site from your Mailchimp account.</b></p>'),
       );
 
       // Allow the user to configure which paths to embed JavaScript on.
       $form['connected_sites']['config']['connected_paths'] = array(
         '#type' => 'textarea',
         '#default_value' => $config->get('connected_paths'),
-        '#prefix' => t("<p><b>Configure paths to embed MailChimp's JavaScript code on.</b></p>"),
-        '#description' => t('Specify pages using their paths. Enter one path per line. <front> is the front page. If you have created a pop-up subscription form in MailChimp, it will appear on paths defined here.'),
+        '#prefix' => t("<p><b>Configure paths to embed Mailchimp's JavaScript code on.</b></p>"),
+        '#description' => t('Specify pages using their paths. Enter one path per line. <front> is the front page. If you have created a pop-up subscription form in Mailchimp, it will appear on paths defined here.'),
       );
     }
     else {
-      // If the MailChimp account does not contain any connected sites, gently
+      // If the Mailchimp account does not contain any connected sites, gently
       // encourage the user to create one.
       $form['connected_sites']['sites']['info'] = array(
         '#type' => 'markup',
-        '#markup' => $this->t('You will need to connect this site to MailChimp first! <a href=":link" target="_blank">Check out the documentation here</a>.', array(
+        '#markup' => $this->t('You will need to connect this site to Mailchimp first! <a href=":link" target="_blank">Check out the documentation here</a>.', array(
           ':link' => $mc_connected_sites_url,
         )),
       );

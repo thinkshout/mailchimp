@@ -1,7 +1,7 @@
-name: MailChimp Campaign
+name: Mailchimp Campaign
 type: module
-description: Create, send and import MailChimp campaigns.
-package: MailChimp
+description: Create, send and import Mailchimp campaigns.
+package: Mailchimp
 core: 8.x
 configure: mailchimp_campaign.overview
 

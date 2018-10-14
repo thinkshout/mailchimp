@@ -8,7 +8,7 @@ use Drupal\Core\Url;
 use Drupal\mailchimp_signup\Entity\MailchimpSignup;
 
 /**
- * Subscribe to a MailChimp list.
+ * Subscribe to a Mailchimp list.
  */
 class MailchimpSignupPageForm extends FormBase {
 

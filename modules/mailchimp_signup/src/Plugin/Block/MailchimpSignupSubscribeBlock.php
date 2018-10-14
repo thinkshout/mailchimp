@@ -10,7 +10,7 @@ use Drupal\Core\Block\BlockBase;
  * @Block(
  *   id = "mailchimp_signup_subscribe_block",
  *   admin_label = @Translation("Subscribe Block"),
- *   category = @Translation("MailChimp Signup"),
+ *   category = @Translation("Mailchimp Signup"),
  *   module = "mailchimp_signup",
  *   deriver = "Drupal\mailchimp_signup\Plugin\Derivative\MailchimpSignupSubscribeBlock"
  * )
