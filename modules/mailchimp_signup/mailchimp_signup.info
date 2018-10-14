@@ -1,6 +1,6 @@
-name = MailChimp Signup
-description = Manage MailChimp signup blocks and pages.
-package = MailChimp
+name = Mailchimp Signup
+description = Manage Mailchimp signup blocks and pages.
+package = Mailchimp
 core = 7.x
 dependencies[] = mailchimp
 dependencies[] = entity

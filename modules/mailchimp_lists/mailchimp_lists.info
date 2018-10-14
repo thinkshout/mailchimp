@@ -1,6 +1,6 @@
-name = MailChimp Lists
-description = Manage and integrate MailChimp lists.
-package = MailChimp
+name = Mailchimp Lists
+description = Manage and integrate Mailchimp lists.
+package = Mailchimp
 core = 7.x
 dependencies[] = mailchimp
 dependencies[] = entity

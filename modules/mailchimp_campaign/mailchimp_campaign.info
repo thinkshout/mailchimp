@@ -1,6 +1,6 @@
-name = MailChimp Campaigns
-description = Create, send and import MailChimp campaigns.
-package = MailChimp
+name = Mailchimp Campaigns
+description = Create, send and import Mailchimp campaigns.
+package = Mailchimp
 core = 7.x
 
 dependencies[] = mailchimp_lists

@@ -1,6 +1,6 @@
-name = MailChimp Automations
+name = Mailchimp Automations
 description = Add workflow automations for any entity with an email field.
-package = MailChimp
+package = Mailchimp
 core = 7.x
 
 dependencies[] = mailchimp

@@ -1,6 +1,6 @@
-name = MailChimp Activity
+name = Mailchimp Activity
 description = View activity for an email address associated with any entity.
-package = MailChimp
+package = Mailchimp
 core = 7.x
 
 dependencies[] = mailchimp

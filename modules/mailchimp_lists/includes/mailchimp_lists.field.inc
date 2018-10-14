@@ -11,8 +11,8 @@
 function mailchimp_lists_field_info() {
   return array(
     'mailchimp_lists_subscription' => array(
-      'label' => t('MailChimp Subscription'),
-      'description' => t('Allows an entity to be subscribed to a MailChimp list.'),
+      'label' => t('Mailchimp Subscription'),
+      'description' => t('Allows an entity to be subscribed to a Mailchimp list.'),
       'mc_list_id' => NULL,
       'double_opt_in' => FALSE,
       'send_welcome' => TRUE,
@@ -50,7 +50,7 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
   }
   // Grab the fields list.
   $fields = field_info_fields();
-  // Remove options for MailChimp lists that already have fields.
+  // Remove options for Mailchimp lists that already have fields.
   foreach ($fields as $field) {
     if ($field['type'] == 'mailchimp_lists_subscription') {
       if ($field['id'] != $this_field['id'] && isset($field['settings']['mc_list_id'])) {
@@ -62,14 +62,14 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
   // If there are no available lists, provide a warning..
   if (count($options)==1) {
     $warning = $lists_exist
-             ? 'All available MailChimp lists are already attached to MailChimp Subscription Fields.'
-             : 'No available MailChimp lists exist.';
+             ? 'All available Mailchimp lists are already attached to Mailchimp Subscription Fields.'
+             : 'No available Mailchimp lists exist.';
     $warning .= ' Create a new list at !mc, then !cc.';
 
     drupal_set_message(t(
         $warning,
         array(
-          '!mc' => l(t('MailChimp'), 'https://admin.mailchimp.com'),
+          '!mc' => l(t('Mailchimp'), 'https://admin.mailchimp.com'),
           '!cc' => l(t('clear your list cache'),
                  'admin/config/services/mailchimp/list_cache_clear',
                  array('query' => array('destination' => $_GET['q']))),
@@ -83,11 +83,11 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
 
   $form['mc_list_id'] = array(
     '#type' => 'select',
-    '#title' => t('MailChimp List'),
+    '#title' => t('Mailchimp List'),
     '#multiple' => FALSE,
-    '#description' => t('Available MailChimp lists which are not already attached to MailChimp Subscription Fields. If unavailable, make sure you have created a list at !MailChimp first, then !cacheclear.',
+    '#description' => t('Available Mailchimp lists which are not already attached to Mailchimp Subscription Fields. If unavailable, make sure you have created a list at !Mailchimp first, then !cacheclear.',
                     array(
-                      '!MailChimp' => l(t('MailChimp'), 'https://admin.mailchimp.com'),
+                      '!Mailchimp' => l(t('Mailchimp'), 'https://admin.mailchimp.com'),
                       '!cacheclear' => l(t('clear your list cache'),
                                      'admin/config/services/mailchimp/list_cache_clear',
                                      array('query' => array('destination' => $_GET['q']))),
@@ -107,7 +107,7 @@ function mailchimp_lists_field_settings_form($this_field, $instance, $has_data) 
   $form['unsubscribe_action'] = array(
     '#type' => 'radios',
     '#title' => t('Action to take when unchecking this field'),
-    '#description' => t('When this field gets unchecked you can choose if the subscriber gets unsubscribed (to keep the subscriber data in MailChimp) or completely removed from the Mailchimp list.'),
+    '#description' => t('When this field gets unchecked you can choose if the subscriber gets unsubscribed (to keep the subscriber data in Mailchimp) or completely removed from the Mailchimp list.'),
     '#options' => array(
       'unsubscribe' => t('Unsubscribe from list'),
       'remove' => t('Remove from list'),
@@ -193,7 +193,7 @@ function _mailchimp_lists_field_instance_settings_form_process($form, &$form_sta
     $use_advanced_mode = (bool) $form_state['input']['instance']['settings']['mergefields']['advanced'];
   }
 
-  $form['#description'] = $use_advanced_mode ? t('Use tokens like [user:mail] which will be replaced with the appropriate value before sending them to MailChimp.') : t('Multi-value fields will only sync their first value to MailChimp.');
+  $form['#description'] = $use_advanced_mode ? t('Use tokens like [user:mail] which will be replaced with the appropriate value before sending them to Mailchimp.') : t('Multi-value fields will only sync their first value to Mailchimp.');
 
   $mergevars = mailchimp_get_mergevars(array($mc_list_id));
   $fields = mailchimp_lists_fieldmap_options($instance['entity_type'], $instance['bundle']);
@@ -216,7 +216,7 @@ function _mailchimp_lists_field_instance_settings_form_process($form, &$form_sta
       }
 
       if ($mergevar->tag === 'EMAIL') {
-        $form[$mergevar->tag]['#description'] = t('Any entity with an empty or invalid email address field value will simply be ignored by the MailChimp subscription system. <em>This is why the Email field is the only required merge field which can sync to non-required fields.</em>');
+        $form[$mergevar->tag]['#description'] = t('Any entity with an empty or invalid email address field value will simply be ignored by the Mailchimp subscription system. <em>This is why the Email field is the only required merge field which can sync to non-required fields.</em>');
       }
     }
     else {
@@ -225,7 +225,7 @@ function _mailchimp_lists_field_instance_settings_form_process($form, &$form_sta
         $form[$mergevar->tag]['#options'] = $required_fields;
       }
 
-      $form[$mergevar->tag]['#description'] = t("Only 'required' and 'calculated' fields are allowed to be synced with MailChimp 'required' merge fields.");
+      $form[$mergevar->tag]['#description'] = t("Only 'required' and 'calculated' fields are allowed to be synced with Mailchimp 'required' merge fields.");
     }
   }
 
@@ -268,7 +268,7 @@ function _mailchimp_lists_field_instance_settings_form_process($form, &$form_sta
 }
 
 /**
- * Validation callback for MailChimp field instance settings form element.
+ * Validation callback for Mailchimp field instance settings form element.
  */
 function _mailchimp_lists_field_instance_settings_validate($form, &$form_state) {
   // Store the new values in the form state.
@@ -295,7 +295,7 @@ function mailchimp_lists_field_validate($entity_type, $entity, $field, $instance
       if (!$item['subscribe']) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
           'error' => 'mailchimp_lists_required',
-          'message' => t('Subscription to MailChimp List %name is required.', array('%name' => $instance['label'])),
+          'message' => t('Subscription to Mailchimp List %name is required.', array('%name' => $instance['label'])),
         );
         return FALSE;
       }
@@ -345,7 +345,7 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
     '#type' => 'fieldset',
   );
 
-  // Load the MailChimp list from the field's list ID.
+  // Load the Mailchimp list from the field's list ID.
   $mc_list = mailchimp_get_list($field['settings']['mc_list_id']);
 
   $element['subscribe'] = array(
@@ -422,7 +422,7 @@ function mailchimp_lists_field_widget_form(&$form, &$form_state, $field, $instan
 function mailchimp_lists_field_widget_form_validate(&$element, &$form_state) {
   if (isset($element['#access']) && !$element['#access']) {
     // When the field is not accessible, do not accept any values.
-    // Else the default value will be send to MailChimp, which causes
+    // Else the default value will be send to Mailchimp, which causes
     // an existing subscription to be overwritten.
     form_set_value($element, NULL, $form_state);
   }
@@ -591,7 +591,7 @@ function mailchimp_lists_form_field_ui_field_edit_form_alter(&$form, &$form_stat
 function mailchimp_lists_form_field_ui_field_edit_form_validate(&$form, &$form_state) {
   if ($form['#field']['type'] == 'mailchimp_lists_subscription') {
     if ($form_state['values']['field']['cardinality'] !== 1) {
-      form_set_error('cardinality', t('Cardinality on MailChimp lists fields must be set to one.'));
+      form_set_error('cardinality', t('Cardinality on Mailchimp lists fields must be set to one.'));
     }
   }
 }
@@ -611,7 +611,7 @@ function mailchimp_lists_subscription_property_info_callback(&$info, $entity_typ
 }
 
 /**
- * Entity field data callback for MailChimp subscription fields.
+ * Entity field data callback for Mailchimp subscription fields.
  */
 function mailchimp_lists_field_get($entity, array $options, $name, $entity_type, &$context) {
   $verbatim = entity_metadata_field_verbatim_get($entity, $options, $name, $entity_type, $context);

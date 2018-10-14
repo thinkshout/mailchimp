@@ -1,6 +1,6 @@
-name = MailChimp
-description = MailChimp email service integration.
-package = MailChimp
+name = Mailchimp
+description = Mailchimp email service integration.
+package = Mailchimp
 core = 7.x
 php = 5.4
 
