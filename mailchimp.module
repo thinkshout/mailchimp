@@ -18,18 +18,20 @@ define('MAILCHIMP_STATUS_PAUSED', 'paused');
 define('MAILCHIMP_STATUS_SCHEDULE', 'schedule');
 define('MAILCHIMP_STATUS_SENDING', 'sending');
 
-module_load_include('php', 'mailchimp', 'lib/mailchimp-api-php/src/Mailchimp');
-module_load_include('php', 'mailchimp', 'lib/mailchimp-api-php/src/MailchimpAPIException');
-module_load_include('php', 'mailchimp', 'lib/mailchimp-api-php/src/MailchimpAutomations');
-module_load_include('php', 'mailchimp', 'lib/mailchimp-api-php/src/MailchimpCampaigns');
-module_load_include('php', 'mailchimp', 'lib/mailchimp-api-php/src/MailchimpConnectedSites');
-module_load_include('php', 'mailchimp', 'lib/mailchimp-api-php/src/MailchimpEcommerce');
-module_load_include('php', 'mailchimp', 'lib/mailchimp-api-php/src/MailchimpLists');
-module_load_include('php', 'mailchimp', 'lib/mailchimp-api-php/src/MailchimpReports');
-module_load_include('php', 'mailchimp', 'lib/mailchimp-api-php/src/MailchimpTemplates');
-module_load_include('php', 'mailchimp', 'lib/mailchimp-api-php/src/MailchimpHttpClientInterface');
-module_load_include('php', 'mailchimp', 'lib/mailchimp-api-php/src/MailchimpCurlHttpClient');
-module_load_include('php', 'mailchimp', 'lib/mailchimp-api-php/src/MailchimpGuzzleHttpClient');
+$path = drupal_get_path('module', 'mailchimp');
+
+include $path . '/lib/mailchimp-api-php/src/Mailchimp.php';
+include $path . '/lib/mailchimp-api-php/src/MailchimpAPIException.php';
+include $path . '/lib/mailchimp-api-php/src/MailchimpAutomations.php';
+include $path . '/lib/mailchimp-api-php/src/MailchimpCampaigns.php';
+include $path . '/lib/mailchimp-api-php/src/MailchimpConnectedSites.php';
+include $path . '/lib/mailchimp-api-php/src/MailchimpEcommerce.php';
+include $path . '/lib/mailchimp-api-php/src/MailchimpLists.php';
+include $path . '/lib/mailchimp-api-php/src/MailchimpReports.php';
+include $path . '/lib/mailchimp-api-php/src/MailchimpTemplates.php';
+include $path . '/lib/mailchimp-api-php/src/http/MailchimpHttpClientInterface.php';
+include $path . '/lib/mailchimp-api-php/src/http/MailchimpCurlHttpClient.php';
+include $path . '/lib/mailchimp-api-php/src/http/MailchimpGuzzleHttpClient.php';
 
 /**
  * Access callback for mailchimp submodule menu items.
