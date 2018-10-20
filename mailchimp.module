@@ -23,7 +23,7 @@ function mailchimp_libraries_info() {
   $libraries['mailchimp'] = array(
     'name' => 'MailChimp API',
     'vendor url' => 'https://github.com/thinkshout/mailchimp-api-php',
-    'download url' => 'https://github.com/thinkshout/mailchimp-api-php/files/1361112/v1.0.8-package.zip',
+    'download url' => 'https://github.com/thinkshout/mailchimp-api-php/releases/download/v1.0.10/v1.0.10-package.zip',
     'version arguments' => array(
       'file' => 'composer.json',
       'pattern' => '/"version": "([0-9a-zA-Z.-]+)"/',
@@ -207,13 +207,15 @@ function mailchimp_get_api_object($classname = 'Mailchimp', $api_key = NULL) {
  *   The unique ID of the list provided by MailChimp.
  * @param bool $use_interest_groups
  *   TRUE to load interest groups for the list.
+ * @param bool $exclude_hidden_interest_groups
+ *   TRUE to exclude hidden interest groups for the list.
  * @param bool $reset
  *   TRUE to reset list cache and load from MailChimp.
  *
  * @return object
  *   A MailChimp list object.
  */
-function mailchimp_get_list($list_id, $use_interest_groups = TRUE, $reset = FALSE) {
+function mailchimp_get_list($list_id, $use_interest_groups = TRUE, $exclude_hidden_interest_groups = TRUE, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get('list-' . $list_id, 'cache_mailchimp');
   if (!empty($cache)) {
     // Use cached list only if interest group requirement is met.
@@ -236,22 +238,7 @@ function mailchimp_get_list($list_id, $use_interest_groups = TRUE, $reset = FALS
     if (!empty($list)) {
       if ($use_interest_groups) {
         // Add interest categories to the list.
-        $int_category_data = $mc_lists->getInterestCategories($list->id, array('count' => 500));
-        if ($int_category_data->total_items > 0) {
-          $list->intgroups = array();
-          foreach ($int_category_data->categories as $interest_category) {
-            if ($interest_category->type == 'hidden') {
-              continue;
-            }
-            $interest_data = $mc_lists->getInterests($list->id, $interest_category->id, array('count' => 500));
-
-            if ($interest_data->total_items > 0) {
-              $interest_category->interests = $interest_data->interests;
-            }
-
-            $list->intgroups[] = $interest_category;
-          }
-        }
+        $list->intgroups = mailchimp_get_interest_categories($list->id, $exclude_hidden_interest_groups, $reset);
       }
 
       // Add mergefields to the list.
@@ -279,13 +266,15 @@ function mailchimp_get_list($list_id, $use_interest_groups = TRUE, $reset = FALS
  *   An array of list IDs to filter the results by.
  * @param bool $use_interest_groups
  *   TRUE to load interest groups for the list.
+ * @param bool $exclude_hidden_interest_groups
+ *   TRUE to exclude hidden interest groups for the list.
  * @param bool $reset
  *   TRUE to reset list cache and load from MailChimp.
  *
  * @return array
  *   An array of MailChimp list objects.
  */
-function mailchimp_get_lists($list_ids = array(), $use_interest_groups = TRUE, $reset = FALSE) {
+function mailchimp_get_lists($list_ids = array(), $use_interest_groups = TRUE, $exclude_hidden_interest_groups = TRUE, $reset = FALSE) {
   $cache = $reset ? NULL : cache_get('lists', 'cache_mailchimp');
   // Return cached lists:
   if ($cache) {
@@ -308,23 +297,7 @@ function mailchimp_get_lists($list_ids = array(), $use_interest_groups = TRUE, $
         foreach ($result->lists as $list) {
           if ($use_interest_groups) {
             // Add interest categories to the list.
-            $int_category_data = $mc_lists->getInterestCategories($list->id, array('count' => 500));
-            if ($int_category_data->total_items > 0) {
-
-              $list->intgroups = array();
-              foreach ($int_category_data->categories as $interest_category) {
-                if ($interest_category->type == 'hidden') {
-                  continue;
-                }
-                $interest_data = $mc_lists->getInterests($list->id, $interest_category->id, array('count' => 500));
-
-                if ($interest_data->total_items > 0) {
-                  $interest_category->interests = $interest_data->interests;
-                }
-
-                $list->intgroups[] = $interest_category;
-              }
-            }
+            $list->intgroups = mailchimp_get_interest_categories($list->id, $exclude_hidden_interest_groups, $reset);
           }
 
           $lists[$list->id] = $list;
@@ -358,6 +331,127 @@ function mailchimp_get_lists($list_ids = array(), $use_interest_groups = TRUE, $
   else {
     return $lists;
   }
+}
+
+/**
+ * Gets MailChimp interests categories.
+ *
+ * @param string $list_id
+ *   The unique ID of the list provided by MailChimp.
+ * @param bool $exclude_hidden
+ *   TRUE to exclude interest groups from the list.
+ * @param bool $reset
+ *   TRUE to reset interests cache and load from MailChimp.
+ *
+ * @return array
+ *   A MailChimp array of Interests Categories.
+ */
+function mailchimp_get_interest_categories($list_id, $exclude_hidden = TRUE, $reset = FALSE) {
+  $cache = $reset ? NULL : cache_get('interests-' . $list_id, 'cache_mailchimp');
+  // Return cached interest categories:
+  if ($cache) {
+    $interests = $cache->data;
+  }
+  // Query interest categories from the MailChimp API and store in cache:
+  else {
+    $interests = array();
+
+    try {
+      /* @var \Mailchimp\MailchimpLists $mc_lists */
+      $mc_lists = mailchimp_get_api_object('MailchimpLists');
+      if (!$mc_lists) {
+        throw new MailchimpException('Cannot get lists without MailChimp API. Check API key has been entered.');
+      }
+
+      // Add interest categories to the list.
+      $interests_groups = $mc_lists->getInterestCategories($list_id, array('count' => 500));
+
+      if ($interests_groups->total_items > 0) {
+
+        foreach ($interests_groups->categories as $interest_category) {
+
+          $interest_data = mailchimp_get_interests($list_id, $interest_category->id, $reset);
+
+          if (!empty($interest_data)) {
+            $interest_category->interests = $interest_data;
+          }
+
+          $interests[] = $interest_category;
+        }
+
+      }
+
+      cache_set('interests-' . $list_id, $interests, 'cache_mailchimp', CACHE_PERMANENT);
+    }
+    catch (Exception $e) {
+      watchdog('mailchimp', 'An error occurred requesting interest information from MailChimp. "%message"', array(
+        '%message' => $e->getMessage(),
+      ), WATCHDOG_ERROR);
+    }
+  }
+
+  // Filter hidden interests. We loop here so we pull all interests and save to cache.
+  if ($exclude_hidden) {
+    $filtered_interests = array();
+    foreach ($interests as $interest) {
+      if ($interest != 'hidden') {
+        $filtered_interests[] = $interest;
+      }
+    }
+    return $filtered_interests;
+  }
+  else {
+    return $interests;
+  }
+}
+
+/**
+ * Gets MailChimp interests.
+ *
+ * @param string $list_id
+ *   The unique ID of the list provided by MailChimp.
+ * @param string $interest_category_id
+ *   The unique ID of the interest category provided by MailChimp.
+ * @param bool $reset
+ *   TRUE to reset interests cache and load from MailChimp.
+ *
+ * @return array
+ *   A MailChimp array of Interests.
+ */
+function mailchimp_get_interests($list_id, $interest_category_id, $reset = FALSE) {
+  $cid = 'interests-' . $list_id . '-' . $interest_category_id;
+  $cache = $reset ? NULL : cache_get($cid, 'cache_mailchimp');
+  // Return cached interests:
+  if ($cache) {
+    $interests = $cache->data;
+  }
+  // Query interests from the MailChimp API and store in cache:
+  else {
+    $interests = array();
+
+    try {
+      /* @var \Mailchimp\MailchimpLists $mc_lists */
+      $mc_lists = mailchimp_get_api_object('MailchimpLists');
+      if (!$mc_lists) {
+        throw new MailchimpException('Cannot get lists without MailChimp API. Check API key has been entered.');
+      }
+
+      $interest_data = $mc_lists->getInterests($list_id, $interest_category_id, array('count' => 500));
+
+      if ($interest_data->total_items > 0) {
+        $interests = $interest_data->interests;
+      }
+
+      cache_set($cid, $interests, 'cache_mailchimp', CACHE_PERMANENT);
+    }
+    catch (Exception $e) {
+      watchdog('mailchimp', 'An error occurred requesting interest information from MailChimp. "%message"', array(
+        '%message' => $e->getMessage(),
+      ), WATCHDOG_ERROR);
+    }
+  }
+
+  return $interests;
 }
 
 /**
@@ -1485,11 +1579,8 @@ function mailchimp_interest_groups_form_elements($list, $defaults = array(), $em
       continue;
     }
 
-    /* @var \Mailchimp\MailchimpLists $mc_lists */
-    $mc_lists = mailchimp_get_api_object('MailchimpLists');
-
     try {
-      $interest_data = $mc_lists->getInterests($list->id, $group->id, array('count' => 500));
+      $interest_data = mailchimp_get_interests($list->id, $group->id);
     } catch (\Exception $e) {
       watchdog('mailchimp', 'An error occurred requesting interest groups for list @list. "%message"', array(
         '@list' => $list->id,
