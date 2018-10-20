@@ -352,7 +352,7 @@ function mailchimp_get_interest_categories($list_id, $exclude_hidden = TRUE, $re
   if ($cache) {
     $interests = $cache->data;
   }
-  // Query interest categories from the MailChimp API and store in cache:
+  // Query interest categories from the MailChimp API and store in cache.
   else {
     $interests = array();
 
@@ -425,7 +425,7 @@ function mailchimp_get_interests($list_id, $interest_category_id, $reset = FALSE
   if ($cache) {
     $interests = $cache->data;
   }
-  // Query interests from the MailChimp API and store in cache:
+  // Query interests from the MailChimp API and store in cache.
   else {
     $interests = array();
 
