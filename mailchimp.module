@@ -394,7 +394,7 @@ function mailchimp_get_interest_categories($list_id, $exclude_hidden = TRUE, $re
   if ($exclude_hidden) {
     $filtered_interests = array();
     foreach ($interests as $interest) {
-      if ($interest != 'hidden') {
+      if ($interest->type != 'hidden') {
         $filtered_interests[] = $interest;
       }
     }
