@@ -286,7 +286,12 @@ function mailchimp_get_list($list_id, $use_interest_groups = TRUE, $reset = FALS
  *   An array of MailChimp list objects.
  */
 function mailchimp_get_lists($list_ids = array(), $use_interest_groups = TRUE, $reset = FALSE) {
-  $cache = $reset ? NULL : cache_get('lists', 'cache_mailchimp');
+  $cid = 'lists';
+  if (module_exists('domain')) {
+    $current_domain = domain_get_domain();
+    $cid .= ':'.$current_domain['machine_name'];
+  }
+  $cache = $reset ? NULL : cache_get($cid, 'cache_mailchimp');
   // Return cached lists:
   if ($cache) {
     $lists = $cache->data;
@@ -337,7 +342,7 @@ function mailchimp_get_lists($list_ids = array(), $use_interest_groups = TRUE, $
         }
       }
       uasort($lists, '_mailchimp_list_cmp');
-      cache_set('lists', $lists, 'cache_mailchimp', CACHE_PERMANENT);
+      cache_set($cid, $lists, 'cache_mailchimp', CACHE_PERMANENT);
     }
     catch (Exception $e) {
       watchdog('mailchimp', 'An error occurred requesting list information from MailChimp. "%message"', array(
