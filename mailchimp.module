@@ -311,24 +311,22 @@ function mailchimp_get_lists($list_ids = array(), $use_interest_groups = TRUE, $
 
       if ($result->total_items > 0) {
         foreach ($result->lists as $list) {
-          if ($use_interest_groups) {
-            // Add interest categories to the list.
-            $int_category_data = $mc_lists->getInterestCategories($list->id, array('count' => 500));
-            if ($int_category_data->total_items > 0) {
+          // Add interest categories to the list.
+          $int_category_data = $mc_lists->getInterestCategories($list->id, array('count' => 500));
+          if ($int_category_data->total_items > 0) {
 
-              $list->intgroups = array();
-              foreach ($int_category_data->categories as $interest_category) {
-                if ($interest_category->type == 'hidden') {
-                  continue;
-                }
-                $interest_data = $mc_lists->getInterests($list->id, $interest_category->id, array('count' => 500));
-
-                if ($interest_data->total_items > 0) {
-                  $interest_category->interests = $interest_data->interests;
-                }
-
-                $list->intgroups[] = $interest_category;
+            $list->intgroups = array();
+            foreach ($int_category_data->categories as $interest_category) {
+              if ($interest_category->type == 'hidden') {
+                continue;
               }
+              $interest_data = $mc_lists->getInterests($list->id, $interest_category->id, array('count' => 500));
+
+              if ($interest_data->total_items > 0) {
+                $interest_category->interests = $interest_data->interests;
+              }
+
+              $list->intgroups[] = $interest_category;
             }
           }
 
